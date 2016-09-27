@@ -1,0 +1,57 @@
+Notes on microSDL code:
+=======================
+
+
+Element ID
+- User-supplied ID given to an element when created
+- IDs must be positive values and unique
+- User functions generally reference an Element by
+  its Element ID
+- If no further reference is required to an element after
+  creation, an anonymous ID can be provided (MSDL_ID_ANON)
+
+Element Index
+- Internal index into array of elements
+- Implementation converts Element ID into Element Index by
+  searching for the ID
+
+Pages
+- Elements contain a reference to a Page ID
+- The Page ID can also be specified as MSDL_PAGE_ALL if the
+  element is to be drawn on all pages.
+- Page drawing functions will redraw all elements associated
+  with the page
+- A current page ID member is provided to help manage transitions
+  between pages and redrawing the active page.
+
+Page Drawing
+- Note that element drawing order is based on creation order
+  (qualified by the specific page).
+- It is possible for elements to overlap, but note that care
+  must then be taken to define the sequence of element creation.
+- To keep the library simple, clipping is not implemented at
+  this time
+- To enable the most flexibility in page updates, drawing can be
+  done with Page-level redraw, individual Element draw or even
+  direct screen access via the graphics primitives.
+  
+
+Element Defaults
+- The ElemCreate*() functions create a variety of objects with stylistic
+  defaults applied (frame, fill, alignment, etc.) These can be overridden
+  by setting the Elem struct members after calling the default
+  ElemCreate*() function.
+
+Event Loop
+- The event loop is based on polling for touch events, tracking these
+  transitions and calling any dynamic Element update routines.
+
+Memory Allocation
+- microSDL is intended to be an extremely simple library framework and
+  at this time the Element creation is done without any dynamic memory allocation.
+  The impact of this is that some structures will consume resources when
+  not maximized and that MSDL_MAX_ELEM may need to be increased if a large
+  number of objects are created.
+- An alternate approach using traditional dynamic memory allocation is
+  currently being considered for future revisions.
+
