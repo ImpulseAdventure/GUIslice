@@ -727,8 +727,14 @@ void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal)
 
 int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui)
 {
-  return pGui->nTrackElemClicked;
+  int   nElemInd = pGui->nTrackElemClicked;
+  if (nElemInd == MSDL_IND_NONE) {
+    return MSDL_ID_NONE;
+  } else {
+    return microSDL_ElemGetIdFromInd(pGui,nElemInd);
+  }
 }
+
 
 void microSDL_ClearTrackElemClicked(microSDL_tsGui* pGui)
 {
@@ -1356,6 +1362,11 @@ void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
     pGui->surfBkgnd = NULL;
   }
 
+}
+
+int microSDL_GetTrackElemIndClicked(microSDL_tsGui* pGui)
+{
+  return pGui->nTrackElemClicked;
 }
 
 // Handle MOUSEDOWN

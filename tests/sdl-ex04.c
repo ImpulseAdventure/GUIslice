@@ -114,20 +114,15 @@ int main( int argc, char* args[] )
       microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
       nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
 
-      // Any selectable object clicked?
-      if (nTrackElemClicked != MSDL_IND_NONE) {
+      // Any selectable object clicked? (MSDL_ID_NONE if no)
+      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
+        // Quit button pressed
+        bQuit = true;
+      }
 
-        // Convert element index to element ID
-        nElemId = microSDL_ElemGetIdFromInd(&m_gui,nTrackElemClicked);
-        if (nElemId == E_ELEM_BTN_QUIT) {
-          // Quit button pressed
-          bQuit = true;
-        }
+      // Clear click event
+      microSDL_ClearTrackElemClicked(&m_gui);
   
-        // Clear click event
-        microSDL_ClearTrackElemClicked(&m_gui);
-  
-      } // Object clicked
     } // Touchscreen press
   } // bQuit
 

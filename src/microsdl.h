@@ -861,16 +861,19 @@ void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal);
 // Tracking Functions
 // ------------------------------------------------------------------------
 
+
+
 //
-// Fetch the index of the last clicked element
+// Fetch the ID of the last clicked element
 //
 // INPUT:
 // - pGui:        Pointer to GUI
 //
 // RETURN:
-// - Element Index or MSDL_IND_NONE if no new elements selected
+// - Element ID or MSDL_ID_NONE if no new elements selected
 //
 int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui);
+
 
 //
 // Resets the indicator of a last clicked element,
@@ -1183,6 +1186,16 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 //
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui);
 
+//
+// Fetch the index of the last clicked element
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+//
+// RETURN:
+// - Element Index or MSDL_IND_NONE if no new elements selected
+//
+int microSDL_GetTrackElemIndClicked(microSDL_tsGui* pGui);
 
 //
 // Handle a mouse-down event and track any
