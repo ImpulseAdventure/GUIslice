@@ -548,7 +548,7 @@ microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nId,unsigned nPa
   sElem.colElemText = m_colYellow;
   sElem.bFillEn = true;
   sElem.eTxtAlign = MSDL_ALIGN_MID_LEFT;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
@@ -574,7 +574,7 @@ microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nId,unsigned 
   sElem.bFrameEn = true;
   sElem.bFillEn = true;
   sElem.bClickEn = true;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
@@ -591,7 +591,7 @@ microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsig
   sElem.bFillEn = false;
   sElem.bClickEn = true;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImgSel);
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
@@ -603,7 +603,7 @@ microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned
   sElem.colElemFrame = m_colGray;
   sElem.bFillEn = true;
   sElem.bFrameEn = true;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
@@ -617,7 +617,7 @@ microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned
   sElem.bFillEn = false;
   sElem.bClickEn = false;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImg);
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
@@ -636,28 +636,10 @@ microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsign
   sElem.colGauge = colGauge;
   sElem.colElemFrame = m_colGray;
   sElem.colElemFill = m_colBlack;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);  //guiy
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
   return sElem;
 }
 
-
-// TODO: Move to private section
-bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem)
-{
-  if (pGui->nElemCnt+1 >= ELEM_MAX) {
-    fprintf(stderr,"ERROR: microSDL_ElemAdd() too many elements\n");
-    return false;
-  }
-  // In case the element creation failed, trap that here
-  if (!sElem.bValid) {
-    fprintf(stderr,"ERROR: microSDL_ElemAdd() skipping add of invalid element\n");
-    return false;
-  }
-  // Add the element to the internal array
-  pGui->asElem[pGui->nElemCnt] = sElem;
-  pGui->nElemCnt++;
-  return true;
-}
 
 
 // ------------------------------------------------------------------------
@@ -1013,6 +995,24 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nId,unsigned nPageI
   return sElem;
 }
 
+bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem)
+{
+  if (pGui->nElemCnt+1 >= ELEM_MAX) {
+    fprintf(stderr,"ERROR: microSDL_ElemAdd() too many elements\n");
+    return false;
+  }
+  // In case the element creation failed, trap that here
+  if (!sElem.bValid) {
+    fprintf(stderr,"ERROR: microSDL_ElemAdd() skipping add of invalid element\n");
+    return false;
+  }
+  // Add the element to the internal array
+  pGui->asElem[pGui->nElemCnt] = sElem;
+  pGui->nElemCnt++;
+  return true;
+}
+
+
 bool microSDL_ElemIndValid(microSDL_tsGui* pGui,int nElemInd)
 {
   if ((nElemInd >= 0) && (nElemInd < pGui->nElemCnt)) {
@@ -1026,25 +1026,25 @@ bool microSDL_ElemIndValid(microSDL_tsGui* pGui,int nElemInd)
 int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd)
 {
   if (microSDL_ElemIndValid(pGui,nElemInd)) {
-  //xxx if ((nElemInd >= 0) && (nElemInd < pGui->nElemCnt)) {
     return pGui->asElem[nElemInd].nId;
   } else {
     return MSDL_ID_NONE;
   }
 }
 
-void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* sElem,const char* acImage,
+void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
   const char* acImageSel)
 {
   SDL_Surface*    pSurf;
   SDL_Surface*    pSurfSel;
-  if (sElem == NULL) {
+  if (pElem == NULL) {
     // ERROR
     return;
   }
 
+
   if (strlen(acImage) > 0) {
-    if (sElem->pSurf != NULL) {
+    if (pElem->pSurf != NULL) {
       fprintf(stderr,"ERROR: microSDL_ElemSetImage(%s) with pSurf already set\n",acImage);
       return;
     }
@@ -1053,11 +1053,11 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* sElem,const cha
       fprintf(stderr,"ERROR: microSDL_ElemSetImage(%s) call to microSDL_LoadBmp failed\n",acImage);
       return;
     }
-    sElem->pSurf = pSurf;
+    pElem->pSurf = pSurf;
   }
 
   if (strlen(acImageSel) > 0) {
-    if (sElem->pSurfSel != NULL) {
+    if (pElem->pSurfSel != NULL) {
       fprintf(stderr,"ERROR: microSDL_ElemSetImage(%s) with pSurfSel already set\n",acImageSel);
       return;
     }
@@ -1066,11 +1066,11 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* sElem,const cha
       fprintf(stderr,"ERROR: microSDL_ElemSetImage(%s) call to microSDL_LoadBmp failed\n",acImageSel);
       return;
     }
-    sElem->pSurfSel = pSurfSel;
+    pElem->pSurfSel = pSurfSel;
   }
 
-
 }
+
 
 // PRE:
 // - Assumes that the element is on the active display
