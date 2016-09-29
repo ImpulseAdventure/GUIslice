@@ -185,7 +185,7 @@ typedef struct {
 // ------------------------------------------------------------------------
 
 // TODO: Document
-void microSDL_GuiReset(microSDL_tsGui &m_gui);
+void microSDL_GuiReset(microSDL_tsGui* pGui);
 
 //
 // Configure environment variables suitable for
@@ -199,7 +199,7 @@ void microSDL_GuiReset(microSDL_tsGui &m_gui);
 // RETURN:
 // - None
 //
-void microSDL_InitEnv(microSDL_tsGui &m_gui);
+void microSDL_InitEnv(microSDL_tsGui* pGui);
 
 
 //
@@ -218,7 +218,7 @@ void microSDL_InitEnv(microSDL_tsGui &m_gui);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_Init(microSDL_tsGui &m_gui);
+bool microSDL_Init(microSDL_tsGui* pGui);
 
 //
 // Exit the microSDL environment
@@ -228,7 +228,7 @@ bool microSDL_Init(microSDL_tsGui &m_gui);
 // RETURN:
 // - None
 //
-void microSDL_Quit(microSDL_tsGui &m_gui);
+void microSDL_Quit(microSDL_tsGui* pGui);
 
 
 // ------------------------------------------------------------------------
@@ -246,7 +246,7 @@ void microSDL_Quit(microSDL_tsGui &m_gui);
 // RETURN:
 // - SDL surface pointer or NULL if error
 //
-SDL_Surface *microSDL_LoadBmp(microSDL_tsGui &m_gui,char* pStrFname);
+SDL_Surface *microSDL_LoadBmp(microSDL_tsGui* pGui,char* pStrFname);
 
 
 
@@ -260,7 +260,7 @@ SDL_Surface *microSDL_LoadBmp(microSDL_tsGui &m_gui,char* pStrFname);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_SetBkgnd(microSDL_tsGui &m_gui,SDL_Surface* pSurf);
+bool microSDL_SetBkgnd(microSDL_tsGui* pGui,SDL_Surface* pSurf);
 
 //
 // Configure the background to use a bitmap image
@@ -272,7 +272,7 @@ bool microSDL_SetBkgnd(microSDL_tsGui &m_gui,SDL_Surface* pSurf);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_SetBkgndImage(microSDL_tsGui &m_gui,char* pStrFname);
+bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname);
 
 //
 // Configure the background to use a solid color
@@ -284,7 +284,7 @@ bool microSDL_SetBkgndImage(microSDL_tsGui &m_gui,char* pStrFname);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_SetBkgndColor(microSDL_tsGui &m_gui,SDL_Color nCol);
+bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,SDL_Color nCol);
 
 
 //
@@ -292,7 +292,7 @@ bool microSDL_SetBkgndColor(microSDL_tsGui &m_gui,SDL_Color nCol);
 // - This is typically used to copy a shape
 //   to the main screen surface.
 //
-void microSDL_ApplySurface(microSDL_tsGui &m_gui,int x, int y, SDL_Surface* pSrc, SDL_Surface* pDest);
+void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc, SDL_Surface* pDest);
 
 
 //
@@ -303,7 +303,7 @@ void microSDL_ApplySurface(microSDL_tsGui &m_gui,int x, int y, SDL_Surface* pSrc
 // RETURN:
 // - true if inside region, false otherwise
 //
-bool microSDL_IsInRect(microSDL_tsGui &m_gui,unsigned nSelX,unsigned nSelY,SDL_Rect rBtn);
+bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rBtn);
 
 
 //
@@ -317,7 +317,7 @@ bool microSDL_IsInRect(microSDL_tsGui &m_gui,unsigned nSelX,unsigned nSelY,SDL_R
 // RETURN:
 // - None
 //
-void microSDL_Flip(microSDL_tsGui &m_gui);
+void microSDL_Flip(microSDL_tsGui* pGui);
 
 
 
@@ -340,7 +340,7 @@ void microSDL_Flip(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_SetPixel(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,SDL_Color nCol);
+void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol);
 
 
 //
@@ -356,7 +356,7 @@ void microSDL_SetPixel(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,SDL_Color nCol)
 // RETURN:
 // - none
 //
-void microSDL_Line(microSDL_tsGui &m_gui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 nY1,SDL_Color nCol);
+void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 nY1,SDL_Color nCol);
 
 
 //
@@ -372,7 +372,7 @@ void microSDL_Line(microSDL_tsGui &m_gui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16
 // RETURN:
 // - none
 //
-void microSDL_LineH(microSDL_tsGui &m_gui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Color nCol);
+void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Color nCol);
 
 
 //
@@ -388,7 +388,7 @@ void microSDL_LineH(microSDL_tsGui &m_gui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Co
 // RETURN:
 // - none
 //
-void microSDL_LineV(microSDL_tsGui &m_gui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Color nCol);
+void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Color nCol);
 
 
 //
@@ -404,7 +404,7 @@ void microSDL_LineV(microSDL_tsGui &m_gui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Co
 // RETURN:
 // - none
 //
-void microSDL_FrameRect(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,Uint16 nW,Uint16 nH,SDL_Color nCol);
+void microSDL_FrameRect(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint16 nW,Uint16 nH,SDL_Color nCol);
 
 
 //
@@ -417,7 +417,7 @@ void microSDL_FrameRect(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,Uint16 nW,Uint
 // RETURN:
 // - none
 //
-void microSDL_FillRect(microSDL_tsGui &m_gui,SDL_Rect rRect,SDL_Color nCol);
+void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 
 
 // -----------------------------------------------------------------------
@@ -430,7 +430,7 @@ void microSDL_FillRect(microSDL_tsGui &m_gui,SDL_Rect rRect,SDL_Color nCol);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_InitFont(microSDL_tsGui &m_gui);
+bool microSDL_InitFont(microSDL_tsGui* pGui);
 
 
 //
@@ -445,7 +445,7 @@ bool microSDL_InitFont(microSDL_tsGui &m_gui);
 // RETURN:
 // - true if load was successful, false otherwise
 //
-bool microSDL_FontAdd(microSDL_tsGui &m_gui,unsigned nFontId, const char* acFontName, unsigned nFontSz);
+bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId, const char* acFontName, unsigned nFontSz);
 
 
 //
@@ -458,7 +458,7 @@ bool microSDL_FontAdd(microSDL_tsGui &m_gui,unsigned nFontId, const char* acFont
 // RETURN:
 // - A TTF_Font pointer or NULL if error
 //
-TTF_Font* microSDL_FontGet(microSDL_tsGui &m_gui,unsigned nFontId);
+TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,unsigned nFontId);
 
 
 //
@@ -467,7 +467,7 @@ TTF_Font* microSDL_FontGet(microSDL_tsGui &m_gui,unsigned nFontId);
 // RETURN:
 // - none
 //
-void microSDL_FontCloseAll(microSDL_tsGui &m_gui);
+void microSDL_FontCloseAll(microSDL_tsGui* pGui);
 
 
 
@@ -482,7 +482,7 @@ void microSDL_FontCloseAll(microSDL_tsGui &m_gui);
 // - Page ID
 //
 
-unsigned microSDL_GetPageCur(microSDL_tsGui &m_gui);
+unsigned microSDL_GetPageCur(microSDL_tsGui* pGui);
 
 
 //
@@ -494,7 +494,7 @@ unsigned microSDL_GetPageCur(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_SetPageCur(microSDL_tsGui &m_gui,unsigned nPageId);
+void microSDL_SetPageCur(microSDL_tsGui* pGui,unsigned nPageId);
 
 
 //
@@ -506,7 +506,7 @@ void microSDL_SetPageCur(microSDL_tsGui &m_gui,unsigned nPageId);
 // RETURN:
 // - none
 //
-void microSDL_ElemDrawPage(microSDL_tsGui &m_gui,unsigned nPageId);
+void microSDL_ElemDrawPage(microSDL_tsGui* pGui,unsigned nPageId);
 
 
 //
@@ -515,7 +515,7 @@ void microSDL_ElemDrawPage(microSDL_tsGui &m_gui,unsigned nPageId);
 // RETURN:
 // - none
 //
-void microSDL_ElemDrawPageCur(microSDL_tsGui &m_gui);
+void microSDL_ElemDrawPageCur(microSDL_tsGui* pGui);
 
 // ------------------------------------------------------------------------
 // Element General Functions
@@ -530,7 +530,7 @@ void microSDL_ElemDrawPageCur(microSDL_tsGui &m_gui);
 // RETURN:
 // - Index of element or MSDL_ID_NONE if not found
 //
-int microSDL_ElemFindIndFromId(microSDL_tsGui &m_gui,int nElemId);
+int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId);
 
 
 // Find an Element Index from coordinates
@@ -539,7 +539,7 @@ int microSDL_ElemFindIndFromId(microSDL_tsGui &m_gui,int nElemId);
 // RETURN:
 // - Index of element or MSDL_ID_NONE if not found
 //
-int microSDL_ElemFindFromCoord(microSDL_tsGui &m_gui,int nX, int nY);
+int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY);
 
 
 
@@ -563,7 +563,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui &m_gui,int nX, int nY);
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,
+microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* pStr,unsigned nFontId);
 
 
@@ -582,7 +582,7 @@ microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui &m_gui,int nElemId,unsigne
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,
+microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* acStr,unsigned nFontId);
 
 
@@ -602,7 +602,7 @@ microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui &m_gui,int nElemId,unsi
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,
+microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel);
 
 
@@ -618,7 +618,7 @@ microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui &m_gui,int nElemId,unsi
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,SDL_Rect rElem);
+microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem);
 
 
 //
@@ -634,7 +634,7 @@ microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui &m_gui,int nElemId,unsigne
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,SDL_Rect rElem,
+microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
   const char* acImg);
 
 
@@ -657,7 +657,7 @@ microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui &m_gui,int nElemId,unsigne
 // RETURN:
 // - The created Element structure
 //
-microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui &m_gui,int nElemId,unsigned nPage,
+microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert);
 
 
@@ -671,7 +671,7 @@ microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui &m_gui,int nElemId,unsig
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_ElemAdd(microSDL_tsGui &m_gui,microSDL_tsElem sElem);
+bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 
 
 // ------------------------------------------------------------------------
@@ -688,7 +688,7 @@ bool microSDL_ElemAdd(microSDL_tsGui &m_gui,microSDL_tsElem sElem);
 // RETURN:
 // - none
 //
-void microSDL_ElemDraw(microSDL_tsGui &m_gui,int nElemId);
+void microSDL_ElemDraw(microSDL_tsGui* pGui,int nElemId);
 
 
 // ------------------------------------------------------------------------
@@ -705,7 +705,7 @@ void microSDL_ElemDraw(microSDL_tsGui &m_gui,int nElemId);
 // RETURN:
 // - none
 //
-void microSDL_ElemSetFillEn(microSDL_tsGui &m_gui,int nElemId,bool bFillEn);
+void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn);
 
 
 //
@@ -720,7 +720,7 @@ void microSDL_ElemSetFillEn(microSDL_tsGui &m_gui,int nElemId,bool bFillEn);
 // RETURN:
 // - none
 //
-void microSDL_ElemSetCol(microSDL_tsGui &m_gui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colFillSel);
+void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colFillSel);
 
 
 
@@ -743,7 +743,7 @@ void microSDL_ElemSetCol(microSDL_tsGui &m_gui,int nElemId,SDL_Color colFrame,SD
 // RETURN:
 // - none
 //
-void microSDL_ElemSetTxtAlign(microSDL_tsGui &m_gui,int nElemId,unsigned nAlign);
+void microSDL_ElemSetTxtAlign(microSDL_tsGui* pGui,int nElemId,unsigned nAlign);
 
 
 //
@@ -756,7 +756,7 @@ void microSDL_ElemSetTxtAlign(microSDL_tsGui &m_gui,int nElemId,unsigned nAlign)
 // RETURN:
 // - none
 //
-void microSDL_ElemSetTxtStr(microSDL_tsGui &m_gui,int nElemId,const char* pStr);
+void microSDL_ElemSetTxtStr(microSDL_tsGui* pGui,int nElemId,const char* pStr);
 
 //
 // Update the text string color associated with an Element ID
@@ -768,7 +768,7 @@ void microSDL_ElemSetTxtStr(microSDL_tsGui &m_gui,int nElemId,const char* pStr);
 // RETURN:
 // - none
 //
-void microSDL_ElemSetTxtCol(microSDL_tsGui &m_gui,int nElemId,SDL_Color colVal);
+void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal);
 
 
 //
@@ -781,7 +781,7 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui &m_gui,int nElemId,SDL_Color colVal);
 // RETURN:
 // - none
 //
-void microSDL_ElemUpdateFont(microSDL_tsGui &m_gui,int nElemId,unsigned nFont);
+void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,unsigned nFont);
 
 
 //
@@ -795,7 +795,7 @@ void microSDL_ElemUpdateFont(microSDL_tsGui &m_gui,int nElemId,unsigned nFont);
 // RETURN:
 // - none
 //
-void microSDL_ElemUpdateGauge(microSDL_tsGui &m_gui,int nElemId,int nVal);
+void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal);
 
 
 
@@ -809,7 +809,7 @@ void microSDL_ElemUpdateGauge(microSDL_tsGui &m_gui,int nElemId,int nVal);
 // RETURN:
 // - Element Index or MSDL_IND_NONE if no new elements selected
 //
-int microSDL_GetTrackElemClicked(microSDL_tsGui &m_gui);
+int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui);
 
 //
 // Resets the indicator of a last clicked element,
@@ -820,7 +820,7 @@ int microSDL_GetTrackElemClicked(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_ClearTrackElemClicked(microSDL_tsGui &m_gui);
+void microSDL_ClearTrackElemClicked(microSDL_tsGui* pGui);
 
 //
 // Handles a touch event and performs the necessary
@@ -835,7 +835,7 @@ void microSDL_ClearTrackElemClicked(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_TrackClick(microSDL_tsGui &m_gui,int nX,int nY,unsigned nPress);
+void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress);
 
 
 //
@@ -849,7 +849,7 @@ void microSDL_TrackClick(microSDL_tsGui &m_gui,int nX,int nY,unsigned nPress);
 // RETURN:
 // - true if an event was detected or false otherwise
 //
-bool microSDL_GetSdlClick(microSDL_tsGui &m_gui,int &nX, int &nY, unsigned &nPress);
+bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX, int &nY, unsigned &nPress);
 
 
 // ------------------------------------------------------------------------
@@ -868,7 +868,7 @@ bool microSDL_GetSdlClick(microSDL_tsGui &m_gui,int &nX, int &nY, unsigned &nPre
 // RETURN:
 // - true if successful
 //
-bool microSDL_InitTs(microSDL_tsGui &m_gui,const char* acDev);
+bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev);
 
 
 //
@@ -882,7 +882,7 @@ bool microSDL_InitTs(microSDL_tsGui &m_gui,const char* acDev);
 // RETURN:
 // - non-zero if an event was detected or 0 otherwise
 //
-int microSDL_GetTsClick(microSDL_tsGui &m_gui,int &nX, int &nY, unsigned &nPress);
+int microSDL_GetTsClick(microSDL_tsGui* pGui,int &nX, int &nY, unsigned &nPress);
 
 
 #endif // INC_TS
@@ -907,7 +907,7 @@ int microSDL_GetTsClick(microSDL_tsGui &m_gui,int &nX, int &nY, unsigned &nPress
 // RETURN:
 // - A pixel value for the current screen format
 //
-Uint32 microSDL_GenPixelColor(microSDL_tsGui &m_gui,SDL_Color nCol);
+Uint32 microSDL_GenPixelColor(microSDL_tsGui* pGui,SDL_Color nCol);
 
 
 //
@@ -926,7 +926,7 @@ Uint32 microSDL_GenPixelColor(microSDL_tsGui &m_gui,SDL_Color nCol);
 // RETURN:
 // - Pixel color value from the coordinate or 0 if error
 //
-Uint32 microSDL_GetPixelRaw(microSDL_tsGui &m_gui,SDL_Surface *surf,int nX,int nY);
+Uint32 microSDL_GetPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf,int nX,int nY);
 
 
 //
@@ -944,7 +944,7 @@ Uint32 microSDL_GetPixelRaw(microSDL_tsGui &m_gui,SDL_Surface *surf,int nX,int n
 // RETURN:
 // - none
 //
-void microSDL_PutPixelRaw(microSDL_tsGui &m_gui,SDL_Surface *surf, int nX, int nY, Uint32 nPixelVal);
+void microSDL_PutPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf, int nX, int nY, Uint32 nPixelVal);
 
 
 //
@@ -961,7 +961,7 @@ void microSDL_PutPixelRaw(microSDL_tsGui &m_gui,SDL_Surface *surf, int nX, int n
 // RETURN:
 // - none
 //
-void microSDL_SetPixelRaw(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,Uint32 nPixelCol);
+void microSDL_SetPixelRaw(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint32 nPixelCol);
 
 
 //
@@ -974,7 +974,7 @@ void microSDL_SetPixelRaw(microSDL_tsGui &m_gui,Sint16 nX,Sint16 nY,Uint32 nPixe
 // RETURN:
 // - true if success, false otherwise
 //
-bool microSDL_Lock(microSDL_tsGui &m_gui);
+bool microSDL_Lock(microSDL_tsGui* pGui);
 
 
 //
@@ -987,7 +987,7 @@ bool microSDL_Lock(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_Unlock(microSDL_tsGui &m_gui);
+void microSDL_Unlock(microSDL_tsGui* pGui);
 
 
 //
@@ -1008,7 +1008,7 @@ void microSDL_Unlock(microSDL_tsGui &m_gui);
 // RETURN:
 // - Initialized structure
 //
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui &m_gui,int nElemId,unsigned nPageId,unsigned nType,
+microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,unsigned nType,
   SDL_Rect rElem,const char* pStr,unsigned nFontId);
 
 
@@ -1018,7 +1018,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui &m_gui,int nElemId,unsigned n
 // RETURN:
 // - true if index is in range, false otherwise
 //
-bool microSDL_ElemIndValid(microSDL_tsGui &m_gui,int nElemInd);
+bool microSDL_ElemIndValid(microSDL_tsGui* pGui,int nElemInd);
 
 //
 // Fetch the element ID from the element index
@@ -1029,7 +1029,7 @@ bool microSDL_ElemIndValid(microSDL_tsGui &m_gui,int nElemInd);
 // RETURN:
 // - Element ID or MSDL_ID_NONE if not found
 //
-int microSDL_ElemGetIdFromInd(microSDL_tsGui &m_gui,int nElemInd);
+int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd);
 
 
 //
@@ -1044,7 +1044,7 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui &m_gui,int nElemInd);
 // - none
 //
 // TODO: Replace sElem
-void microSDL_ElemSetImage(microSDL_tsGui &m_gui,microSDL_tsElem* sElem,const char* acImage,
+void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* sElem,const char* acImage,
   const char* acImageSel);
 
 
@@ -1058,7 +1058,7 @@ void microSDL_ElemSetImage(microSDL_tsGui &m_gui,microSDL_tsElem* sElem,const ch
 // RETURN:
 // - true if success, false otherwise
 //
-bool microSDL_ElemDrawByInd(microSDL_tsGui &m_gui,int nElemInd);
+bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd);
 
 
 //
@@ -1071,14 +1071,14 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui &m_gui,int nElemInd);
 // RETURN:
 // - true if success, false otherwise
 //
-bool microSDL_ElemDraw_Gauge(microSDL_tsGui &m_gui,microSDL_tsElem sElem);
+bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 
 
 //
 // Free up any surfaces associated with the Elements
 // - Called by microSDL_Quit()
 //
-void microSDL_ElemCloseAll(microSDL_tsGui &m_gui);
+void microSDL_ElemCloseAll(microSDL_tsGui* pGui);
 
 
 //
@@ -1094,7 +1094,7 @@ void microSDL_ElemCloseAll(microSDL_tsGui &m_gui);
 // RETURN:
 // - none
 //
-void microSDL_TrackTouchDownClick(microSDL_tsGui &m_gui,int nX,int nY);
+void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY);
 
 //
 // Handle a mouse-up event and track any
@@ -1109,7 +1109,7 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui &m_gui,int nX,int nY);
 // RETURN:
 // - none
 //
-void microSDL_TrackTouchUpClick(microSDL_tsGui &m_gui,int nX,int nY);
+void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 
 
 //
@@ -1125,7 +1125,7 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui &m_gui,int nX,int nY);
 // RETURN:
 // - none
 //
-void microSDL_TrackTouchDownMove(microSDL_tsGui &m_gui,int nX,int nY);
+void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
 
 
 
