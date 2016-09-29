@@ -38,10 +38,6 @@ sdl-ex01: sdl-ex01.c ../src/microsdl.c
 	@echo [Building $@]
 	@$(CC) -o $@ sdl-ex01.c ../src/microsdl.c $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex01ts: sdl-ex01.c ../src/microsdl.c
-	@echo [Building $@]
-	@$(CC) -o $@ sdl-ex01.c ../src/microsdl.c -DINC_TS $(LDFLAGS) $(LDLIBS) -I . -I ../src
-
 sdl-ex02: sdl-ex02.c ../src/microsdl.c
 	@echo [Building $@]
 	@$(CC) -o $@ sdl-ex02.c ../src/microsdl.c -DINC_TS $(LDFLAGS) $(LDLIBS) -I . -I ../src

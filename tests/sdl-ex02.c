@@ -16,6 +16,8 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 enum {E_FONT_BTN};
 
+// Main GUI instance
+microSDL_tsGui  m_gui;
 
 int main( int argc, char* args[] )
 {
@@ -31,14 +33,14 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Initialize
 
-  microSDL_InitEnv();
-  microSDL_Init();
+  microSDL_InitEnv(m_gui);
+  microSDL_Init(m_gui);
 
-  microSDL_InitFont();
-  microSDL_InitTs("/dev/input/touchscreen");
+  microSDL_InitFont(m_gui);
+  microSDL_InitTs(m_gui,"/dev/input/touchscreen");
 
   // Load Fonts
-  bOk = microSDL_FontAdd(E_FONT_BTN,FONT_DROID_SANS,12);
+  bOk = microSDL_FontAdd(m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
   if (!bOk) { printf("ERROR: microSDL_FontAdd() failed\n"); return false; }
 
 
@@ -46,22 +48,19 @@ int main( int argc, char* args[] )
   // Create page elements
 
   // Create background box
-  sElem = microSDL_ElemCreateBox(E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  //xxx microSDL_ElemSetStyle(&sElem,m_colBlack,m_colWhite,m_colBlack,m_colWhite);
-  microSDL_ElemSetStyleMain(&sElem,m_colWhite,m_colBlack,m_colBlack);
-  microSDL_ElemAdd(sElem);
+  sElem = microSDL_ElemCreateBox(m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(m_gui,sElem.nId,m_colWhite,m_colBlack,m_colBlack);
 
   // Create Quit button with text label
-  sElem = microSDL_ElemCreateBtnTxt(E_ELEM_BTN_QUIT,E_PG_MAIN,
-  (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
-  microSDL_ElemAdd(sElem);
+  sElem = microSDL_ElemCreateBtnTxt(m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+    (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
 
   // -----------------------------------
   // Start display
 
   // Start up display on main page
-  microSDL_SetPageCur(E_PG_MAIN);
-  microSDL_ElemDrawPageCur();
+  microSDL_SetPageCur(m_gui,E_PG_MAIN);
+  microSDL_ElemDrawPageCur(m_gui);
 
   // -----------------------------------
   // Main event loop
@@ -70,24 +69,24 @@ int main( int argc, char* args[] )
   while (!bQuit) {
   
     // Poll for touchscreen presses
-    if (microSDL_GetTsClick(nClickX,nClickY,nClickPress)) {
+    if (microSDL_GetTsClick(m_gui,nClickX,nClickY,nClickPress)) {
  
       // Track the touch event and find any associated object
-      microSDL_TrackClick(nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked();
+      microSDL_TrackClick(m_gui,nClickX,nClickY,nClickPress);
+      nTrackElemClicked = microSDL_GetTrackElemClicked(m_gui);
 
       // Any selectable object clicked?
-      if (nTrackElemClicked != MSDL_ID_NONE) {
+      if (nTrackElemClicked != MSDL_IND_NONE) {
 
         // Convert element index to element ID
-        nElemId = microSDL_ElemGetId(nTrackElemClicked);
+        nElemId = microSDL_ElemGetIdFromInd(m_gui,nTrackElemClicked);
         if (nElemId == E_ELEM_BTN_QUIT) {
           // Quit button pressed
           bQuit = true;
         }
   
         // Clear click event
-        microSDL_ClearTrackElemClicked();
+        microSDL_ClearTrackElemClicked(m_gui);
   
       } // Object clicked
     } // Touchscreen press
@@ -97,7 +96,7 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Close down display
 
-  microSDL_FontCloseAll();
-  microSDL_Quit();
+  microSDL_FontCloseAll(m_gui);
+  microSDL_Quit(m_gui);
 }
 
