@@ -537,11 +537,11 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 // ------------------------------------------------------------------------
 
 
-microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nId,unsigned nPage,SDL_Rect rElem,
+int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
   const char* pStr,unsigned nFontId)
 {
   microSDL_tsElem sElem;
-  sElem = microSDL_ElemCreate(pGui,nId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
   sElem.colElemFill = m_colBlack;
   sElem.colElemFrame = m_colBlack;
   sElem.colElemFillSel = m_colBlack;
@@ -549,10 +549,10 @@ microSDL_tsElem microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nId,unsigned nPa
   sElem.bFillEn = true;
   sElem.eTxtAlign = MSDL_ALIGN_MID_LEFT;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nId,unsigned nPage,
+int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* acStr,unsigned nFontId)
 {
   microSDL_tsElem sElem;
@@ -561,12 +561,12 @@ microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nId,unsigned 
   // Ensure the Font is loaded
   TTF_Font* pFont = microSDL_FontGet(pGui,nFontId);
   if (pFont == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemCreateBtnTxt(ID=%d): Font(ID=%u) not loaded\n",nId,nFontId);
+    fprintf(stderr,"ERROR: microSDL_ElemCreateBtnTxt(ID=%d): Font(ID=%u) not loaded\n",nElemId,nFontId);
     sElem.bValid = false;
-    return sElem;
+    return MSDL_ID_NONE;
   }
 
-  sElem = microSDL_ElemCreate(pGui,nId,nPage,MSDL_TYPE_BTN,rElem,acStr,nFontId);
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,acStr,nFontId);
   sElem.colElemFill = m_colBlueLt;
   sElem.colElemFrame = m_colBlueDk;
   sElem.colElemFillSel = m_colGreenLt;
@@ -575,10 +575,10 @@ microSDL_tsElem microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nId,unsigned 
   sElem.bFillEn = true;
   sElem.bClickEn = true;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel)
 {
   microSDL_tsElem sElem;
@@ -592,10 +592,10 @@ microSDL_tsElem microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsig
   sElem.bClickEn = true;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImgSel);
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem)
+int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem)
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
@@ -604,11 +604,11 @@ microSDL_tsElem microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned
   sElem.bFillEn = true;
   sElem.bFrameEn = true;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 
-microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   SDL_Rect rElem,const char* acImg)
 {
   microSDL_tsElem sElem;
@@ -618,11 +618,11 @@ microSDL_tsElem microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned
   sElem.bClickEn = false;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImg);
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 
-microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
+int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
   int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
 {
   microSDL_tsElem sElem;
@@ -637,7 +637,7 @@ microSDL_tsElem microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsign
   sElem.colElemFrame = m_colGray;
   sElem.colElemFill = m_colBlack;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return sElem;
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 
@@ -934,33 +934,33 @@ void microSDL_Unlock(microSDL_tsGui* pGui)
 }
 
 // NOTE: nId is a positive ID specified by the user or
-//       MSDL_ID_ANON if the user wants an auto-generated ID
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nId,unsigned nPageId,unsigned nType,
+//       MSDL_ID_AUTO if the user wants an auto-generated ID
+//       (which will be assigned in Element nId)
+microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,unsigned nType,
   SDL_Rect rElem,const char* pStr,unsigned nFontId)
 {
   microSDL_tsElem sElem;
   sElem.bValid = false;
 
   // Validate the user-supplied ID
-  if (nId == MSDL_ID_ANON) {
-    // Anonymous ID requested
-    // Assign an automatic ID for this element
-    nId = pGui->nElemAutoIdNext;
+  if (nElemId == MSDL_ID_AUTO) {
+    // Autogenerated ID requested
+    nElemId = pGui->nElemAutoIdNext;
     pGui->nElemAutoIdNext++;
   } else {
     // Ensure the ID is positive
-    if (nId < 0) {
-      printf("ERROR: microSDL_ElemCreate() called with negative ID (%d)\n",nId);
+    if (nElemId < 0) {
+      printf("ERROR: microSDL_ElemCreate() called with negative ID (%d)\n",nElemId);
       return sElem;
     }
     // Ensure the ID isn't already taken
-    if (microSDL_ElemFindIndFromId(pGui,nId) != MSDL_IND_NONE) {
-      printf("ERROR: microSDL_Create() called with existing ID (%d)\n",nId);
+    if (microSDL_ElemFindIndFromId(pGui,nElemId) != MSDL_IND_NONE) {
+      printf("ERROR: microSDL_Create() called with existing ID (%d)\n",nElemId);
       return sElem;
     }
   }
 
-  sElem.nId = nId;
+  sElem.nId = nElemId;
   sElem.nPage = nPageId;
   sElem.rElem = rElem;
   sElem.nType = nType;

@@ -26,7 +26,7 @@ microSDL_tsGui  m_gui;
 // Create the default elements on each page
 bool InitOverlays()
 {
-  microSDL_tsElem   sElem;
+  int               nElemId;
 
   // -----------------------------------
   // Background
@@ -37,56 +37,56 @@ bool InitOverlays()
   // PAGE: MAIN
 
   // Create background box
-  sElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){20,50,280,150});
-  microSDL_ElemSetCol(&m_gui,sElem.nId,m_colWhite,m_colBlack,m_colBlack);
+  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,50,280,150});
+  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
 
   // Create title
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){10,10,310,40},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,10,310,40},
     "microSDL Demo",E_FONT_TITLE);
-  microSDL_ElemSetTxtAlign(&m_gui,sElem.nId,MSDL_ALIGN_MID_MID);
-  microSDL_ElemSetFillEn(&m_gui,sElem.nId,false);
-  microSDL_ElemSetTxtCol(&m_gui,sElem.nId,m_colWhite);
+  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
+  microSDL_ElemSetFillEn(&m_gui,nElemId,false);
+  microSDL_ElemSetTxtCol(&m_gui,nElemId,m_colWhite);
 
   // Create Quit button with text label
-  sElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){100,140,50,20},"Quit",E_FONT_BTN);
 
   // Create Extra button with text label
-  sElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
+  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
     (SDL_Rect){170,140,50,20},"Extra",E_FONT_BTN);
 
   // Create counter
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){40,60,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,60,50,10},
     "Count:",E_FONT_TXT);
-  sElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){100,60,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){100,60,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,sElem.nId,m_colYellow);
+  microSDL_ElemSetTxtCol(&m_gui,nElemId,m_colYellow);
 
   // Create progress bar
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){40,80,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,80,50,10},
     "Progress:",E_FONT_TXT);
-  sElem = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){100,80,50,10},
+  nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){100,80,50,10},
     0,100,0,m_colGreenDk,false);
 
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
-  sElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_ANON,E_PG_EXTRA,(SDL_Rect){40,40,240,160});
-  microSDL_ElemSetCol(&m_gui,sElem.nId,m_colWhite,m_colBlack,m_colBlack);
+  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){40,40,240,160});
+  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
 
   // Create Back button with text label
-  sElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
+  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
     (SDL_Rect){135,120,50,20},"Back",E_FONT_BTN);
 
   // Create a few labels
   unsigned nPosY = 50;
   unsigned nSpaceY = 20;
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
     "Data 1",E_FONT_TXT); nPosY += nSpaceY;
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
     "Data 2",E_FONT_TXT); nPosY += nSpaceY;
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
     "Data 3",E_FONT_TXT); nPosY += nSpaceY;
   
   return true;

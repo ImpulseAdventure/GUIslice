@@ -28,7 +28,6 @@ int main( int argc, char* args[] )
   unsigned          nClickPress;
   int               nElemId;
   int               nTrackElemClicked;
-  microSDL_tsElem   sElem;  
 
   // -----------------------------------
   // Initialize
@@ -48,11 +47,11 @@ int main( int argc, char* args[] )
   // Create page elements
 
   // Create background box
-  sElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,sElem.nId,m_colWhite,m_colBlack,m_colBlack);
+  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
 
   // Create Quit button with text label
-  sElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
 
   // -----------------------------------

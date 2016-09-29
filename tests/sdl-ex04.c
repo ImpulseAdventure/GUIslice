@@ -25,30 +25,30 @@ microSDL_tsGui  m_gui;
 // Create page elements
 bool InitOverlays()
 {
-  microSDL_tsElem   sElem;
+  int   nElemId;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,m_colGrayDk);
 
   // Create background box
-  sElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,sElem.nId,m_colWhite,m_colBlack,m_colBlack);
+  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
 
   // Create Quit button with text label
-  sElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
 
   // Create counter
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){20,60,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
     "Count:",E_FONT_TXT);
-  sElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,sElem.nId,m_colYellow);
+  microSDL_ElemSetTxtCol(&m_gui,nElemId,m_colYellow);
 
   // Create progress bar
-  sElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_ANON,E_PG_MAIN,(SDL_Rect){20,80,50,10},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  sElem = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){80,80,50,10},
+  nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){80,80,50,10},
     0,100,0,m_colGreenDk,false);
 
   return true;
