@@ -888,9 +888,17 @@ Uint32 microSDL_GetPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf, int nX, int 
 
 // - Based on code from:
 // -   https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideo.html
+// - Added range checks from surface clipping rect
 void microSDL_PutPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf, int nX, int nY, Uint32 nPixelVal)
 {
   int nBpp = surf->format->BytesPerPixel;
+
+  // Handle any clipping
+  if ( (nX < surf->clip_rect.x) || (nX >= surf->clip_rect.x+surf->clip_rect.w) ||
+       (nY < surf->clip_rect.y) || (nY >= surf->clip_rect.y+surf->clip_rect.h) ) {
+    return;
+  }
+
   /* Here pPixel is the address to the pixel we want to set */
   Uint8 *pPixel = (Uint8 *)surf->pixels + nY * surf->pitch + nX * nBpp;
 
