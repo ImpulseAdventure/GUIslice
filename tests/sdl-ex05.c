@@ -23,8 +23,10 @@ unsigned m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_ELEM  30
+#define MAX_FONT  10
 microSDL_tsGui  m_gui;
 microSDL_tsElem m_asElem[MAX_ELEM];
+microSDL_tsFont m_asFont[MAX_FONT];
 
 // Create the default elements on each page
 bool InitOverlays()
@@ -112,9 +114,8 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT);
 
-  microSDL_InitFont(&m_gui);
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
   // Load Fonts
@@ -193,7 +194,6 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Close down display
 
-  microSDL_FontCloseAll(&m_gui);
   microSDL_Quit(&m_gui);
 }
 

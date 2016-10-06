@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2 (2016/09/25)
+// - Version 0.2
 // =======================================================================
 
 #ifdef __cplusplus
@@ -21,12 +21,11 @@ extern "C" {
 // Configuration
 // -----------------------------------------------------------------------
 
-#define ELEM_MAX          200 // Max number of elements
-#define ELEM_STRLEN_MAX   80  // Max string length of text elements
-#define FONT_MAX          20  // Max number of fonts to load
+#define MSDL_ELEM_STRLEN_MAX  80  // Max string length of text elements
 
-#define BMP_TRANS_EN      1
-#define BMP_TRANS_RGB     0xFF,0x00,0xFF
+// Enable for bitmap transparency and definition of color to use
+#define MSDL_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
+#define MSDL_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
 // -----------------------------------------------------------------------
 // Enumerations
@@ -118,7 +117,7 @@ typedef struct {
 
   // TODO: bNeedRedraw
 
-  char            acStr[ELEM_STRLEN_MAX+1];
+  char            acStr[MSDL_ELEM_STRLEN_MAX+1];
   SDL_Color       colElemText;
   unsigned        eTxtAlign;
   unsigned        nTxtMargin;
@@ -148,7 +147,8 @@ typedef struct {
   unsigned          nPageIdCur;
 
   // Collection of loaded fonts
-  microSDL_tsFont   asFont[FONT_MAX];
+  microSDL_tsFont*  psFont;
+  unsigned          nFontMax;
   unsigned          nFontCnt;
 
   // Collection of graphic elements (across all pages)
@@ -208,7 +208,7 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 //
 // Initialize the microSDL library
 // - Configures the primary screen surface
-// - Initializes any fonts
+// - Initializes font support
 //
 // PRE:
 // - The environment variables should be configured before
@@ -219,6 +219,8 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 // - pGui:      Pointer to GUI
 // - psElem:    Pointer to Element array
 // - nMaxElem:  Size of Element array
+// - psFont:    Pointer to Font array
+// - nMaxFont:  Size of Font array
 //
 // POST:
 // - microSDL_m_surfScreen is initialized
@@ -226,13 +228,13 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem, unsigned nMaxElem);
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont);
 
 
 //
 // Exit the microSDL environment
 // - Calls SDL Quit to clean up any initialized subsystems
-//   and also deletes any created elements
+//   and also deletes any created elements or fonts
 //
 // INPUT:
 // - pGui:    Pointer to GUI
@@ -455,17 +457,6 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 // Font Functions
 // -----------------------------------------------------------------------
 
-//
-// Setup text / font support
-//
-// INPUT:
-// - pGui:        Pointer to GUI
-//
-// RETURN:
-// - true if success, false if fail
-//
-bool microSDL_InitFont(microSDL_tsGui* pGui);
-
 
 //
 // Load a font into the local font cache and assign
@@ -496,17 +487,6 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId, const char* acFontN
 //
 TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,unsigned nFontId);
 
-
-//
-// Close all loaded fonts
-//
-// INPUT:
-// - pGui:        Pointer to GUI
-//
-// RETURN:
-// - none
-//
-void microSDL_FontCloseAll(microSDL_tsGui* pGui);
 
 
 
@@ -1240,6 +1220,17 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 // - none
 //
 void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
+
+//
+// Close all loaded fonts
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+//
+// RETURN:
+// - none
+//
+void microSDL_FontCloseAll(microSDL_tsGui* pGui);
 
 
 

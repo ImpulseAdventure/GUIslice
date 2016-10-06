@@ -77,7 +77,7 @@ void microSDL_InitEnv(microSDL_tsGui* pGui)
 
 }
 
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem)
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont)
 {
   // Initialize state
 
@@ -85,19 +85,20 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->nPageIdCur = MSDL_PAGE_NONE;
   
   // Collection of loaded fonts
-  //pGui->asFont[FONT_MAX];
+  pGui->psFont = psFont;
+  pGui->nFontMax = nMaxFont;
   pGui->nFontCnt = 0;
 
   // Initialize pointer to user-provided element array
   pGui->psElem = psElem;
   pGui->nElemMax = nMaxElem;
+  pGui->nElemCnt = 0;
 
   // Collection of graphic elements (across all pages)
   for (unsigned nInd=0;nInd<(pGui->nElemMax);nInd++) {
     //TODO pGui->psElem[nInd] Reset?
     pGui->psElem[nInd].bValid = false;
   }
-  pGui->nElemCnt = 0;
   pGui->nElemAutoIdNext = 0x8000;
 
   // Current touch-tracking hover status
@@ -136,16 +137,16 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
     return false;
   }
 
+  // Initialize font engine
+  if (TTF_Init() == -1) {
+    fprintf(stderr,"ERROR: TTF_Init() failed\n");
+    return false;
+  }
 
   // Since the mouse cursor is based on SDL coords which are badly
   // scaled when in touch mode, we will disable the mouse pointer.
   // Note that the SDL coords seem to be OK when in actual mouse mode.
   SDL_ShowCursor(SDL_DISABLE);
-
-  // Initialize fonts
-  if (!microSDL_InitFont(pGui)) {
-    return false;
-  }
 
   return true;
 }
@@ -153,7 +154,13 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
 
 void microSDL_Quit(microSDL_tsGui* pGui)
 {
+  // Close all elements
   microSDL_ElemCloseAll(pGui);
+
+  // Close all fonts
+  microSDL_FontCloseAll(pGui);
+
+  // Close down SDL
   SDL_Quit();
 }
 
@@ -188,14 +195,12 @@ SDL_Surface* microSDL_LoadBmp(microSDL_tsGui* pGui,char* pStrFname)
     if( surfOptimized != NULL ) {
 
       // Support optional transparency
-      if (BMP_TRANS_EN) {
-
+      if (MSDL_BMP_TRANS_EN) {
         // Color key surface
-        // - Use pink as the transparency color key
-        //SDL_SetColorKey( surfOptimized, SDL_SRCCOLORKEY, SDL_MapRGB( surfOptimized->format, 0xFF, 0x00, 0xFF ) );
+        // - Use transparency color key defined in BMP_TRANS_RGB
         SDL_SetColorKey( surfOptimized, SDL_SRCCOLORKEY,
-          SDL_MapRGB( surfOptimized->format, BMP_TRANS_RGB ) );
-      } // BMP_TRANS_EN
+          SDL_MapRGB( surfOptimized->format, MSDL_BMP_TRANS_RGB ) );
+      } // MSDL_BMP_TRANS_EN
     }
   }
 
@@ -366,20 +371,9 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 // Font Functions
 // -----------------------------------------------------------------------
 
-bool microSDL_InitFont(microSDL_tsGui* pGui)
-{
-  if (TTF_Init() == -1) {
-    fprintf(stderr,"ERROR: TTF_Init() failed\n");
-    return false;
-  }
-  return true;
-}
-
-  
-
 bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId,const char* acFontName,unsigned nFontSz)
 {
-  if (pGui->nFontCnt+1 >= FONT_MAX) {
+  if (pGui->nFontCnt+1 >= (pGui->nFontMax)) {
     fprintf(stderr,"ERROR: microSDL_FontAdd() added too many fonts\n");
     return false;
   } else {
@@ -389,8 +383,8 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId,const char* acFontNa
       fprintf(stderr,"ERROR: TTF_OpenFont(%s) failed\n",acFontName);
       return false;
     }
-    pGui->asFont[pGui->nFontCnt].pFont = pFont;
-    pGui->asFont[pGui->nFontCnt].nId = nFontId;
+    pGui->psFont[pGui->nFontCnt].pFont = pFont;
+    pGui->psFont[pGui->nFontCnt].nId = nFontId;
     pGui->nFontCnt++;  
     return true;
   }
@@ -401,27 +395,14 @@ TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,unsigned nFontId)
 {
   unsigned nFontInd;
   for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
-    if (pGui->asFont[nFontInd].nId == nFontId) {
-      return pGui->asFont[nFontInd].pFont;
+    if (pGui->psFont[nFontInd].nId == nFontId) {
+      return pGui->psFont[nFontInd].pFont;
     }
   }
   return NULL;
 }
 
 
-// TODO: Move  into microSDL_Quit()?
-void microSDL_FontCloseAll(microSDL_tsGui* pGui)
-{
-  unsigned nFontInd;
-  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
-    if (pGui->asFont[nFontInd].pFont != NULL) {
-      TTF_CloseFont(pGui->asFont[nFontInd].pFont);
-      pGui->asFont[nFontInd].pFont = NULL;
-    }
-  }
-  pGui->nFontCnt = 0;
-  TTF_Quit();
-}
 
 
 // ------------------------------------------------------------------------
@@ -709,7 +690,7 @@ void microSDL_ElemSetTxtStr(microSDL_tsGui* pGui,int nElemId,const char* pStr)
     return;
   }
   microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  strncpy(pElem->acStr,pStr,ELEM_STRLEN_MAX);
+  strncpy(pElem->acStr,pStr,MSDL_ELEM_STRLEN_MAX);
 }
 
 void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal)
@@ -1009,7 +990,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nP
   sElem.colElemFillSel = MSDL_COL_BLACK;
   sElem.colElemText = MSDL_COL_YELLOW;
   if (pStr != NULL) {
-    strncpy(sElem.acStr,pStr,ELEM_STRLEN_MAX);
+    strncpy(sElem.acStr,pStr,MSDL_ELEM_STRLEN_MAX);
   } else {
     sElem.acStr[0] = '\0';
   }
@@ -1506,6 +1487,18 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
   
 }
 
+void microSDL_FontCloseAll(microSDL_tsGui* pGui)
+{
+  unsigned nFontInd;
+  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
+    if (pGui->psFont[nFontInd].pFont != NULL) {
+      TTF_CloseFont(pGui->psFont[nFontInd].pFont);
+      pGui->psFont[nFontInd].pFont = NULL;
+    }
+  }
+  pGui->nFontCnt = 0;
+  TTF_Quit();
+}
 
 
 

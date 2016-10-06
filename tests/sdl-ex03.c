@@ -37,7 +37,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0);
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
