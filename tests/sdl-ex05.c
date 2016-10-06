@@ -108,8 +108,6 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Initialize
 
-  microSDL_GuiReset(&m_gui);
-
   microSDL_InitEnv(&m_gui);
   microSDL_Init(&m_gui);
 

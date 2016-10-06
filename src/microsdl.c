@@ -40,46 +40,6 @@
 
 // ========================================================================
 
-void microSDL_GuiReset(microSDL_tsGui* pGui)
-{
-
-  // The page that is currently active
-  pGui->nPageIdCur = MSDL_PAGE_NONE;
-  
-  // Collection of loaded fonts
-  //pGui->asFont[FONT_MAX];
-  pGui->nFontCnt = 0;
-
-  // Collection of graphic elements (across all pages)
-  for (unsigned nInd=0;nInd<ELEM_MAX;nInd++) {
-    //TODO pGui->asElem[nInd] Reset?
-    pGui->asElem[nInd].bValid = false;
-  }
-  pGui->nElemCnt = 0;
-  pGui->nElemAutoIdNext = 0x8000;
-
-  // Current touch-tracking hover status
-  pGui->nTrackElemHover = MSDL_IND_NONE;
-  pGui->bTrackElemHoverGlow = false;
-
-  // Last graphic element clicked
-  pGui->nTrackElemClicked = MSDL_IND_NONE;
-  pGui->nClickLastX = 0;
-  pGui->nClickLastY = 0;
-  pGui->nClickLastPress = 0;
-
-  // Touchscreen library interface
-  #ifdef INC_TS
-  pGui->ts = NULL;
-  #endif
-
-  // Primary surface definitions
-  pGui->surfScreen = NULL;
-  pGui->surfBkgnd = NULL;
-
-}
-
-
 // ------------------------------------------------------------------------
 // General Functions
 // ------------------------------------------------------------------------
@@ -120,6 +80,43 @@ void microSDL_InitEnv(microSDL_tsGui* pGui)
 
 bool microSDL_Init(microSDL_tsGui* pGui)
 {
+  // Initialize state
+
+  // The page that is currently active
+  pGui->nPageIdCur = MSDL_PAGE_NONE;
+  
+  // Collection of loaded fonts
+  //pGui->asFont[FONT_MAX];
+  pGui->nFontCnt = 0;
+
+  // Collection of graphic elements (across all pages)
+  for (unsigned nInd=0;nInd<ELEM_MAX;nInd++) {
+    //TODO pGui->asElem[nInd] Reset?
+    pGui->asElem[nInd].bValid = false;
+  }
+  pGui->nElemCnt = 0;
+  pGui->nElemAutoIdNext = 0x8000;
+
+  // Current touch-tracking hover status
+  pGui->nTrackElemHover = MSDL_IND_NONE;
+  pGui->bTrackElemHoverGlow = false;
+
+  // Last graphic element clicked
+  pGui->nTrackElemClicked = MSDL_IND_NONE;
+  pGui->nClickLastX = 0;
+  pGui->nClickLastY = 0;
+  pGui->nClickLastPress = 0;
+
+  // Touchscreen library interface
+  #ifdef INC_TS
+  pGui->ts = NULL;
+  #endif
+
+  // Primary surface definitions
+  pGui->surfScreen = NULL;
+  pGui->surfBkgnd = NULL;
+
+
   // Setup SDL
   SDL_Init(SDL_INIT_VIDEO);
 
@@ -135,6 +132,7 @@ bool microSDL_Init(microSDL_tsGui* pGui)
     fprintf(stderr,"ERROR: SDL_SetVideoMode() failed: %s\n",SDL_GetError());
     return false;
   }
+
 
   // Since the mouse cursor is based on SDL coords which are badly
   // scaled when in touch mode, we will disable the mouse pointer.

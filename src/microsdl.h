@@ -184,16 +184,6 @@ typedef struct {
 // General Functions
 // ------------------------------------------------------------------------
 
-//
-// Reset all of the state associated with the GUI
-//
-// INPUT:
-// - pGui:    Pointer to GUI
-//
-// RETURN:
-// - None
-//
-void microSDL_GuiReset(microSDL_tsGui* pGui);
 
 //
 // Configure environment variables suitable for
