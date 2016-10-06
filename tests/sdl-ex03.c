@@ -16,8 +16,11 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 
-// Main GUI instance
+// Instantiate the GUI
+#define MAX_ELEM  30
 microSDL_tsGui  m_gui;
+microSDL_tsElem m_asElem[MAX_ELEM];
+
 
 
 int main( int argc, char* args[] )
@@ -34,7 +37,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM);
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 

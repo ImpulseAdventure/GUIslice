@@ -21,7 +21,10 @@ enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 // Free-running counter for display
 unsigned m_nCount = 0;
 
+// Instantiate the GUI
+#define MAX_ELEM  30
 microSDL_tsGui  m_gui;
+microSDL_tsElem m_asElem[MAX_ELEM];
 
 // Create the default elements on each page
 bool InitOverlays()
@@ -109,7 +112,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM);
 
   microSDL_InitFont(&m_gui);
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");

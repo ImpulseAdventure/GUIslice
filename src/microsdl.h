@@ -152,9 +152,11 @@ typedef struct {
   unsigned          nFontCnt;
 
   // Collection of graphic elements (across all pages)
-  microSDL_tsElem   asElem[ELEM_MAX];
+  microSDL_tsElem*  psElem;
+  unsigned          nElemMax;
   unsigned          nElemCnt;
   unsigned          nElemAutoIdNext;
+
 
   // Current touch-tracking hover status
   int               nTrackElemHover;
@@ -214,7 +216,9 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 //   or manually in user function.
 //
 // INPUT:
-// - pGui:    Pointer to GUI
+// - pGui:      Pointer to GUI
+// - psElem:    Pointer to Element array
+// - nMaxElem:  Size of Element array
 //
 // POST:
 // - microSDL_m_surfScreen is initialized
@@ -222,7 +226,8 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_Init(microSDL_tsGui* pGui);
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem, unsigned nMaxElem);
+
 
 //
 // Exit the microSDL environment
