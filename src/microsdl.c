@@ -485,7 +485,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
-  microSDL_FrameRect(pGui,nX-1,nY-1,2,2,m_colYellow);
+  microSDL_FrameRect(pGui,nX-1,nY-1,2,2,MSDL_COL_YELLOW);
   printf("    ElemFindFromCoord(%3u,%3u):\n",nX,nY);
   #endif
 
@@ -540,10 +540,10 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
-  sElem.colElemFill = m_colBlack;
-  sElem.colElemFrame = m_colBlack;
-  sElem.colElemFillSel = m_colBlack;
-  sElem.colElemText = m_colYellow;
+  sElem.colElemFill = MSDL_COL_BLACK;
+  sElem.colElemFrame = MSDL_COL_BLACK;
+  sElem.colElemFillSel = MSDL_COL_BLACK;
+  sElem.colElemText = MSDL_COL_YELLOW;
   sElem.bFillEn = true;
   sElem.eTxtAlign = MSDL_ALIGN_MID_LEFT;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
@@ -565,10 +565,10 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   }
 
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,acStr,nFontId);
-  sElem.colElemFill = m_colBlueLt;
-  sElem.colElemFrame = m_colBlueDk;
-  sElem.colElemFillSel = m_colGreenLt;
-  sElem.colElemText = m_colBlack;
+  sElem.colElemFill = MSDL_COL_BLUE_LT;
+  sElem.colElemFrame = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel = MSDL_COL_GREEN_LT;
+  sElem.colElemText = MSDL_COL_BLACK;
   sElem.bFrameEn = true;
   sElem.bFillEn = true;
   sElem.bClickEn = true;
@@ -581,10 +581,10 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,"",MSDL_FONT_NONE);
-  sElem.colElemFill = m_colBlueLt;
-  sElem.colElemFrame = m_colBlueDk;
-  sElem.colElemFillSel = m_colGreenLt;
-  sElem.colElemText = m_colBlack;
+  sElem.colElemFill = MSDL_COL_BLUE_LT;
+  sElem.colElemFrame = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel = MSDL_COL_GREEN_LT;
+  sElem.colElemText = MSDL_COL_BLACK;
   sElem.bFrameEn = false;
   sElem.bFillEn = false;
   sElem.bClickEn = true;
@@ -597,8 +597,8 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
-  sElem.colElemFill = m_colBlack;
-  sElem.colElemFrame = m_colGray;
+  sElem.colElemFill = MSDL_COL_BLACK;
+  sElem.colElemFrame = MSDL_COL_GRAY;
   sElem.bFillEn = true;
   sElem.bFrameEn = true;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
@@ -632,8 +632,8 @@ int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL
   sElem.nGaugeVal = nVal;
   sElem.bGaugeVert = bVert;
   sElem.colGauge = colGauge;
-  sElem.colElemFrame = m_colGray;
-  sElem.colElemFill = m_colBlack;
+  sElem.colElemFrame = MSDL_COL_GRAY;
+  sElem.colElemFill = MSDL_COL_BLACK;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -975,11 +975,11 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nP
   sElem.nGaugeMax = 0;
   sElem.nGaugeVal = 0;
   sElem.bGaugeVert = false;
-  sElem.colGauge = m_colBlack;
-  sElem.colElemFill = m_colBlack;
-  sElem.colElemFrame = m_colBlueDk;
-  sElem.colElemFillSel = m_colBlack;
-  sElem.colElemText = m_colYellow;
+  sElem.colGauge = MSDL_COL_BLACK;
+  sElem.colElemFill = MSDL_COL_BLACK;
+  sElem.colElemFrame = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel = MSDL_COL_BLACK;
+  sElem.colElemText = MSDL_COL_YELLOW;
   if (pStr != NULL) {
     strncpy(sElem.acStr,pStr,ELEM_STRLEN_MAX);
   } else {
@@ -1151,7 +1151,7 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  microSDL_FrameRect(pGui,nElemX,nElemY,nElemW,nElemH, m_colGrayDk);
+  microSDL_FrameRect(pGui,nElemX,nElemY,nElemW,nElemH, MSDL_COL_GRAYDk);
   #else
   if (sElem.bFrameEn) {
     microSDL_FrameRect(pGui,nElemX,nElemY,nElemW,nElemH, sElem.colElemFrame);

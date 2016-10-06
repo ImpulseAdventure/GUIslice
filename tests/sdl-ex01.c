@@ -24,7 +24,7 @@ int main( int argc, char* args[] )
 
   // Create page elements
   nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
+  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);

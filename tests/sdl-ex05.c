@@ -38,14 +38,14 @@ bool InitOverlays()
 
   // Create background box
   nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,50,280,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
+  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create title
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,10,310,40},
     "microSDL Demo",E_FONT_TITLE);
   microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
   microSDL_ElemSetFillEn(&m_gui,nElemId,false);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,m_colWhite);
+  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
@@ -60,20 +60,20 @@ bool InitOverlays()
     "Count:",E_FONT_TXT);
   nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){100,60,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,m_colYellow);
+  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_YELLOW);
 
   // Create progress bar
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,80,50,10},
     "Progress:",E_FONT_TXT);
   nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){100,80,50,10},
-    0,100,0,m_colGreenDk,false);
+    0,100,0,MSDL_COL_GREEN_DK,false);
 
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
   nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){40,40,240,160});
-  microSDL_ElemSetCol(&m_gui,nElemId,m_colWhite,m_colBlack,m_colBlack);
+  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create Back button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,

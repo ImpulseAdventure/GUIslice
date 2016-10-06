@@ -62,25 +62,25 @@ enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
 
 
 // Basic color definition
-#define m_colBlueDk     (SDL_Color) {0,0,255}
-#define m_colBlueLt     (SDL_Color) {128,128,255}
-#define m_colRedDk      (SDL_Color) {255,0,0}
-#define m_colRedLt      (SDL_Color) {255,128,128}
-#define m_colGreenDk    (SDL_Color) {0,255,0}
-#define m_colGreenLt    (SDL_Color) {128,255,128}
-#define m_colYellow     (SDL_Color) {255,255,0}
-#define m_colYellowDk   (SDL_Color) {64,64,0}
-#define m_colBlack      (SDL_Color) {0,0,0}
-#define m_colGrayDk     (SDL_Color) {64,64,64}
-#define m_colGray       (SDL_Color) {128,128,128}
-#define m_colGrayLt     (SDL_Color) {192,192,192}
-#define m_colWhite      (SDL_Color) {255,255,255}
-#define m_colPurple     (SDL_Color) {128,0,128}
-#define m_colCyan       (SDL_Color) {0,255,255}
-#define m_colMagenta    (SDL_Color) {255,0,255}
-#define m_colTeal       (SDL_Color) {0,128,128}
-#define m_colOrange     (SDL_Color) {255,165,0}
-#define m_colBrown      (SDL_Color) {165,42,42}
+#define MSDL_COL_BLUE_DK    (SDL_Color) {0,0,255}
+#define MSDL_COL_BLUE_LT    (SDL_Color) {128,128,255}
+#define MSDL_COL_RED_DK     (SDL_Color) {255,0,0}
+#define MSDL_COL_RED_LT     (SDL_Color) {255,128,128}
+#define MSDL_COL_GREEN_DK   (SDL_Color) {0,255,0}
+#define MSDL_COL_GREEN_LT   (SDL_Color) {128,255,128}
+#define MSDL_COL_YELLOW     (SDL_Color) {255,255,0}
+#define MSDL_COL_YELLOW_DK  (SDL_Color) {64,64,0}
+#define MSDL_COL_BLACK      (SDL_Color) {0,0,0}
+#define MSDL_COL_GRAY_DK    (SDL_Color) {64,64,64}
+#define MSDL_COL_GRAY       (SDL_Color) {128,128,128}
+#define MSDL_COL_GRAY_LT    (SDL_Color) {192,192,192}
+#define MSDL_COL_WHITE      (SDL_Color) {255,255,255}
+#define MSDL_COL_PURPLE     (SDL_Color) {128,0,128}
+#define MSDL_COL_CYAN       (SDL_Color) {0,255,255}
+#define MSDL_COL_MAGENTA    (SDL_Color) {255,0,255}
+#define MSDL_COL_TEAL       (SDL_Color) {0,128,128}
+#define MSDL_COL_ORANGE     (SDL_Color) {255,165,0}
+#define MSDL_COL_BROWN      (SDL_Color) {165,42,42}
 
 
 // -----------------------------------------------------------------------
