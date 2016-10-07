@@ -31,12 +31,15 @@ extern "C" {
 // Enumerations
 // -----------------------------------------------------------------------
 
-#define MSDL_IND_NONE   -1
-#define MSDL_ID_NONE    -11
-#define MSDL_ID_AUTO    -12
-#define MSDL_PAGE_NONE  -21
-#define MSDL_PAGE_ALL   -22
-#define MSDL_FONT_NONE  -31
+#define MSDL_IND_NONE       -1
+#define MSDL_ID_NONE        -11
+#define MSDL_ID_AUTO        -12
+#define MSDL_PAGE_NONE      -21
+#define MSDL_PAGE_ALL       -22
+#define MSDL_FONT_NONE      -31
+
+// Starting ID for auto-assigned IDs (with MSDL_ID_AUTO)
+#define MSDL_ID_AUTO_BASE   32768
 
 // Element types
 enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
@@ -100,7 +103,7 @@ enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
 typedef struct {
   bool            bValid;         // Element was created properly
   int             nId;            // Element ID specified by user
-  unsigned        nPage;          // Page ID containing this element
+  int             nPage;          // Page ID containing this element
   unsigned        nType;
   SDL_Rect        rElem;
 
@@ -135,7 +138,7 @@ typedef struct {
 
 // Struct that represents a font reference
 typedef struct {
-  unsigned    nId;
+  int         nId;      // Font ID specified by user
   TTF_Font*   pFont;
 } microSDL_tsFont;
 
@@ -322,12 +325,12 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 // - pGui:        Pointer to GUI
 // - nSelX:       X coordinate to test
 // - nSelY:       X coordinate to test
-// - rBtn:        Rectangular region to compare against
+// - rRect:       Rectangular region to compare against
 //
 // RETURN:
 // - true if inside region, false otherwise
 //
-bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rBtn);
+bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rRect);
 
 
 //
@@ -586,7 +589,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY);
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining text background size
 // - pStr:        String to copy into element
@@ -606,7 +609,7 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining text background size
 // - acStr:       String to copy into element
@@ -627,7 +630,7 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining image size
 // - acImg:       Filename of BMP image to load (unselected state)
@@ -646,7 +649,7 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining box size
 //
@@ -662,7 +665,7 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining box size
 // - acImg:       Filename of BMP image to load
@@ -682,7 +685,7 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (or MSDL_ID_AUTO to autogen)
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 // - nPage:       Page ID to attach element to
 // - rElem:       Rectangle coordinates defining gauge size
 // - nMin:        Minimum value of gauge for nVal comparison
@@ -1231,6 +1234,28 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
 // - none
 //
 void microSDL_FontCloseAll(microSDL_tsGui* pGui);
+
+//
+// Initialize a Font struct
+//
+// INPUT:
+// - pFont:       Pointer to Font
+//
+// RETURN:
+// - none
+//
+void microSDL_ResetFont(microSDL_tsFont* pFont);
+
+//
+// Initialize an Element struct
+//
+// INPUT:
+// - pElem:       Pointer to Element
+//
+// RETURN:
+// - none
+//
+void microSDL_ResetElem(microSDL_tsElem* pElem);
 
 
 

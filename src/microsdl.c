@@ -1,9 +1,9 @@
 // =======================================================================
 // microSDL library
 // - Calvin Hass
-// - http:/www.impulseadventure.com/elec/microsdl-sdl-pGui->html
+// - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2 (2016/09/25)
+// - Version 0.2
 // =======================================================================
 
 
@@ -11,7 +11,6 @@
 #include "microsdl.h"
 
 #include <stdio.h>
-#include <math.h>
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_getenv.h"
@@ -23,10 +22,6 @@
 #include "tslib.h"
 #endif
 
-// Includes for I2C
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
-#include <errno.h>
 
 
 // Version definition
@@ -82,34 +77,34 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   // Initialize state
 
   // The page that is currently active
-  pGui->nPageIdCur = MSDL_PAGE_NONE;
+  pGui->nPageIdCur  = MSDL_PAGE_NONE;
   
-  // Collection of loaded fonts
-  pGui->psFont = psFont;
-  pGui->nFontMax = nMaxFont;
-  pGui->nFontCnt = 0;
-
-  // Initialize pointer to user-provided element array
-  pGui->psElem = psElem;
-  pGui->nElemMax = nMaxElem;
-  pGui->nElemCnt = 0;
-
-  // Collection of graphic elements (across all pages)
-  for (unsigned nInd=0;nInd<(pGui->nElemMax);nInd++) {
-    //TODO pGui->psElem[nInd] Reset?
-    pGui->psElem[nInd].bValid = false;
+  // Initialize collection of fonts with user-supplied pointer
+  pGui->psFont      = psFont;
+  pGui->nFontMax    = nMaxFont;
+  pGui->nFontCnt    = 0;
+  for (unsigned nInd=0;nInd<(pGui->nFontMax);nInd++) {
+    microSDL_ResetFont(&(pGui->psFont[nInd]));
   }
-  pGui->nElemAutoIdNext = 0x8000;
+
+  // Initialize collection of elements with user-supplied pointer
+  pGui->psElem          = psElem;
+  pGui->nElemMax        = nMaxElem;
+  pGui->nElemCnt        = 0;
+  pGui->nElemAutoIdNext = MSDL_ID_AUTO_BASE;
+  for (unsigned nInd=0;nInd<(pGui->nElemMax);nInd++) {
+    microSDL_ResetElem(&(pGui->psElem[nInd]));
+  }
 
   // Current touch-tracking hover status
-  pGui->nTrackElemHover = MSDL_IND_NONE;
+  pGui->nTrackElemHover     = MSDL_IND_NONE;
   pGui->bTrackElemHoverGlow = false;
 
   // Last graphic element clicked
-  pGui->nTrackElemClicked = MSDL_IND_NONE;
-  pGui->nClickLastX = 0;
-  pGui->nClickLastY = 0;
-  pGui->nClickLastPress = 0;
+  pGui->nTrackElemClicked   = MSDL_IND_NONE;
+  pGui->nClickLastX         = 0;
+  pGui->nClickLastY         = 0;
+  pGui->nClickLastPress     = 0;
 
   // Touchscreen library interface
   #ifdef INC_TS
@@ -274,10 +269,10 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 }
 
 
-bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rBtn)
+bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rRect)
 {
-  if ( (nSelX >= rBtn.x) && (nSelX <= rBtn.x+rBtn.w) && 
-     (nSelY >= rBtn.y) && (nSelY <= rBtn.y+rBtn.h) ) {
+  if ( (nSelX >= rRect.x) && (nSelX <= rRect.x+rRect.w) && 
+     (nSelY >= rRect.y) && (nSelY <= rRect.y+rRect.h) ) {
     return true;
   } else {
     return false;
@@ -314,6 +309,28 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
   Sint16 nSY = (nY0 < nY1)? 1 : -1;
   Sint16 nErr = ( (nDX>nDY)? nDX : -nDY )/2;
   Sint16 nE2;
+
+  // Check for degenerate cases
+  // TODO: Need to test these optimizations
+/*
+  if (nDX == 0) {
+    if (nDY == 0) {
+      return;
+    } else if (nDY >= 0) {
+      microSDL_LineV(pGui,nX0,nY0,nDY,nCol);
+    } else {
+      microSDL_LineV(pGui,nX1,nY1,-nDY,nCol);
+    }
+  } else if (nDY == 0) {
+    if (nDX >= 0) {
+      microSDL_LineH(pGui,nX0,nY0,nDX,nCol);
+    } else {
+      microSDL_LineH(pGui,nX1,nY1,-nDX,nCol);
+    }
+  }
+*/
+
+
   for (;;) {
     microSDL_SetPixel(pGui,nX0,nY0,nCol);
     if ( (nX0 == nX1) && (nY0 == nY1) ) break;
@@ -525,12 +542,12 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
-  sElem.colElemFill = MSDL_COL_BLACK;
-  sElem.colElemFrame = MSDL_COL_BLACK;
-  sElem.colElemFillSel = MSDL_COL_BLACK;
-  sElem.colElemText = MSDL_COL_YELLOW;
-  sElem.bFillEn = true;
-  sElem.eTxtAlign = MSDL_ALIGN_MID_LEFT;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  sElem.colElemFrame    = MSDL_COL_BLACK;
+  sElem.colElemFillSel  = MSDL_COL_BLACK;
+  sElem.colElemText     = MSDL_COL_YELLOW;
+  sElem.bFillEn         = true;
+  sElem.eTxtAlign       = MSDL_ALIGN_MID_LEFT;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -550,13 +567,13 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   }
 
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,acStr,nFontId);
-  sElem.colElemFill = MSDL_COL_BLUE_LT;
-  sElem.colElemFrame = MSDL_COL_BLUE_DK;
-  sElem.colElemFillSel = MSDL_COL_GREEN_LT;
-  sElem.colElemText = MSDL_COL_BLACK;
-  sElem.bFrameEn = true;
-  sElem.bFillEn = true;
-  sElem.bClickEn = true;
+  sElem.colElemFill     = MSDL_COL_BLUE_LT;
+  sElem.colElemFrame    = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel  = MSDL_COL_GREEN_LT;
+  sElem.colElemText     = MSDL_COL_BLACK;
+  sElem.bFrameEn        = true;
+  sElem.bFillEn         = true;
+  sElem.bClickEn        = true;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -566,13 +583,13 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,"",MSDL_FONT_NONE);
-  sElem.colElemFill = MSDL_COL_BLUE_LT;
-  sElem.colElemFrame = MSDL_COL_BLUE_DK;
-  sElem.colElemFillSel = MSDL_COL_GREEN_LT;
-  sElem.colElemText = MSDL_COL_BLACK;
-  sElem.bFrameEn = false;
-  sElem.bFillEn = false;
-  sElem.bClickEn = true;
+  sElem.colElemFill     = MSDL_COL_BLUE_LT;
+  sElem.colElemFrame    = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel  = MSDL_COL_GREEN_LT;
+  sElem.colElemText     = MSDL_COL_BLACK;
+  sElem.bFrameEn        = false;
+  sElem.bFillEn         = false;
+  sElem.bClickEn        = true;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImgSel);
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
@@ -582,10 +599,10 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
-  sElem.colElemFill = MSDL_COL_BLACK;
-  sElem.colElemFrame = MSDL_COL_GRAY;
-  sElem.bFillEn = true;
-  sElem.bFrameEn = true;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  sElem.colElemFrame    = MSDL_COL_GRAY;
+  sElem.bFillEn         = true;
+  sElem.bFrameEn        = true;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -596,9 +613,9 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,"",MSDL_FONT_NONE);
-  sElem.bFrameEn = false;
-  sElem.bFillEn = false;
-  sElem.bClickEn = false;
+  sElem.bFrameEn        = false;
+  sElem.bFillEn         = false;
+  sElem.bClickEn        = false;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImg);
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
@@ -610,15 +627,15 @@ int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_GAUGE,rElem,NULL,MSDL_FONT_NONE);
-  sElem.bFrameEn = true;
-  sElem.bFillEn = true;
-  sElem.nGaugeMin = nMin;
-  sElem.nGaugeMax = nMax;
-  sElem.nGaugeVal = nVal;
-  sElem.bGaugeVert = bVert;
-  sElem.colGauge = colGauge;
-  sElem.colElemFrame = MSDL_COL_GRAY;
-  sElem.colElemFill = MSDL_COL_BLACK;
+  sElem.bFrameEn        = true;
+  sElem.bFillEn         = true;
+  sElem.nGaugeMin       = nMin;
+  sElem.nGaugeMax       = nMax;
+  sElem.nGaugeVal       = nVal;
+  sElem.bGaugeVert      = bVert;
+  sElem.colGauge        = colGauge;
+  sElem.colElemFrame    = MSDL_COL_GRAY;
+  sElem.colElemFill     = MSDL_COL_BLACK;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -860,6 +877,15 @@ Uint32 microSDL_GenPixelColor(microSDL_tsGui* pGui,SDL_Color nCol)
 Uint32 microSDL_GetPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf, int nX, int nY)
 {
   int nBpp = surf->format->BytesPerPixel;
+
+  // Handle any range violations for entire surface
+  if ( (nX < 0) || (nX >= surf->w) ||
+       (nY < 0) || (nY >= surf->h) ) {
+    // ERROR
+    fprintf(stderr,"ERROR: GetPixelRaw() out of range (%i,%i)\n",nX,nY);
+    return 0;
+  }
+
   /* Here pPixel is the address to the pixel we want to get */
   Uint8 *pPixel = (Uint8 *)surf->pixels + nY * surf->pitch + nX * nBpp;
 
@@ -981,22 +1007,23 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nP
     }
   }
 
-  sElem.nId = nElemId;
-  sElem.nPage = nPageId;
-  sElem.rElem = rElem;
-  sElem.nType = nType;
-  sElem.pTxtFont = microSDL_FontGet(pGui,nFontId);
-  sElem.pSurf = NULL;
-  sElem.pSurfSel = NULL;
-  sElem.nGaugeMin = 0;
-  sElem.nGaugeMax = 0;
-  sElem.nGaugeVal = 0;
-  sElem.bGaugeVert = false;
-  sElem.colGauge = MSDL_COL_BLACK;
-  sElem.colElemFill = MSDL_COL_BLACK;
-  sElem.colElemFrame = MSDL_COL_BLUE_DK;
-  sElem.colElemFillSel = MSDL_COL_BLACK;
-  sElem.colElemText = MSDL_COL_YELLOW;
+  // Assign defaults to the element record
+  sElem.nId             = nElemId;
+  sElem.nPage           = nPageId;
+  sElem.rElem           = rElem;
+  sElem.nType           = nType;
+  sElem.pTxtFont        = microSDL_FontGet(pGui,nFontId);
+  sElem.pSurf           = NULL;
+  sElem.pSurfSel        = NULL;
+  sElem.nGaugeMin       = 0;
+  sElem.nGaugeMax       = 0;
+  sElem.nGaugeVal       = 0;
+  sElem.bGaugeVert      = false;
+  sElem.colGauge        = MSDL_COL_BLACK;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  sElem.colElemFrame    = MSDL_COL_BLUE_DK;
+  sElem.colElemFillSel  = MSDL_COL_BLACK;
+  sElem.colElemText     = MSDL_COL_YELLOW;
   if (pStr != NULL) {
     strncpy(sElem.acStr,pStr,MSDL_ELEM_STRLEN_MAX);
   } else {
@@ -1508,6 +1535,48 @@ void microSDL_FontCloseAll(microSDL_tsGui* pGui)
   TTF_Quit();
 }
 
+// Initialize the element struct to all zeros
+void microSDL_ResetElem(microSDL_tsElem* pElem)
+{
+  if (pElem == NULL) {
+    return;
+  }
+  pElem->bValid           = false;
+  pElem->nId              = MSDL_ID_NONE;
+  pElem->nPage            = MSDL_PAGE_NONE;
+  pElem->nType            = MSDL_TYPE_BOX; //
+  pElem->rElem            = (SDL_Rect){0,0,0,0};
+  pElem->pSurf            = NULL;
+  pElem->pSurfSel         = NULL;
+  pElem->bClickEn         = false;
+  pElem->bFrameEn         = false;
+  pElem->bFillEn          = false;
+  pElem->colElemFrame     = MSDL_COL_WHITE;
+  pElem->colElemFill      = MSDL_COL_WHITE;
+  pElem->colElemFillSel   = MSDL_COL_WHITE;
+
+  pElem->acStr[0]         = '\0';
+  pElem->colElemText      = MSDL_COL_WHITE;
+  pElem->eTxtAlign        = MSDL_ALIGN_MID_MID;
+  pElem->nTxtMargin       = 0;
+  pElem->pTxtFont         = NULL;
+  
+  pElem->nGaugeMin        = 0;
+  pElem->nGaugeMax        = 0;
+  pElem->nGaugeVal        = 0;
+  pElem->colGauge         = MSDL_COL_WHITE;
+  pElem->bGaugeVert       = false;
+}
+
+// Initialize the font struct to all zeros
+void microSDL_ResetFont(microSDL_tsFont* pFont)
+{
+  if (pFont == NULL) {
+    return;
+  }
+  pFont->nId = MSDL_FONT_NONE;
+  pFont->pFont = NULL;
+}
 
 
 
