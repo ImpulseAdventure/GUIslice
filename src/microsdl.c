@@ -28,8 +28,8 @@
 #define MICROSDL_VER "0.2"
 
 // Debug flags
-//#define DBG_LOG
-//#define DBG_TOUCH
+//#define DBG_LOG     // Enable debugging log output
+//#define DBG_TOUCH   // Enable debugging of touch-presses
 
 
 
@@ -454,6 +454,38 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 }
 
 
+// Expand or contract a rectangle in width and/or height (equal
+// amounts on both side), based on the centerpoint of the rectangle.
+SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH)
+{
+  SDL_Rect  rNew = {0,0,0,0};
+
+  // Detect error case of contracting region too far
+  if (rRect.w + (2*nExpandW) < 0) {
+    fprintf(stderr,"ERROR: ExpandRect(%d,%d) contracts too far",nExpandW,nExpandH);
+    return rNew;
+  }
+  if (rRect.w + (2*nExpandW) < 0) {
+    fprintf(stderr,"ERROR: ExpandRect(%d,%d) contracts too far",nExpandW,nExpandH);
+    return rNew;
+  }
+
+  // Adjust the new width/height
+  // Note that the overall width/height changes by a factor of
+  // two since we are applying the adjustment on both sides (ie.
+  // top/bottom or left/right) equally.
+  rNew.w = rRect.w + (2*nExpandW);
+  rNew.h = rRect.h + (2*nExpandH);
+
+  // Adjust the rectangle coordinate to allow for new dimensions
+  // Note that this moves the coordinate in the opposite
+  // direction of the expansion/contraction.
+  rNew.x = rRect.x - nExpandW;
+  rNew.y = rRect.y - nExpandH;
+
+  return rNew;
+}
+
 
 // -----------------------------------------------------------------------
 // Font Functions
@@ -565,7 +597,8 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
-  microSDL_FrameRect(pGui,(SDL_Rect){nX-1,nY-1,2,2},MSDL_COL_YELLOW);
+  SDL_Rect    rMark = microSDL_ExpandRect((SDL_Rect){nX,nY,1,1},1,1);
+  microSDL_FrameRect(pGui,rMark,MSDL_COL_YELLOW);
   printf("    ElemFindFromCoord(%3u,%3u):\n",nX,nY);
   #endif
 

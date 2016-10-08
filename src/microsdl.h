@@ -477,6 +477,22 @@ void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 
 
+//
+// Expand or contract a rectangle in width and/or height (equal
+// amounts on both side), based on the centerpoint of the rectangle.
+//
+// INPUT:
+// - rRect:       Rectangular region before resizing
+// - nExpandW:    Number of pixels to expand the width (if positive)
+//                of contract the width (if negative)
+// - nExpandH:    Number of pixels to expand the height (if positive)
+//                of contract the height (if negative)
+// RETURN:
+// - SDL_Rect() with resized dimensions
+//
+SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
+
+
 // -----------------------------------------------------------------------
 // Font Functions
 // -----------------------------------------------------------------------
