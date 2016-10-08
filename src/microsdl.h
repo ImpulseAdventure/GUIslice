@@ -31,12 +31,19 @@ extern "C" {
 // Enumerations
 // -----------------------------------------------------------------------
 
-#define MSDL_IND_NONE       -1
-#define MSDL_ID_NONE        -11
-#define MSDL_ID_AUTO        -12
-#define MSDL_PAGE_NONE      -21
-#define MSDL_PAGE_ALL       -22
-#define MSDL_FONT_NONE      -31
+// Public usage
+#define MSDL_ID_NONE          -11
+#define MSDL_ID_AUTO          -12
+#define MSDL_PAGE_ALL         -22
+#define MSDL_VIEW_ID_SCREEN   -52
+
+// Internal usage
+#define MSDL_IND_NONE         -1
+#define MSDL_PAGE_NONE        -21
+#define MSDL_FONT_NONE        -31
+#define MSDL_VIEW_IND_NONE    -41
+#define MSDL_VIEW_IND_SCREEN  -42
+#define MSDL_VIEW_ID_NONE     -51
 
 // Starting ID for auto-assigned IDs (with MSDL_ID_AUTO)
 #define MSDL_ID_AUTO_BASE   32768
@@ -143,6 +150,16 @@ typedef struct {
 } microSDL_tsFont;
 
 
+// Struct that represents a viewport
+// - Viewports allow drawing operations to be done within
+//   a local coordinate system and clipped to a region.
+typedef struct {
+  int         nId;        // View ID specified by user
+  SDL_Rect    rView;      // Rect defining the viewport
+  unsigned    nOriginX;   // Position within rView for local origin
+  unsigned    nOriginY;   // Position within rView for local origin
+} microSDL_tsView;
+
 // Struct that contains all GUI state and content
 typedef struct {
 
@@ -160,6 +177,11 @@ typedef struct {
   unsigned          nElemCnt;
   unsigned          nElemAutoIdNext;
 
+  // Collection of viewports
+  microSDL_tsView*  psView;
+  unsigned          nViewMax;
+  unsigned          nViewCnt;
+  unsigned          nViewIndCur;
 
   // Current touch-tracking hover status
   int               nTrackElemHover;
@@ -224,6 +246,8 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 // - nMaxElem:  Size of Element array
 // - psFont:    Pointer to Font array
 // - nMaxFont:  Size of Font array
+// - psView:    Pointer to View array
+// - nMaxView:  Size of View array
 //
 // POST:
 // - microSDL_m_surfScreen is initialized
@@ -231,7 +255,7 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 // RETURN:
 // - true if success, false if fail
 //
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont);
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont,microSDL_tsView* psView,unsigned nMaxView);
 
 
 //
@@ -430,16 +454,13 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nX:          X coordinate of rectangle corner (bottom-left)
-// - nY:          Y coordinate of rectangle corner (bottom-left)
-// - nW:          Width of rectangle from corner
-// - nH:          Height of rectangle from corner
+// - rRect:       Rectangular region to frame
 // - nCol:        Color RGB value for the frame
 //
 // RETURN:
 // - none
 //
-void microSDL_FrameRect(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint16 nW,Uint16 nH,SDL_Color nCol);
+void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 
 
 //
@@ -834,6 +855,55 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,unsigned nFont);
 void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal);
 
 
+// ------------------------------------------------------------------------
+// Viewport Functions
+// ------------------------------------------------------------------------
+
+//
+// Create a Viewport
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     View ID to assign (0..32767)
+// - rView:       Rectangle coordinates defining viewport position
+// - nOriginX:    Relative X coordinates of origin
+// - nOriginY:    Relative Y coordinates of origin
+//
+// RETURN:
+// - The Viewport ID or MSDL_VIEW_ID_NONE if failure
+//
+int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,SDL_Rect rView,unsigned nOriginX,unsigned nOriginY);
+
+
+//
+// Set the origin for a Viewport
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     Viewport ID to update
+// - nOriginX:    Relative X coordinates of origin
+// - nOriginY:    Relative Y coordinates of origin
+//
+// RETURN:
+// - true if success, false if failure
+//
+bool microSDL_ViewSetOrigin(microSDL_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY);
+
+//
+// Sets the currently active view
+// - This function is used to swap between drawing within
+//   a viewport (using local coordinates and clipping) and
+//   the main view (the screen).
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     Viewport ID to select or MSDL_VIEW_ID_SCREEN for main display
+//
+// RETURN:
+// - none
+//
+void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId);
+
 
 // ------------------------------------------------------------------------
 // Tracking Functions
@@ -1090,7 +1160,7 @@ bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 
 //
 // Perform range check on Element Index
-// - Rnage checking is done before Element array access
+// - Range checking is done before Element array access
 //
 // INPUT:
 // - pGui:        Pointer to GUI
@@ -1163,6 +1233,69 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 // - Called by microSDL_Quit()
 //
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui);
+
+
+
+//
+// Perform range check on Viewport Index
+// - Range checking is done before View array access
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewInd:    Viewport index
+//
+// RETURN:
+// - true if index is in range, false otherwise
+//
+bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd);
+
+//
+// Look up the Viewport Index from the Viewport ID
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     ID of the viewport to find
+//
+// RETURN:
+// - Index of viewport or MSDL_VIEW_IND_NONE if not found
+//
+int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId);
+
+//
+// Remap a coordinate from local to global using the
+// viewport settings. The input coordinates will be
+// replaced by the global coordinates.
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     ID of the viewport
+//
+// INOUT:
+// - nX:          X coordinate
+// - nY:          Y coordinate
+//
+// RETURN:
+// - none
+//
+void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY);
+
+//
+// Remap a rectangle from local to global using the
+// viewport settings. The input rectangle coordinates will be
+// replaced by the global coordinates.
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nViewId:     ID of the viewport
+//
+// INOUT:
+// - rRect:       Rectangular coordinates to update
+//
+// RETURN:
+// - none
+//
+void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect &rRect);
+
 
 //
 // Fetch the index of the last clicked element
@@ -1256,6 +1389,17 @@ void microSDL_ResetFont(microSDL_tsFont* pFont);
 // - none
 //
 void microSDL_ResetElem(microSDL_tsElem* pElem);
+
+//
+// Initialize a View struct
+//
+// INPUT:
+// - pView:       Pointer to Viewport
+//
+// RETURN:
+// - none
+//
+void microSDL_ResetView(microSDL_tsView* pView);
 
 
 

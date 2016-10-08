@@ -72,7 +72,7 @@ void microSDL_InitEnv(microSDL_tsGui* pGui)
 
 }
 
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont)
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont,microSDL_tsView* psView,unsigned nMaxView)
 {
   // Initialize state
 
@@ -95,6 +95,16 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   for (unsigned nInd=0;nInd<(pGui->nElemMax);nInd++) {
     microSDL_ResetElem(&(pGui->psElem[nInd]));
   }
+
+  // Initialize collection of views with user-supplied pointer
+  pGui->psView      = psView;
+  pGui->nViewMax    = nMaxView;
+  pGui->nViewCnt    = 0;
+  pGui->nViewIndCur = MSDL_VIEW_IND_SCREEN;
+  for (unsigned nInd=0;nInd<(pGui->nViewMax);nInd++) {
+    microSDL_ResetView(&(pGui->psView[nInd]));
+  }
+
 
   // Current touch-tracking hover status
   pGui->nTrackElemHover     = MSDL_IND_NONE;
@@ -293,6 +303,11 @@ void microSDL_Flip(microSDL_tsGui* pGui)
 
 void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol)
 {
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapPt(pGui,nX,nY);
+  }
+
   if (microSDL_Lock(pGui)) {
     microSDL_PutPixelRaw(pGui,pGui->surfScreen,nX,nY,microSDL_GenPixelColor(pGui,nCol));
     microSDL_Unlock(pGui);
@@ -303,9 +318,16 @@ void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol)
 // - Algorithm reference: https://rosettacode.org/wiki/Bitmap/Bresenham's_line_algorithm#C
 void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 nY1,SDL_Color nCol)
 {
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapPt(pGui,nX0,nY0);
+    microSDL_ViewRemapPt(pGui,nX1,nY1);
+  }
+
   Sint16 nDX = abs(nX1-nX0);
-  Sint16 nSX = (nX0 < nX1)? 1 : -1;
   Sint16 nDY = abs(nY1-nY0);
+
+  Sint16 nSX = (nX0 < nX1)? 1 : -1;
   Sint16 nSY = (nY0 < nY1)? 1 : -1;
   Sint16 nErr = ( (nDX>nDY)? nDX : -nDY )/2;
   Sint16 nE2;
@@ -342,6 +364,11 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
 
 void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Color nCol)
 {
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapPt(pGui,nX,nY);
+  }
+
   Uint16 nOffset;
   Uint32 nPixelCol = microSDL_GenPixelColor(pGui,nCol);
   if (microSDL_Lock(pGui)) {
@@ -354,6 +381,10 @@ void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Col
 
 void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Color nCol)
 {
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapPt(pGui,nX,nY);
+  }
   Uint16 nOffset;
   Uint32 nPixelCol = microSDL_GenPixelColor(pGui,nCol);
   if (microSDL_Lock(pGui)) {
@@ -364,10 +395,42 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
   }   // microSDL_Lock
 }
 
-
-
-void microSDL_FrameRect(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint16 nW,Uint16 nH,SDL_Color nCol)
+// Ensure the coordinates are increasing from nX0->nX1 and nY0->nY1
+// NOTE: UNUSED
+void microSDL_OrderCoord(Sint16 &nX0,Sint16 &nY0,Sint16 &nX1,Sint16 &nY1)
 {
+  Sint16  nTmp;
+  if (nX1<nX0) {
+    nTmp = nX0;
+    nX0 = nX1;
+    nX1 = nTmp;
+  }
+  if (nY1<nY0) {
+    nTmp = nY0;
+    nY0 = nY1;
+    nY1 = nTmp;
+  }
+}
+
+
+void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
+{
+  // Ensure dimensions are valid
+  if ((rRect.w == 0) || (rRect.h == 0)) {
+    return;
+  }
+
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapRect(pGui,rRect);
+  }
+
+  Sint16  nX,nY;
+  Uint16  nH,nW;
+  nX = rRect.x;
+  nY = rRect.y;
+  nW = rRect.w;
+  nH = rRect.h;
   microSDL_LineH(pGui,nX,nY,nW,nCol);                  // Top
   microSDL_LineH(pGui,nX,(Sint16)(nY+nH),nW,nCol);     // Bottom
   microSDL_LineV(pGui,nX,nY,nH,nCol);                  // Left
@@ -376,11 +439,19 @@ void microSDL_FrameRect(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint16 nW,Uint1
 
 void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 {
+  // Ensure dimensions are valid
+  if ((rRect.w == 0) || (rRect.h == 0)) {
+    return;
+  }
+
+  // Support viewport local coordinate remapping
+  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+    microSDL_ViewRemapRect(pGui,rRect);
+  }
+
   SDL_FillRect(pGui->surfScreen,&rRect,
     SDL_MapRGB(pGui->surfScreen->format,nCol.r,nCol.g,nCol.b));
 }
-
-
 
 
 
@@ -438,6 +509,7 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,unsigned nPageId)
 }
 
 
+// Page redraw includes the Flip() to finalize
 void microSDL_ElemDrawPage(microSDL_tsGui* pGui,unsigned nPageId)
 {
   unsigned nInd;
@@ -453,6 +525,11 @@ void microSDL_ElemDrawPage(microSDL_tsGui* pGui,unsigned nPageId)
       microSDL_ElemDrawByInd(pGui,nInd);
     }
   }
+
+  // Update the entire screen
+  // - NOTE: We could also call Update instead of Flip as that would
+  //         limit the region to refresh.
+  microSDL_Flip(pGui);
 }
 
 
@@ -466,6 +543,7 @@ void microSDL_ElemDrawPageCur(microSDL_tsGui* pGui)
 // Element General Functions
 // ------------------------------------------------------------------------
 
+// Search through the element array for a matching ID
 int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 {
   int nInd;
@@ -487,7 +565,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
-  microSDL_FrameRect(pGui,nX-1,nY-1,2,2,MSDL_COL_YELLOW);
+  microSDL_FrameRect(pGui,(SDL_Rect){nX-1,nY-1,2,2},MSDL_COL_YELLOW);
   printf("    ElemFindFromCoord(%3u,%3u):\n",nX,nY);
   #endif
 
@@ -746,6 +824,70 @@ void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal)
 
 
 // ------------------------------------------------------------------------
+// Viewport Functions
+// ------------------------------------------------------------------------
+
+int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,SDL_Rect rView,unsigned nOriginX,unsigned nOriginY)
+{
+  if (pGui->nViewCnt+1 >= (pGui->nViewMax)) {
+    fprintf(stderr,"ERROR: microSDL_ViewCreate() too many views\n");
+    return MSDL_VIEW_ID_NONE;
+  }
+  // Add the element to the internal array
+  microSDL_tsView   sView;
+  sView.nId         = nViewId;
+  sView.rView       = rView;
+  sView.nOriginX    = nOriginX;
+  sView.nOriginY    = nOriginY;
+  pGui->psView[pGui->nViewCnt] = sView;
+  pGui->nViewCnt++;
+
+  return nViewId;
+}
+
+bool microSDL_ViewSetOrigin(microSDL_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY)
+{
+  // Find View
+  int nViewInd = microSDL_ViewFindIndFromId(pGui,nViewId);
+  // If MSDL_VIEW_ID_SCREEN is passed, then it will be ignored here
+  if (nViewInd == MSDL_VIEW_IND_NONE) {
+    return false;
+  }
+  pGui->psView[nViewInd].nOriginX = nOriginX;
+  pGui->psView[nViewInd].nOriginY = nOriginY;
+  return true;
+}
+
+void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
+{
+  // Ensure that the view ID is valid
+  int nViewInd = MSDL_VIEW_IND_NONE;
+  if (nViewId == MSDL_VIEW_ID_SCREEN) {
+    nViewInd = MSDL_VIEW_IND_SCREEN;
+  } else {
+    nViewInd = microSDL_ViewFindIndFromId(pGui,nViewId); 
+  }
+
+  if (nViewInd == MSDL_VIEW_IND_NONE) {
+    fprintf(stderr,"ERROR: ViewSet() invalid ID=%d\n",nViewId);
+  }
+
+  // Update the clipping rect temporarily
+  if (nViewInd == MSDL_VIEW_IND_SCREEN) {
+    // Set to full size of screen
+    SDL_SetClipRect(pGui->surfScreen,NULL);
+  } else if (microSDL_ViewIndValid(pGui,nViewInd)) {
+    // Set to user-specified region
+    SDL_SetClipRect(pGui->surfScreen,&(pGui->psView[nViewInd]).rView);
+  } else {
+    // INVALID
+  }
+  // Assign the view
+  pGui->nViewIndCur = nViewInd;
+}
+
+
+// ------------------------------------------------------------------------
 // Tracking Functions
 // ------------------------------------------------------------------------
 
@@ -834,8 +976,11 @@ bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX,int &nY,unsigned &nPress)
 // - pGui->ts mapped to touchscreen device
 bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev)
 {
-  //CAL!
-  // TODO: use env "TSLIB_TSDEVICE" instead
+  // TODO: Consider using env "TSLIB_TSDEVICE" instead
+  //char* pDevName = NULL;
+  //pDevName = getenv("TSLIB_TSDEVICE");
+  //pGui->ts = ts_open(pDevName,1);
+  
   // Open in non-blocking mode
   pGui->ts = ts_open(acDev,1);
   if (!pGui->ts) {
@@ -1070,7 +1215,6 @@ bool microSDL_ElemIndValid(microSDL_tsGui* pGui,int nElemInd)
   } else {
     return false;
   }
-  
 }
 
 int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd)
@@ -1196,10 +1340,12 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  microSDL_FrameRect(pGui,nElemX,nElemY,nElemW,nElemH, MSDL_COL_GRAYDk);
+  //xxx microSDL_FrameRect(pGui,(SDL_Rect){nElemX,nElemY,nElemW,nElemH}, MSDL_COL_GRAY_DK);
+  microSDL_FrameRect(pGui,sElem.rElem,MSDL_COL_GRAY_DK);
   #else
   if (sElem.bFrameEn) {
-    microSDL_FrameRect(pGui,nElemX,nElemY,nElemW,nElemH, sElem.colElemFrame);
+    //xxx microSDL_FrameRect(pGui,(SDL_Rect){nElemX,nElemY,nElemW,nElemH}, sElem.colElemFrame);
+    microSDL_FrameRect(pGui,sElem.rElem,sElem.colElemFrame);
   }
   #endif
 
@@ -1265,9 +1411,6 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   //         element draw. We could probably defer this until an explicit
   //         call after all page elements are done. However, doing it
   //         here makes it simpler to call minor element updates.
-  // - NOTE: We could also call Update instead of Flip as that would
-  //         limit the region refresh.
-  microSDL_Flip(pGui);
 
   return true;
 }
@@ -1346,6 +1489,7 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
   }
 
   // Now clip the region
+  // TODO: Determine if we need to adjust by -1
   int nRectClipX1 = rGauge.x;
   int nRectClipX2 = rGauge.x+rGauge.w;
   int nRectClipY1 = rGauge.y;
@@ -1406,6 +1550,75 @@ void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
   }
 
 }
+
+bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
+{
+  if ((nViewInd >= 0) && (nViewInd < pGui->nViewCnt)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// Search through the viewport array for a matching ID
+int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
+{
+  int nInd;
+  int nFound = MSDL_IND_NONE;
+  for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
+    if (pGui->psView[nInd].nId == nViewId) {
+      nFound = nInd;
+    }
+  }
+  return nFound;
+}
+
+// Translate a coordinate from local to global according
+// to the viewport region and origin.
+void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY)
+{
+  int nViewInd = pGui->nViewIndCur;
+  if (nViewInd == MSDL_VIEW_IND_SCREEN) {
+    return;
+  }
+  if (!microSDL_ViewIndValid(pGui,nViewInd)) {
+    return;
+  }
+  int nFinalX,nFinalY;
+  int nFrameX,nFrameY,nFrameW,nFrameH;
+  int nOriginX,nOriginY;
+  nFrameX   = pGui->psView[nViewInd].rView.x;
+  nFrameY   = pGui->psView[nViewInd].rView.y;
+  nFrameW   = pGui->psView[nViewInd].rView.w;
+  nFrameH   = pGui->psView[nViewInd].rView.h;
+  nOriginX  = pGui->psView[nViewInd].nOriginX;
+  nOriginY  = pGui->psView[nViewInd].nOriginY;
+
+  nFinalX   = nFrameX + nOriginX + nX;
+  nFinalY   = nFrameY + nOriginY + nY;
+
+  nX = nFinalX;
+  nY = nFinalY;
+}
+
+// Translate a rectangle's coordinates from local to global according
+// to the viewport region and origin.
+void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect &rRect)
+{
+  // TODO: Might need to correct by -1
+  Sint16 nX0,nY0,nX1,nY1;
+  nX0 = rRect.x;
+  nY0 = rRect.y;
+  nX1 = rRect.x+rRect.w;
+  nY1 = rRect.y+rRect.h;
+  microSDL_ViewRemapPt(pGui,nX0,nY0);
+  microSDL_ViewRemapPt(pGui,nX1,nY1);
+  rRect.x = nX0;
+  rRect.y = nY0;
+  rRect.w = nX1-nX0;
+  rRect.h = nY1-nY0;
+}
+
 
 int microSDL_GetTrackElemIndClicked(microSDL_tsGui* pGui)
 {
@@ -1576,6 +1789,18 @@ void microSDL_ResetFont(microSDL_tsFont* pFont)
   }
   pFont->nId = MSDL_FONT_NONE;
   pFont->pFont = NULL;
+}
+
+// Initialize the view struct to all zeros
+void microSDL_ResetView(microSDL_tsView* pView)
+{
+  if (pView == NULL) {
+    return;
+  }
+  pView->nId = MSDL_VIEW_ID_NONE;
+  pView->rView = (SDL_Rect){0,0,0,0};
+  pView->nOriginX = 0;
+  pView->nOriginY = 0;
 }
 
 

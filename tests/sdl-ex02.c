@@ -38,7 +38,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0);
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -49,6 +49,9 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Create page elements
+
+  // Background flat color
+  microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create background box
   nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});

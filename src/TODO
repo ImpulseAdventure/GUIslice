@@ -1,0 +1,17 @@
+FEATURES
+========
+* Circle drawing primitive
+* Polygon drawing primitive
+* Page update routine that redraws only elements requiring update
+* Support owner-draw elements
+* Keypress handler
+
+IMPROVEMENTS
+============
+* Move the background into its own element
+
+BUGS
+====
+* Check calculations of X1,Y1 from SDL_Rect() to determine if correction of
+  -1 is required. eg. X1=(x+w-1)
+

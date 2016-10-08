@@ -114,7 +114,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT);
+  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0);
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -150,6 +150,9 @@ int main( int argc, char* args[] )
 
     m_nCount++;
 
+    // -----------------------------------
+    // Perform some drawing updates depending on the active page
+
     unsigned nPageCur = microSDL_GetPageCur(&m_gui);
 
     // Immediate update of element on active page
@@ -164,6 +167,11 @@ int main( int argc, char* args[] )
       microSDL_ElemUpdateGauge(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
       microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
     }
+
+    // Call Flip() to finalize any drawing updates
+    microSDL_Flip(&m_gui);
+
+    // -----------------------------------
   
     // Poll for touchscreen presses
     if (microSDL_GetTsClick(&m_gui,nClickX,nClickY,nClickPress)) {
