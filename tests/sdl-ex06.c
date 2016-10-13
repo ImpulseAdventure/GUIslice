@@ -150,10 +150,8 @@ int main( int argc, char* args[] )
 {
   bool              bOk = true;
   bool              bQuit = false;  
-  int               nRet;
   int               nClickX,nClickY;
   unsigned          nClickPress;
-  int               nElemId;
   int               nTrackElemClicked;
 
   char              acTxt[100];
@@ -162,15 +160,15 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,m_asView,MAX_VIEW);
+  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
   // Load Fonts
   bOk = microSDL_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); return false; }
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = microSDL_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); return false; }
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 
   // -----------------------------------
@@ -262,5 +260,7 @@ int main( int argc, char* args[] )
   // Close down display
 
   microSDL_Quit(&m_gui);
+
+  return 0;
 }
 

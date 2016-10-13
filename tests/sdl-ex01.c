@@ -23,7 +23,7 @@ int main( int argc, char* args[] )
 
   // Initialize
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0,NULL,0);
+  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0,NULL,0)) { exit(1); }
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
@@ -41,5 +41,7 @@ int main( int argc, char* args[] )
   
   // Close down display
   microSDL_Quit(&m_gui);
+
+  return 0;
 }
 

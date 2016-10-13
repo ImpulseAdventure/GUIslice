@@ -25,9 +25,7 @@ microSDL_tsElem m_asElem[MAX_ELEM];
 
 int main( int argc, char* args[] )
 {
-  bool              bOk = true;
   bool              bQuit = false;  
-  int               nRet;
   int               nClickX,nClickY;
   unsigned          nClickPress;
   int               nElemId;
@@ -37,7 +35,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0,NULL,0);
+  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0,NULL,0)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -93,5 +91,7 @@ int main( int argc, char* args[] )
   // Close down display
 
   microSDL_Quit(&m_gui);
+
+  return 0;
 }
 

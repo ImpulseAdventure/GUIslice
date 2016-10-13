@@ -288,7 +288,7 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 }
 
 
-bool microSDL_IsInRect(microSDL_tsGui* pGui,unsigned nSelX,unsigned nSelY,SDL_Rect rRect)
+bool microSDL_IsInRect(microSDL_tsGui* pGui,int nSelX,int nSelY,SDL_Rect rRect)
 {
   if ( (nSelX >= rRect.x) && (nSelX <= rRect.x+rRect.w) && 
      (nSelY >= rRect.y) && (nSelY <= rRect.y+rRect.h) ) {
@@ -604,9 +604,9 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
-  SDL_Rect    rMark = microSDL_ExpandRect((SDL_Rect){nX,nY,1,1},1,1);
+  SDL_Rect    rMark = microSDL_ExpandRect((SDL_Rect){(Sint16)nX,(Sint16)nY,1,1},1,1);
   microSDL_FrameRect(pGui,rMark,MSDL_COL_YELLOW);
-  printf("    ElemFindFromCoord(%3u,%3u):\n",nX,nY);
+  printf("    ElemFindFromCoord(%3d,%3d):\n",nX,nY);
   #endif
 
   for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
@@ -1169,8 +1169,8 @@ void microSDL_Unlock(microSDL_tsGui* pGui)
 // NOTE: nId is a positive ID specified by the user or
 //       MSDL_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,unsigned nType,
-  SDL_Rect rElem,const char* pStr,unsigned nFontId)
+microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,
+  unsigned nType,SDL_Rect rElem,const char* pStr,unsigned nFontId)
 {
   microSDL_tsElem sElem;
   sElem.bValid = false;
@@ -1330,7 +1330,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
 
   microSDL_tsElem   sElem;
   bool              bSel;
-  unsigned          nElemX,nElemY,nElemW,nElemH;
+  int               nElemX,nElemY;
+  unsigned          nElemW,nElemH;
   SDL_Surface*      surfTxt = NULL;
 
   sElem = pGui->psElem[nElemInd];
@@ -1361,6 +1362,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   }
 
   // Fill in the background
+  // - This also changes the fill color if it is a button
+  //   being selected
   if (sElem.bFillEn) {
     if ((sElem.nType == MSDL_TYPE_BTN) && (bSel)) {
       microSDL_FillRect(pGui,sElem.rElem,sElem.colElemFillSel);
@@ -1381,11 +1384,9 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  //xxx microSDL_FrameRect(pGui,(SDL_Rect){nElemX,nElemY,nElemW,nElemH}, MSDL_COL_GRAY_DK);
   microSDL_FrameRect(pGui,sElem.rElem,MSDL_COL_GRAY_DK);
   #else
   if (sElem.bFrameEn) {
-    //xxx microSDL_FrameRect(pGui,(SDL_Rect){nElemX,nElemY,nElemW,nElemH}, sElem.colElemFrame);
     microSDL_FrameRect(pGui,sElem.rElem,sElem.colElemFrame);
   }
   #endif
@@ -1445,14 +1446,6 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     }
   }
 
-
-  // Update the active display
-  //
-  // - NOTE: Currently, we are calling the display update on every
-  //         element draw. We could probably defer this until an explicit
-  //         call after all page elements are done. However, doing it
-  //         here makes it simpler to call minor element updates.
-
   return true;
 }
 
@@ -1460,7 +1453,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
 bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
 {
   SDL_Rect    rGauge;
-  unsigned    nElemX,nElemY,nElemW,nElemH;
+  int         nElemX,nElemY;
+  unsigned    nElemW,nElemH;
 
   nElemX = sElem.rElem.x;
   nElemY = sElem.rElem.y;
@@ -1534,10 +1528,10 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
   int nRectClipX2 = rGauge.x+rGauge.w;
   int nRectClipY1 = rGauge.y;
   int nRectClipY2 = rGauge.y+rGauge.h;
-  if (nRectClipX1 < nElemX)         { nRectClipX1 = nElemX;         }
-  if (nRectClipX2 > nElemX+nElemW)  { nRectClipX2 = nElemX+nElemW;  }
-  if (nRectClipY1 < nElemY)         { nRectClipY1 = nElemY;         }
-  if (nRectClipY2 > nElemY+nElemH)  { nRectClipY2 = nElemY+nElemH;  }
+  if (nRectClipX1 < nElemX)             { nRectClipX1 = nElemX;         }
+  if (nRectClipX2 > nElemX+(int)nElemW) { nRectClipX2 = nElemX+nElemW;  }
+  if (nRectClipY1 < nElemY)             { nRectClipY1 = nElemY;         }
+  if (nRectClipY2 > nElemY+(int)nElemH) { nRectClipY2 = nElemY+nElemH;  }
   rGauge.x = nRectClipX1;
   rGauge.y = nRectClipY1;
   rGauge.w = nRectClipX2-nRectClipX1;
@@ -1682,6 +1676,8 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY)
     #endif
     // Redraw button
     microSDL_ElemDrawByInd(pGui,nHoverStart);
+    // Redraw
+    microSDL_Flip(pGui);
   } else {
     #ifdef DBG_TOUCH
     printf("microSDL_TrackTouchDownClick @ (%3u,%3u): not on button\n",nX,nY);
@@ -1727,6 +1723,9 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
   pGui->bTrackElemHoverGlow = false;
   microSDL_ElemDrawByInd(pGui,pGui->nTrackElemHover);
   microSDL_ElemDrawByInd(pGui,nHoverNew);
+
+  // Redraw
+  microSDL_Flip(pGui);
 
   pGui->nTrackElemHover = MSDL_IND_NONE;
 

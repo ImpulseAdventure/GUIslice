@@ -85,8 +85,8 @@ bool InitOverlays()
     (SDL_Rect){135,120,50,20},"Back",E_FONT_BTN);
 
   // Create a few labels
-  unsigned nPosY = 50;
-  unsigned nSpaceY = 20;
+  Sint16    nPosY = 50;
+  Sint16    nSpaceY = 20;
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
     "Data 1",E_FONT_TXT); nPosY += nSpaceY;
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
@@ -102,10 +102,8 @@ int main( int argc, char* args[] )
 {
   bool              bOk = true;
   bool              bQuit = false;  
-  int               nRet;
   int               nClickX,nClickY;
   unsigned          nClickPress;
-  int               nElemId;
   int               nTrackElemClicked;
 
   char              acTxt[100];
@@ -114,7 +112,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0);
+  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -123,11 +121,11 @@ int main( int argc, char* args[] )
   //   different point sizes. We could also refer to other
   //   font files as well.
   bOk = microSDL_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); return false; }
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = microSDL_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); return false; }
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = microSDL_FontAdd(&m_gui,E_FONT_TITLE,FONT_DROID_SANS,32);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); return false; }
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 
   // -----------------------------------
@@ -203,5 +201,7 @@ int main( int argc, char* args[] )
   // Close down display
 
   microSDL_Quit(&m_gui);
+
+  return 0;
 }
 

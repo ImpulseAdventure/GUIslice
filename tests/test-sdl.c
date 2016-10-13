@@ -75,7 +75,7 @@ int main(int argc, char* args[])
 
 	// Draw a green box
 	Uint32 nColGreen = SDL_MapRGB(scrMain->format,0,255,0);
-	SDL_Rect rectBox = {0,0,nResX,nResY/2};
+	SDL_Rect rectBox = {0,0,(Uint16)(nResX),(Uint16)(nResY/2)};
 	SDL_FillRect(scrMain,&rectBox,nColGreen);
 
 
