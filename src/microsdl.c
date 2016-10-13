@@ -127,7 +127,17 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
 
 
   // Setup SDL
-  SDL_Init(SDL_INIT_VIDEO);
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    fprintf(stderr,"ERROR: Unable to init SDL: %s\n",SDL_GetError());
+    return false;
+  }
+  // Now that we have successfully initialized SDL
+  // we need to register an exit handler so that SDL_Quit()
+  // gets called at program termination. If we don't do this
+  // then some types of errors/aborts will result in
+  // the SDL environment being left in a bad state that
+  // affects the next SDL program execution.
+  atexit(SDL_Quit);
 
   // Set up pGui->surfScreen
   const SDL_VideoInfo*  videoInfo = SDL_GetVideoInfo();
@@ -249,7 +259,6 @@ bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
 
 bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,SDL_Color nCol)
 {
-  SDL_Surface*  pSurf;
   if (pGui->surfBkgnd != NULL ) {
     // Dispose of previous background
     SDL_FreeSurface(pGui->surfBkgnd);
@@ -511,7 +520,7 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId,const char* acFontNa
 }
 
 
-TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,unsigned nFontId)
+TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
 {
   unsigned nFontInd;
   for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
@@ -535,14 +544,14 @@ unsigned microSDL_GetPageCur(microSDL_tsGui* pGui)
 }
 
 
-void microSDL_SetPageCur(microSDL_tsGui* pGui,unsigned nPageId)
+void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
 {
   pGui->nPageIdCur = nPageId;
 }
 
 
 // Page redraw includes the Flip() to finalize
-void microSDL_ElemDrawPage(microSDL_tsGui* pGui,unsigned nPageId)
+void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId)
 {
   unsigned nInd;
   
@@ -578,9 +587,8 @@ void microSDL_ElemDrawPageCur(microSDL_tsGui* pGui)
 // Search through the element array for a matching ID
 int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 {
-  int nInd;
   int nFound = MSDL_IND_NONE;
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
     if (pGui->psElem[nInd].nId == nElemId) {
       nFound = nInd;
     }
@@ -591,7 +599,6 @@ int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 
 int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 {
-  int         nInd;
   bool        bFound = false;
   int         nFoundInd = MSDL_IND_NONE;
 
@@ -602,7 +609,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
   printf("    ElemFindFromCoord(%3u,%3u):\n",nX,nY);
   #endif
 
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
 
     // Ensure this element is visible on this page!
     if ((pGui->psElem[nInd].nPage == pGui->nPageIdCur) ||
@@ -980,6 +987,7 @@ bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX,int &nY,unsigned &nPress)
         case SDLK_UP: break;
         case SDLK_DOWN: break;
         case SDLK_RIGHT: break;
+        default: break;
       }
     } else if (sEvent.type == SDL_KEYUP) {
 
@@ -1243,7 +1251,7 @@ bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem)
 
 bool microSDL_ElemIndValid(microSDL_tsGui* pGui,int nElemInd)
 {
-  if ((nElemInd >= 0) && (nElemInd < pGui->nElemCnt)) {
+  if ((nElemInd >= 0) && (nElemInd < (int)(pGui->nElemCnt))) {
     return true;
   } else {
     return false;
@@ -1465,7 +1473,6 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
   bool  bVert = sElem.bGaugeVert;
   int   nMax = sElem.nGaugeMax;
   int   nMin = sElem.nGaugeMin;
-  int   nVal = sElem.nGaugeVal;
   int   nRng = sElem.nGaugeMax-sElem.nGaugeMin;
 
   if (nRng == 0) {
@@ -1586,7 +1593,7 @@ void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
 
 bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
 {
-  if ((nViewInd >= 0) && (nViewInd < pGui->nViewCnt)) {
+  if ((nViewInd >= 0) && (nViewInd < (int)(pGui->nViewCnt))) {
     return true;
   } else {
     return false;
@@ -1596,9 +1603,8 @@ bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
 // Search through the viewport array for a matching ID
 int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
 {
-  int nInd;
   int nFound = MSDL_IND_NONE;
-  for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
+  for (unsigned nInd=0;nInd<pGui->nViewCnt;nInd++) {
     if (pGui->psView[nInd].nId == nViewId) {
       nFound = nInd;
     }
@@ -1617,13 +1623,11 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY)
   if (!microSDL_ViewIndValid(pGui,nViewInd)) {
     return;
   }
-  int nFinalX,nFinalY;
-  int nFrameX,nFrameY,nFrameW,nFrameH;
-  int nOriginX,nOriginY;
+  int   nFinalX,nFinalY;
+  int   nFrameX,nFrameY;
+  int   nOriginX,nOriginY;
   nFrameX   = pGui->psView[nViewInd].rView.x;
   nFrameY   = pGui->psView[nViewInd].rView.y;
-  nFrameW   = pGui->psView[nViewInd].rView.w;
-  nFrameH   = pGui->psView[nViewInd].rView.h;
   nOriginX  = pGui->psView[nViewInd].nOriginX;
   nOriginY  = pGui->psView[nViewInd].nOriginY;
 

@@ -164,7 +164,7 @@ typedef struct {
 typedef struct {
 
     // The page that is currently active
-  unsigned          nPageIdCur;
+  int               nPageIdCur;
 
   // Collection of loaded fonts
   microSDL_tsFont*  psFont;
@@ -181,7 +181,7 @@ typedef struct {
   microSDL_tsView*  psView;
   unsigned          nViewMax;
   unsigned          nViewCnt;
-  unsigned          nViewIndCur;
+  int               nViewIndCur;
 
   // Current touch-tracking hover status
   int               nTrackElemHover;
@@ -525,7 +525,7 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId, const char* acFontN
 // RETURN:
 // - A TTF_Font pointer or NULL if error
 //
-TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,unsigned nFontId);
+TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId);
 
 
 
@@ -557,7 +557,7 @@ unsigned microSDL_GetPageCur(microSDL_tsGui* pGui);
 // RETURN:
 // - none
 //
-void microSDL_SetPageCur(microSDL_tsGui* pGui,unsigned nPageId);
+void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId);
 
 
 //
@@ -570,7 +570,7 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,unsigned nPageId);
 // RETURN:
 // - none
 //
-void microSDL_ElemDrawPage(microSDL_tsGui* pGui,unsigned nPageId);
+void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId);
 
 
 //
