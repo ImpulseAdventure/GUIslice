@@ -500,7 +500,7 @@ SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH)
 // Font Functions
 // -----------------------------------------------------------------------
 
-bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId,const char* acFontName,unsigned nFontSz)
+bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId,const char* acFontName,unsigned nFontSz)
 {
   if (pGui->nFontCnt+1 >= (pGui->nFontMax)) {
     fprintf(stderr,"ERROR: microSDL_FontAdd() added too many fonts\n");
@@ -522,8 +522,7 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId,const char* acFontNa
 
 TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
 {
-  unsigned nFontInd;
-  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
+  for (unsigned nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
     if (pGui->psFont[nFontInd].nId == nFontId) {
       return pGui->psFont[nFontInd].pFont;
     }
@@ -538,7 +537,7 @@ TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
 // Page Functions
 // ------------------------------------------------------------------------
 
-unsigned microSDL_GetPageCur(microSDL_tsGui* pGui)
+int microSDL_GetPageCur(microSDL_tsGui* pGui)
 {
   return pGui->nPageIdCur;
 }
@@ -553,14 +552,12 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
 // Page redraw includes the Flip() to finalize
 void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId)
 {
-  unsigned nInd;
-  
   // Draw background
   // TODO: Consider making background another layer
   microSDL_ApplySurface(pGui,0,0,pGui->surfBkgnd,pGui->surfScreen);
 
   // Draw other elements
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
     if ( (pGui->psElem[nInd].nPage == nPageId) ||
          (pGui->psElem[nInd].nPage == MSDL_PAGE_ALL) ) {
       microSDL_ElemDrawByInd(pGui,nInd);
@@ -655,8 +652,8 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 // ------------------------------------------------------------------------
 
 
-int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
-  const char* pStr,unsigned nFontId)
+int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
+  const char* pStr,int nFontId)
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
@@ -670,8 +667,8 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
-  SDL_Rect rElem,const char* acStr,unsigned nFontId)
+int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
+  SDL_Rect rElem,const char* acStr,int nFontId)
 {
   microSDL_tsElem sElem;
   sElem.bValid = false;
@@ -679,7 +676,7 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   // Ensure the Font is loaded
   TTF_Font* pFont = microSDL_FontGet(pGui,nFontId);
   if (pFont == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemCreateBtnTxt(ID=%d): Font(ID=%u) not loaded\n",nElemId,nFontId);
+    fprintf(stderr,"ERROR: microSDL_ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
     sElem.bValid = false;
     return MSDL_ID_NONE;
   }
@@ -696,7 +693,7 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel)
 {
   microSDL_tsElem sElem;
@@ -713,7 +710,7 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem)
+int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem)
 {
   microSDL_tsElem sElem;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
@@ -726,7 +723,7 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 }
 
 
-int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg)
 {
   microSDL_tsElem sElem;
@@ -740,7 +737,7 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 }
 
 
-int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
+int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
   int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
 {
   microSDL_tsElem sElem;
@@ -839,7 +836,7 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal)
   pElem->colElemText = colVal;
 }
 
-void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,unsigned nFont)
+void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId)
 {
   int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
@@ -847,7 +844,7 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,unsigned nFont)
     return;
   }
   microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  pElem->pTxtFont = microSDL_FontGet(pGui,nFont);
+  pElem->pTxtFont = microSDL_FontGet(pGui,nFontId);
 }
 
 
@@ -1169,8 +1166,8 @@ void microSDL_Unlock(microSDL_tsGui* pGui)
 // NOTE: nId is a positive ID specified by the user or
 //       MSDL_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,
-  unsigned nType,SDL_Rect rElem,const char* pStr,unsigned nFontId)
+microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId,
+  unsigned nType,SDL_Rect rElem,const char* pStr,int nFontId)
 {
   microSDL_tsElem sElem;
   sElem.bValid = false;
@@ -1410,8 +1407,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   if (bRenderTxt) {
 
     // Define margined element bounds
-    unsigned    nTxtX = nElemX;
-    unsigned    nTxtY = nElemY;
+    int         nTxtX = nElemX;
+    int         nTxtY = nElemY;
     unsigned    nMargin = sElem.nTxtMargin;
     TTF_Font*   pFont = sElem.pTxtFont;
 
@@ -1565,8 +1562,7 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
 
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
 {
-  unsigned nElemInd;
-  for (nElemInd=0;nElemInd<pGui->nElemCnt;nElemInd++) {
+  for (unsigned nElemInd=0;nElemInd<pGui->nElemCnt;nElemInd++) {
     if (pGui->psElem[nElemInd].pSurf != NULL) {
       SDL_FreeSurface(pGui->psElem[nElemInd].pSurf);
       pGui->psElem[nElemInd].pSurf = NULL;
@@ -1773,8 +1769,7 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
 
 void microSDL_FontCloseAll(microSDL_tsGui* pGui)
 {
-  unsigned nFontInd;
-  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
+  for (unsigned nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
     if (pGui->psFont[nFontInd].pFont != NULL) {
       TTF_CloseFont(pGui->psFont[nFontInd].pFont);
       pGui->psFont[nFontInd].pFont = NULL;

@@ -511,7 +511,7 @@ SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
 // RETURN:
 // - true if load was successful, false otherwise
 //
-bool microSDL_FontAdd(microSDL_tsGui* pGui,unsigned nFontId, const char* acFontName, unsigned nFontSz);
+bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId, const char* acFontName, unsigned nFontSz);
 
 
 //
@@ -544,7 +544,7 @@ TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId);
 // - Page ID
 //
 
-unsigned microSDL_GetPageCur(microSDL_tsGui* pGui);
+int microSDL_GetPageCur(microSDL_tsGui* pGui);
 
 
 //
@@ -635,8 +635,8 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY);
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
-  SDL_Rect rElem,const char* pStr,unsigned nFontId);
+int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
+  SDL_Rect rElem,const char* pStr,int nFontId);
 
 
 //
@@ -655,8 +655,8 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
-  SDL_Rect rElem,const char* acStr,unsigned nFontId);
+int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
+  SDL_Rect rElem,const char* acStr,int nFontId);
 
 
 //
@@ -676,7 +676,7 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel);
 
 
@@ -693,7 +693,7 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem);
+int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem);
 
 
 //
@@ -710,7 +710,7 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_Rect rElem,
+int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
   const char* acImg);
 
 
@@ -734,7 +734,7 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,unsigned nPage,SDL_R
 // RETURN:
 // - The Element ID or MSDL_ID_NONE if failure
 //
-int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,unsigned nPage,
+int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert);
 
 
@@ -848,12 +848,12 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal);
 // INPUT:
 // - pGui:        Pointer to GUI
 // - nElemId:     Element ID to update
-// - nFont:       Font ID to select
+// - nFontId:     Font ID to select
 //
 // RETURN:
 // - none
 //
-void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,unsigned nFont);
+void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId);
 
 
 //
@@ -1156,8 +1156,8 @@ void microSDL_Unlock(microSDL_tsGui* pGui);
 // RETURN:
 // - Initialized structure
 //
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,unsigned nPageId,unsigned nType,
-  SDL_Rect rElem,const char* pStr,unsigned nFontId);
+microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId,unsigned nType,
+  SDL_Rect rElem,const char* pStr,int nFontId);
 
 
 //
