@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2
+// - Version 0.2.1    (2016/10/27)
 // =======================================================================
 
 
@@ -22,10 +22,20 @@
 #include "tslib.h"
 #endif
 
+// Optionally enable SDL clean start VT workaround
+#ifdef VT_WRK_EN
+#include <fcntl.h>      // For O_RDONLY
+#include <errno.h>      // For errno
+#include <unistd.h>     // For close()
+#include <sys/ioctl.h>  // For ioctl()
+#include <sys/kd.h>     // for KDSETMODE
+#include <sys/vt.h>     // for VT_UNLOCKSWITCH
+#define VT_WRK_TTY      "/dev/tty0"
+#endif
 
 
 // Version definition
-#define MICROSDL_VER "0.2"
+#define MICROSDL_VER "0.2.1"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -125,6 +135,15 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->surfScreen = NULL;
   pGui->surfBkgnd = NULL;
 
+  
+#ifdef VT_WRK_EN
+  // Force a clean start to SDL to workaround any bad state
+  // left behind by a previous SDL application's failure to
+  // clean up.
+  // TODO: Allow compiler option to skip this workaround
+  // TODO: Allow determination of the TTY to use
+  microSDL_CleanStart(VT_WRK_TTY);
+#endif  
 
   // Setup SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -310,11 +329,16 @@ void microSDL_Flip(microSDL_tsGui* pGui)
 // Graphics Primitive Functions
 // ------------------------------------------------------------------------
 
-void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol)
+// bMapEn specifies whether viewport remapping is enabled or not
+// - This should be disabled if the caller has already performed the
+//   the remap (eg. in Line() function).
+void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,bool bMapEn)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,nX,nY);
+  if (bMapEn) {
+    if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
+      microSDL_ViewRemapPt(pGui,nX,nY);
+    }
   }
 
   if (microSDL_Lock(pGui)) {
@@ -361,9 +385,12 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
   }
 */
 
-
   for (;;) {
-    microSDL_SetPixel(pGui,nX0,nY0,nCol);
+    // Set the pixel but disable viewport remapping since
+    // we have already taken care of it here
+    microSDL_SetPixel(pGui,nX0,nY0,nCol,false);
+    
+    // Calculate next coordinates
     if ( (nX0 == nX1) && (nY0 == nY1) ) break;
     nE2 = nErr;
     if (nE2 > -nDX) { nErr -= nDY; nX0 += nSX; }
@@ -1835,4 +1862,54 @@ void microSDL_ResetView(microSDL_tsView* pView)
 }
 
 
-
+// Unfortunately, SDL has an issue wherein if a previous
+// SDL program execution aborts before cleaning up properly (eg.
+// with SDL_Quit) then the next time SDL_SetVideoMode
+// is called, it may hang.
+//
+// The following code attempts to work around this sensitivity
+// in SDL, making the SDL_SetVideoMode call more robust.
+//
+// DETAILS:
+// - If an SDL program exits without first calling the cleanup
+//   routines (ie. in SDL_Quit() ), the terminal may be left in
+//   KD_GRAPHICS mode.
+// - When another SDL program is started and attempts to call
+//   SDL_SetVideoMode(), program execution may hang in
+//   FB_EnterGraphicsMode() during the wait on switch to
+//   KD_GRAPHICS mode. Since we are already in KD_GRAPHICS
+//   this event never occurs.
+// - This workaround unlocks the switch (which was set at the
+//   end of a previous call to FB_EnterGraphicsMode) and then
+//   forces the terminal to KD_TEXT mode.
+// - By starting in text mode, we should then observe a VT
+//   switch event as we attempt to transition to graphics mode
+//   in the call to SDL_SetVideoMode().
+bool microSDL_CleanStart(const char* sTTY)
+{
+#ifdef VT_WRK_EN    
+    int     nFD = -1;
+    int     nRet = false;
+    
+    nFD = open(sTTY, O_RDONLY, 0);
+    if (nFD < 0) {
+        fprintf(stderr, "ERROR: CleanStart() failed to open console (%s): %s\n",
+            sTTY,strerror(errno));
+        return false;
+    }
+    nRet = ioctl(nFD, VT_UNLOCKSWITCH, 1);
+    if (nRet != false) {
+         fprintf(stderr, "ERROR: CleanStart() failed to unlock console (%s): %s\n",
+            sTTY,strerror(errno));
+        return false;
+    }
+    nRet = ioctl(nFD, KDSETMODE, KD_TEXT);
+    if (nRet != 0) {
+         fprintf(stderr, "ERROR: CleanStart() failed to set text mode (%s): %s\n",
+            sTTY,strerror(errno));
+        return false;
+    }
+    close(nFD);
+#endif    
+    return true;
+}

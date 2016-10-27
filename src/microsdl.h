@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2
+// - Version 0.2.1 (2016/10/27)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -391,11 +391,12 @@ void microSDL_Flip(microSDL_tsGui* pGui);
 // - nX:          Pixel X coordinate to set
 // - nY:          Pixel Y coordinate to set
 // - nPixelCol:   Color pixel value ot assign
+// - bMapEn:      Support viewport remapping
 //
 // RETURN:
 // - none
 //
-void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol);
+void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,bool bMapEn=true);
 
 
 //
@@ -1035,6 +1036,7 @@ int microSDL_GetTsClick(microSDL_tsGui* pGui,int &nX, int &nY, unsigned &nPress)
 // ------------------------------------------------------------------------
 
 
+
 //
 // Convert an RGB color triplet into the surface pixel value
 //
@@ -1417,6 +1419,18 @@ void microSDL_ResetElem(microSDL_tsElem* pElem);
 //
 void microSDL_ResetView(microSDL_tsView* pView);
 
+//
+// Ensure SDL initializes cleanly to workaround
+// possible issues if previous SDL application
+// failed to close down gracefully.
+//
+// INPUT:
+// - sTTY:       Terminal device (eg. "/dev/tty0")
+//
+// RETURN:
+// - true if success
+//
+bool microSDL_CleanStart(const char* sTTY);
 
 
 #ifdef __cplusplus
