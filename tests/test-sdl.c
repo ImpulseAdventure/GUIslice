@@ -34,6 +34,7 @@ int main(int argc, char* args[])
 		fprintf(stderr,"ERROR in SDL_Init(): %s\n",SDL_GetError());
 		return 0;
 	}
+  atexit(SDL_Quit);
 
 	// Fetch the best video mode
 	// - Note that the Raspberry Pi generally defaults
@@ -83,10 +84,13 @@ int main(int argc, char* args[])
 	SDL_Flip(scrMain);
 
 	// Wait for a short delay
-	SDL_Delay(3000);
+	//CAL! FIXME SDL_Delay(3000);
+	SDL_Delay(20000);
 
 	// Close down SDL
 	SDL_Quit();
+
+  printf("DONE!\n");  // FIXME
 
 	return 0;
 }
