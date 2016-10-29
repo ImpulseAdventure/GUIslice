@@ -5,7 +5,7 @@
 ##
 
 DEBUG = -O3
-CC = g++
+CC = gcc
 INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 
@@ -13,7 +13,7 @@ CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 MSDLFLAGS = -DINC_TS -DVT_WRK_EN
 
 LDFLAGS = -L/usr/local/lib
-LDLIBS = -lSDL -lSDL_ttf -lSDL_image -lts
+LDLIBS = -lSDL -lSDL_ttf -lSDL_image -lts -lm
 
 SRC = test-sdl.c \
 	sdl-ex01.c \

@@ -7,7 +7,7 @@
 
 #include "microsdl.h"
 
-#include "math.h"
+#include <math.h>
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -116,6 +116,7 @@ bool InitOverlays()
 // local coordinate system and clipping.
 void DrawViewport()
 {
+  int nInd;
   // Temp redraw view
   // Draw the viewport background
   microSDL_ElemDraw(&m_gui,E_ELEM_VIEW);
@@ -131,7 +132,7 @@ void DrawViewport()
   microSDL_Line(&m_gui,-200,0,+200,0,MSDL_COL_GRAY_DK);
 
   microSDL_FrameRect(&m_gui,(SDL_Rect){-30,-20,60,40},MSDL_COL_BLUE_DK);
-  for (int nInd=-5;nInd<=5;nInd++) {
+  for (nInd=-5;nInd<=5;nInd++) {
     microSDL_Line(&m_gui,0,0,0+nInd*20,100,MSDL_COL_PURPLE);
   }
 

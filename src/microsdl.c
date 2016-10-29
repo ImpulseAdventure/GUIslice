@@ -84,6 +84,8 @@ void microSDL_InitEnv(microSDL_tsGui* pGui)
 
 bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxElem,microSDL_tsFont* psFont,unsigned nMaxFont,microSDL_tsView* psView,unsigned nMaxView)
 {
+  unsigned  nInd;
+  
   // Initialize state
 
   // The page that is currently active
@@ -93,7 +95,7 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->psFont      = psFont;
   pGui->nFontMax    = nMaxFont;
   pGui->nFontCnt    = 0;
-  for (unsigned nInd=0;nInd<(pGui->nFontMax);nInd++) {
+  for (nInd=0;nInd<(pGui->nFontMax);nInd++) {
     microSDL_ResetFont(&(pGui->psFont[nInd]));
   }
 
@@ -102,7 +104,7 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->nElemMax        = nMaxElem;
   pGui->nElemCnt        = 0;
   pGui->nElemAutoIdNext = MSDL_ID_AUTO_BASE;
-  for (unsigned nInd=0;nInd<(pGui->nElemMax);nInd++) {
+  for (nInd=0;nInd<(pGui->nElemMax);nInd++) {
     microSDL_ResetElem(&(pGui->psElem[nInd]));
   }
 
@@ -111,7 +113,7 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->nViewMax    = nMaxView;
   pGui->nViewCnt    = 0;
   pGui->nViewIndCur = MSDL_VIEW_IND_SCREEN;
-  for (unsigned nInd=0;nInd<(pGui->nViewMax);nInd++) {
+  for (nInd=0;nInd<(pGui->nViewMax);nInd++) {
     microSDL_ResetView(&(pGui->psView[nInd]));
   }
 
@@ -433,18 +435,18 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
 
 // Ensure the coordinates are increasing from nX0->nX1 and nY0->nY1
 // NOTE: UNUSED
-void microSDL_OrderCoord(Sint16 &nX0,Sint16 &nY0,Sint16 &nX1,Sint16 &nY1)
+void microSDL_OrderCoord(Sint16* pnX0,Sint16* pnY0,Sint16* pnX1,Sint16* pnY1)
 {
   Sint16  nTmp;
-  if (nX1<nX0) {
-    nTmp = nX0;
-    nX0 = nX1;
-    nX1 = nTmp;
+  if ((*pnX1) < (*pnX0)) {
+    nTmp = (*pnX0);
+    (*pnX0) = (*pnX1);
+    (*pnX1) = nTmp;
   }
-  if (nY1<nY0) {
-    nTmp = nY0;
-    nY0 = nY1;
-    nY1 = nTmp;
+  if ((*pnY1) < (*pnY0)) {
+    nTmp = (*pnY0);
+    (*pnY0) = (*pnY1);
+    (*pnY1) = nTmp;
   }
 }
 
@@ -549,7 +551,8 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId,const char* acFontName,un
 
 TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
 {
-  for (unsigned nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
+  unsigned  nFontInd;
+  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
     if (pGui->psFont[nFontInd].nId == nFontId) {
       return pGui->psFont[nFontInd].pFont;
     }
@@ -579,12 +582,14 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
 // Page redraw includes the Flip() to finalize
 void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId)
 {
+  unsigned  nInd;
+  
   // Draw background
   // TODO: Consider making background another layer
   microSDL_ApplySurface(pGui,0,0,pGui->surfBkgnd,pGui->surfScreen);
 
   // Draw other elements
-  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
     if ( (pGui->psElem[nInd].nPage == nPageId) ||
          (pGui->psElem[nInd].nPage == MSDL_PAGE_ALL) ) {
       microSDL_ElemDrawByInd(pGui,nInd);
@@ -611,8 +616,9 @@ void microSDL_ElemDrawPageCur(microSDL_tsGui* pGui)
 // Search through the element array for a matching ID
 int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 {
-  int nFound = MSDL_IND_NONE;
-  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  unsigned  nInd;
+  int       nFound = MSDL_IND_NONE;
+  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
     if (pGui->psElem[nInd].nId == nElemId) {
       nFound = nInd;
     }
@@ -623,6 +629,7 @@ int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 
 int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 {
+  unsigned    nInd;
   bool        bFound = false;
   int         nFoundInd = MSDL_IND_NONE;
 
@@ -633,7 +640,7 @@ int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY)
   printf("    ElemFindFromCoord(%3d,%3d):\n",nX,nY);
   #endif
 
-  for (unsigned nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
 
     // Ensure this element is visible on this page!
     if ((pGui->psElem[nInd].nPage == pGui->nPageIdCur) ||
@@ -1062,7 +1069,7 @@ bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev)
 
 int microSDL_GetTsClick(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 {
-  ts_sample   pSamp;
+  struct ts_sample   pSamp;
   int nRet = ts_read(pGui->ts,&pSamp,1);
   (*pnX) = pSamp.x;
   (*pnY) = pSamp.y;
@@ -1589,7 +1596,8 @@ bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
 
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
 {
-  for (unsigned nElemInd=0;nElemInd<pGui->nElemCnt;nElemInd++) {
+  unsigned  nElemInd;
+  for (nElemInd=0;nElemInd<pGui->nElemCnt;nElemInd++) {
     if (pGui->psElem[nElemInd].pSurf != NULL) {
       SDL_FreeSurface(pGui->psElem[nElemInd].pSurf);
       pGui->psElem[nElemInd].pSurf = NULL;
@@ -1620,8 +1628,9 @@ bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
 // Search through the viewport array for a matching ID
 int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
 {
-  int nFound = MSDL_IND_NONE;
-  for (unsigned nInd=0;nInd<pGui->nViewCnt;nInd++) {
+  unsigned  nInd;
+  int       nFound = MSDL_IND_NONE;
+  for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
     if (pGui->psView[nInd].nId == nViewId) {
       nFound = nInd;
     }
@@ -1796,7 +1805,8 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
 
 void microSDL_FontCloseAll(microSDL_tsGui* pGui)
 {
-  for (unsigned nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
+  unsigned  nFontInd;
+  for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
     if (pGui->psFont[nFontInd].pFont != NULL) {
       TTF_CloseFont(pGui->psFont[nFontInd].pFont);
       pGui->psFont[nFontInd].pFont = NULL;

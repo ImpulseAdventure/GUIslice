@@ -15,6 +15,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
@@ -399,7 +400,7 @@ void microSDL_Flip(microSDL_tsGui* pGui);
 // RETURN:
 // - none
 //
-void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,bool bMapEn=true);
+void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,bool bMapEn);
 
 
 //
