@@ -6,6 +6,7 @@
 //
 
 #include "microsdl.h"
+#include "microsdl_ex.h"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -19,12 +20,12 @@ enum {E_FONT_BTN,E_FONT_TXT};
 unsigned m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM  30
-#define MAX_FONT  10
-microSDL_tsGui  m_gui;
-microSDL_tsElem m_asElem[MAX_ELEM];
-microSDL_tsFont m_asFont[MAX_FONT];
-
+#define MAX_ELEM    30
+#define MAX_FONT    10
+microSDL_tsGui      m_gui;
+microSDL_tsElem     m_asElem[MAX_ELEM];
+microSDL_tsFont     m_asFont[MAX_FONT];
+microSDL_tsXGauge   m_sXGauge;
 
 // Create page elements
 bool InitOverlays()
@@ -52,7 +53,7 @@ bool InitOverlays()
   // Create progress bar
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){80,80,50,10},
+  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
   return true;
@@ -107,7 +108,7 @@ int main( int argc, char* args[] )
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
     microSDL_ElemDraw(&m_gui,E_ELEM_TXT_COUNT);
 
-    microSDL_ElemUpdateGauge(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
     microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
 
     // Call Flip() to complete any immediate-mode drawing

@@ -3,12 +3,12 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.2    (2016/10/28)
+// - Version 0.2.3    (2016/10/29)
 // =======================================================================
-
 
 // MicroSDL library
 #include "microsdl.h"
+#include "microsdl_ex.h"
 
 #include <stdio.h>
 
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.2.2"
+#define MICROSDL_VER "0.2.3"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -771,25 +771,6 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,
 }
 
 
-int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
-  int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
-{
-  microSDL_tsElem sElem;
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_GAUGE,rElem,NULL,MSDL_FONT_NONE);
-  sElem.bFrameEn        = true;
-  sElem.bFillEn         = true;
-  sElem.nGaugeMin       = nMin;
-  sElem.nGaugeMax       = nMax;
-  sElem.nGaugeVal       = nVal;
-  sElem.bGaugeVert      = bVert;
-  sElem.colGauge        = colGauge;
-  sElem.colElemFrame    = MSDL_COL_GRAY;
-  sElem.colElemFill     = MSDL_COL_BLACK;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
-  return (bOk)? sElem.nId : MSDL_ID_NONE;
-}
-
-
 
 // ------------------------------------------------------------------------
 // Element Drawing Functions
@@ -881,17 +862,6 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId)
   pElem->pTxtFont = microSDL_FontGet(pGui,nFontId);
 }
 
-
-void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal)
-{
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: ElemUpdateGauge() invalid ID=%d\n",nElemInd);
-    return;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  pElem->nGaugeVal = nVal;
-}
 
 
 // ------------------------------------------------------------------------
@@ -1231,12 +1201,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
   sElem.nType           = nType;
   sElem.pTxtFont        = microSDL_FontGet(pGui,nFontId);
   sElem.pSurf           = NULL;
-  sElem.pSurfSel        = NULL;
-  sElem.nGaugeMin       = 0;
-  sElem.nGaugeMax       = 0;
-  sElem.nGaugeVal       = 0;
-  sElem.bGaugeVert      = false;
-  sElem.colGauge        = MSDL_COL_BLACK;
+  sElem.pSurfSel        = NULL; 
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemFrame    = MSDL_COL_BLUE_DK;
   sElem.colElemFillSel  = MSDL_COL_BLACK;
@@ -1254,6 +1219,10 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
   sElem.bFrameEn = false;
   sElem.bClickEn = false;
 
+  sElem.pXData = NULL;
+  sElem.pfuncXDraw = NULL;
+  sElem.pfuncXTouch = NULL;
+  
   // If the element creation was successful, then set the valid flag
   sElem.bValid = true;
 
@@ -1406,11 +1375,22 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     // to redraw the background layer(s)
   }
 
-  // Handle special element types
-  // TODO: Add owner-draw type
-  if (sElem.nType == MSDL_TYPE_GAUGE) {
-    microSDL_ElemDraw_Gauge(pGui,sElem);
+  
+  // Handle any extended element types
+  switch(sElem.nType) {
+    case MSDL_TYPEX_GAUGE:
+      if (sElem.pfuncXDraw == NULL) {
+        return false;
+      }
+      (*sElem.pfuncXDraw)((void*)(pGui),(void*)(&sElem));
+      //xxx microSDL_ElemXGaugeDraw((void*)(pGui),(void*)(&sElem));
+      break;
+      
+    default:
+      // No extra handling required
+      break;
   }
+
 
   // Frame the region
   #ifdef DBG_FRAME
@@ -1480,118 +1460,6 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   return true;
 }
 
-
-bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem)
-{
-  SDL_Rect    rGauge;
-  int         nElemX,nElemY;
-  unsigned    nElemW,nElemH;
-
-  nElemX = sElem.rElem.x;
-  nElemY = sElem.rElem.y;
-  nElemW = sElem.rElem.w;
-  nElemH = sElem.rElem.h;
-
-  rGauge.x = nElemX;
-  rGauge.y = nElemY;
-
-  bool  bVert = sElem.bGaugeVert;
-  int   nMax = sElem.nGaugeMax;
-  int   nMin = sElem.nGaugeMin;
-  int   nRng = sElem.nGaugeMax-sElem.nGaugeMin;
-
-  if (nRng == 0) {
-    fprintf(stderr,"ERROR: Zero gauge range [%d,%d]\n",nMin,nMax);
-    return false;
-  }
-  float   fScl;
-  if (bVert) {
-    fScl = (float)nElemH/(float)nRng;
-  } else {
-    fScl = (float)nElemW/(float)nRng;
-  }
-
-  int nGaugeMid;
-  if ((nMin == 0) && (nMax > 0)) {
-    nGaugeMid = 0;
-  } else if ((nMin < 0) && (nMax > 0)) {
-    nGaugeMid = -nMin*fScl;
-  } else if ((nMin < 0) && (nMax == 0)) {
-    nGaugeMid = -nMin*fScl;
-  } else {
-    fprintf(stderr,"ERROR: Unsupported gauge range [%d,%d]\n",nMin,nMax);
-    return false;
-  }
-
-  // Calculate the length of the bar
-  int nLen = sElem.nGaugeVal * fScl;
-
-  // Handle negative ranges
-  if (nLen >= 0) {
-    if (bVert) {
-      rGauge.h = nLen;
-      rGauge.y = nElemY + nGaugeMid;
-    } else {
-      rGauge.w = nLen;
-      rGauge.x = nElemX + nGaugeMid;
-    }
-  } else {
-    if (bVert) {
-      rGauge.y = nElemY + nGaugeMid+nLen;
-      rGauge.h = -nLen;
-    } else {
-      rGauge.x = nElemX + nGaugeMid+nLen;
-      rGauge.w = -nLen;
-    }
-  }
-
-  if (bVert) {
-    rGauge.w = nElemW;
-    rGauge.x = nElemX;
-  } else {
-    rGauge.h = nElemH;
-    rGauge.y = nElemY;
-  }
-
-  // Now clip the region
-  // TODO: Determine if we need to adjust by -1
-  int nRectClipX1 = rGauge.x;
-  int nRectClipX2 = rGauge.x+rGauge.w;
-  int nRectClipY1 = rGauge.y;
-  int nRectClipY2 = rGauge.y+rGauge.h;
-  if (nRectClipX1 < nElemX)             { nRectClipX1 = nElemX;         }
-  if (nRectClipX2 > nElemX+(int)nElemW) { nRectClipX2 = nElemX+nElemW;  }
-  if (nRectClipY1 < nElemY)             { nRectClipY1 = nElemY;         }
-  if (nRectClipY2 > nElemY+(int)nElemH) { nRectClipY2 = nElemY+nElemH;  }
-  rGauge.x = nRectClipX1;
-  rGauge.y = nRectClipY1;
-  rGauge.w = nRectClipX2-nRectClipX1;
-  rGauge.h = nRectClipY2-nRectClipY1;
-
-  #ifdef DBG_LOG
-  printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
-    nMin,nMax,nRng,sElem.nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
-  #endif
-
-  microSDL_FillRect(pGui,rGauge,sElem.colGauge);
-
-  // Now draw the midpoint line
-  SDL_Rect    rMidLine;
-  if (bVert) {
-    rMidLine.x = nElemX;
-    rMidLine.y = nElemY+nGaugeMid;
-    rMidLine.w = nElemW;
-    rMidLine.h = 1;
-  } else {
-    rMidLine.x = nElemX+nGaugeMid;
-    rMidLine.y = nElemY;
-    rMidLine.w = 1;
-    rMidLine.h = nElemH;
-  }
-  microSDL_FillRect(pGui,rMidLine,sElem.colElemFrame);
-
-  return true;
-}
 
 
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
@@ -1706,6 +1574,12 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY)
     printf("microSDL_TrackTouchDownClick @ (%3u,%3u): on button [Ind=%u]\n",nX,nY,
       pGui->nTrackElemHover);
     #endif
+
+    // Notify element for optional custom handling
+    // - We do this after we have determined which element should
+    //   receive the touch tracking
+    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_DOWN,nX,nY);
+    
     // Redraw button
     microSDL_ElemDrawByInd(pGui,nHoverStart);
     // Redraw
@@ -1724,6 +1598,11 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY)
 //
 void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
 {
+  
+  // Notify original hover element for optional custom handling
+  // - We do this before any changes are made to nTrackElemHover
+  microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_UP,nX,nY);
+  
   // Find button at point of mouse-up
   // NOTE: We could possibly use pGui->nTrackElemHover instead
   int nHoverNew = microSDL_ElemFindFromCoord(pGui,nX,nY);
@@ -1753,10 +1632,14 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
 
   // Clear hover state(s)
   pGui->bTrackElemHoverGlow = false;
+  
+  
+  
+  // Redraw elements
   microSDL_ElemDrawByInd(pGui,pGui->nTrackElemHover);
   microSDL_ElemDrawByInd(pGui,nHoverNew);
 
-  // Redraw
+  // Redraw window
   microSDL_Flip(pGui);
 
   pGui->nTrackElemHover = MSDL_IND_NONE;
@@ -1766,6 +1649,11 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
 // Handle MOUSEMOVE while MOUSEDOWN
 void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
 {
+  // Notify original hover element for optional custom handling
+  // - We do this before any changes are made to nTrackElemHover  
+  microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_MOVE,nX,nY);
+  
+  
   int nHoverOld = pGui->nTrackElemHover;
   int nHoverNew = microSDL_ElemFindFromCoord(pGui,nX,nY);
 
@@ -1802,6 +1690,36 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
   }
   
 }
+
+// Callback to Extended Element to notify of touch event
+// - Note that this call depends on the current "hover" element
+//   (ie. the element being tracked)
+// - eTouch is the enumeration: MSDL_TOUCH_*
+bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,int eTouch,int nX,int nY)
+{
+  // Function pointer
+  bool  (*pfuncXTouch)(void* pGui,int eTouch,int nX,int nY);
+  
+  // Determine the element currently in hover mode
+  int nElemInd = pGui->nTrackElemHover;
+  
+  // Find element
+  if (nElemInd == MSDL_IND_NONE) {
+    return true;
+  } else if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    printf("ERROR: microSDL_NotifyElemTouch(%d) invalid index\n",nElemInd);
+    return false;
+  }
+  
+  // Fetch the extended element callback (if enabled)
+  pfuncXTouch = pGui->psElem[nElemInd].pfuncXTouch;
+  if (pfuncXTouch != NULL) {
+    (*pfuncXTouch)((void*)(pGui),eTouch,nX,nY);
+  }
+  
+  return true;
+}
+
 
 void microSDL_FontCloseAll(microSDL_tsGui* pGui)
 {
@@ -1842,11 +1760,10 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
   pElem->nTxtMargin       = 0;
   pElem->pTxtFont         = NULL;
   
-  pElem->nGaugeMin        = 0;
-  pElem->nGaugeMax        = 0;
-  pElem->nGaugeVal        = 0;
-  pElem->colGauge         = MSDL_COL_WHITE;
-  pElem->bGaugeVert       = false;
+  pElem->pXData           = NULL;
+  pElem->pfuncXDraw       = NULL;
+  pElem->pfuncXTouch      = NULL;
+
 }
 
 // Initialize the font struct to all zeros

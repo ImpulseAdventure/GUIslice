@@ -6,12 +6,14 @@
 //
 
 #include "microsdl.h"
+#include "microsdl_ex.h"
 
 #include <math.h>
+#include <libgen.h>       // For path parsing
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
-#define IMG_LOGO        "./res/logo1-200x40.bmp"
+#define IMG_LOGO        "/res/logo1-200x40.bmp"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -28,17 +30,18 @@ float     m_fCoordY = 0;
 float     m_fCoordZ = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM  30
-#define MAX_FONT  10
-#define MAX_VIEW  5
-microSDL_tsGui  m_gui;
-microSDL_tsElem m_asElem[MAX_ELEM];
-microSDL_tsFont m_asFont[MAX_FONT];
-microSDL_tsView m_asView[MAX_VIEW];
+#define MAX_ELEM    30
+#define MAX_FONT    10
+#define MAX_VIEW    5
+microSDL_tsGui      m_gui;
+microSDL_tsElem     m_asElem[MAX_ELEM];
+microSDL_tsFont     m_asFont[MAX_FONT];
+microSDL_tsView     m_asView[MAX_VIEW];
+microSDL_tsXGauge   m_sXGauge;
 
-
-// Create page elements
-bool InitOverlays()
+// Create the default elements on each page
+// - strPath: Path to executable passed in to locate resource files
+bool InitOverlays(char *strPath)
 {
   int   nElemId;
 
@@ -46,8 +49,12 @@ bool InitOverlays()
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_BLACK);
 
   // Graphic logo
+  // - Extra code to demonstrate path generation based on location of executable  
+  char* strImgLogoPath = (char*)malloc(strlen(strPath)+strlen(IMG_LOGO)+1);
+  strcpy(strImgLogoPath, strPath);
+  strcat(strImgLogoPath, IMG_LOGO);  
   nElemId = microSDL_ElemCreateImg(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){160-100,5,200,40},
-    IMG_LOGO);
+    strImgLogoPath);
 
   // Create background box
   nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,50,300,150});
@@ -67,9 +74,10 @@ bool InitOverlays()
   // Create progress bar
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){80,80,50,10},
+  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
+  
   // Create other labels
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,100,50,10},
     "Coord X:",E_FONT_TXT);
@@ -174,7 +182,7 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Create the graphic elements
-  InitOverlays();
+  InitOverlays(dirname(args[0])); // Pass executable path to find resource files
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
@@ -222,7 +230,7 @@ int main( int argc, char* args[] )
     microSDL_ElemSetTxtCol(&m_gui,E_ELEM_DATAZ,(m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
     microSDL_ElemDraw(&m_gui,E_ELEM_DATAZ);
 
-    microSDL_ElemUpdateGauge(&m_gui,E_ELEM_PROGRESS,50+50*sin(m_nCount/500.0));
+    microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,50+50*sin(m_nCount/500.0));
     microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
 
     // -----------------------------------------------

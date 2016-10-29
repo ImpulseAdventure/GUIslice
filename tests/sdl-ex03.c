@@ -6,29 +6,58 @@
 
 #include "microsdl.h"
 
+#include <libgen.h>       // For path parsing
 
 // Defines for resources
-#define IMG_BTN_QUIT      "./res/btn-exit32x32.bmp"
-#define IMG_BTN_QUIT_SEL  "./res/btn-exit_sel32x32.bmp"
-
+#define IMG_BTN_QUIT      "/res/btn-exit32x32.bmp"
+#define IMG_BTN_QUIT_SEL  "/res/btn-exit_sel32x32.bmp"
+char*   strImgQuit;
+char*   strImgQuitSel;
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 
 // Instantiate the GUI
-#define MAX_ELEM  30
-microSDL_tsGui  m_gui;
-microSDL_tsElem m_asElem[MAX_ELEM];
+#define MAX_ELEM    30
+microSDL_tsGui      m_gui;
+microSDL_tsElem     m_asElem[MAX_ELEM];
 
 
+
+// - strPath: Path to executable passed in to locate resource files
+bool InitOverlays(char *strPath)
+{
+  int   nElemId;
+  
+  // Background flat color
+  microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
+
+  // Create background box
+  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+
+  // Create Quit button with image label
+  // - Extra code to demonstrate path generation based on location of executable
+  char* strImgQuit    = (char*)malloc(strlen(strPath)+strlen(IMG_BTN_QUIT)+1);
+  char* strImgQuitSel = (char*)malloc(strlen(strPath)+strlen(IMG_BTN_QUIT_SEL)+1);  
+  strcpy(strImgQuit, strPath);
+  strcat(strImgQuit, IMG_BTN_QUIT);  
+  strcpy(strImgQuitSel, strPath);
+  strcat(strImgQuitSel, IMG_BTN_QUIT_SEL);     
+  nElemId = microSDL_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+          (SDL_Rect){258,70,32,32},strImgQuit,strImgQuitSel);
+  free(strImgQuit);
+  free(strImgQuitSel);
+
+  return true;
+}
 
 int main( int argc, char* args[] )
 {
   bool              bQuit = false;  
   int               nClickX,nClickY;
   unsigned          nClickPress;
-  int               nElemId;
   int               nTrackElemClicked;
 
   // -----------------------------------
@@ -41,18 +70,8 @@ int main( int argc, char* args[] )
 
 
   // -----------------------------------
-  // Create page elements
-
-  // Background flat color
-  microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
-
-  // Create background box
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
-
-  // Create Quit button with image label
-  nElemId = microSDL_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-          (SDL_Rect){258,70,32,32},IMG_BTN_QUIT,IMG_BTN_QUIT_SEL);
+  // Create the graphic elements
+  InitOverlays(dirname(args[0])); // Pass executable path to find resource files
 
   // -----------------------------------
   // Start display

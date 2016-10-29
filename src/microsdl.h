@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.2 (2016/10/28)
+// - Version 0.2.3    (2016/10/29)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -53,8 +53,13 @@ extern "C" {
 #define MSDL_ID_AUTO_BASE   32768
 
 // Element types
-enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
-    MSDL_TYPE_GAUGE, MSDL_TYPE_BOX, MSDL_TYPE_LINE};
+enum {
+    // Core elements:
+    MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
+    MSDL_TYPE_BOX, MSDL_TYPE_LINE,
+    // Extended elements:
+    MSDL_TYPEX_GAUGE
+};
 
 // Element text alignment
 #define MSDL_ALIGNV_TOP       0x10
@@ -95,11 +100,12 @@ enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
 #define MSDL_COL_ORANGE     (SDL_Color) {255,165,0}
 #define MSDL_COL_BROWN      (SDL_Color) {165,42,42}
 
+// Extended element touch tracking enums
+enum {MSDL_TOUCH_DOWN, MSDL_TOUCH_MOVE, MSDL_TOUCH_UP};
 
 // -----------------------------------------------------------------------
 // Structures
 // -----------------------------------------------------------------------
-
 
 
 //
@@ -110,6 +116,8 @@ enum {MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
 //   accesses (or MSDL_ID_AUTO for it to be auto-generated)
 // - Display order of elements in a page is based upon the creation order
 // - An element can be associated with all pages with nPage=MSDL_PAGE_ALL
+// - Extensions to the core element types is provided through the
+//   pXData reference and pfuncX* callback functions.
 //
 typedef struct {
   bool            bValid;         // Element was created properly
@@ -136,15 +144,13 @@ typedef struct {
   unsigned        eTxtAlign;
   unsigned        nTxtMargin;
   TTF_Font*       pTxtFont;
-
-  // Gauge
-  int             nGaugeMin;
-  int             nGaugeMax;
-  int             nGaugeVal;
-  SDL_Color       colGauge;
-  bool            bGaugeVert;
-
+ 
+  void*           pXData;
+  bool            (*pfuncXDraw)(void* pGui,void* pElem);
+  bool            (*pfuncXTouch)(void* pGui,int eTouch,int nX,int nY);
+  
 } microSDL_tsElem;
+
 
 
 // Struct that represents a font reference
@@ -719,30 +725,6 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect r
   const char* acImg);
 
 
-//
-// Create a Gauge Element
-// - Draws a horizontal or vertical box with a filled region
-//   corresponding to the proportion that nVal represents
-//   between nMin and nMax.
-//
-// INPUT:
-// - pGui:        Pointer to GUI
-// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
-// - nPage:       Page ID to attach element to
-// - rElem:       Rectangle coordinates defining gauge size
-// - nMin:        Minimum value of gauge for nVal comparison
-// - nMax:        Maximum value of gauge for nVal comparison
-// - colGauge:    Color to fill the gauge with
-// - bVert:       Flag to indicate vertical vs horizontal action
-//                (true = vertical, false = horizontal)
-//
-// RETURN:
-// - The Element ID or MSDL_ID_NONE if failure
-//
-int microSDL_ElemCreateGauge(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert);
-
-
 
 // ------------------------------------------------------------------------
 // Element Drawing Functions
@@ -860,20 +842,6 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal);
 //
 void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId);
 
-
-//
-// Update a Gauge element's current value
-// - Note that min & max values are assigned in create()
-//
-// INPUT:
-// - pGui:        Pointer to GUI
-// - nElemId:     Element ID to update
-// - nVal:        New value to show in gauge
-//
-// RETURN:
-// - none
-//
-void microSDL_ElemUpdateGauge(microSDL_tsGui* pGui,int nElemId,int nVal);
 
 
 // ------------------------------------------------------------------------
@@ -1237,20 +1205,6 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd);
 
 
 //
-// Draw a gauge element on the screen
-// - Called from microSDL_ElemDraw()
-//
-// INPUT:
-// - pGui:        Pointer to GUI
-// - sElem:       Element structure
-//
-// RETURN:
-// - true if success, false otherwise
-//
-bool microSDL_ElemDraw_Gauge(microSDL_tsGui* pGui,microSDL_tsElem sElem);
-
-
-//
 // Free up any surfaces associated with the Elements
 // - Called by microSDL_Quit()
 //
@@ -1378,6 +1332,9 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 // - none
 //
 void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
+
+// xxx TODO: Document
+bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,int eTouch,int nX,int nY);
 
 //
 // Close all loaded fonts

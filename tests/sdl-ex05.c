@@ -6,11 +6,13 @@
 //
 
 #include "microsdl.h"
+#include "microsdl_ex.h"
 
+#include <libgen.h>       // For path parsing
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
-#define IMG_BKGND       "./res/bkgnd1_320x240.bmp"
+#define IMG_BKGND       "/res/bkgnd1_320x240.bmp"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN,E_PG_EXTRA};
@@ -22,22 +24,27 @@ enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 unsigned m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM  30
-#define MAX_FONT  10
-microSDL_tsGui  m_gui;
-microSDL_tsElem m_asElem[MAX_ELEM];
-microSDL_tsFont m_asFont[MAX_FONT];
+#define MAX_ELEM    30
+#define MAX_FONT    10
+microSDL_tsGui      m_gui;
+microSDL_tsElem     m_asElem[MAX_ELEM];
+microSDL_tsFont     m_asFont[MAX_FONT];
+microSDL_tsXGauge   m_sXGauge;
 
 // Create the default elements on each page
-bool InitOverlays()
+// - strPath: Path to executable passed in to locate resource files
+bool InitOverlays(char *strPath)
 {
   int               nElemId;
 
   // -----------------------------------
   // Background
-  microSDL_SetBkgndImage(&m_gui,(char*)IMG_BKGND);
-
-
+  char* strImgBkgndPath = (char*)malloc(strlen(strPath)+strlen(IMG_BKGND)+1);
+  strcpy(strImgBkgndPath, strPath);
+  strcat(strImgBkgndPath, IMG_BKGND);
+  microSDL_SetBkgndImage(&m_gui,strImgBkgndPath);
+  free(strImgBkgndPath);
+  
   // -----------------------------------
   // PAGE: MAIN
 
@@ -70,7 +77,7 @@ bool InitOverlays()
   // Create progress bar
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemCreateGauge(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,(SDL_Rect){100,80,50,10},
+  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){100,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
   // -----------------------------------
@@ -131,7 +138,7 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Create page elements
   // -----------------------------------
-  InitOverlays();
+  InitOverlays(dirname(args[0])); // Pass executable path to find resource files
 
 
   // -----------------------------------
@@ -162,7 +169,7 @@ int main( int argc, char* args[] )
       microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
       microSDL_ElemDraw(&m_gui,E_ELEM_TXT_COUNT);
 
-      microSDL_ElemUpdateGauge(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
+      microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
       microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
     }
 

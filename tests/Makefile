@@ -50,16 +50,16 @@ sdl-ex03: sdl-ex03.c ../src/microsdl.c
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ sdl-ex03.c ../src/microsdl.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex04: sdl-ex04.c ../src/microsdl.c
+sdl-ex04: sdl-ex04.c ../src/microsdl.c ../src/microsdl_ex.c
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex04.c ../src/microsdl.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ sdl-ex04.c ../src/microsdl.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex05: sdl-ex05.c ../src/microsdl.c
+sdl-ex05: sdl-ex05.c ../src/microsdl.c ../src/microsdl_ex.c
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex05.c ../src/microsdl.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ sdl-ex05.c ../src/microsdl.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex06: sdl-ex06.c ../src/microsdl.c
+sdl-ex06: sdl-ex06.c ../src/microsdl.c ../src/microsdl_ex.c
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex06.c ../src/microsdl.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ sdl-ex06.c ../src/microsdl.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 
