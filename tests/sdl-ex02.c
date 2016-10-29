@@ -74,7 +74,7 @@ int main( int argc, char* args[] )
   while (!bQuit) {
   
     // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,nClickX,nClickY,nClickPress)) {
+    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
  
       // Track the touch event and find any associated object
       microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);

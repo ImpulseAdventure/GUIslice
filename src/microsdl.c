@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.1    (2016/10/27)
+// - Version 0.2.2    (2016/10/28)
 // =======================================================================
 
 
@@ -337,7 +337,7 @@ void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,b
   // Support viewport local coordinate remapping
   if (bMapEn) {
     if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-      microSDL_ViewRemapPt(pGui,nX,nY);
+      microSDL_ViewRemapPt(pGui,&nX,&nY);
     }
   }
 
@@ -353,8 +353,8 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
 {
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,nX0,nY0);
-    microSDL_ViewRemapPt(pGui,nX1,nY1);
+    microSDL_ViewRemapPt(pGui,&nX0,&nY0);
+    microSDL_ViewRemapPt(pGui,&nX1,&nY1);
   }
 
   Sint16 nDX = abs(nX1-nX0);
@@ -402,7 +402,7 @@ void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Col
 {
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,nX,nY);
+    microSDL_ViewRemapPt(pGui,&nX,&nY);
   }
 
   Uint16 nOffset;
@@ -419,7 +419,7 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
 {
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,nX,nY);
+    microSDL_ViewRemapPt(pGui,&nX,&nY);
   }
   Uint16 nOffset;
   Uint32 nPixelCol = microSDL_GenPixelColor(pGui,nCol);
@@ -458,7 +458,7 @@ void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapRect(pGui,rRect);
+    microSDL_ViewRemapRect(pGui,&rRect);
   }
 
   Sint16  nX,nY;
@@ -482,7 +482,7 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapRect(pGui,rRect);
+    microSDL_ViewRemapRect(pGui,&rRect);
   }
 
   SDL_FillRect(pGui->surfScreen,&rRect,
@@ -999,7 +999,7 @@ void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress)
 
 }
 
-bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX,int &nY,unsigned &nPress)
+bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 {
   bool        bRet = false;
   SDL_Event   sEvent;
@@ -1017,12 +1017,12 @@ bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX,int &nY,unsigned &nPress)
 
     } else if (sEvent.type == SDL_MOUSEMOTION) {
     } else if (sEvent.type == SDL_MOUSEBUTTONDOWN) {
-      SDL_GetMouseState(&nX,&nY);
-      nPress = 1;
+      SDL_GetMouseState(pnX,pnY);
+      (*pnPress) = 1;
       bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONUP) {
-      SDL_GetMouseState(&nX,&nY);
-      nPress = 0;
+      SDL_GetMouseState(pnX,pnY);
+      (*pnPress) = 0;
       bRet = true;
     }
   } // SDL_PollEvent()
@@ -1060,13 +1060,13 @@ bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev)
   return true;
 }
 
-int microSDL_GetTsClick(microSDL_tsGui* pGui,int &nX,int &nY,unsigned &nPress)
+int microSDL_GetTsClick(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 {
   ts_sample   pSamp;
   int nRet = ts_read(pGui->ts,&pSamp,1);
-  nX = pSamp.x;
-  nY = pSamp.y;
-  nPress = pSamp.pressure;
+  (*pnX) = pSamp.x;
+  (*pnY) = pSamp.y;
+  (*pnPress) = pSamp.pressure;
   return nRet;
 }
 
@@ -1631,7 +1631,7 @@ int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
 
 // Translate a coordinate from local to global according
 // to the viewport region and origin.
-void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY)
+void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16* pnX,Sint16* pnY)
 {
   int nViewInd = pGui->nViewIndCur;
   if (nViewInd == MSDL_VIEW_IND_SCREEN) {
@@ -1648,29 +1648,29 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY)
   nOriginX  = pGui->psView[nViewInd].nOriginX;
   nOriginY  = pGui->psView[nViewInd].nOriginY;
 
-  nFinalX   = nFrameX + nOriginX + nX;
-  nFinalY   = nFrameY + nOriginY + nY;
+  nFinalX   = nFrameX + nOriginX + (*pnX);
+  nFinalY   = nFrameY + nOriginY + (*pnY);
 
-  nX = nFinalX;
-  nY = nFinalY;
+  *pnX = nFinalX;
+  *pnY = nFinalY;
 }
 
 // Translate a rectangle's coordinates from local to global according
 // to the viewport region and origin.
-void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect &rRect)
+void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect)
 {
   // TODO: Might need to correct by -1
   Sint16 nX0,nY0,nX1,nY1;
-  nX0 = rRect.x;
-  nY0 = rRect.y;
-  nX1 = rRect.x+rRect.w;
-  nY1 = rRect.y+rRect.h;
-  microSDL_ViewRemapPt(pGui,nX0,nY0);
-  microSDL_ViewRemapPt(pGui,nX1,nY1);
-  rRect.x = nX0;
-  rRect.y = nY0;
-  rRect.w = nX1-nX0;
-  rRect.h = nY1-nY0;
+  nX0 = prRect->x;
+  nY0 = prRect->y;
+  nX1 = prRect->x + prRect->w;
+  nY1 = prRect->y + prRect->h;
+  microSDL_ViewRemapPt(pGui,&nX0,&nY0);
+  microSDL_ViewRemapPt(pGui,&nX1,&nY1);
+  prRect->x = nX0;
+  prRect->y = nY0;
+  prRect->w = nX1-nX0;
+  prRect->h = nY1-nY0;
 }
 
 

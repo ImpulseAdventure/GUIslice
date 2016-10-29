@@ -6,13 +6,16 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.1 (2016/10/27)
+// - Version 0.2.2 (2016/10/28)
 // =======================================================================
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
 
@@ -976,14 +979,14 @@ void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress);
 //
 // OUTPUT:
 // - pGui:        Pointer to GUI
-// - nX:          X coordinate of last touch event
-// - nY:          Y coordinate of last touch event
-// - nPress:      Pressure level of last touch event (0 for none, 1 for touch)
+// - pnX:         Ptr to X coordinate of last touch event
+// - pnY:         Ptr to Y coordinate of last touch event
+// - pnPress:     Ptr to Pressure level of last touch event (0 for none, 1 for touch)
 //
 // RETURN:
 // - true if an event was detected or false otherwise
 //
-bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int &nX, int &nY, unsigned &nPress);
+bool microSDL_GetSdlClick(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 
 
 // ------------------------------------------------------------------------
@@ -1013,14 +1016,14 @@ bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev);
 // - pGui:        Pointer to GUI
 //
 // OUTPUT:
-// - nX:          X coordinate of last touch event
-// - nY:          Y coordinate of last touch event
-// - nPress:      Pressure level of last touch event (0 for none, >0 for touch)
+// - pnX:         Ptr to X coordinate of last touch event
+// - pnY:         Ptr to Y coordinate of last touch event
+// - pnPress:     Ptr to  Pressure level of last touch event (0 for none, >0 for touch)
 //
 // RETURN:
 // - non-zero if an event was detected or 0 otherwise
 //
-int microSDL_GetTsClick(microSDL_tsGui* pGui,int &nX, int &nY, unsigned &nPress);
+int microSDL_GetTsClick(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 
 
 #endif // INC_TS
@@ -1289,13 +1292,13 @@ int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId);
 // - nViewId:     ID of the viewport
 //
 // INOUT:
-// - nX:          X coordinate
-// - nY:          Y coordinate
+// - pnX:         Ptr to X coordinate
+// - pnY:         Ptr to Y coordinate
 //
 // RETURN:
 // - none
 //
-void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY);
+void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16* pnX,Sint16* pnY);
 
 //
 // Remap a rectangle from local to global using the
@@ -1307,12 +1310,12 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16 &nX,Sint16 &nY);
 // - nViewId:     ID of the viewport
 //
 // INOUT:
-// - rRect:       Rectangular coordinates to update
+// - prRect:      Ptr to Rectangular coordinates to update
 //
 // RETURN:
 // - none
 //
-void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect &rRect);
+void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
 
 
 //

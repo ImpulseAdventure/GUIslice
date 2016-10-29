@@ -7,7 +7,6 @@
 
 #include "microsdl.h"
 
-
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
 
@@ -67,13 +66,13 @@ int main( int argc, char* args[] )
   int               nClickX,nClickY;
   unsigned          nClickPress;
   int               nTrackElemClicked;
-
   char              acTxt[100];
 
   // -----------------------------------
   // Initialize
 
   microSDL_InitEnv(&m_gui);
+
   if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
@@ -117,7 +116,7 @@ int main( int argc, char* args[] )
     // -----------------------------------
   
     // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,nClickX,nClickY,nClickPress)) {
+    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
  
       // Track the touch event and find any associated object
       microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);

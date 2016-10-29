@@ -9,7 +9,7 @@ CC = g++
 INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 
-# Define microSDL compiler flags
+# Define compiler flags for microSDL
 MSDLFLAGS = -DINC_TS -DVT_WRK_EN
 
 LDFLAGS = -L/usr/local/lib
