@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.2.1"
+#define MICROSDL_VER "0.2.2"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
