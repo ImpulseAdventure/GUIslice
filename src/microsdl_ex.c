@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.3    (2016/10/29)
+// - Version 0.2.4    (2016/??/??)
 // =======================================================================
 
 
@@ -17,11 +17,34 @@
 #include "SDL/SDL_getenv.h"
 #include "SDL/SDL_ttf.h"
 
+
+// ----------------------------------------------------------------------------
 // Extended element definitions
+// ----------------------------------------------------------------------------
+//
 // - This file extends the core microSDL functionality with
 //   additional widget types
+// - After adding any widgets to microsdl_ex, a unique
+//   enumeration (MSDL_TYPEX_*) should be added to "microsdl.h"
+//
+//   TODO: Consider whether we should remove the need to update
+//         these enumerations in "microsdl.h"; we could instead
+//         define a single "MSDL_TYPEX" in microsdl.h but then
+//         allow "microsdl_ex.h" to create a new set of unique
+//         enumerations. This way extended elements could be created
+//         in microsdl_ex and no changes at all would be required
+//         in microsdl.
+
+// ----------------------------------------------------------------------------
 
 
+// ============================================================================
+// Extended Element: Gauge
+// ============================================================================
+
+// Create a gauge element and add it to the GUI element list
+// - Defines default styling for the element
+// - Defines callback for redraw but does not track touch/click
 int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXGauge* pXData,SDL_Rect rElem,
   int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
@@ -31,7 +54,7 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_GAUGE,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
-  sElem.bClickEn        = false;
+  sElem.bClickEn        = false;          // Element is not "clickable"
   pXData->nGaugeMin     = nMin;
   pXData->nGaugeMax     = nMax;
   pXData->nGaugeVal     = nVal;
@@ -39,16 +62,17 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->colGauge      = colGauge;
   sElem.pXData          = (void*)(pXData);
   sElem.pfuncXDraw      = &microSDL_ElemXGaugeDraw;
-  sElem.pfuncXTouch     = NULL;
+  sElem.pfuncXTouch     = NULL;           // No need to track touches
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-
+// Update the gauge control's current position
 void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
 {
+  // Fetch the control data elements
   int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXGaugeUpdate() invalid ID=%d\n",nElemInd);
@@ -56,12 +80,18 @@ void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
   }
   microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
   microSDL_tsXGauge*  pGauge = (microSDL_tsXGauge*)(pElem->pXData);
+  
+  // Update the data element
   pGauge->nGaugeVal = nVal;
 }
 
-
+// Redraw the gauge
+// - Note that this redraw is for the entire element rect region
+// - The Draw function parameters use void pointers to allow for
+//   simpler callback function definition & scalability.
 bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 {
+  // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
   
@@ -77,6 +107,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   rGauge.x = nElemX;
   rGauge.y = nElemY;
 
+  // Fetch the element's extended data structure
   microSDL_tsXGauge* pXGauge;
   pXGauge = (microSDL_tsXGauge*)(pElem->pXData);
   if (pXGauge == NULL) {
@@ -99,6 +130,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
     fScl = (float)nElemW/(float)nRng;
   }
 
+  // Calculate the control midpoint (for display purposes)
   int nGaugeMid;
   if ((nMin == 0) && (nMax > 0)) {
     nGaugeMid = 0;
@@ -114,7 +146,9 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   // Calculate the length of the bar
   int nLen = pXGauge->nGaugeVal * fScl;
 
-  // Handle negative ranges
+  // Define the gauge's fill rectangle region
+  // depending on the orientation (bVert) and whether
+  // the current position is negative or positive.
   if (nLen >= 0) {
     if (bVert) {
       rGauge.h = nLen;
@@ -132,7 +166,6 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
       rGauge.w = -nLen;
     }
   }
-
   if (bVert) {
     rGauge.w = nElemW;
     rGauge.x = nElemX;
@@ -141,7 +174,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
     rGauge.y = nElemY;
   }
 
-  // Now clip the region
+  // Clip the region
   // TODO: Determine if we need to adjust by -1
   int nRectClipX1 = rGauge.x;
   int nRectClipX2 = rGauge.x+rGauge.w;
@@ -161,9 +194,10 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
     nMin,nMax,nRng,pXGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
   #endif
 
+  // Draw the gauge fill region
   microSDL_FillRect(pGui,rGauge,pXGauge->colGauge);
 
-  // Now draw the midpoint line
+  // Draw the midpoint line
   SDL_Rect    rMidLine;
   if (bVert) {
     rMidLine.x = nElemX;
@@ -176,7 +210,11 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
     rMidLine.w = 1;
     rMidLine.h = nElemH;
   }
+  
+  // Draw a frame around the gauge
   microSDL_FillRect(pGui,rMidLine,pElem->colElemFrame);
 
   return true;
 }
+
+// ============================================================================

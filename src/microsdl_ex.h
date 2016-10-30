@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.3    (2016/10/29)
+// - Version 0.2.4    (2016/??/??)
 // =======================================================================
 
 // Extended element definitions
@@ -23,13 +23,18 @@ extern "C" {
 //   structure via the pXData pointer
 
   
+  
+// ============================================================================
+// Extended Element: Gauge
+// ============================================================================
+
 // Extended data for Gauge element
 typedef struct {
-  int             nGaugeMin;
-  int             nGaugeMax;
-  int             nGaugeVal;
-  SDL_Color       colGauge;
-  bool            bGaugeVert;
+  int             nGaugeMin;    // Minimum control value
+  int             nGaugeMax;    // Maximum control value
+  int             nGaugeVal;    // Current control value
+  SDL_Color       colGauge;     // Color of gauge fill bar
+  bool            bGaugeVert;   // Vertical if true, else Horizontal
 } microSDL_tsXGauge;
 
 
@@ -84,7 +89,7 @@ void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal);
 //
 bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem);
 
-
+// ============================================================================
 
 
 

@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.3    (2016/10/29)
+// - Version 0.2.4    (2016/??/??)
 // =======================================================================
 
 // MicroSDL library
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.2.3"
+#define MICROSDL_VER "0.2.4"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -1377,18 +1377,15 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
 
   
   // Handle any extended element types
-  switch(sElem.nType) {
-    case MSDL_TYPEX_GAUGE:
-      if (sElem.pfuncXDraw == NULL) {
-        return false;
-      }
-      (*sElem.pfuncXDraw)((void*)(pGui),(void*)(&sElem));
-      //xxx microSDL_ElemXGaugeDraw((void*)(pGui),(void*)(&sElem));
-      break;
-      
-    default:
-      // No extra handling required
-      break;
+  // - If the pfuncXDraw callback is defined, then additional
+  //   drawing is required, so handle that now
+  //
+  // - TODO: Perhaps this should replace the majority of the
+  //         default drawing in this routine? For now users
+  //         can simply set bFillEn and bFrameEn to false to
+  //         disable most of the default drawing here.
+  if (sElem.pfuncXDraw != NULL) {
+    (*sElem.pfuncXDraw)((void*)(pGui),(void*)(&sElem));
   }
 
 

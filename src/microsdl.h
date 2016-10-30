@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.3    (2016/10/29)
+// - Version 0.2.4    (2016/??/??)
 // =======================================================================
 
 #ifdef __cplusplus
