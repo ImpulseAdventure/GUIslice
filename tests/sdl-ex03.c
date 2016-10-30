@@ -85,7 +85,11 @@ int main( int argc, char* args[] )
 
   bQuit = false;
   while (!bQuit) {
-  
+
+    // Periodically call PageFlipGo() to update the screen
+    // due to any drawing updates
+    microSDL_PageFlipGo(&m_gui);    
+    
     // Poll for touchscreen presses
     if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
  

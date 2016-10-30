@@ -35,6 +35,9 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
   microSDL_ElemDrawPageCur(&m_gui);
+
+  // Call PageFlipGo() to update the screen following any drawing updates
+  microSDL_PageFlipGo(&m_gui);  
   
   // Main code here...
   SDL_Delay(2000);

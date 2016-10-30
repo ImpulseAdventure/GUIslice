@@ -13,19 +13,20 @@
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS};
+enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_CHECK1};
 enum {E_FONT_BTN,E_FONT_TXT};
 
 // Free-running counter for display
 unsigned m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM    30
-#define MAX_FONT    10
-microSDL_tsGui      m_gui;
-microSDL_tsElem     m_asElem[MAX_ELEM];
-microSDL_tsFont     m_asFont[MAX_FONT];
-microSDL_tsXGauge   m_sXGauge;
+#define MAX_ELEM      30
+#define MAX_FONT      10
+microSDL_tsGui        m_gui;
+microSDL_tsElem       m_asElem[MAX_ELEM];
+microSDL_tsFont       m_asFont[MAX_FONT];
+microSDL_tsXGauge     m_sXGauge;
+microSDL_tsXCheckbox  m_sXCheck1;
 
 // Create page elements
 bool InitOverlays()
@@ -41,7 +42,7 @@ bool InitOverlays()
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
+    (SDL_Rect){160,100,80,40},"Quit",E_FONT_BTN);
 
   // Create counter
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
@@ -55,6 +56,12 @@ bool InitOverlays()
     "Progress:",E_FONT_TXT);
   nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
+  
+  // Create checkbox 1
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,120,20,20},
+    "Check:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_sXCheck1,(SDL_Rect){80,120,20,20},
+    MSDL_COL_ORANGE,false);
 
   return true;
 }
@@ -99,6 +106,7 @@ int main( int argc, char* args[] )
   bQuit = false;
   while (!bQuit) {
 
+    // General counter
     m_nCount++;
 
     // -----------------------------------
@@ -111,8 +119,9 @@ int main( int argc, char* args[] )
     microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
     microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
 
-    // Call Flip() to complete any immediate-mode drawing
-    microSDL_Flip(&m_gui);
+    // Periodically call PageFlipGo() to update the screen
+    // due to any drawing updates
+    microSDL_PageFlipGo(&m_gui);
 
     // -----------------------------------
   
@@ -127,6 +136,10 @@ int main( int argc, char* args[] )
       if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
         // Quit button pressed
         bQuit = true;
+      } else if (nTrackElemClicked == E_ELEM_CHECK1) {
+        // Toggle checkbox
+        microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK1);
+        microSDL_ElemDraw(&m_gui,E_ELEM_CHECK1);       
       }
 
       // Clear click event
@@ -135,6 +148,8 @@ int main( int argc, char* args[] )
     } // Touchscreen press
   } // bQuit
 
+  // Read checkbox state:
+  // bool bCheck = microSDL_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
 
   // -----------------------------------
   // Close down display

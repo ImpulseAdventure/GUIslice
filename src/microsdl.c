@@ -133,6 +133,9 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   pGui->ts = NULL;
   #endif
 
+  // Redraw
+  pGui->bPageNeedFlip = true;
+  
   // Primary surface definitions
   pGui->surfScreen = NULL;
   pGui->surfBkgnd = NULL;
@@ -257,6 +260,7 @@ bool microSDL_SetBkgnd(microSDL_tsGui* pGui,SDL_Surface* pSurf)
     pGui->surfBkgnd = NULL;
   }
   pGui->surfBkgnd = pSurf;
+  microSDL_PageFlipSet(pGui,true);  
   return true;
 }
 
@@ -275,6 +279,7 @@ bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
   if (pGui->surfBkgnd == NULL) {
     return false;
   }
+  microSDL_PageFlipSet(pGui,true);
   return true;
 }
 
@@ -296,6 +301,7 @@ bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,SDL_Color nCol)
   if (pGui->surfBkgnd == NULL) {
     return false;
   }
+  microSDL_PageFlipSet(pGui,true);
   return true;
 }
 
@@ -306,6 +312,7 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
   offset.x = x;
   offset.y = y;
   SDL_BlitSurface(pSrc,NULL,pDest,&offset);
+  microSDL_PageFlipSet(pGui,true);
 }
 
 
@@ -323,9 +330,30 @@ bool microSDL_IsInRect(microSDL_tsGui* pGui,int nSelX,int nSelY,SDL_Rect rRect)
 void microSDL_Flip(microSDL_tsGui* pGui)
 {
   SDL_Flip( pGui->surfScreen );
+  
+  // Page flip no longer required
+  microSDL_PageFlipSet(pGui,false);
 }
 
+void microSDL_PageFlipSet(microSDL_tsGui* pGui,bool bNeeded)
+{
+  pGui->bPageNeedFlip = bNeeded;
+}
 
+bool microSDL_PageFlipGet(microSDL_tsGui* pGui)
+{
+  return pGui->bPageNeedFlip;
+}
+
+void microSDL_PageFlipGo(microSDL_tsGui* pGui)
+{
+  if (pGui->bPageNeedFlip) {
+    SDL_Flip(pGui->surfScreen);
+    
+    // Page flip no longer required
+    microSDL_PageFlipSet(pGui,false);
+  }
+}
 
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
@@ -347,6 +375,7 @@ void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,b
     microSDL_PutPixelRaw(pGui,pGui->surfScreen,nX,nY,microSDL_GenPixelColor(pGui,nCol));
     microSDL_Unlock(pGui);
   }   // microSDL_Lock
+  microSDL_PageFlipSet(pGui,true);
 }
 
 // Draw an arbitrary line using Bresenham's algorithm
@@ -398,6 +427,7 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
     if (nE2 > -nDX) { nErr -= nDY; nX0 += nSX; }
     if (nE2 <  nDY) { nErr += nDX; nY0 += nSY; }
   }
+  microSDL_PageFlipSet(pGui,true);  
 }
 
 void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Color nCol)
@@ -415,6 +445,7 @@ void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Col
     }
     microSDL_Unlock(pGui);
   }   // microSDL_Lock
+  microSDL_PageFlipSet(pGui,true);  
 }
 
 void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Color nCol)
@@ -431,6 +462,7 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
     }
     microSDL_Unlock(pGui);
   }   // microSDL_Lock
+  microSDL_PageFlipSet(pGui,true);
 }
 
 // Ensure the coordinates are increasing from nX0->nX1 and nY0->nY1
@@ -469,10 +501,11 @@ void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
   nY = rRect.y;
   nW = rRect.w;
   nH = rRect.h;
-  microSDL_LineH(pGui,nX,nY,nW,nCol);                  // Top
-  microSDL_LineH(pGui,nX,(Sint16)(nY+nH),nW,nCol);     // Bottom
-  microSDL_LineV(pGui,nX,nY,nH,nCol);                  // Left
-  microSDL_LineV(pGui,(Sint16)(nX+nW),nY,nH,nCol);     // Right
+  microSDL_LineH(pGui,nX,nY,nW-1,nCol);                 // Top
+  microSDL_LineH(pGui,nX,(Sint16)(nY+nH-1),nW-1,nCol);  // Bottom
+  microSDL_LineV(pGui,nX,nY,nH-1,nCol);                 // Left
+  microSDL_LineV(pGui,(Sint16)(nX+nW-1),nY,nH-1,nCol);  // Right
+  microSDL_PageFlipSet(pGui,true);  
 }
 
 void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
@@ -489,6 +522,8 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol)
 
   SDL_FillRect(pGui->surfScreen,&rRect,
     SDL_MapRGB(pGui->surfScreen->format,nCol.r,nCol.g,nCol.b));
+  
+  microSDL_PageFlipSet(pGui,true);  
 }
 
 
@@ -575,7 +610,13 @@ int microSDL_GetPageCur(microSDL_tsGui* pGui)
 
 void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
 {
+  int nPageSaved = pGui->nPageIdCur;
   pGui->nPageIdCur = nPageId;
+  
+  // A change of page should always force a future redraw
+  if (nPageSaved != nPageId) {
+    microSDL_PageFlipSet(pGui,true);
+  }
 }
 
 
@@ -600,6 +641,8 @@ void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId)
   // - NOTE: We could also call Update instead of Flip as that would
   //         limit the region to refresh.
   microSDL_Flip(pGui);
+  
+  microSDL_PageFlipSet(pGui,false);  
 }
 
 
@@ -799,7 +842,7 @@ void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn)
     return;
   }
   microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  pElem->bFillEn = bFillEn;
+  pElem->bFillEn = bFillEn;  
 }
 
 void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colFillSel)
@@ -1326,7 +1369,7 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     return false;
   }
 
-  // TODO: Mark bNeedUpdate=false
+  // TODO: Mark bNeedRedraw=false
 
   microSDL_tsElem   sElem;
   bool              bSel;
@@ -1342,6 +1385,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
 
   // Determine if this element is currently hovered over
   // TODO: Rename hover for clarity
+  // Only show selected state if this was the element
+  // being tracked (nTrackElemHover) and it is 
   bSel = false;
   if (pGui->nTrackElemHover == nElemInd) {
     // This was the hover button
@@ -1454,6 +1499,9 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     }
   }
 
+  // Mark the page as needing a flip
+  microSDL_PageFlipSet(pGui,true);
+  
   return true;
 }
 
@@ -1533,18 +1581,18 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16* pnX,Sint16* pnY)
 // to the viewport region and origin.
 void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect)
 {
-  // TODO: Might need to correct by -1
+  // TODO: Check corrections +/- 1
   Sint16 nX0,nY0,nX1,nY1;
   nX0 = prRect->x;
   nY0 = prRect->y;
-  nX1 = prRect->x + prRect->w;
-  nY1 = prRect->y + prRect->h;
+  nX1 = prRect->x + prRect->w - 1;
+  nY1 = prRect->y + prRect->h - 1;
   microSDL_ViewRemapPt(pGui,&nX0,&nY0);
   microSDL_ViewRemapPt(pGui,&nX1,&nY1);
   prRect->x = nX0;
   prRect->y = nY0;
-  prRect->w = nX1-nX0;
-  prRect->h = nY1-nY0;
+  prRect->w = nX1-nX0+1;
+  prRect->h = nY1-nY0+1;
 }
 
 
@@ -1580,6 +1628,7 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY)
     // Redraw button
     microSDL_ElemDrawByInd(pGui,nHoverStart);
     // Redraw
+    // TODO: Can remove this if we have main loop poll microSDL_PageFlipGo()
     microSDL_Flip(pGui);
   } else {
     #ifdef DBG_TOUCH
@@ -1637,6 +1686,7 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
   microSDL_ElemDrawByInd(pGui,nHoverNew);
 
   // Redraw window
+  // TODO: Can remove this if we have main loop poll microSDL_PageFlipGo()
   microSDL_Flip(pGui);
 
   pGui->nTrackElemHover = MSDL_IND_NONE;

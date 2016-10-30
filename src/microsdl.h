@@ -58,7 +58,7 @@ enum {
     MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
     MSDL_TYPE_BOX, MSDL_TYPE_LINE,
     // Extended elements:
-    MSDL_TYPEX_GAUGE
+    MSDL_TYPEX_GAUGE, MSDL_TYPEX_CHECKBOX
 };
 
 // Element text alignment
@@ -208,6 +208,9 @@ typedef struct {
   struct tsdev*     ts;
   #endif
 
+  // Redraw
+  bool              bPageNeedFlip;
+  
   // Primary surface definitions
   SDL_Surface*      surfScreen;
   SDL_Surface*      surfBkgnd;
@@ -368,9 +371,11 @@ bool microSDL_IsInRect(microSDL_tsGui* pGui,int nSelX,int nSelY,SDL_Rect rRect);
 
 
 //
-// Update the visible screen with any changes amde
+// Update the visible screen with any drawing changes made
 // - On some hardware this can trigger a double-buffering
 //   page flip.
+// - This call forces a page flip irrespective of the
+//   flag set by microSDL_PageFlipSet().
 //
 // INPUT:
 // - pGui:        Pointer to GUI
@@ -384,6 +389,44 @@ bool microSDL_IsInRect(microSDL_tsGui* pGui,int nSelX,int nSelY,SDL_Rect rRect);
 void microSDL_Flip(microSDL_tsGui* pGui);
 
 
+//
+// Indicate whether the screen requires page flip
+// - This is generally called with bNeeded=true whenever
+//   drawing has been done to the active page. Page flip
+//   is actually performed later when calling PageFlipGo().
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - bNeeded:     True if screen requires page flip
+//
+// RETURN:
+// - None
+//
+void microSDL_PageFlipSet(microSDL_tsGui* pGui,bool bNeeded);
+
+
+//
+// Get state of pending page flip state
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+//
+// RETURN:
+// - True if screen requires page flip
+//
+bool microSDL_PageFlipGet(microSDL_tsGui* pGui);
+
+
+//
+// Update the visible screen if page has been marked for flipping
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+//
+// RETURN:
+// - None
+//
+void microSDL_PageFlipGo(microSDL_tsGui* pGui);
 
 
 // ------------------------------------------------------------------------

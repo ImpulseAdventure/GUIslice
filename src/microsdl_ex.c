@@ -217,4 +217,118 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   return true;
 }
 
+
+// ============================================================================
+// Extended Element: Checkbox
+// ============================================================================
+
+// Create a checkbox element and add it to the GUI element list
+// - Defines default styling for the element
+// - Defines callback for redraw but does not track touch/click
+int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,SDL_Color colCheck,bool bChecked)
+{
+  microSDL_tsElem sElem;
+  if (pXData == NULL) { return MSDL_ID_NONE; }
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX,rElem,NULL,MSDL_FONT_NONE);
+  sElem.bFrameEn        = true;
+  sElem.bFillEn         = true;
+  sElem.bClickEn        = true;
+  pXData->bChecked      = bChecked;
+  pXData->colCheck      = colCheck;
+  sElem.pXData          = (void*)(pXData);
+  sElem.pfuncXDraw      = &microSDL_ElemXCheckboxDraw;
+  sElem.pfuncXTouch     = NULL;           // No need to track touches
+  sElem.colElemFrame    = MSDL_COL_GRAY;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
+}
+
+bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId)
+{
+ // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
+    return false;
+  }
+  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  
+  return pCheckbox->bChecked;
+}
+
+// Update the checkbox control's current state
+void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked)
+{
+  // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
+    return;
+  }
+  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+   
+  // Update the data element
+  pCheckbox->bChecked = bChecked;
+  
+}
+
+// Toggle the checkbox control's state
+void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
+{
+  // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxToggleState() invalid ID=%d\n",nElemInd);
+    return;
+  }
+  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+   
+  // Update the data element
+  bool bCheckNew = (pCheckbox->bChecked)?false:true;
+  pCheckbox->bChecked = bCheckNew;
+  
+}
+
+// Redraw the checkbox
+// - Note that this redraw is for the entire element rect region
+// - The Draw function parameters use void pointers to allow for
+//   simpler callback function definition & scalability.
+bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
+{
+  // Typecast the parameters to match the GUI and element types
+  microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
+  microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
+  
+  SDL_Rect    rInner;
+  
+  // Fetch the element's extended data structure
+  microSDL_tsXCheckbox* pXCheckbox;
+  pXCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  if (pXCheckbox == NULL) {
+    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxDraw() pXData is NULL\n");
+    return false;
+  }
+  
+  bool  bChecked = pXCheckbox->bChecked;
+  rInner = microSDL_ExpandRect(pElem->rElem,-5,-5);
+  if (bChecked) {
+    // If checked, fill in the inner region
+    microSDL_FillRect(pGui,rInner,pXCheckbox->colCheck);
+  } else {
+    // Assume the background fill has already been done so
+    // we don't need to do anything more in the unchecked case
+  }
+  
+  // Draw a frame around the checkbox
+  microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+
+  return true;
+}
+
+
 // ============================================================================

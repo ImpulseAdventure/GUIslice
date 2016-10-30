@@ -200,7 +200,7 @@ int main( int argc, char* args[] )
 
   bQuit = false;
   while (!bQuit) {
-
+    
     // Update the data display values
     m_nCount++;
     m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
@@ -235,15 +235,15 @@ int main( int argc, char* args[] )
 
     // -----------------------------------------------
 
-
     // Perform immediate graphics updates to viewport
     DrawViewport();
-
-    // Finalize the immediate mode drawing
-    microSDL_Flip(&m_gui);
   
-    // -----------------------------------------------
-
+    // Periodically call PageFlipGo() to update the screen
+    // due to any drawing updates
+    microSDL_PageFlipGo(&m_gui);
+    
+    // -----------------------------------------------    
+    
     // Poll for touchscreen presses
     if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
  

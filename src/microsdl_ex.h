@@ -92,6 +92,92 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem);
 // ============================================================================
 
 
+// ============================================================================
+// Extended Element: Checkbox
+// ============================================================================
+
+// Extended data for Checkbox element
+typedef struct {
+  bool            bChecked;     // Vertical if true, else Horizontal
+  SDL_Color       colCheck;     // Color of checked inner fill
+} microSDL_tsXCheckbox;
+
+
+//
+// Create a Checkbox Element
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
+// - nPage:       Page ID to attach element to
+// - pXData:      Ptr to extended element data structure
+// - rElem:       Rectangle coordinates defining checkbox size
+// - colCheck:    Color for inner fill when checked
+// - bChecked:    Default state
+//
+// RETURN:
+// - The Element ID or MSDL_ID_NONE if failure
+//
+int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,SDL_Color colCheck,bool bChecked);
+
+
+//
+// Get a Checkbox element's current state
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to update
+//
+// RETURN:
+// - Current state
+//
+bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId);
+
+
+//
+// Set a Checkbox element's current state
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to update
+// - bChecked:    New state
+//
+// RETURN:
+// - none
+//
+void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked);
+
+
+//
+// Toggle a Checkbox element's current state
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to update
+//
+// RETURN:
+// - none
+//
+void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId);
+
+
+//
+// Draw a checkbox element on the screen
+// - Called from microSDL_ElemDraw()
+//
+// INPUT:
+// - pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+// - pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
+//
+// RETURN:
+// - true if success, false otherwise
+//
+bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem);
+
+// ============================================================================
+
+
 
 #ifdef __cplusplus
 }

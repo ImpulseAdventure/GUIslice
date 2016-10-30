@@ -173,8 +173,11 @@ int main( int argc, char* args[] )
       microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
     }
 
-    // Call Flip() to finalize any drawing updates
-    microSDL_Flip(&m_gui);
+    
+    // Periodically call PageFlipGo() to update the screen
+    // due to any drawing updates
+    microSDL_PageFlipGo(&m_gui);
+    
 
     // -----------------------------------
   
