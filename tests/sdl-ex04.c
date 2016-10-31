@@ -3,6 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 04: Dynamic content
+//   Demonstrates two types of Checkbox elements
 //
 
 #include "microsdl.h"

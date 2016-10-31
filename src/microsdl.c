@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.4    (2016/??/??)
+// - Version 0.2.4    (2016/10/30)
 // =======================================================================
 
 // MicroSDL library
