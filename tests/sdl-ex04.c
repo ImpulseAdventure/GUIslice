@@ -13,7 +13,8 @@
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_CHECK1};
+enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
+      E_ELEM_CHECK1,E_ELEM_CHECK2};
 enum {E_FONT_BTN,E_FONT_TXT};
 
 // Free-running counter for display
@@ -27,6 +28,7 @@ microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
 microSDL_tsXCheckbox  m_sXCheck1;
+microSDL_tsXCheckbox1 m_sXCheck2;
 
 // Create page elements
 bool InitOverlays()
@@ -58,11 +60,17 @@ bool InitOverlays()
     0,100,0,MSDL_COL_GREEN_DK,false);
   
   // Create checkbox 1
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,120,20,20},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,110,20,20},
     "Check:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_sXCheck1,(SDL_Rect){80,120,20,20},
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_sXCheck1,(SDL_Rect){80,110,20,20},
     MSDL_COL_ORANGE,false);
 
+  // Create checkbox 2
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,150,20,20},
+    "Check1:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckbox1Create(&m_gui,E_ELEM_CHECK2,E_PG_MAIN,&m_sXCheck2,(SDL_Rect){80,150,20,20},
+    MSDL_COL_ORANGE,false);
+  
   return true;
 }
 

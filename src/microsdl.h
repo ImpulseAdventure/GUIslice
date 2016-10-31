@@ -53,13 +53,13 @@ extern "C" {
 #define MSDL_ID_AUTO_BASE   32768
 
 // Element types
-enum {
+typedef enum {
     // Core elements:
     MSDL_TYPE_NONE, MSDL_TYPE_BKGND, MSDL_TYPE_BTN, MSDL_TYPE_TXT,
     MSDL_TYPE_BOX, MSDL_TYPE_LINE,
     // Extended elements:
-    MSDL_TYPEX_GAUGE, MSDL_TYPEX_CHECKBOX
-};
+    MSDL_TYPEX_GAUGE, MSDL_TYPEX_CHECKBOX, MSDL_TYPEX_CHECKBOX1
+} microSDL_teType;
 
 // Element text alignment
 #define MSDL_ALIGNV_TOP       0x10
@@ -101,7 +101,9 @@ enum {
 #define MSDL_COL_BROWN      (SDL_Color) {165,42,42}
 
 // Extended element touch tracking enums
-enum {MSDL_TOUCH_DOWN, MSDL_TOUCH_MOVE, MSDL_TOUCH_UP};
+typedef enum  {
+    MSDL_TOUCH_DOWN, MSDL_TOUCH_MOVE, MSDL_TOUCH_UP
+} microSDL_teTouch;
 
 // -----------------------------------------------------------------------
 // Structures
@@ -127,17 +129,17 @@ typedef struct {
   SDL_Rect        rElem;
 
   SDL_Surface*    pSurf;
-  SDL_Surface*    pSurfSel;
+  SDL_Surface*    pSurfGlow;
 
   bool            bClickEn;
   bool            bFrameEn;
   bool            bFillEn;
 
-  SDL_Color       colElemFrame;
-  SDL_Color       colElemFill;
-  SDL_Color       colElemFillSel;
+  SDL_Color       colElemFrame;   // Color for frame
+  SDL_Color       colElemFill;    // Color for background fill
+  SDL_Color       colElemGlow;    // Color to use when touch hovers over
 
-  // TODO: bNeedRedraw
+  //bool            bNeedRedraw;    // TODO: Element needs to be redrawn
 
   char            acStr[MSDL_ELEM_STRLEN_MAX+1];
   SDL_Color       colElemText;
@@ -147,7 +149,7 @@ typedef struct {
  
   void*           pXData;
   bool            (*pfuncXDraw)(void* pGui,void* pElem);
-  bool            (*pfuncXTouch)(void* pGui,int eTouch,int nX,int nY);
+  bool            (*pfuncXTouch)(void* pGui,microSDL_teTouch eTouch,int nX,int nY);
   
 } microSDL_tsElem;
 
@@ -209,6 +211,7 @@ typedef struct {
   #endif
 
   // Redraw
+  //bool            bPageNeedRedraw;  // TODO
   bool              bPageNeedFlip;
   
   // Primary surface definitions
@@ -369,6 +372,22 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 //
 bool microSDL_IsInRect(microSDL_tsGui* pGui,int nSelX,int nSelY,SDL_Rect rRect);
 
+//
+// Determine if a coordinate is inside of a width x height region.
+// - This routine is useful in determining if a relative coordinate
+//   is within a given W x H dimension
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nSelX:       X coordinate to test
+// - nSelY:       X coordinate to test
+// - nWidth:      Width to test against
+// - nHeight:     Height to test against
+//
+// RETURN:
+// - true if inside region, false otherwise
+//
+bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,Uint16 nWidth,Uint16 nHeight);
 
 //
 // Update the visible screen with any drawing changes made
@@ -813,12 +832,12 @@ void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn);
 // - nElemId:     Element ID to update
 // - colFrame:    Color for the frame
 // - colFill:     Color for the fill
-// - colFillSel:  Color for the fill when selected
+// - colGlow:     Color when glowing (eg. hover over)
 //
 // RETURN:
 // - none
 //
-void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colFillSel);
+void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow);
 
 
 
@@ -1376,8 +1395,22 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 //
 void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
 
-// xxx TODO: Document
-bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,int eTouch,int nX,int nY);
+
+//
+// Notify an element of a touch event. This is an optional
+// behavior useful in some extended element types.
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - eTouch:      Touch event type
+// - nX:          X coordinate of event (absolute coordinate)
+// - nY:          Y coordinate of event (absolute coordinate)
+//
+// RETURN:
+// - true if success, false if error
+//
+bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int nX,int nY);
+
 
 //
 // Close all loaded fonts
