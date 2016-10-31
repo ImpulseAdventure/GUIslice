@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.4    (2016/10/30)
+// - Version 0.3    (2016/10/31)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -109,6 +109,8 @@ typedef enum  {
 // Structures
 // -----------------------------------------------------------------------
 
+// Element drawing callback function
+typedef bool (*MSDL_CB_DRAW)(void*,void*);
 
 //
 // Element Struct
@@ -139,7 +141,7 @@ typedef struct {
   SDL_Color       colElemFill;    // Color for background fill
   SDL_Color       colElemGlow;    // Color to use when touch hovers over
 
-  //bool            bNeedRedraw;    // TODO: Element needs to be redrawn
+  bool            bNeedRedraw;    // Element needs to be redrawn
 
   char            acStr[MSDL_ELEM_STRLEN_MAX+1];
   SDL_Color       colElemText;
@@ -211,7 +213,7 @@ typedef struct {
   #endif
 
   // Redraw
-  //bool            bPageNeedRedraw;  // TODO
+  bool              bPageNeedRedraw;
   bool              bPageNeedFlip;
   
   // Primary surface definitions
@@ -448,6 +450,8 @@ bool microSDL_PageFlipGet(microSDL_tsGui* pGui);
 void microSDL_PageFlipGo(microSDL_tsGui* pGui);
 
 
+
+
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
 // ------------------------------------------------------------------------
@@ -634,20 +638,35 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId);
 
 
 //
-// Draw a specific page
+// Update the need-redraw status for the current page
 //
 // INPUT:
 // - pGui:        Pointer to GUI
-// - nPageId:     Page ID to draw
+// - bRedraw:     True if redraw required, false otherwise
 //
 // RETURN:
 // - none
 //
-void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId);
+void microSDL_PageRedrawSet(microSDL_tsGui* pGui,bool bRedraw);
 
 
 //
-// Draw the current page
+// Get the need-redraw status for the current page
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+//
+// RETURN:
+// - True if redraw required, false otherwise
+//
+bool microSDL_PageRedrawGet(microSDL_tsGui* pGui);
+
+
+//
+// Redraw all elements on the active page. Only the
+// elements that have been marked as needing redraw are
+// rendered unless the entire page has been marked as
+// needing redraw (in which case everything is drawn)
 //
 // INPUT:
 // - pGui:        Pointer to GUI
@@ -655,7 +674,8 @@ void microSDL_ElemDrawPage(microSDL_tsGui* pGui,int nPageId);
 // RETURN:
 // - none
 //
-void microSDL_ElemDrawPageCur(microSDL_tsGui* pGui);
+void microSDL_PageRedrawGo(microSDL_tsGui* pGui);
+
 
 // ------------------------------------------------------------------------
 // Element General Functions
@@ -681,11 +701,21 @@ int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId);
 // - pGui:        Pointer to GUI
 //
 // RETURN:
-// - Index of element or MSDL_ID_NONE if not found
+// - Index of element or MSDL_IND_NONE if not found
 //
-int microSDL_ElemFindFromCoord(microSDL_tsGui* pGui,int nX, int nY);
+int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY);
 
 
+// Get an Element ID from an element structure
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - pElem:       Pointer to element structure
+//
+// RETURN:
+// - ID of element or MSDL_ID_NONE if not found
+//
+int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 
 
 // ------------------------------------------------------------------------
@@ -904,6 +934,35 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal);
 //
 void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId);
 
+
+//
+// Update the need-redraw status for an element
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to update
+// - bRedraw:     True if redraw required, false otherwise
+//
+// RETURN:
+// - none
+//
+void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw);
+
+
+//
+// Assign the drawing callback function for an element
+// - This allows the user to override the default rendering for
+//   an element, enabling the creation of a custom element
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemId:     Element ID to update
+// - funcCb:      Function pointer to drawing routine
+//
+// RETURN:
+// - none
+//
+void microSDL_ElemSetDrawFunc(microSDL_tsGui* pGui,int nElemId,MSDL_CB_DRAW funcCb);
 
 
 // ------------------------------------------------------------------------
@@ -1251,6 +1310,20 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd);
 void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
   const char* acImageSel);
 
+
+//
+// Update the need-redraw status for an element based
+// on an internal element index
+//
+// INPUT:
+// - pGui:        Pointer to GUI
+// - nElemInd:    Element Index to update
+// - bRedraw:     True if redraw required, false otherwise
+//
+// RETURN:
+// - none
+//
+void microSDL_ElemSetRedrawByInd(microSDL_tsGui* pGui,int nElemInd,bool bRedraw);
 
 //
 // Draw an element on the screen

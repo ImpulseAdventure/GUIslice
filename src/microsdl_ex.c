@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.4    (2016/10/30)
+// - Version 0.3    (2016/10/31)
 // =======================================================================
 
 
@@ -84,7 +84,14 @@ void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
   microSDL_tsXGauge*  pGauge = (microSDL_tsXGauge*)(pElem->pXData);
   
   // Update the data element
+  int nValOld = pGauge->nGaugeVal;
   pGauge->nGaugeVal = nVal;
+  
+  // Element needs redraw
+  if (nVal != nValOld) {
+    pElem->bNeedRedraw = true;
+  }
+  
 }
 
 // Redraw the gauge
@@ -182,19 +189,19 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
 
   // Clip the region
-  // TODO: Determine if we need to adjust by -1
+  // TODO: Confirm that +/-1 adjustments are correct
   int nRectClipX1 = rGauge.x;
-  int nRectClipX2 = rGauge.x+rGauge.w;
+  int nRectClipX2 = rGauge.x+rGauge.w-1;
   int nRectClipY1 = rGauge.y;
-  int nRectClipY2 = rGauge.y+rGauge.h;
-  if (nRectClipX1 < nElemX)             { nRectClipX1 = nElemX;         }
-  if (nRectClipX2 > nElemX+(int)nElemW) { nRectClipX2 = nElemX+nElemW;  }
-  if (nRectClipY1 < nElemY)             { nRectClipY1 = nElemY;         }
-  if (nRectClipY2 > nElemY+(int)nElemH) { nRectClipY2 = nElemY+nElemH;  }
+  int nRectClipY2 = rGauge.y+rGauge.h-1;
+  if (nRectClipX1 < nElemX)               { nRectClipX1 = nElemX;           }
+  if (nRectClipX2 > nElemX+(int)nElemW-1) { nRectClipX2 = nElemX+nElemW-1;  }
+  if (nRectClipY1 < nElemY)               { nRectClipY1 = nElemY;           }
+  if (nRectClipY2 > nElemY+(int)nElemH-1) { nRectClipY2 = nElemY+nElemH-1;  }
   rGauge.x = nRectClipX1;
   rGauge.y = nRectClipY1;
-  rGauge.w = nRectClipX2-nRectClipX1;
-  rGauge.h = nRectClipY2-nRectClipY1;
+  rGauge.w = nRectClipX2-nRectClipX1+1;
+  rGauge.h = nRectClipY2-nRectClipY1+1;
 
   #ifdef DBG_LOG
   printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
@@ -218,10 +225,14 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
     rMidLine.h = nElemH;
   }
   
-  // Draw a frame around the gauge
+  // Paint the filled progress region
   microSDL_FillRect(pGui,rMidLine,pElem->colElemFrame);
 
+  // Draw a frame around the gauge
   microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  
+  // Clear the redraw flag
+  pElem->bNeedRedraw = false;
   
   return true;
 }
@@ -252,7 +263,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.pfuncXTouch     = NULL;           // No need to track touches
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
-  sElem.colElemGlow  = MSDL_COL_WHITE;    
+  sElem.colElemGlow     = MSDL_COL_WHITE;    
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -280,11 +291,17 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
     return;
   }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  microSDL_tsElem*      pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox* pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
    
   // Update the data element
+  bool  bCheckedOld = pCheckbox->bChecked;
   pCheckbox->bChecked = bChecked;
+  
+  // Element needs redraw
+  if (bChecked != bCheckedOld) {
+    pElem->bNeedRedraw = true;
+  }
   
 }
 
@@ -297,12 +314,15 @@ void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxToggleState() invalid ID=%d\n",nElemInd);
     return;
   }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  microSDL_tsElem*      pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox* pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
    
   // Update the data element
   bool bCheckNew = (pCheckbox->bChecked)?false:true;
   pCheckbox->bChecked = bCheckNew;
+  
+  // Element needs redraw
+  pElem->bNeedRedraw = true;
   
 }
 
@@ -349,6 +369,9 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
     microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   }
 
+  // Clear the redraw flag
+  pElem->bNeedRedraw = false;  
+  
   // Mark page as needing flip
   microSDL_PageFlipSet(pGui,true);
   
@@ -420,8 +443,14 @@ void microSDL_ElemXCheckbox1SetState(microSDL_tsGui* pGui,int nElemId,bool bChec
   microSDL_tsXCheckbox1*  pCheckbox = (microSDL_tsXCheckbox1*)(pElem->pXData);
    
   // Update the data element
+  bool  bCheckedOld = pCheckbox->bChecked;
   pCheckbox->bChecked = bChecked;
-  
+
+  // Element needs redraw
+  if (bChecked != bCheckedOld) {
+    pElem->bNeedRedraw = true;
+  }
+
 }
 
 // Toggle the checkbox control's state
@@ -439,6 +468,9 @@ void microSDL_ElemXCheckbox1ToggleState(microSDL_tsGui* pGui,int nElemId)
   // Update the data element
   bool bCheckNew = (pCheckbox->bChecked)?false:true;
   pCheckbox->bChecked = bCheckNew;
+
+  // Element needs redraw
+  pElem->bNeedRedraw = true;
   
 }
 
@@ -484,6 +516,9 @@ bool microSDL_ElemXCheckbox1Draw(void* pvGui,void* pvElem)
   } else {
     microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   }
+  
+  // Clear the redraw flag
+  pElem->bNeedRedraw = false;
   
   // Mark page as needing flip
   microSDL_PageFlipSet(pGui,true);
@@ -565,9 +600,8 @@ bool microSDL_ElemXCheckbox1Touch(void* pvGui,microSDL_teTouch eTouch,int nRelX,
   bool  bChanged = false;
   if (pXCheckbox->bGlowing != bGlowingOld) { bChanged = true; }
   if (pXCheckbox->bChecked != bCheckedOld) { bChanged = true; }
-  // TODO: Mark this element as needing redraw instead of doing it now
   if (bChanged) {
-    microSDL_ElemXCheckbox1Draw(pvGui,(void*)(pElem));
+    pElem->bNeedRedraw = true;
   }
   
   return true;

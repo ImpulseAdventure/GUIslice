@@ -18,7 +18,7 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_VIEW};
+      E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_SCAN};
 enum {E_FONT_BTN,E_FONT_TXT};
 enum {E_VIEW};
 
@@ -38,6 +38,60 @@ microSDL_tsElem     m_asElem[MAX_ELEM];
 microSDL_tsFont     m_asFont[MAX_FONT];
 microSDL_tsView     m_asView[MAX_VIEW];
 microSDL_tsXGauge   m_sXGauge;
+
+
+// Scanner drawing callback function
+// - This is called when E_ELEM_SCAN is being rendered
+// - The scanner implements a custom element that replaces
+//   the Box element type with a custom rendering function.
+// - It uses a viewport (E_VIEW) to allow for a local
+//   coordinate system and clipping.
+bool DrawScannerCb(void* pvGui,void* pvElem)
+{
+  int nInd;
+
+  // Typecast the parameters to match the GUI and element types
+  microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
+  microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
+  int nElemId = microSDL_ElemGetIdFromElem(&m_gui,pElem);
+  
+  // Draw the background
+  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  
+  // Draw the frame
+  microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  
+
+  // Switch to drawing coordinate space within the viewport
+  // - Until the next ViewSet() command, all drawing
+  //   will be done with local coordinates that
+  //   are remapped and clipped to match the viewport.
+  microSDL_ViewSet(&m_gui,E_VIEW);
+
+  // Perform the drawing of example graphic primitives
+  microSDL_Line(&m_gui,0,-200,0,+200,MSDL_COL_GRAY_DK);
+  microSDL_Line(&m_gui,-200,0,+200,0,MSDL_COL_GRAY_DK);
+
+  microSDL_FrameRect(&m_gui,(SDL_Rect){-30,-20,60,40},MSDL_COL_BLUE_DK);
+  for (nInd=-5;nInd<=5;nInd++) {
+    microSDL_Line(&m_gui,0,0,0+nInd*20,100,MSDL_COL_PURPLE);
+  }
+
+  microSDL_FillRect(&m_gui,(SDL_Rect){1,1,10,10},MSDL_COL_RED_DK);
+  microSDL_FillRect(&m_gui,(SDL_Rect){1,-10,10,10},MSDL_COL_GREEN_DK);
+  microSDL_FillRect(&m_gui,(SDL_Rect){-10,1,10,10},MSDL_COL_BLUE_DK);
+  microSDL_FillRect(&m_gui,(SDL_Rect){-10,-10,10,10},MSDL_COL_YELLOW);
+
+  // Restore the drawing coordinate space to the screen
+  microSDL_ViewSet(&m_gui,MSDL_VIEW_ID_SCREEN);
+  
+  // Clear the redraw flag
+  microSDL_ElemSetRedraw(&m_gui,nElemId,false);
+  
+  return true;
+}
+
+
 
 // Create the default elements on each page
 // - strPath: Path to executable passed in to locate resource files
@@ -105,17 +159,25 @@ bool InitOverlays(char *strPath)
   microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_LEFT);
   microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_RED_LT);
 
-  // Create viewport
+  // --------------------------------------------------------------------------
+  // Create scanner with viewport
   nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
   microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190,75-11,100,10},
     "SCANNER",E_FONT_TXT);
   microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_BLUE_DK);
   microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_VIEW,E_PG_MAIN,(SDL_Rect){190-1,75-1,100+2,100+2});
+  
+  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(SDL_Rect){190-1,75-1,100+2,100+2});
   microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  // Set the callback function to handle all drawing for the element
+  microSDL_ElemSetDrawFunc(&m_gui,nElemId,&DrawScannerCb);
+  
   nElemId = microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
+  // --------------------------------------------------------------------------
 
+  
   return true;
 }
 
@@ -127,9 +189,9 @@ void DrawViewport()
   int nInd;
   // Temp redraw view
   // Draw the viewport background
-  microSDL_ElemDraw(&m_gui,E_ELEM_VIEW);
+  microSDL_ElemDraw(&m_gui,E_ELEM_SCAN);
 
-  // Switch to drawing within the viewport
+  // Switch to drawing coordinate space within the viewport
   // - Until the next ViewSet() command, all drawing
   //   will be done with local coordinates that
   //   are remapped and clipped to match the viewport.
@@ -149,7 +211,7 @@ void DrawViewport()
   microSDL_FillRect(&m_gui,(SDL_Rect){-10,1,10,10},MSDL_COL_BLUE_DK);
   microSDL_FillRect(&m_gui,(SDL_Rect){-10,-10,10,10},MSDL_COL_YELLOW);
 
-  // Restore the drawing to the screen
+  // Restore the drawing coordinate space to the screen
   microSDL_ViewSet(&m_gui,MSDL_VIEW_ID_SCREEN);
 
 }
@@ -186,14 +248,6 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-  microSDL_ElemDrawPageCur(&m_gui);
-
-  // Initial draw of viewport
-  DrawViewport();
-  // Any time that we have performed manual draw
-  // commands, we need to finalize with a Flip()
-  microSDL_Flip(&m_gui);
-
 
   // -----------------------------------
   // Main event loop
@@ -207,40 +261,34 @@ int main( int argc, char* args[] )
     m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
     m_fCoordZ = 13.02;
 
-    // Adjust the viewport origin for fun
+    // Adjust the scanner's viewport origin for fun
     Sint16 nOriginX = (Sint16)m_fCoordX;
     Sint16 nOriginY = (Sint16)m_fCoordY;
     microSDL_ViewSetOrigin(&m_gui,E_VIEW,nOriginX,nOriginY);
+    // Manually mark the scanner view as needing redraw
+    // since it depends on E_VIEW
+    microSDL_ElemSetRedraw(&m_gui,E_ELEM_SCAN,true);
 
     // -----------------------------------------------
 
     // Perform any immediate updates on active page
     sprintf(acTxt,"%u",m_nCount);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
-    microSDL_ElemDraw(&m_gui,E_ELEM_TXT_COUNT);
 
     sprintf(acTxt,"%4.2f",m_fCoordX-50);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAX,acTxt);
-    microSDL_ElemDraw(&m_gui,E_ELEM_DATAX);
     sprintf(acTxt,"%4.2f",m_fCoordY-50);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAY,acTxt);
-    microSDL_ElemDraw(&m_gui,E_ELEM_DATAY);
     sprintf(acTxt,"%4.2f",m_fCoordZ);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAZ,acTxt);
     microSDL_ElemSetTxtCol(&m_gui,E_ELEM_DATAZ,(m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
-    microSDL_ElemDraw(&m_gui,E_ELEM_DATAZ);
 
     microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,50+50*sin(m_nCount/500.0));
-    microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
 
     // -----------------------------------------------
-
-    // Perform immediate graphics updates to viewport
-    DrawViewport();
   
-    // Periodically call PageFlipGo() to update the screen
-    // due to any drawing updates
-    microSDL_PageFlipGo(&m_gui);
+    // Periodically redraw screen in case of any changes
+    microSDL_PageRedrawGo(&m_gui);
     
     // -----------------------------------------------    
     

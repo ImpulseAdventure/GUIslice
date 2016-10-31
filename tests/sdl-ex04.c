@@ -107,7 +107,6 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-  microSDL_ElemDrawPageCur(&m_gui);
 
   // -----------------------------------
   // Main event loop
@@ -120,17 +119,14 @@ int main( int argc, char* args[] )
 
     // -----------------------------------
 
-    // Immediate update of element on active page
+    // Update elements on active page
     sprintf(acTxt,"%u",m_nCount);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
-    microSDL_ElemDraw(&m_gui,E_ELEM_TXT_COUNT);
 
     microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
-    microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
-
-    // Periodically call PageFlipGo() to update the screen
-    // due to any drawing updates
-    microSDL_PageFlipGo(&m_gui);
+    
+    // Periodically redraw screen in case of any changes
+    microSDL_PageRedrawGo(&m_gui);
 
     // -----------------------------------
   
@@ -147,8 +143,7 @@ int main( int argc, char* args[] )
         bQuit = true;
       } else if (nTrackElemClicked == E_ELEM_CHECK1) {
         // Toggle checkbox
-        microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK1);
-        microSDL_ElemDraw(&m_gui,E_ELEM_CHECK1);       
+        microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK1);   
       }
 
       // Clear click event

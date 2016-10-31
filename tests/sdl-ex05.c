@@ -146,7 +146,7 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-  microSDL_ElemDrawPageCur(&m_gui);
+  
   // -----------------------------------
   // Main event loop
 
@@ -158,27 +158,21 @@ int main( int argc, char* args[] )
     // -----------------------------------
     // Perform some drawing updates depending on the active page
 
-    unsigned nPageCur = microSDL_GetPageCur(&m_gui);
+    // Perform some updates on a page
+    // NOTE: We can still call the element update functions
+    //       even though the page may not be visible. If desired,
+    //       one can determine the active page by calling
+    //         microSDL_GetPageCur(&m_gui);
 
-    // Immediate update of element on active page
-    // - Note that these immediate updates can
-    //   rely on an initial full-page draw when
-    //   the page was first entered.
-    if (nPageCur == E_PG_MAIN) {
-      sprintf(acTxt,"%u",m_nCount);
-      microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
-      microSDL_ElemDraw(&m_gui,E_ELEM_TXT_COUNT);
+    sprintf(acTxt,"%u",m_nCount);
+    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
 
-      microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
-      microSDL_ElemDraw(&m_gui,E_ELEM_PROGRESS); 
-    }
+    microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
 
+
+    // Periodically redraw screen in case of any changes
+    microSDL_PageRedrawGo(&m_gui);
     
-    // Periodically call PageFlipGo() to update the screen
-    // due to any drawing updates
-    microSDL_PageFlipGo(&m_gui);
-    
-
     // -----------------------------------
   
     // Poll for touchscreen presses
@@ -194,10 +188,8 @@ int main( int argc, char* args[] )
         bQuit = true;
       } else if (nTrackElemClicked == E_ELEM_BTN_EXTRA) {
         microSDL_SetPageCur(&m_gui,E_PG_EXTRA);
-        microSDL_ElemDrawPageCur(&m_gui);
       } else if (nTrackElemClicked == E_ELEM_BTN_BACK) {
         microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-        microSDL_ElemDrawPageCur(&m_gui);
       } // nTrackElemClicked
   
       // Clear click event

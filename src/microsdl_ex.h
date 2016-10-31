@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.2.4    (2016/10/30)
+// - Version 0.3    (2016/10/31)
 // =======================================================================
 
 // Extended element definitions

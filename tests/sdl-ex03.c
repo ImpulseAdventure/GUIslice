@@ -78,7 +78,6 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-  microSDL_ElemDrawPageCur(&m_gui);
 
   // -----------------------------------
   // Main event loop
@@ -86,9 +85,8 @@ int main( int argc, char* args[] )
   bQuit = false;
   while (!bQuit) {
 
-    // Periodically call PageFlipGo() to update the screen
-    // due to any drawing updates
-    microSDL_PageFlipGo(&m_gui);    
+    // Periodically redraw screen in case of any changes
+    microSDL_PageRedrawGo(&m_gui);  
     
     // Poll for touchscreen presses
     if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
