@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3    (2016/10/31)
+// - Version 0.3.?    (2016/10/31)
 // =======================================================================
 
 // MicroSDL library
@@ -1323,7 +1323,7 @@ void microSDL_Unlock(microSDL_tsGui* pGui)
 //       MSDL_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
 microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId,
-  unsigned nType,SDL_Rect rElem,const char* pStr,int nFontId)
+  microSDL_teType nType,SDL_Rect rElem,const char* pStr,int nFontId)
 {
   microSDL_tsElem sElem;
   sElem.bValid = false;

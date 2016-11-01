@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3    (2016/10/31)
+// - Version 0.3.?    (2016/10/31)
 // =======================================================================
 
 
@@ -252,7 +252,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsElem sElem;
   if (pXData == NULL) { return MSDL_ID_NONE; }
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX,rElem,NULL,MSDL_FONT_NONE);
-  sElem.bFrameEn        = true; // TODO: Disable?
+  sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   pXData->bChecked      = bChecked;
@@ -396,7 +396,7 @@ int microSDL_ElemXCheckbox1Create(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsElem sElem;
   if (pXData == NULL) { return MSDL_ID_NONE; }
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX1,rElem,NULL,MSDL_FONT_NONE);
-  sElem.bFrameEn        = true; // TODO: Disable?
+  sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   pXData->bChecked      = bChecked;

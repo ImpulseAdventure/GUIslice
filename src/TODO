@@ -2,8 +2,7 @@ FEATURES
 ========
 * Circle drawing primitive
 * Polygon drawing primitive
-* Page update routine that redraws only elements requiring update
-* Support owner-draw elements
+* Element grouping (to support radio buttons)
 * Keypress handler
 
 IMPROVEMENTS
@@ -12,6 +11,5 @@ IMPROVEMENTS
 
 BUGS
 ====
-* Check calculations of X1,Y1 from SDL_Rect() to determine if correction of
-  -1 is required. eg. X1=(x+w-1)
+* 
 
