@@ -15,7 +15,7 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_CHECK1,E_ELEM_CHECK2};
+      E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
 enum {E_FONT_BTN,E_FONT_TXT};
 
 // Free-running counter for display
@@ -29,6 +29,7 @@ microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
 microSDL_tsXCheckbox  m_asXCheck[2];
+microSDL_tsXSlider    m_sXSlider;
 
 // Create page elements
 bool InitOverlays()
@@ -44,7 +45,7 @@ bool InitOverlays()
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){160,100,80,40},"Quit",E_FONT_BTN);
+    (SDL_Rect){160,80,80,40},"Quit",E_FONT_BTN);
 
   // Create counter
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
@@ -70,6 +71,14 @@ bool InitOverlays()
     "Check2:",E_FONT_TXT);
   nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_MAIN,&m_asXCheck[1],(SDL_Rect){80,150,20,20},
     MSDL_COL_ORANGE,false);
+  
+  // Create slider
+  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,(SDL_Rect){160,140,100,20},
+    0,100,60,5,false);
+  microSDL_ElemXSliderSetStyle(&m_gui,E_ELEM_SLIDER,true,(SDL_Color){0,0,128},10,
+          5,(SDL_Color){64,64,64});
+  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(SDL_Rect){160,160,60,20},
+    "Slider: ???",E_FONT_TXT);
   
   return true;
 }
@@ -123,6 +132,12 @@ int main( int argc, char* args[] )
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
 
     microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
+    
+    // TODO: Replace with Slider callback
+    int nPos = microSDL_ElemXSliderGetPos(&m_gui,E_ELEM_SLIDER);
+    sprintf(acTxt,"Slider: %u",nPos);
+    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_SLIDER,acTxt);
+    
     
     // Periodically redraw screen in case of any changes
     microSDL_PageRedrawGo(&m_gui);

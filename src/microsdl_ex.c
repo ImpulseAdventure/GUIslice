@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.?    (2016/11/01)
+// - Version 0.3.1    (2016/11/02)
 // =======================================================================
 
 
@@ -117,9 +117,9 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   rGauge.y = nElemY;
 
   // Fetch the element's extended data structure
-  microSDL_tsXGauge* pXGauge;
-  pXGauge = (microSDL_tsXGauge*)(pElem->pXData);
-  if (pXGauge == NULL) {
+  microSDL_tsXGauge* pGauge;
+  pGauge = (microSDL_tsXGauge*)(pElem->pXData);
+  if (pGauge == NULL) {
     fprintf(stderr,"ERROR: microSDL_ElemXGaugeDraw() pXData is NULL\n");
     return false;
   }
@@ -128,10 +128,10 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
   
   
-  bool  bVert = pXGauge->bGaugeVert;
-  int   nMax = pXGauge->nGaugeMax;
-  int   nMin = pXGauge->nGaugeMin;
-  int   nRng = pXGauge->nGaugeMax - pXGauge->nGaugeMin;
+  bool  bVert = pGauge->bGaugeVert;
+  int   nMax = pGauge->nGaugeMax;
+  int   nMin = pGauge->nGaugeMin;
+  int   nRng = pGauge->nGaugeMax - pGauge->nGaugeMin;
 
   if (nRng == 0) {
     fprintf(stderr,"ERROR: microSDL_ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
@@ -158,7 +158,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
 
   // Calculate the length of the bar
-  int nLen = pXGauge->nGaugeVal * fScl;
+  int nLen = pGauge->nGaugeVal * fScl;
 
   // Define the gauge's fill rectangle region
   // depending on the orientation (bVert) and whether
@@ -205,11 +205,11 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 
   #ifdef DBG_LOG
   printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
-    nMin,nMax,nRng,pXGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
+    nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
   #endif
 
   // Draw the gauge fill region
-  microSDL_FillRect(pGui,rGauge,pXGauge->colGauge);
+  microSDL_FillRect(pGui,rGauge,pGauge->colGauge);
 
   // Draw the midpoint line
   SDL_Rect    rMidLine;
@@ -254,7 +254,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 {
   microSDL_tsElem sElem;
   if (pXData == NULL) { return MSDL_ID_NONE; }
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX1,rElem,NULL,MSDL_FONT_NONE);
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
@@ -270,7 +270,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.pfuncXTouch     = &microSDL_ElemXCheckboxTouch;
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
-  sElem.colElemGlow  = MSDL_COL_WHITE;  
+  sElem.colElemGlow     = MSDL_COL_WHITE;  
   bool bOk = microSDL_ElemAdd(pGui,sElem);
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
@@ -346,15 +346,15 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   SDL_Rect    rInner;
   
   // Fetch the element's extended data structure
-  microSDL_tsXCheckbox* pXCheckbox;
-  pXCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
-  if (pXCheckbox == NULL) {
+  microSDL_tsXCheckbox* pCheckbox;
+  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  if (pCheckbox == NULL) {
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxDraw() pXData is NULL\n");
     return false;
   }
   
-  bool  bChecked = pXCheckbox->bChecked;
-  bool  bGlowing = pXCheckbox->bGlowing;
+  bool  bChecked = pCheckbox->bChecked;
+  bool  bGlowing = pCheckbox->bGlowing;
   
   // Draw the background
   microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
@@ -363,7 +363,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   rInner = microSDL_ExpandRect(pElem->rElem,-5,-5);
   if (bChecked) {
     // If checked, fill in the inner region
-    microSDL_FillRect(pGui,rInner,pXCheckbox->colCheck);
+    microSDL_FillRect(pGui,rInner,pCheckbox->colCheck);
   } else {
     // Assume the background fill has already been done so
     // we don't need to do anything more in the unchecked case
@@ -405,7 +405,7 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
 {
   microSDL_tsGui*           pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
-  microSDL_tsXCheckbox*     pXCheckbox = NULL;
+  microSDL_tsXCheckbox*     pCheckbox = NULL;
   
   // Typecast the parameters to match the GUI
   pGui  = (microSDL_tsGui*)(pvGui);
@@ -418,35 +418,35 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   }
   
   pElem = &(pGui->psElem[nElemInd]);
-  pXCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);  
+  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);  
 
-  bool  bCheckedOld = pXCheckbox->bChecked;
-  bool  bGlowingOld = pXCheckbox->bGlowing;  
+  bool  bCheckedOld = pCheckbox->bChecked;
+  bool  bGlowingOld = pCheckbox->bGlowing;  
   
   switch(eTouch) {
     
     case MSDL_TOUCH_DOWN:
       // Start glowing as must be over it
-      pXCheckbox->bGlowing = true;
+      pCheckbox->bGlowing = true;
       break;
       
     case MSDL_TOUCH_MOVE:
       // Glow only if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        pXCheckbox->bGlowing = true;
+        pCheckbox->bGlowing = true;
       } else {
-        pXCheckbox->bGlowing = false;
+        pCheckbox->bGlowing = false;
       }
       break;
       
     case MSDL_TOUCH_UP:
       // End glow
-      pXCheckbox->bGlowing = false;
+      pCheckbox->bGlowing = false;
       // Accept "clicked" event if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
         // Toggle the state
-        bool bCheckNew = (pXCheckbox->bChecked)?false:true;
-        pXCheckbox->bChecked = bCheckNew;        
+        bool bCheckNew = (pCheckbox->bChecked)?false:true;
+        pCheckbox->bChecked = bCheckNew;        
       }
       break;
       
@@ -457,8 +457,320 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   
   // If the checkbox changed state, redraw
   bool  bChanged = false;
-  if (pXCheckbox->bGlowing != bGlowingOld) { bChanged = true; }
-  if (pXCheckbox->bChecked != bCheckedOld) { bChanged = true; }
+  if (pCheckbox->bGlowing != bGlowingOld) { bChanged = true; }
+  if (pCheckbox->bChecked != bCheckedOld) { bChanged = true; }
+  if (bChanged) {
+    pElem->bNeedRedraw = true;
+  }
+  
+  return true;
+
+}
+
+
+// ============================================================================
+// Extended Element: Slider
+// - A linear slider control
+// ============================================================================
+
+// Create a slider element and add it to the GUI element list
+// - Defines default styling for the element
+// - Defines callback for redraw and touch
+int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+  microSDL_tsXSlider* pXData,SDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
+  unsigned nThumbSz,bool bVert)
+{
+  microSDL_tsElem sElem;
+  if (pXData == NULL) { return MSDL_ID_NONE; }
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SLIDER,rElem,NULL,MSDL_FONT_NONE);
+  sElem.bFrameEn        = false;
+  sElem.bFillEn         = true;
+  sElem.bClickEn        = true;
+  pXData->nPosMin       = nPosMin;
+  pXData->nPosMax       = nPosMax;
+  pXData->nPos          = nPos;
+  pXData->nThumbSz      = nThumbSz;
+  pXData->bVert         = bVert;
+  pXData->bGlowing      = false;
+  pXData->bTrim         = false;
+  pXData->colTrim       = MSDL_COL_BLACK;
+  pXData->nTickDiv      = 0;
+  sElem.pXData          = (void*)(pXData);
+  // Specify the custom drawing callback
+  sElem.pfuncXDraw      = &microSDL_ElemXSliderDraw;
+  // Specify the custom touch tracking callback
+  sElem.pfuncXTouch     = &microSDL_ElemXSliderTouch;
+  sElem.colElemFrame    = MSDL_COL_GRAY;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  sElem.colElemGlow     = MSDL_COL_WHITE;
+  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
+}
+
+void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
+        bool bTrim,SDL_Color colTrim,unsigned nTickDiv,
+        int nTickLen,SDL_Color colTick)
+{
+  // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSliderSetStyle() invalid ID=%d\n",nElemInd);
+    return;
+  }
+  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXSlider*  pSlider = (microSDL_tsXSlider*)(pElem->pXData);
+
+  pSlider->bTrim      = bTrim;
+  pSlider->colTrim    = colTrim;
+  pSlider->nTickDiv   = nTickDiv;
+  pSlider->nTickLen   = nTickLen;
+  pSlider->colTick    = colTick;
+  
+  // Update
+  pElem->bNeedRedraw      = true;
+}
+
+int microSDL_ElemXSliderGetPos(microSDL_tsGui* pGui,int nElemId)
+{
+ // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSliderGetPos() invalid ID=%d\n",nElemInd);
+    return false;
+  }
+  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXSlider*  pSlider = (microSDL_tsXSlider*)(pElem->pXData);
+  
+  return pSlider->nPos;
+}
+
+// Update the slider control's current state
+void microSDL_ElemXSliderSetPos(microSDL_tsGui* pGui,int nElemId,int nPos)
+{
+  // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSliderSetPos() invalid ID=%d\n",nElemInd);
+    return;
+  }
+  microSDL_tsElem*      pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXSlider*   pSlider = (microSDL_tsXSlider*)(pElem->pXData);
+  int                   nPosOld;
+  // Clip position
+  if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
+  if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
+  // Update
+  nPosOld = pSlider->nPos;
+  pSlider->nPos = nPos;
+  // Only update if changed
+  if (nPos != nPosOld) {
+    pElem->bNeedRedraw = true;
+  }
+  
+}
+
+
+// Redraw the slider
+// - Note that this redraw is for the entire element rect region
+// - The Draw function parameters use void pointers to allow for
+//   simpler callback function definition & scalability.
+bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
+{
+  // Typecast the parameters to match the GUI and element types
+  microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
+  microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
+  
+  // Fetch the element's extended data structure
+  microSDL_tsXSlider* pSlider;
+  pSlider = (microSDL_tsXSlider*)(pElem->pXData);
+  if (pSlider == NULL) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSliderDraw() pXData is NULL\n");
+    return false;
+  }
+  
+  
+  int       nPos      = pSlider->nPos;
+  int       nPosMin   = pSlider->nPosMin;
+  int       nPosMax   = pSlider->nPosMax;
+  bool      bVert     = pSlider->bVert;
+  int       nThumbSz  = pSlider->nThumbSz;
+  bool      bGlowing  = pSlider->bGlowing;
+  bool      bTrim     = pSlider->bTrim;
+  SDL_Color colTrim   = pSlider->colTrim;
+  unsigned  nTickDiv  = pSlider->nTickDiv;
+  int       nTickLen  = pSlider->nTickLen;
+  SDL_Color colTick   = pSlider->colTick;
+  
+  if (bVert) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSliderDraw() bVert=true not supported yet\n");
+    return false;
+  }
+  
+  int   nX0,nY0,nX1,nY1,nYMid;
+  nX0 = pElem->rElem.x;
+  nY0 = pElem->rElem.y;
+  nX1 = pElem->rElem.x + pElem->rElem.w - 1;
+  nY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nYMid = (nY0+nY1)/2;
+  
+  // Scale the current position
+  int nPosRng = nPosMax-nPosMin;
+  // TODO: Check for nPosRng=0, reversed min/max
+  int nPosOffset = nPos-nPosMin;
+  
+  // Provide some margin so thumb doesn't exceed control bounds
+  int nMargin = nThumbSz;
+  int nCtrlRng = (nX1-nMargin)-(nX0+nMargin);
+  int nCtrlPos = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
+  
+  
+  // Draw the background
+  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+
+  // Draw any ticks
+  if (nTickDiv>0) {
+    unsigned  nTickInd;
+    int       nTickGap = nCtrlRng/(nTickDiv-1);
+    for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
+      microSDL_Line(pGui,nX0+nMargin+nTickInd*nTickGap,nYMid,
+              nX0+nMargin+nTickInd*nTickGap,nYMid+nTickLen,colTick);
+    }
+  }  
+  
+  // Draw the track
+  if (!bVert) {
+      microSDL_Line(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
+              (bGlowing)? pElem->colElemGlow : pElem->colElemFrame);
+      if (bTrim) {
+        microSDL_Line(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
+      }
+    
+  } else {
+    // TODO:
+  }
+  
+
+
+  int nCtrlX0,nCtrlY0;
+  nCtrlX0 = nX0+nCtrlPos-nThumbSz;
+  nCtrlY0 = nYMid-nThumbSz;
+  SDL_Rect  rThumb;
+  rThumb.x = nCtrlX0;
+  rThumb.y = nCtrlY0;
+  rThumb.w = 2*nThumbSz;
+  rThumb.h = 2*nThumbSz;
+  
+  // Draw the thumb control
+  microSDL_FillRect(pGui,rThumb,pElem->colElemFill);
+  if (bGlowing) {
+    microSDL_FrameRect(pGui,rThumb,pElem->colElemGlow);
+  } else {
+    microSDL_FrameRect(pGui,rThumb,pElem->colElemFrame);    
+  }
+  if (bTrim) {
+    SDL_Rect  rThumbTrim;
+    rThumbTrim = microSDL_ExpandRect(rThumb,-1,-1);
+    microSDL_FrameRect(pGui,rThumbTrim,pSlider->colTrim);
+  }
+    
+
+
+  // Clear the redraw flag
+  pElem->bNeedRedraw = false;
+  
+  // Mark page as needing flip
+  microSDL_PageFlipSet(pGui,true);
+
+  return true;
+}
+
+// This callback function is called by microSDL_NotifyElemTouch()
+// after any touch event
+bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY)
+{
+  microSDL_tsGui*           pGui = NULL;
+  microSDL_tsElem*          pElem = NULL;
+  microSDL_tsXSlider*       pSlider = NULL;
+  
+  // Typecast the parameters to match the GUI
+  pGui  = (microSDL_tsGui*)(pvGui);
+  
+  // Get our element (as it will be the one being tracked)
+  int nElemInd = pGui->nTrackElemHover;
+  if (nElemInd == MSDL_IND_NONE) {
+    // Shouldn't get here
+    return false;
+  }
+  
+  pElem = &(pGui->psElem[nElemInd]);
+  pSlider = (microSDL_tsXSlider*)(pElem->pXData);  
+
+  bool  bGlowingOld = pSlider->bGlowing;  
+  int   nPosRng;
+  int   nPosOld;
+  int   nPos;
+  
+  switch(eTouch) {
+    
+    case MSDL_TOUCH_DOWN:
+      // Start glowing as must be over it
+      pSlider->bGlowing = true;
+      // Calc new position
+      nPosRng = pSlider->nPosMax - pSlider->nPosMin;
+      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+      // Clip position
+      if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
+      if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
+      // Update
+      nPosOld = pSlider->nPos;
+      pSlider->nPos = nPos;
+      // Only update if changed
+      if (nPos != nPosOld) {
+        pElem->bNeedRedraw = true;
+      }
+      break;
+      
+    case MSDL_TOUCH_MOVE:
+      // Glow only if current coordinate is within element
+      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
+        pSlider->bGlowing = true;
+      } else {
+        pSlider->bGlowing = false;
+      }
+      // Calc new position
+      nPosRng = pSlider->nPosMax - pSlider->nPosMin;
+      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+      // Clip position
+      if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
+      if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
+      // Update
+      nPosOld = pSlider->nPos;
+      pSlider->nPos = nPos;
+      // Only update if changed
+      if (nPos != nPosOld) {
+        pElem->bNeedRedraw = true;
+      }
+      break;
+      
+    case MSDL_TOUCH_UP:
+      // End glow
+      pSlider->bGlowing = false;
+      // Accept "clicked" event if current coordinate is within element
+      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
+        // TODO: Anything to do when release? Perhaps issue callback?
+      } else {
+        // TODO: Maybe reset position of slider if released outside?        
+      }
+      break;
+      
+    default:
+      return false;
+      break;
+  }
+  
+  // If the checkbox changed state, redraw
+  bool  bChanged = false;
+  if (pSlider->bGlowing != bGlowingOld) { bChanged = true; }
   if (bChanged) {
     pElem->bNeedRedraw = true;
   }

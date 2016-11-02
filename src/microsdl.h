@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.?    (2016/11/01)
+// - Version 0.3.1    (2016/11/02)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -84,6 +84,13 @@ extern "C" {
     MSDL_VIEW_ID_NONE,                ///< No Viewport ID has been assigned
   };
 
+  /// Group ID enumerations
+  enum {
+    // Public usage
+    MSDL_GROUP_ID_USER_BASE = 0,      ///< Starting Group ID for user assignments
+    // Internal usage
+    MSDL_GROUP_ID_NONE,               ///< No Group ID has been assigned
+  };
   
   /// Font ID enumerations
   /// - The Font ID is the primary means for user code to
@@ -127,8 +134,8 @@ typedef enum {
     MSDL_TYPE_LINE,         ///< Line element type
     // Extended elements:
     MSDL_TYPEX_GAUGE,       ///< Guage / progressbar extended element
-    MSDL_TYPEX_CHECKBOX,    ///< Checkbox (simple) extended element
-    MSDL_TYPEX_CHECKBOX1    ///< Checkbox (complete) extended element
+    MSDL_TYPEX_CHECKBOX,    ///< Checkbox extended element
+    MSDL_TYPEX_SLIDER,      ///< Slider extended element
 } microSDL_teType;
 
 // Element text alignment
@@ -204,36 +211,37 @@ typedef struct {
   int                 nPage;          ///< Page ID containing this element
   microSDL_teType     nType;
   SDL_Rect            rElem;          ///< Rect region containing element
+  int                 nGroup;         ///< Group ID that the element belongs to
 
-  SDL_Surface*    pSurf;          ///< Surface ptr to draw (normal)
-  SDL_Surface*    pSurfGlow;      ///< Surface ptr to draw (glowing)
+  SDL_Surface*        pSurf;          ///< Surface ptr to draw (normal)
+  SDL_Surface*        pSurfGlow;      ///< Surface ptr to draw (glowing)
 
-  bool            bClickEn;       ///< Element accepts touch events
-  bool            bFrameEn;       ///< Element is drawn with frame
-  bool            bFillEn;        ///< Element is drawn with inner fill.
+  bool                bClickEn;       ///< Element accepts touch events
+  bool                bFrameEn;       ///< Element is drawn with frame
+  bool                bFillEn;        ///< Element is drawn with inner fill.
                                   ///< This is also used during redraw to determine
                                   ///< if elements underneath are visible and must
                                   ///< be redrawn as well.
 
-  SDL_Color       colElemFrame;   ///< Color for frame
-  SDL_Color       colElemFill;    ///< Color for background fill
-  SDL_Color       colElemGlow;    ///< Color to use when touch hovers over
+  SDL_Color           colElemFrame;   ///< Color for frame
+  SDL_Color           colElemFill;    ///< Color for background fill
+  SDL_Color           colElemGlow;    ///< Color to use when touch hovers over
 
-  bool            bNeedRedraw;    ///< Element needs to be redrawn
+  bool                bNeedRedraw;    ///< Element needs to be redrawn
 
-  char            acStr[MSDL_ELEM_STRLEN_MAX+1];  ///< Text string to overlay
-  SDL_Color       colElemText;    ///< Color of overlay text
-  unsigned        eTxtAlign;      ///< Alignment of overlay text
-  unsigned        nTxtMargin;     ///< Margin of overlay text within rect region
-  TTF_Font*       pTxtFont;       ///< Font ptr for overlay text
+  char                acStr[MSDL_ELEM_STRLEN_MAX+1];  ///< Text string to overlay
+  SDL_Color           colElemText;    ///< Color of overlay text
+  unsigned            eTxtAlign;      ///< Alignment of overlay text
+  unsigned            nTxtMargin;     ///< Margin of overlay text within rect region
+  TTF_Font*           pTxtFont;       ///< Font ptr for overlay text
  
-  void*           pXData;         ///< Ptr to extended data structure
+  void*               pXData;         ///< Ptr to extended data structure
   
   /// Callback func ptr for drawing
-  MSDL_CB_DRAW    pfuncXDraw;
+  MSDL_CB_DRAW        pfuncXDraw;
   
   /// Callback func ptr for touch
-  MSDL_CB_TOUCH   pfuncXTouch;
+  MSDL_CB_TOUCH       pfuncXTouch;
   
 } microSDL_tsElem;
 

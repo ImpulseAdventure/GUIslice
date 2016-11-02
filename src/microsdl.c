@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.?    (2016/11/01)
+// - Version 0.3.1    (2016/11/02)
 // =======================================================================
 
 // MicroSDL library
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.3"
+#define MICROSDL_VER "0.3.1"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -1961,7 +1961,8 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
   pElem->bValid           = false;
   pElem->nId              = MSDL_ID_NONE;
   pElem->nPage            = MSDL_PAGE_NONE;
-  pElem->nType            = MSDL_TYPE_BOX; //
+  pElem->nType            = MSDL_TYPE_BOX;
+  pElem->nGroup           = MSDL_GROUP_ID_NONE;
   pElem->rElem            = (SDL_Rect){0,0,0,0};
   pElem->pSurf            = NULL;
   pElem->pSurfGlow        = NULL;
