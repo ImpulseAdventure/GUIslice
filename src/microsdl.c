@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.?    (2016/10/31)
+// - Version 0.3.?    (2016/11/01)
 // =======================================================================
 
 // MicroSDL library
@@ -116,7 +116,6 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   for (nInd=0;nInd<(pGui->nViewMax);nInd++) {
     microSDL_ResetView(&(pGui->psView[nInd]));
   }
-
 
   // Current touch-tracking hover status
   pGui->nTrackElemHover     = MSDL_IND_NONE;
@@ -748,9 +747,9 @@ int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 
 int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 {
-  unsigned    nInd;
-  bool        bFound = false;
-  int         nFoundInd = MSDL_IND_NONE;
+  unsigned  nInd;
+  bool      bFound = false;
+  int       nFoundInd = MSDL_IND_NONE;
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
@@ -1086,7 +1085,7 @@ void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
 
 int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui)
 {
-  int   nElemInd = pGui->nTrackElemClicked;
+  int nElemInd = pGui->nTrackElemClicked;
   if (nElemInd == MSDL_IND_NONE) {
     return MSDL_ID_NONE;
   } else {
@@ -1430,7 +1429,6 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
     return;
   }
 
-
   if (strlen(acImage) > 0) {
     if (pElem->pSurf != NULL) {
       fprintf(stderr,"ERROR: microSDL_ElemSetImage(%s) with pSurf already set\n",acImage);
@@ -1688,7 +1686,7 @@ bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
 int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
 {
   unsigned  nInd;
-  int       nFound = MSDL_IND_NONE;
+  int nFound = MSDL_IND_NONE;
   for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
     if (pGui->psView[nInd].nId == nViewId) {
       nFound = nInd;
@@ -1900,7 +1898,7 @@ void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
 bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int nX,int nY)
 {
   // Callback function pointer
-  bool  (*pfuncXTouch)(void* pGui,microSDL_teTouch eTouch,int nX,int nY);
+  MSDL_CB_TOUCH   pfuncXTouch;
   
   // For initial touch-down event, microSDL_TrackTouchDownClick() will
   // find the element owning the coordinate and then set the index

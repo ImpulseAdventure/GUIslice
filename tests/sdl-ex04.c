@@ -28,13 +28,12 @@ microSDL_tsGui        m_gui;
 microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
-microSDL_tsXCheckbox  m_sXCheck1;
-microSDL_tsXCheckbox1 m_sXCheck2;
+microSDL_tsXCheckbox  m_asXCheck[2];
 
 // Create page elements
 bool InitOverlays()
 {
-  int   nElemId;
+  int nElemId;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
@@ -62,14 +61,14 @@ bool InitOverlays()
   
   // Create checkbox 1
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,110,20,20},
-    "Check:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_sXCheck1,(SDL_Rect){80,110,20,20},
+    "Check1:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],(SDL_Rect){80,110,20,20},
     MSDL_COL_ORANGE,false);
 
   // Create checkbox 2
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,150,20,20},
-    "Check1:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckbox1Create(&m_gui,E_ELEM_CHECK2,E_PG_MAIN,&m_sXCheck2,(SDL_Rect){80,150,20,20},
+    "Check2:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_MAIN,&m_asXCheck[1],(SDL_Rect){80,150,20,20},
     MSDL_COL_ORANGE,false);
   
   return true;
@@ -78,12 +77,12 @@ bool InitOverlays()
 
 int main( int argc, char* args[] )
 {
-  bool              bOk = true;
-  bool              bQuit = false;  
-  int               nClickX,nClickY;
-  unsigned          nClickPress;
-  int               nTrackElemClicked;
-  char              acTxt[100];
+  bool                bOk = true;
+  bool                bQuit = false;  
+  int                 nClickX,nClickY;
+  unsigned            nClickPress;
+  int                 nTrackElemClicked;
+  char                acTxt[100];
 
   // -----------------------------------
   // Initialize
@@ -136,14 +135,11 @@ int main( int argc, char* args[] )
       // Track the touch event and find any associated object
       microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
       nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
-
+     
       // Any selectable object clicked? (MSDL_ID_NONE if no)
       if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
         // Quit button pressed
         bQuit = true;
-      } else if (nTrackElemClicked == E_ELEM_CHECK1) {
-        // Toggle checkbox
-        microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK1);   
       }
 
       // Clear click event

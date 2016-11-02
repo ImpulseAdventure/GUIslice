@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.?    (2016/10/31)
+// - Version 0.3.?    (2016/11/01)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -35,23 +35,86 @@ extern "C" {
 // Enumerations
 // -----------------------------------------------------------------------
 
-// Public usage
-#define MSDL_ID_NONE          -11   ///< No Element ID has been assigned
-#define MSDL_ID_AUTO          -12   ///< Auto-assigned Element ID requested
-#define MSDL_PAGE_ALL         -22   ///< Page ID used to indicate an element is
-                                    ///< assigned to appear on all pages.
-#define MSDL_VIEW_ID_SCREEN   -52   ///< Default Viewport ID used for main screen
+  /// Element ID enumerations
+  /// - The Element ID is the primary means for user code to
+  ///   reference a graphic element.
+  /// - Application code can assign arbitrary Element ID values
+  ///   in the range of 0...32767
+  /// - Specifying MSDL_ID_AUTO to ElemCreate() requests that
+  ///   microSDL auto-assign an ID value for the Element. These
+  ///   auto-assigned values will begin at MSDL_ID_AUTO_BASE.
+  /// - Negative Element ID values are reserved 
+  enum {
+    // Public usage
+    MSDL_ID_USER_BASE       = 0,      ///< Starting Element ID for user assignments
+    MSDL_ID_NONE            = -1999,  ///< No Element ID has been assigned
+    MSDL_ID_AUTO,                     ///< Auto-assigned Element ID requested
+    // Internal usage
+    MSDL_ID_AUTO_BASE       = 32768,  ///< Starting Element ID to start auto-assignment
+                                      ///< (when MSDL_ID_AUTO is specified)            
+  };
 
-// Internal usage
-#define MSDL_IND_NONE         -1    ///< No Element Index is available
-#define MSDL_PAGE_NONE        -21   ///< No Page ID has been assigned
-#define MSDL_FONT_NONE        -31   ///< No Font ID has been assigned
-#define MSDL_VIEW_IND_NONE    -41   ///< No Viewport Index is available
-#define MSDL_VIEW_IND_SCREEN  -42   ///< Default Viewport Index used for main screen
-#define MSDL_VIEW_ID_NONE     -51   ///< No Viewport ID has been assigned
 
-#define MSDL_ID_AUTO_BASE   32768   ///< Starting Element ID to start auto-assignment
-                                    ///< (when MSDL_ID_AUTO is specified)
+  /// Page ID enumerations
+  /// - The Page ID is the primary means for user code to
+  ///   reference a specific page of elements.
+  /// - Application code can assign arbitrary Page ID values
+  ///   in the range of 0...32767
+  /// - Negative Page ID values are reserved   
+  enum {
+    // Public usage
+    MSDL_PAGE_USER_BASE     = 0,      ///< Starting Page ID for user assignments
+    MSDL_PAGE_ALL           = -2999,  ///< Page ID used to indicate an element is
+                                      ///< assigned to appear on all pages.
+    // Internal usage
+    MSDL_PAGE_NONE,                   ///< No Page ID has been assigned
+  };
+
+  /// View ID enumerations
+  /// - The View ID is the primary means for user code to
+  ///   reference a specific viewport.
+  /// - Application code can assign arbitrary View ID values
+  ///   in the range of 0...32767
+  /// - Negative View ID values are reserved   
+  enum {
+    // Public usage
+    MSDL_VIEW_ID_USER_BASE  = 0,      ///< Starting Page ID for user assignments
+    MSDL_VIEW_ID_SCREEN     = -3999,  ///< Default Viewport ID used for main screen
+    // Internal usage
+    MSDL_VIEW_ID_NONE,                ///< No Viewport ID has been assigned
+  };
+
+  
+  /// Font ID enumerations
+  /// - The Font ID is the primary means for user code to
+  ///   reference a specific font.
+  /// - Application code can assign arbitrary Font ID values
+  ///   in the range of 0...32767
+  /// - Negative Font ID values are reserved    
+  enum {
+    // Public usage
+    MSDL_FONT_USER_BASE     = 0,      ///< Starting Font ID for user assignments
+    MSDL_FONT_NONE          = -4999,  ///< No Font ID has been assigned
+  };
+  
+
+  /// View Index enumerations
+  /// - The View Index is used for internal purposes as an offset
+  //    into the GUI's array of views
+  enum {
+    // Internal usage
+    MSDL_VIEW_IND_NONE      = -5999,  ///< No Viewport Index is available
+    MSDL_VIEW_IND_SCREEN,             ///< Default Viewport Index used for main screen
+  };
+  
+  /// Element Index enumerations
+  /// - The Element Index is used for internal purposes as an offset
+  //    into the GUI's array of elements
+  enum {
+    // Internal usage
+    MSDL_IND_NONE           = -9999,  ///< No Element Index is available
+  };
+
 
 /// Element type
 typedef enum {
@@ -136,11 +199,11 @@ typedef bool (*MSDL_CB_TOUCH)(void* pvGui,microSDL_teTouch eTouch,int nX,int nY)
 ///   pXData reference and pfuncX* callback functions.
 ///
 typedef struct {
-  bool            bValid;         ///< Element was created properly
-  int             nId;            ///< Element ID specified by user
-  int             nPage;          ///< Page ID containing this element
-  microSDL_teType nType;
-  SDL_Rect        rElem;          ///< Rect region containing element
+  bool                bValid;         ///< Element was created properly
+  int                 nId;            ///< Element ID specified by user
+  int                 nPage;          ///< Page ID containing this element
+  microSDL_teType     nType;
+  SDL_Rect            rElem;          ///< Rect region containing element
 
   SDL_Surface*    pSurf;          ///< Surface ptr to draw (normal)
   SDL_Surface*    pSurfGlow;      ///< Surface ptr to draw (glowing)
