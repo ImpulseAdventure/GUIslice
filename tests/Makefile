@@ -21,7 +21,9 @@ SRC = test-sdl.c \
 	sdl-ex03.c \
 	sdl-ex04.c \
 	sdl-ex05.c \
-	sdl-ex06.c
+	sdl-ex06.c \
+	sdl-ex07.c
+	
 
 OBJ = $(SRC:.c=.o)
 
@@ -62,4 +64,7 @@ sdl-ex06: sdl-ex06.c ../src/microsdl.c ../src/microsdl_ex.c
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ sdl-ex06.c ../src/microsdl.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
+sdl-ex07: sdl-ex07.c ../src/microsdl.c ../src/microsdl_ex.c
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ sdl-ex07.c ../src/microsdl.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 

@@ -273,10 +273,10 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem);
 /// Handle touch events to Slider element
 /// - Called from microSDL_NotifyElemTouch()
 ///
-/// /param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
-/// /param[in]  eTouch:      Touch event type
-/// /param[in]  nRelX:       Touch X coord relative to element
-/// /param[in]  nRelY:       Touch Y coord relative to element
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// \param[in]  eTouch:      Touch event type
+/// \param[in]  nRelX:       Touch X coord relative to element
+/// \param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
