@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.1    (2016/11/02)
+// - Version 0.3.2    (2016/11/03)
 // =======================================================================
 
 // Extended element definitions
@@ -92,7 +92,6 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem);
 /// Extended data for Checkbox element
 typedef struct {
   bool            bChecked;     ///< Indicates if it is selected (checked)
-  bool            bGlowing;     ///< Indicates if touch is hovering over it
   SDL_Color       colCheck;     ///< Color of checked inner fill
 } microSDL_tsXCheckbox;
 
@@ -192,7 +191,6 @@ typedef struct {
   SDL_Color       colTrim;        ///< Style: color of trim
   // State
   int             nPos;           ///< Current position value of the slider
-  bool            bGlowing;       ///< Indicates if touch is hovering over it  
 } microSDL_tsXSlider;
 
 

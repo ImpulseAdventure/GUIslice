@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.1    (2016/11/02)
+// - Version 0.3.2    (2016/11/03)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -209,9 +209,11 @@ typedef struct {
   bool                bValid;         ///< Element was created properly
   int                 nId;            ///< Element ID specified by user
   int                 nPage;          ///< Page ID containing this element
-  microSDL_teType     nType;
+  microSDL_teType     nType;          ///< Element type enumeration
   SDL_Rect            rElem;          ///< Rect region containing element
   int                 nGroup;         ///< Group ID that the element belongs to
+  
+  bool                bGlowing;       ///< Element is currently glowing
 
   SDL_Surface*        pSurf;          ///< Surface ptr to draw (normal)
   SDL_Surface*        pSurfGlow;      ///< Surface ptr to draw (glowing)
@@ -219,13 +221,13 @@ typedef struct {
   bool                bClickEn;       ///< Element accepts touch events
   bool                bFrameEn;       ///< Element is drawn with frame
   bool                bFillEn;        ///< Element is drawn with inner fill.
-                                  ///< This is also used during redraw to determine
-                                  ///< if elements underneath are visible and must
-                                  ///< be redrawn as well.
+                                      ///< This is also used during redraw to determine
+                                      ///< if elements underneath are visible and must
+                                      ///< be redrawn as well.
 
   SDL_Color           colElemFrame;   ///< Color for frame
   SDL_Color           colElemFill;    ///< Color for background fill
-  SDL_Color           colElemGlow;    ///< Color to use when touch hovers over
+  SDL_Color           colElemGlow;    ///< Color to use when touch cause glowing
 
   bool                bNeedRedraw;    ///< Element needs to be redrawn
 
@@ -285,12 +287,11 @@ typedef struct {
   unsigned          nViewCnt;             ///< Number of viewports allocated
   int               nViewIndCur;          ///< Currently-active viewport index
 
-  int               nTrackElemHover;      ///< Element currently being touch-tracked.
-                                          ///< Set to MSDL_IND_NONE if no elements are
+  int               nTrackElemIdStart;    ///< Element ID currently being touch-tracked.
+                                          ///< Set to MSDL_ID_NONE if no elements are
                                           ///< currently being tracked.
-  bool              bTrackElemHoverGlow;  ///< Tracked element is currently glowing?
-
-  int               nTrackElemClicked;    ///< Last Element Ind clicked
+  
+  int               nTrackElemIdClicked;  ///< Last Element ID clicked
   int               nClickLastX;          ///< Last touch event X coord
   int               nClickLastY;          ///< Last touch event Y coord
   unsigned          nClickLastPress;      ///< Last touch event pressure (0=none))
@@ -883,7 +884,7 @@ void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn);
 /// \param[in]  nElemId:     Element ID to update
 /// \param[in]  colFrame:    Color for the frame
 /// \param[in]  colFill:     Color for the fill
-/// \param[in]  colGlow:     Color when glowing (eg. hover over)
+/// \param[in]  colGlow:     Color when glowing
 ///
 /// \return none
 ///
@@ -958,6 +959,28 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId);
 ///
 void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw);
 
+
+///
+/// Update the glowing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  bGlowing:    True if element is glowing
+///
+/// \return none
+///
+void microSDL_ElemSetGlow(microSDL_tsGui* pGui,int nElemId,bool bGlowing);
+
+
+///
+/// Get the glowing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to examine
+///
+/// \return True if element is glowing
+///
+bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId);
 
 ///
 /// Assign the drawing callback function for an element
@@ -1047,7 +1070,7 @@ void microSDL_ClearTrackElemClicked(microSDL_tsGui* pGui);
 
 ///
 /// Handles a touch event and performs the necessary
-/// tracking, hover and selection actions depending
+/// tracking, glowing and selection actions depending
 /// on the press state.
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -1278,18 +1301,6 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
 
 
 ///
-/// Update the need-redraw status for an element based
-/// on an internal element index
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemInd:    Element Index to update
-/// \param[in]  bRedraw:     True if redraw required, false otherwise
-///
-/// \return none
-///
-void microSDL_ElemSetRedrawByInd(microSDL_tsGui* pGui,int nElemInd,bool bRedraw);
-
-///
 /// Draw an element on the screen
 /// - Also updates the active display
 ///
@@ -1363,17 +1374,8 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
 
 
 ///
-/// Fetch the index of the last clicked element
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return Element Index or MSDL_IND_NONE if no new elements selected
-///
-int microSDL_GetTrackElemIndClicked(microSDL_tsGui* pGui);
-
-///
 /// Handle a mouse-down event and track any
-/// button hover state changes.
+/// button glowing state changes.
 ///
 /// This routine is called by microSDL_TrackClick().
 ///
@@ -1402,7 +1404,7 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 
 ///
 /// Handle a mouse-move event and track any
-/// button hover state changes
+/// button glowing state changes
 ///
 /// This routine is called by microSDL_TrackClick().
 ///

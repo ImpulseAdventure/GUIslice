@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.1    (2016/11/02)
+// - Version 0.3.2    (2016/11/03)
 // =======================================================================
 
 
@@ -258,8 +258,8 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
+  sElem.bGlowing        = false;
   pXData->bChecked      = bChecked;
-  pXData->bGlowing      = false;
   pXData->colCheck      = colCheck;  
   sElem.pXData          = (void*)(pXData);
   // Specify the custom drawing callback
@@ -354,7 +354,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   }
   
   bool  bChecked = pCheckbox->bChecked;
-  bool  bGlowing = pCheckbox->bGlowing;
+  bool  bGlowing = pElem->bGlowing;
   
   // Draw the background
   microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
@@ -393,10 +393,10 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 //   dynamically, as well as updating the checkbox state if the
 //   user releases over it (ie. a click event).
 // - Without the callback, we would need to depend on the default
-//   click event (nTrackElemClicked) and the main loop would
+//   click event (nTrackElemIndClicked) and the main loop would
 //   therefore be responsible for calling the toggle function and
 //   redraw. For example:
-//     if (nTrackElemClicked == E_ELEM_CHECK) {
+//     if (nTrackElemIndClicked == E_ELEM_CHECK) {
 //       microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK);
 //       microSDL_ElemDraw(&m_gui,E_ELEM_CHECK);
 //     }
@@ -411,37 +411,39 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   pGui  = (microSDL_tsGui*)(pvGui);
   
   // Get our element (as it will be the one being tracked)
-  int nElemInd = pGui->nTrackElemHover;
+  int nElemId = pGui->nTrackElemIdStart;
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
   if (nElemInd == MSDL_IND_NONE) {
     // Shouldn't get here
     return false;
   }
   
+  
   pElem = &(pGui->psElem[nElemInd]);
   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);  
 
   bool  bCheckedOld = pCheckbox->bChecked;
-  bool  bGlowingOld = pCheckbox->bGlowing;  
+  bool  bGlowingOld = pElem->bGlowing;  
   
   switch(eTouch) {
     
     case MSDL_TOUCH_DOWN:
       // Start glowing as must be over it
-      pCheckbox->bGlowing = true;
+      pElem->bGlowing = true;
       break;
       
     case MSDL_TOUCH_MOVE:
       // Glow only if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        pCheckbox->bGlowing = true;
+        pElem->bGlowing = true;
       } else {
-        pCheckbox->bGlowing = false;
+        pElem->bGlowing = false;
       }
       break;
       
     case MSDL_TOUCH_UP:
       // End glow
-      pCheckbox->bGlowing = false;
+      pElem->bGlowing = false;
       // Accept "clicked" event if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
         // Toggle the state
@@ -457,7 +459,7 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   
   // If the checkbox changed state, redraw
   bool  bChanged = false;
-  if (pCheckbox->bGlowing != bGlowingOld) { bChanged = true; }
+  if (pElem->bGlowing != bGlowingOld) { bChanged = true; }
   if (pCheckbox->bChecked != bCheckedOld) { bChanged = true; }
   if (bChanged) {
     pElem->bNeedRedraw = true;
@@ -486,12 +488,12 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
+  sElem.bGlowing        = false;
   pXData->nPosMin       = nPosMin;
   pXData->nPosMax       = nPosMax;
   pXData->nPos          = nPos;
   pXData->nThumbSz      = nThumbSz;
   pXData->bVert         = bVert;
-  pXData->bGlowing      = false;
   pXData->bTrim         = false;
   pXData->colTrim       = MSDL_COL_BLACK;
   pXData->nTickDiv      = 0;
@@ -588,13 +590,12 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  
+  bool      bGlowing  = pElem->bGlowing; 
   int       nPos      = pSlider->nPos;
   int       nPosMin   = pSlider->nPosMin;
   int       nPosMax   = pSlider->nPosMax;
   bool      bVert     = pSlider->bVert;
   int       nThumbSz  = pSlider->nThumbSz;
-  bool      bGlowing  = pSlider->bGlowing;
   bool      bTrim     = pSlider->bTrim;
   SDL_Color colTrim   = pSlider->colTrim;
   unsigned  nTickDiv  = pSlider->nTickDiv;
@@ -696,7 +697,8 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   pGui  = (microSDL_tsGui*)(pvGui);
   
   // Get our element (as it will be the one being tracked)
-  int nElemInd = pGui->nTrackElemHover;
+  int nElemId = pGui->nTrackElemIdStart;
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);  
   if (nElemInd == MSDL_IND_NONE) {
     // Shouldn't get here
     return false;
@@ -705,16 +707,15 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   pElem = &(pGui->psElem[nElemInd]);
   pSlider = (microSDL_tsXSlider*)(pElem->pXData);  
 
-  bool  bGlowingOld = pSlider->bGlowing;  
+  bool  bGlowingOld = pElem->bGlowing;  
   int   nPosRng;
-  int   nPosOld;
   int   nPos;
   
   switch(eTouch) {
     
     case MSDL_TOUCH_DOWN:
       // Start glowing as must be over it
-      pSlider->bGlowing = true;
+      pElem->bGlowing = true;
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
       nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
@@ -722,20 +723,16 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
       if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
       if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
       // Update
-      nPosOld = pSlider->nPos;
       pSlider->nPos = nPos;
-      // Only update if changed
-      if (nPos != nPosOld) {
-        pElem->bNeedRedraw = true;
-      }
+      pElem->bNeedRedraw = true;
       break;
       
     case MSDL_TOUCH_MOVE:
       // Glow only if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        pSlider->bGlowing = true;
+        pElem->bGlowing = true;
       } else {
-        pSlider->bGlowing = false;
+        pElem->bGlowing = false;
       }
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
@@ -744,23 +741,20 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
       if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
       if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
       // Update
-      nPosOld = pSlider->nPos;
       pSlider->nPos = nPos;
-      // Only update if changed
-      if (nPos != nPosOld) {
-        pElem->bNeedRedraw = true;
-      }
+      pElem->bNeedRedraw = true;
       break;
       
     case MSDL_TOUCH_UP:
       // End glow
-      pSlider->bGlowing = false;
+      pElem->bGlowing = false;
       // Accept "clicked" event if current coordinate is within element
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
         // TODO: Anything to do when release? Perhaps issue callback?
       } else {
         // TODO: Maybe reset position of slider if released outside?        
       }
+      pElem->bNeedRedraw = true;      
       break;
       
     default:
@@ -770,7 +764,7 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   
   // If the checkbox changed state, redraw
   bool  bChanged = false;
-  if (pSlider->bGlowing != bGlowingOld) { bChanged = true; }
+  if (pElem->bGlowing != bGlowingOld) { bChanged = true; }
   if (bChanged) {
     pElem->bNeedRedraw = true;
   }

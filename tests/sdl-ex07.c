@@ -218,8 +218,8 @@ int main( int argc, char* args[] )
     } // Touchscreen press
   } // bQuit
 
-  // Read checkbox state:
-  // bool bCheck = microSDL_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
+  // Read slider state:
+  // int nPosR = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_R);
 
   // -----------------------------------
   // Close down display

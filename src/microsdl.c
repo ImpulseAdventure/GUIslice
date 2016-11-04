@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.1    (2016/11/02)
+// - Version 0.3.2    (2016/11/03)
 // =======================================================================
 
 // MicroSDL library
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.3.1"
+#define MICROSDL_VER "0.3.2"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -117,15 +117,14 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
     microSDL_ResetView(&(pGui->psView[nInd]));
   }
 
-  // Current touch-tracking hover status
-  pGui->nTrackElemHover     = MSDL_IND_NONE;
-  pGui->bTrackElemHoverGlow = false;
-
-  // Last graphic element clicked
-  pGui->nTrackElemClicked   = MSDL_IND_NONE;
-  pGui->nClickLastX         = 0;
-  pGui->nClickLastY         = 0;
-  pGui->nClickLastPress     = 0;
+  // Element currently started tracking
+  pGui->nTrackElemIdStart     = MSDL_ID_NONE;
+  
+  // Last element clicked
+  pGui->nTrackElemIdClicked   = MSDL_ID_NONE;
+  pGui->nClickLastX           = 0;
+  pGui->nClickLastY           = 0;
+  pGui->nClickLastPress       = 0;
 
   // Touchscreen library interface
   #ifdef INC_TS
@@ -1002,6 +1001,29 @@ void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw)
   pElem->bNeedRedraw      = bRedraw;
 }
 
+void microSDL_ElemSetGlow(microSDL_tsGui* pGui,int nElemId,bool bGlowing)
+{
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemSetGlow() invalid ID=%d\n",nElemId);
+    return;
+  }
+  microSDL_tsElem* pElem  = &pGui->psElem[nElemInd];
+  pElem->bGlowing         = bGlowing;
+  pElem->bNeedRedraw      = true;
+}
+
+bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId)
+{
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
+    fprintf(stderr,"ERROR: microSDL_ElemGetGlow() invalid ID=%d\n",nElemId);
+    return false;
+  }
+  microSDL_tsElem* pElem  = &pGui->psElem[nElemInd];
+  return pElem->bGlowing;
+}
+
 void microSDL_ElemSetDrawFunc(microSDL_tsGui* pGui,int nElemId,MSDL_CB_DRAW funcCb)
 {
   int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
@@ -1085,18 +1107,13 @@ void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
 
 int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui)
 {
-  int nElemInd = pGui->nTrackElemClicked;
-  if (nElemInd == MSDL_IND_NONE) {
-    return MSDL_ID_NONE;
-  } else {
-    return microSDL_ElemGetIdFromInd(pGui,nElemInd);
-  }
+  return pGui->nTrackElemIdClicked;
 }
 
 
 void microSDL_ClearTrackElemClicked(microSDL_tsGui* pGui)
 {
-  pGui->nTrackElemClicked = MSDL_IND_NONE;
+  pGui->nTrackElemIdClicked = MSDL_ID_NONE;  
 }
 
 void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress)
@@ -1346,10 +1363,12 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
   }
 
   // Assign defaults to the element record
+  // TODO: Use ResetElem()?
   sElem.nId             = nElemId;
   sElem.nPage           = nPageId;
   sElem.rElem           = rElem;
   sElem.nType           = nType;
+  sElem.bGlowing        = false;
   sElem.pTxtFont        = microSDL_FontGet(pGui,nFontId);
   sElem.pSurf           = NULL;
   sElem.pSurfGlow       = NULL; 
@@ -1457,15 +1476,6 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
 
 }
 
-void microSDL_ElemSetRedrawByInd(microSDL_tsGui* pGui,int nElemInd,bool bRedraw)
-{
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemIndValid() invalid Ind=%d\n",nElemInd);
-    return;
-  }
-  microSDL_tsElem* pElem  = &pGui->psElem[nElemInd];
-  pElem->bNeedRedraw      = bRedraw;
-}
 
 // PRE:
 // - Assumes that the element is on the active display page
@@ -1507,43 +1517,17 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // Init for default drawing
   // --------------------------------------------------------------------------
   
-  bool              bGlow;
+  bool              bGlowing;
   int               nElemX,nElemY;
   unsigned          nElemW,nElemH;
   SDL_Surface*      surfTxt = NULL;
   
-  nElemX = sElem.rElem.x;
-  nElemY = sElem.rElem.y;
-  nElemW = sElem.rElem.w;
-  nElemH = sElem.rElem.h;
-
-  // --------------------------------------------------------------------------
-  // Determine glow state
-  // --------------------------------------------------------------------------
+  nElemX    = sElem.rElem.x;
+  nElemY    = sElem.rElem.y;
+  nElemW    = sElem.rElem.w;
+  nElemH    = sElem.rElem.h;
+  bGlowing  = sElem.bGlowing; // Is the element currently glowing?
   
-  // Determine if this element is currently hovered over
-  // TODO: Rename hover for clarity
-  // Only show glowing state if this was the element
-  // being tracked (nTrackElemHover) and it is 
-  bGlow = false;
-  if (pGui->nTrackElemHover == nElemInd) {
-    // This was the hover button
-    if (pGui->bTrackElemHoverGlow) {
-      #ifdef DBG_LOG
-      printf("microSDL_ElemDrawByInd(%u) on hover btn (glow)\n",nElemInd);
-      #endif
-      bGlow = true;
-    } else {
-      #ifdef DBG_LOG
-      printf("microSDL_ElemDrawByInd(%u) on hover btn (no glow)\n",nElemInd);
-      #endif
-    }
-  } else {
-    #ifdef DBG_LOG
-    printf("microSDL_ElemDrawByInd(%u) on non-hover btn\n",nElemInd);
-    #endif
-  }
-
   // --------------------------------------------------------------------------
   // Background
   // --------------------------------------------------------------------------
@@ -1552,7 +1536,9 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // - This also changes the fill color if it is a button
   //   being selected
   if (sElem.bFillEn) {
-    if ((sElem.nType == MSDL_TYPE_BTN) && (bGlow)) {
+    // TODO: Remove nType check during glowing. Instead use
+    // an enable?
+    if ((sElem.nType == MSDL_TYPE_BTN) && (bGlowing)) {
       microSDL_FillRect(pGui,sElem.rElem,sElem.colElemGlow);
     } else {
       microSDL_FillRect(pGui,sElem.rElem,sElem.colElemFill);
@@ -1583,7 +1569,7 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   
   // Draw any images associated with element
   if (sElem.pSurf != NULL) {
-    if ((bGlow) && (sElem.pSurfGlow != NULL)) {
+    if ((bGlowing) && (sElem.pSurfGlow != NULL)) {
       microSDL_ApplySurface(pGui,nElemX,nElemY,sElem.pSurfGlow,pGui->surfScreen);
     } else {
       microSDL_ApplySurface(pGui,nElemX,nElemY,sElem.pSurf,pGui->surfScreen);
@@ -1740,190 +1726,161 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect)
 }
 
 
-int microSDL_GetTrackElemIndClicked(microSDL_tsGui* pGui)
-{
-  return pGui->nTrackElemClicked;
-}
-
 // Handle MOUSEDOWN
 void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY)
 {
-  // Assume no buttons in hover or clicked
+  // Assume no buttons already started tracking, but check
+  // just in case
+  int nTrackIdOld = pGui->nTrackElemIdStart;
 
-  // Find button to start hover
+  
+  // Find button to start glowing
   // Note that microSDL_ElemFindIndFromCoord() filters out non-clickable elements
-  int nHoverStart = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
-
-  if (nHoverStart != MSDL_IND_NONE) {
+  int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+  int nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);
+  
+  if (nTrackIdNew != MSDL_ID_NONE) {
     // Touch click down on button
-    // Start hover
-    pGui->nTrackElemHover = nHoverStart;
-    pGui->bTrackElemHoverGlow = true;
-    #ifdef DBG_TOUCH
-    printf("microSDL_TrackTouchDownClick @ (%3u,%3u): on button [Ind=%u]\n",nX,nY,
-      pGui->nTrackElemHover);
-    #endif
-
-    // Mark this element as needing redraw
-    if (nHoverStart != MSDL_IND_NONE) {
-      microSDL_ElemSetRedrawByInd(pGui,nHoverStart,true);
+    
+    // End glow on last element (if any)
+    if (nTrackIdOld != MSDL_ID_NONE) {
+      microSDL_ElemSetGlow(pGui,nTrackIdOld,false);
     }
+    
+    // Start glow on new element
+    pGui->nTrackElemIdStart = nTrackIdNew;
+    microSDL_ElemSetGlow(pGui,nTrackIdNew,true);
+
+    if (nTrackIdNew != MSDL_ID_NONE) {
+      microSDL_ElemSetRedraw(pGui,nTrackIdNew,true);
+    }
+    
     
     // Notify element for optional custom handling
     // - We do this after we have determined which element should
     //   receive the touch tracking
     microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_DOWN,nX,nY);
     
-  } else {
-    #ifdef DBG_TOUCH
-    printf("microSDL_TrackTouchDownClick @ (%3u,%3u): not on button\n",nX,nY);
-    #endif
   }
 }
 
 // Handle MOUSEUP
 //
 // POST:
-// - Updates pGui->nTrackElemClicked
+// - Updates pGui->nTrackElemIdClicked
 //
 void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY)
 {
   
-  // Notify original hover element for optional custom handling
-  // - We do this before any changes are made to nTrackElemHover
+  // Notify original tracked element for optional custom handling
+  // - We do this before any changes are made to nTrackElemIdStart
   microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_UP,nX,nY);
   
+  int nTrackIdOld = pGui->nTrackElemIdStart;
+  
   // Find button at point of mouse-up
-  // NOTE: We could possibly use pGui->nTrackElemHover instead
-  int nHoverNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+  // - We use this to determine if we had up-event
+  //   over the original tracked button
+  // NOTE: We could possibly use pGui->nTrackElemIdStart instead
+  int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+  int nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);
 
-  if (nHoverNew == MSDL_IND_NONE) {
+
+  if (nTrackIdNew == MSDL_ID_NONE) {
     // Release not over a button
-    #ifdef DBG_TOUCH
-    printf("microSDL_TrackTouchUpClick: not on button\n");
-    #endif
   } else {
     // Released over button
-    // Was it released over original hover button?
-    if (nHoverNew == pGui->nTrackElemHover) {
+    // Was it released over original tracked element?
+    if (nTrackIdNew == pGui->nTrackElemIdStart) {
       // Yes, proceed to select
-      pGui->nTrackElemClicked = pGui->nTrackElemHover;
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchUpClick: on hovered button\n");
-      printf("Track: Selected button [Ind=%u]\n",pGui->nTrackElemClicked);
-      #endif
+      pGui->nTrackElemIdClicked = pGui->nTrackElemIdStart;
+      // TODO: Create function to set Clicked status at GUI level
     } else {
       // No, ignore
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchUpClick: on another button\n");
-      #endif
     }
   }
 
-  // Clear hover state(s)
-  pGui->bTrackElemHoverGlow = false;
+  // Clear glow state
+  if (nTrackIdOld != MSDL_ID_NONE) {
+    microSDL_ElemSetGlow(pGui,nTrackIdOld,false);
+  }  
   
   // Mark this element as needing redraw
-  // - Redraw the hover item to reflect that it is no longer glowing
-  if (pGui->nTrackElemHover != MSDL_IND_NONE) {
-    microSDL_ElemSetRedrawByInd(pGui,pGui->nTrackElemHover,true);
+  // - Redraw the tracked item to reflect that it is no longer glowing
+  if (pGui->nTrackElemIdStart != MSDL_ID_NONE) {
+    microSDL_ElemSetRedraw(pGui,pGui->nTrackElemIdStart,true);
   }
 
-  pGui->nTrackElemHover = MSDL_IND_NONE;
+  pGui->nTrackElemIdStart = MSDL_ID_NONE;
 
 }
 
 // Handle MOUSEMOVE while MOUSEDOWN
 void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY)
 {
-  // Notify original hover element for optional custom handling
-  // - We do this before any changes are made to nTrackElemHover  
+  // Notify original tracked element for optional custom handling
+  // - We do this before any changes are made to nTrackElemIdStart  
   microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_MOVE,nX,nY);
   
+  // Fetch the item currently being tracked
+  int nTrackIdOld = pGui->nTrackElemIdStart;
   
-  int nHoverOld = pGui->nTrackElemHover;
-  int nHoverNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+  // Determine the element we are currently over
+  int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+  int nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);
 
-  if (nHoverNew == MSDL_IND_NONE) {
+  if (nTrackIdNew == MSDL_ID_NONE) {
     // Not currently over a button
-    // If we were previously hovering, stop hover glow now
-    if (pGui->bTrackElemHoverGlow) {
-      pGui->bTrackElemHoverGlow = false;
-
-      // Mark this element as needing redraw
-      if (pGui->nTrackElemHover != MSDL_IND_NONE) {
-        microSDL_ElemSetRedrawByInd(pGui,pGui->nTrackElemHover,true);
+    // If we were previously glowing, stop it now
+    if (nTrackIdOld != MSDL_ID_NONE) {
+      if (microSDL_ElemGetGlow(pGui,nTrackIdOld)) {
+        microSDL_ElemSetGlow(pGui,nTrackIdOld,false);
       }
-      
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchDownMove: not over hover button, stop glow\n");
-      #endif
-    } else {
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchDownMove: not over hover button, wasn't glowing\n");
-      #endif
     }
-  } else if (nHoverOld == nHoverNew) {
+  } else if (nTrackIdOld == nTrackIdNew) {
     // Still over same button
-    // If not already in hover glow, do it now
-    if (!pGui->bTrackElemHoverGlow) {
-      pGui->bTrackElemHoverGlow = true;
-      
-      // Mark this element as needing redraw
-      if (pGui->nTrackElemHover != MSDL_IND_NONE) {
-        microSDL_ElemSetRedrawByInd(pGui,pGui->nTrackElemHover,true);
-      }
-      
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchDownMove: over hover button, start glow\n");
-      #endif
-    } else {
-      // Already glowing and same button
-      // so nothing to do
-      #ifdef DBG_TOUCH
-      printf("microSDL_TrackTouchDownMove: over hover button, already glow\n");
-      #endif
-    }
+    // If not already glowing, do it now
+    microSDL_ElemSetGlow(pGui,nTrackIdOld,true);
   }
   
 }
 
 // Callback to Extended Element for notification of touch event
-// - Note that this call depends on the current "hover" element
-//   (nTrackElemHover = the element being tracked)
+// - Note that this call depends on the current tracked element
+//   (nTrackElemIdStart)
 // - If the touch callback function is not set, then the default
 //   handler can be used instead. The default handler does touch
-//   tracking and sets bTrackElemHoverGlow according to whether
-//   the element should be glowing or not.
+//   tracking and sets the glowing status.
 bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int nX,int nY)
 {
   // Callback function pointer
   MSDL_CB_TOUCH   pfuncXTouch;
   
   // For initial touch-down event, microSDL_TrackTouchDownClick() will
-  // find the element owning the coordinate and then set the index
-  // into nTrackElemHover before calling microSDL_NotifyElemTouch().
+  // find the element owning the coordinate and then set the ID
+  // into nTrackElemIdStart before calling microSDL_NotifyElemTouch().
   
-  // For initial click on element, nTrackElemHover is set to the index
+  // For initial click on element, nTrackElemIdStart is set to the index
   // of the element and we enter NotifyElemTouch with eTouch=MSDL_TOUCH_DOWN.
   //
   // For continued move / dragging, NotifyElemTouch is called with
-  // nTrackElemHover still set to the initial element that accepted the
+  // nTrackElemIdStart still set to the initial element that accepted the
   // touch-down event. NotifyElemTouch is called with eTouch=MSDL_TOUCH_MOVE.
   //
-  // For click release, nTrackElemHover is still set to the index of the
+  // For click release, nTrackElemIdStart is still set to the ID of the
   // element that initially accepted the touch-down event, and
   // NotifyElemTouch is called with eTouch=MSDL_TOUCH_DOWN.
   
-  // Determine the element currently in hover mode
-  int nElemInd = pGui->nTrackElemHover;
+  // Determine the element currently being tracked
+  int nElemId = pGui->nTrackElemIdStart;
   
   // Find element
+  if (nElemId == MSDL_ID_NONE) {
+    return true;
+  }
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
   if (nElemInd == MSDL_IND_NONE) {
     return true;
-  } else if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    printf("ERROR: microSDL_NotifyElemTouch(%d) invalid index\n",nElemInd);
-    return false;
   }
   
   // Fetch the extended element callback (if enabled)
@@ -1964,6 +1921,7 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
   pElem->nType            = MSDL_TYPE_BOX;
   pElem->nGroup           = MSDL_GROUP_ID_NONE;
   pElem->rElem            = (SDL_Rect){0,0,0,0};
+  pElem->bGlowing         = false;
   pElem->pSurf            = NULL;
   pElem->pSurfGlow        = NULL;
   pElem->bClickEn         = false;
