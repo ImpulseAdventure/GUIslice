@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.2    (2016/11/03)
+// - Version 0.3.3    (2016/11/04)
 // =======================================================================
 
 
@@ -52,6 +52,7 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   if (pXData == NULL) { return MSDL_ID_NONE; }
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_GAUGE,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = true;
@@ -67,7 +68,12 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.pfuncXTouch     = NULL;           // No need to track touches
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -253,6 +259,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXCheckbox* pXData,SDL_Rect rElem,SDL_Color colCheck,bool bChecked)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   if (pXData == NULL) { return MSDL_ID_NONE; }
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
@@ -271,7 +278,12 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE;  
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -483,6 +495,7 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   unsigned nThumbSz,bool bVert)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   if (pXData == NULL) { return MSDL_ID_NONE; }
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SLIDER,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
@@ -505,7 +518,12 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -773,5 +791,331 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
 
 }
 
+
+// ============================================================================
+// Extended Element: SelNum
+// - Checkbox with custom handler for touch tracking which
+//   enables glow to be defined whenever touch is tracked over
+//   the element.
+//
+// - Internal hardcoded sub-element IDs:
+//   - 100 : Button (increment)
+//   - 101 : Button (decrement)
+//   - 102 : Counter text
+// ============================================================================
+
+
+// Create a compound element
+// - For now just two buttons
+int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+  microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId)
+{
+  microSDL_tsElem sElem;
+  int             nSubElemId;
+  int             nSubInd;
+  bool            bOk = true;
+  if (pXData == NULL) { return MSDL_ID_NONE; }
+  
+  // Determine relative coordinate offset
+  int   nOffsetX = rElem.x;
+  int   nOffsetY = rElem.y;
+  
+  // Initialize composite element
+  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SELNUM,rElem,NULL,MSDL_FONT_NONE);
+  sElem.bFrameEn        = true;
+  sElem.bFillEn         = true;
+  sElem.bClickEn        = true;
+  sElem.bGlowing        = false;
+
+  pXData->nCounter            = 0;
+  
+  pXData->nSubElemCnt         = 0;
+  pXData->nTrackSubIdStart    = MSDL_ID_NONE;
+  pXData->nTrackSubIndStart   = MSDL_IND_NONE;
+  pXData->nTrackSubIdClicked  = MSDL_ID_NONE;
+
+  // Clear the sub-elements
+  for (nSubInd=0;nSubInd<3;nSubInd++) {
+    pXData->anElemId[nSubInd] = MSDL_ID_NONE;
+    microSDL_ResetElem(&(pXData->asElem[nSubInd]));
+  }
+  
+  sElem.pXData          = (void*)(pXData);
+  // Specify the custom drawing callback
+  sElem.pfuncXDraw      = &microSDL_ElemXSelNumDraw;
+  // Specify the custom touch tracking callback
+  sElem.pfuncXTouch     = &microSDL_ElemXSelNumTouch;
+  sElem.colElemFrame    = MSDL_COL_GRAY;
+  sElem.colElemFill     = MSDL_COL_BLACK;
+  sElem.colElemGlow     = MSDL_COL_WHITE; 
+
+  int nSubElemCnt = 0;
+
+  // Now create the sub elements
+  // - Ensure page is set to MSDL_PAGE_NONE so that
+  //   we create the element struct but not add it to a specific page.
+  // - When we create an element with MSDL_PAGE_NONE it is
+  //   saved in the GUI's temporary element storage.
+  // - When we have finished creating / styling the element, we then
+  //   copy it into the permanent sub-element storage
+  
+  // - The element IDs assigned to the sub-elements are
+  //   arbitrary (with local scope in the compound element),
+  //   so they don't need to be unique globally across the GUI.
+  // - For demonstration purposes, the sub-element IDs have
+  //   been hardcoded without #defines.
+  
+  nSubElemId = microSDL_ElemCreateBtnTxt(pGui,100,MSDL_PAGE_NONE,
+    (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId);
+  microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
+  pXData->anElemId[nSubElemCnt] = nSubElemId;
+  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  
+  nSubElemId = microSDL_ElemCreateBtnTxt(pGui,101,MSDL_PAGE_NONE,
+    (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId);
+  microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
+  pXData->anElemId[nSubElemCnt] = nSubElemId;
+  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  
+  nSubElemId = microSDL_ElemCreateTxt(pGui,102,MSDL_PAGE_NONE,
+    (SDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
+  pXData->anElemId[nSubElemCnt] = nSubElemId;
+  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  
+  // Record the number of sub-elements
+  pXData->nSubElemCnt = nSubElemCnt;
+
+  // Now proceed to add to page
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
+  return (bOk)? sElem.nId : MSDL_ID_NONE;
+}
+
+
+// Redraw the compound element
+// - When drawing a compound element, we clear the
+//   background then call the individual element
+//   drawing routines. But as they are not stored
+//   in the main GUI's element storage we have to
+//   use ElemDrawByRef() which accepts a pointer to
+//   the sub-element.
+bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
+{
+  // Typecast the parameters to match the GUI and element types
+  microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
+  microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
+  int               nSubInd;
+  
+  // Fetch the element's extended data structure
+  microSDL_tsXSelNum* pSelNum;
+  pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);
+  if (pSelNum == NULL) {
+    fprintf(stderr,"ERROR: microSDL_ElemXSelNumDraw() pXData is NULL\n");
+    return false;
+  }
+  
+  
+  // Draw the background
+  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  
+  // Draw the sub-elements
+  // - We use ElemDrwByRef() since the sub-elements aren't
+  //   stored in the main GUI's element array
+  for (nSubInd=0;nSubInd<pSelNum->nSubElemCnt;nSubInd++) {
+    microSDL_ElemDrawByRef(pGui,&(pSelNum->asElem[nSubInd]));
+  }
+
+  // Optionally, draw a frame around the compound element
+  // - This could instead be done by creating a sub-element
+  //   of type box.
+  // - We don't need to show any glowing of the compound element
+  microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+
+  
+  // Clear the redraw flag
+  pElem->bNeedRedraw = false;
+  
+  // Mark page as needing flip
+  microSDL_PageFlipSet(pGui,true);
+
+  return true;
+}
+
+// Fetch the current value of the element's counter
+int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
+{
+  if (pSelNum == NULL) {
+    return 0;
+  }
+  return pSelNum->nCounter;
+}
+
+int microSDL_ElemXSelNumFindIndById(microSDL_tsXSelNum* pSelNum,int nElemId)
+{
+  unsigned  nSubInd;
+  int       nFound = MSDL_IND_NONE;
+  for (nSubInd=0;nSubInd<pSelNum->nSubElemCnt;nSubInd++) {
+    if (pSelNum->asElem[nSubInd].nId == nElemId) {
+      nFound = nSubInd;
+    }
+  }
+  return nFound;  
+}
+
+// Handle the compound element main functionality
+// - This routine is called by microSDL_ElemXSelNumTouch() to handle
+//   any click events that resulted from the touch tracking process.
+// - The code here will generally represent the core
+//   functionality of the compound element and any communication
+//   between sub-elements.
+void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
+{
+  if (pSelNum == NULL) {
+    return;
+  }
+  int nElemIdClicked = pSelNum->nTrackSubIdClicked;
+  int nCounter = pSelNum->nCounter;
+  
+  // Get sub-element index of main elements
+  //int nBtnIncId = 100;
+  //int nBtnDecId = 101;
+  //int nTxtId = 102;
+  //int nBtnIncInd = microSDL_ElemXSelNumFindIndById(pSelNum,nBtnIncId);
+  //int nBtnDecInd = microSDL_ElemXSelNumFindIndById(pSelNum,nBtnDecId);
+  //int nTxtInd = microSDL_ElemXSelNumFindIndById(pSelNum,nTxtId);
+  
+  switch (nElemIdClicked) {
+    
+    // Increment Button
+    case 100:
+      // Increment
+      if (nCounter<100) {
+        nCounter++;
+      }
+      pSelNum->nCounter = nCounter;
+      // TODO: Need to replace the hardcoded sub-element index
+      //       with a lookup from the sub-element ID (eg. nBtnIncInd)
+      sprintf(pSelNum->asElem[2].acStr,"%d",nCounter);
+      pSelNum->asElem[2].bNeedRedraw = true;      
+      break;
+      
+    // Decrement Button
+    case 101:
+      // Decrement
+      if (nCounter>0) {
+        nCounter--;
+      }
+      pSelNum->nCounter = nCounter;      
+      // TODO: Need to replace the hardcoded sub-element index
+      //       with a lookup from the sub-element ID  (eg. nBtnDecInd)
+      sprintf(pSelNum->asElem[2].acStr,"%d",nCounter);
+      pSelNum->asElem[2].bNeedRedraw = true;
+      break;
+      
+    default:
+      break;
+  }
+  // Reset the clicked indicator
+  pSelNum->nTrackSubIdClicked = MSDL_ID_NONE;
+}
+
+// Touch event callback for a compound element
+// - We redirect the touch events to the appropriate sub-element
+bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY)
+{
+  microSDL_tsGui*     pGui = NULL;
+  microSDL_tsElem*    pElem = NULL;
+  microSDL_tsXSelNum* pSelNum = NULL;
+  
+  int                 nSubInd;
+  
+  // Typecast the parameters to match the GUI
+  pGui  = (microSDL_tsGui*)(pvGui);
+  
+  // Get our element (as it will be the one being tracked)
+  int nElemId = pGui->nTrackElemIdStart;
+  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  if (nElemInd == MSDL_IND_NONE) {
+    // Shouldn't get here
+    return false;
+  }
+  
+  
+  pElem = &(pGui->psElem[nElemInd]);
+  pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);  
+
+  // Get absolute coordinate
+  int nAbsX = pElem->rElem.x + nRelX;
+  int nAbsY = pElem->rElem.y + nRelY;
+  
+  int   nCurTrackSubIndStart = pSelNum->nTrackSubIndStart;
+  switch(eTouch) {
+    
+    case MSDL_TOUCH_DOWN:
+      // Determine what sub-element we just touched on
+      for (nSubInd=0;nSubInd<pSelNum->nSubElemCnt;nSubInd++) {
+        if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nSubInd].rElem)) {
+          pSelNum->nTrackSubIndStart = nSubInd;
+          // Mark it as glowing
+          pSelNum->asElem[nSubInd].bGlowing = true;
+          pSelNum->asElem[nSubInd].bNeedRedraw = true;
+        }
+      }
+      break;
+      
+    case MSDL_TOUCH_MOVE:
+      if (nCurTrackSubIndStart == MSDL_IND_NONE) {
+        break;
+      }
+      // Continue to glow if still over tracked element
+      // Glow only if current coordinate is within element
+      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nCurTrackSubIndStart].rElem)) {
+        // Still over tracked item
+        // Mark it as glowing
+        pSelNum->asElem[nCurTrackSubIndStart].bGlowing = true;
+        pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
+      } else {
+        // Not over tracked item
+        // Disable glow
+        pSelNum->asElem[nCurTrackSubIndStart].bGlowing = false;
+        pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
+      }
+      break;
+      
+    case MSDL_TOUCH_UP:
+      if (nCurTrackSubIndStart == MSDL_IND_NONE) {
+        break;
+      }
+      // End glow
+      pSelNum->asElem[nCurTrackSubIndStart].bGlowing = false;
+      pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
+      // Accept "clicked" event if current coordinate is within element
+      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nCurTrackSubIndStart].rElem)) {
+        // Touch-up within tracked sub-element
+        pSelNum->nTrackSubIdClicked = pSelNum->asElem[nCurTrackSubIndStart].nId;
+        // Clear the tracking
+        pSelNum->nTrackSubIndStart = MSDL_IND_NONE;
+        // Handle click event for sub-element
+        microSDL_ElemXSelNumClick(pGui,pSelNum);
+      }
+      break;
+      
+    default:
+      return false;
+      break;
+  }
+  
+  // To keep it simple, always redraw
+  pElem->bNeedRedraw = true;
+  
+  return true;
+
+}
 
 // ============================================================================

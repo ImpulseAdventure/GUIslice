@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.2    (2016/11/03)
+// - Version 0.3.3    (2016/11/04)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -49,6 +49,7 @@ extern "C" {
     MSDL_ID_USER_BASE       = 0,      ///< Starting Element ID for user assignments
     MSDL_ID_NONE            = -1999,  ///< No Element ID has been assigned
     MSDL_ID_AUTO,                     ///< Auto-assigned Element ID requested
+    MSDL_ID_TEMP,                     ///< ID for Temporary Element
     // Internal usage
     MSDL_ID_AUTO_BASE       = 32768,  ///< Starting Element ID to start auto-assignment
                                       ///< (when MSDL_ID_AUTO is specified)            
@@ -120,6 +121,8 @@ extern "C" {
   enum {
     // Internal usage
     MSDL_IND_NONE           = -9999,  ///< No Element Index is available
+    MSDL_IND_TEMP           = 0,      ///< Temporary element at index 0
+    MSDL_IND_FIRST          = 1,      ///< User elements start at index 1
   };
 
 
@@ -136,6 +139,7 @@ typedef enum {
     MSDL_TYPEX_GAUGE,       ///< Guage / progressbar extended element
     MSDL_TYPEX_CHECKBOX,    ///< Checkbox extended element
     MSDL_TYPEX_SLIDER,      ///< Slider extended element
+    MSDL_TYPEX_SELNUM,      ///< SelNum extended element
 } microSDL_teType;
 
 // Element text alignment
@@ -308,7 +312,7 @@ typedef struct {
   // Primary surface definitions
   SDL_Surface*      surfScreen;           ///< Surface ptr for screen
   SDL_Surface*      surfBkgnd;            ///< Surface ptr for background
-
+  
 } microSDL_tsGui;
 
 
@@ -1287,6 +1291,16 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd);
 
 
 ///
+/// Fetch the temporary element
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return Contents of temporary element struct
+///
+microSDL_tsElem microSDL_ElemGetTemp(microSDL_tsGui* pGui);
+
+
+///
 /// Set an element to use a bitmap image
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -1299,6 +1313,17 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd);
 void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
   const char* acImageSel);
 
+
+/// // TODO: FIXME doc
+/// Draw an element on the screen
+/// - Also updates the active display
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElem:       Ptr to Element to draw
+///
+/// \return true if success, false otherwise
+///
+bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 
 ///
 /// Draw an element on the screen

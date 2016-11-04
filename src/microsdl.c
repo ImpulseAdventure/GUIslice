@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.2    (2016/11/03)
+// - Version 0.3.3    (2016/11/04)
 // =======================================================================
 
 // MicroSDL library
@@ -102,7 +102,7 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   // Initialize collection of elements with user-supplied pointer
   pGui->psElem          = psElem;
   pGui->nElemMax        = nMaxElem;
-  pGui->nElemCnt        = 0;
+  pGui->nElemCnt        = MSDL_IND_FIRST;
   pGui->nElemAutoIdNext = MSDL_ID_AUTO_BASE;
   for (nInd=0;nInd<(pGui->nElemMax);nInd++) {
     microSDL_ResetElem(&(pGui->psElem[nInd]));
@@ -674,7 +674,7 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
   //         a page redraw
   microSDL_tsElem*  pElem;
   bool  bPageRedraw = pGui->bPageNeedRedraw;
-  for (nInd=0;(!bPageRedraw)&&(nInd<pGui->nElemCnt);nInd++) {
+  for (nInd=MSDL_IND_FIRST;(!bPageRedraw)&&(nInd<pGui->nElemCnt);nInd++) {
     pElem = &(pGui->psElem[nInd]);
     if ( (pElem->nPage == nPageId) ||
          (pElem->nPage == MSDL_PAGE_ALL) ) {
@@ -703,7 +703,7 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
   }
   
   // Draw other elements (as needed)
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (nInd=MSDL_IND_FIRST;nInd<pGui->nElemCnt;nInd++) {
     pElem = &(pGui->psElem[nInd]);    
     if ( (pElem->nPage == nPageId) ||
          (pElem->nPage == MSDL_PAGE_ALL) ) {
@@ -731,11 +731,18 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
 // ------------------------------------------------------------------------
 
 // Search through the element array for a matching ID
+// - Special handling of search for MSDL_ID_TEMP which
+//   always returns MSDL_IND_TEMP (equal to index 0).
+//   This is done because the temporary element will
+//   have its own ID assigned in nId and not MSDL_ID_TEMP.
 int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
 {
   unsigned  nInd;
   int       nFound = MSDL_IND_NONE;
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  if (nElemId == MSDL_ID_TEMP) {
+    return MSDL_IND_TEMP;
+  }
+  for (nInd=MSDL_IND_FIRST;nInd<pGui->nElemCnt;nInd++) {
     if (pGui->psElem[nInd].nId == nElemId) {
       nFound = nInd;
     }
@@ -757,7 +764,7 @@ int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY)
   printf("    ElemFindFromCoord(%3d,%3d):\n",nX,nY);
   #endif
 
-  for (nInd=0;nInd<pGui->nElemCnt;nInd++) {
+  for (nInd=MSDL_IND_FIRST;nInd<pGui->nElemCnt;nInd++) {
 
     // Ensure this element is visible on this page!
     if ((pGui->psElem[nInd].nPage == pGui->nPageIdCur) ||
@@ -812,6 +819,7 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect r
   const char* pStr,int nFontId)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemFrame    = MSDL_COL_BLACK;
@@ -819,7 +827,12 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect r
   sElem.colElemText     = MSDL_COL_YELLOW;
   sElem.bFillEn         = true;
   sElem.eTxtAlign       = MSDL_ALIGN_MID_LEFT;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -827,6 +840,7 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acStr,int nFontId)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   sElem.bValid = false;
 
   // Ensure the Font is loaded
@@ -845,7 +859,12 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -853,6 +872,7 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,"",MSDL_FONT_NONE);
   sElem.colElemFill     = MSDL_COL_BLUE_LT;
   sElem.colElemFrame    = MSDL_COL_BLUE_DK;
@@ -862,19 +882,30 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFillEn         = false;
   sElem.bClickEn        = true;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImgSel);
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.bFillEn         = true;
   sElem.bFrameEn        = true;
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {  
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -883,12 +914,18 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg)
 {
   microSDL_tsElem sElem;
+  bool            bOk = true;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,"",MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
   sElem.bFillEn         = false;
   sElem.bClickEn        = false;
   microSDL_ElemSetImage(pGui,&sElem,acImg,acImg);
-  bool bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    bOk = microSDL_ElemAdd(pGui,sElem);
+  } else {
+    // Save as temporary element
+    pGui->psElem[MSDL_IND_TEMP] = sElem;
+  }
   return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
@@ -1438,6 +1475,11 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd)
   }
 }
 
+microSDL_tsElem microSDL_ElemGetTemp(microSDL_tsGui* pGui)
+{
+  return pGui->psElem[MSDL_IND_TEMP];
+}
+
 void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
   const char* acImageSel)
 {
@@ -1477,6 +1519,162 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
 }
 
 
+// TODO: FIXME Doc
+// PRE:
+// - Assumes that the element is on the active display page
+//
+// NOTE:
+// - The nElemInd may be negative under normal operations
+//   to indicate that no draw is required (MSDL_IND_NONE).
+//   So we must exit. All other values should be positive.
+//
+// TODO: Handle MSDL_TYPE_BKGND
+// TODO: Handle layers
+bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
+{
+  if (pElem == NULL) {
+    printf("ERROR: microSDL_ElemDrawByRef() NULL element\n");
+    return false;
+  }
+
+  
+  // --------------------------------------------------------------------------
+  // Custom drawing
+  // --------------------------------------------------------------------------
+  
+  // Handle any extended element types
+  // - If the pfuncXDraw callback is defined, then let the callback
+  //   function supersede all default handling here
+  // - Note that the end of the callback function is expected
+  //   to clear the redraw flag
+  if (pElem->pfuncXDraw != NULL) {
+    (*pElem->pfuncXDraw)((void*)(pGui),(void*)(pElem));
+    return true;
+  }  
+  
+  // --------------------------------------------------------------------------
+  // Init for default drawing
+  // --------------------------------------------------------------------------
+  
+  bool              bGlowing;
+  int               nElemX,nElemY;
+  unsigned          nElemW,nElemH;
+  SDL_Surface*      surfTxt = NULL;
+  
+  nElemX    = pElem->rElem.x;
+  nElemY    = pElem->rElem.y;
+  nElemW    = pElem->rElem.w;
+  nElemH    = pElem->rElem.h;
+  bGlowing  = pElem->bGlowing; // Is the element currently glowing?
+  
+  // --------------------------------------------------------------------------
+  // Background
+  // --------------------------------------------------------------------------
+  
+  // Fill in the background
+  // - This also changes the fill color if it is a button
+  //   being selected
+  if (pElem->bFillEn) {
+    // TODO: Remove nType check during glowing. Instead use
+    // an enable?
+    if ((pElem->nType == MSDL_TYPE_BTN) && (bGlowing)) {
+      microSDL_FillRect(pGui,pElem->rElem,pElem->colElemGlow);
+    } else {
+      microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+    }
+  } else {
+    // TODO: If unfilled, then we might need
+    // to redraw the background layer(s)
+  }
+
+  // --------------------------------------------------------------------------
+  // Frame
+  // --------------------------------------------------------------------------
+
+  // Frame the region
+  #ifdef DBG_FRAME
+  // For debug purposes, draw a frame around every element
+  microSDL_FrameRect(pGui,sElem.rElem,MSDL_COL_GRAY_DK);
+  #else
+  if (pElem->bFrameEn) {
+    microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  }
+  #endif
+
+  
+  // --------------------------------------------------------------------------
+  // Image overlays
+  // --------------------------------------------------------------------------
+  
+  // Draw any images associated with element
+  if (pElem->pSurf != NULL) {
+    if ((bGlowing) && (pElem->pSurfGlow != NULL)) {
+      microSDL_ApplySurface(pGui,nElemX,nElemY,pElem->pSurfGlow,pGui->surfScreen);
+    } else {
+      microSDL_ApplySurface(pGui,nElemX,nElemY,pElem->pSurf,pGui->surfScreen);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Text overlays
+  // --------------------------------------------------------------------------
+ 
+  // Overlay the text
+  bool    bRenderTxt = true;
+  bRenderTxt &= (pElem->acStr[0] != '\0');
+  bRenderTxt &= (pElem->pTxtFont != NULL);
+
+  if (bRenderTxt) {
+
+    // Define margined element bounds
+    int         nTxtX = nElemX;
+    int         nTxtY = nElemY;
+    unsigned    nMargin = pElem->nTxtMargin;
+    TTF_Font*   pFont = pElem->pTxtFont;
+
+    // Fetch the size of the text to allow for justification
+    int nTxtSzW,nTxtSzH;
+    TTF_SizeText(pFont,pElem->acStr,&nTxtSzW,&nTxtSzH);
+
+    surfTxt = TTF_RenderText_Solid(pFont,pElem->acStr,pElem->colElemText);
+    if (surfTxt == NULL) {
+      fprintf(stderr,"ERROR: TTF_RenderText_Solid failed (%s)\n",pElem->acStr);
+      return false;
+    }
+
+    // Handle text alignments
+
+    // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
+    if      (pElem->eTxtAlign & MSDL_ALIGNH_LEFT)     { nTxtX = nElemX+nMargin; }
+    else if (pElem->eTxtAlign & MSDL_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
+    else                                              { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
+
+    // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
+    if      (pElem->eTxtAlign & MSDL_ALIGNV_TOP)      { nTxtY = nElemY+nMargin; }
+    else if (pElem->eTxtAlign & MSDL_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
+    else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
+
+
+    microSDL_ApplySurface(pGui,nTxtX,nTxtY,surfTxt,pGui->surfScreen);
+
+    if (surfTxt != NULL) {
+      SDL_FreeSurface(surfTxt);
+      surfTxt = NULL;
+    }
+  }
+
+  
+  // --------------------------------------------------------------------------
+  // Cleanup
+  // --------------------------------------------------------------------------
+  
+  // Indicate that the item no longer needs a redraw
+  //xxx pGui->psElem[nElemInd].bNeedRedraw = false;
+  
+  return true;
+}
+
+
 // PRE:
 // - Assumes that the element is on the active display page
 //
@@ -1489,6 +1687,7 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
 // TODO: Handle layers
 bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
 {
+  bool  bOk = true;
   if (nElemInd == MSDL_IND_NONE) {
     return true;
   } else if (!microSDL_ElemIndValid(pGui,nElemInd)) {
@@ -1496,6 +1695,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     return false;
   }
 
+  bOk = microSDL_ElemDrawByRef(pGui,&(pGui->psElem[nElemInd]));
+/*
   microSDL_tsElem   sElem;
   sElem = pGui->psElem[nElemInd];
   
@@ -1623,7 +1824,7 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
       surfTxt = NULL;
     }
   }
-
+*/
   
   // --------------------------------------------------------------------------
   // Cleanup
@@ -1632,7 +1833,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   // Indicate that the item no longer needs a redraw
   pGui->psElem[nElemInd].bNeedRedraw = false;
   
-  return true;
+  return bOk;
+ 
 }
 
 

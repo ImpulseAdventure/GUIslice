@@ -17,7 +17,8 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN,E_PG_EXTRA};
 enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
-      E_ELEM_TXT_COUNT,E_ELEM_PROGRESS};
+      E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
+      E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 // Free-running counter for display
@@ -30,6 +31,7 @@ microSDL_tsGui      m_gui;
 microSDL_tsElem     m_asElem[MAX_ELEM];
 microSDL_tsFont     m_asFont[MAX_FONT];
 microSDL_tsXGauge   m_sXGauge;
+microSDL_tsXSelNum  m_sXSelNum[3];
 
 // Create the default elements on each page
 // - strPath: Path to executable passed in to locate resource files
@@ -80,6 +82,10 @@ bool InitOverlays(char *strPath)
   nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){100,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
+  // Add compound element
+  nElemId = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
+    (SDL_Rect){160,60,120,50},E_FONT_BTN);  
+  
   // -----------------------------------
   // PAGE: EXTRA
 
@@ -89,7 +95,7 @@ bool InitOverlays(char *strPath)
 
   // Create Back button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (SDL_Rect){135,120,50,20},"Back",E_FONT_BTN);
+    (SDL_Rect){50,170,50,20},"Back",E_FONT_BTN);
 
   // Create a few labels
   Sint16    nPosY = 50;
@@ -101,6 +107,13 @@ bool InitOverlays(char *strPath)
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
     "Data 3",E_FONT_TXT); nPosY += nSpaceY;
   
+  // Add compound element
+  nElemId = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
+    (SDL_Rect){130,60,120,50},E_FONT_BTN);
+
+  nElemId = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
+    (SDL_Rect){130,120,120,50},E_FONT_BTN);    
+    
   return true;
 }
 
@@ -190,6 +203,9 @@ int main( int argc, char* args[] )
         microSDL_SetPageCur(&m_gui,E_PG_EXTRA);
       } else if (nTrackElemClicked == E_ELEM_BTN_BACK) {
         microSDL_SetPageCur(&m_gui,E_PG_MAIN);
+      } else if (nTrackElemClicked == E_ELEM_COMP1) {
+        // Selected a button within the compound element
+        // Ignore for now as compound element should handle it
       } // nTrackElemClicked
   
       // Clear click event

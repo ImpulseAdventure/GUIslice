@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.2    (2016/11/03)
+// - Version 0.3.3    (2016/11/04)
 // =======================================================================
 
 // Extended element definitions
@@ -280,6 +280,93 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem);
 ///
 bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY);
 
+
+// ============================================================================
+// Extended Element: SelNum
+// ============================================================================
+
+/// Extended data for SelNum element
+typedef struct {
+
+  // Core functionality for SelNum
+  int             nCounter;           ///< Counter for demo purposes
+   
+  // Internal sub-element members & handling
+  int             nSubElemCnt;        ///< Number of sub-elements allocated
+  microSDL_tsElem asElem[3];          ///< Storage for sub-elements
+  int             anElemId[3];        ///< Lookup for sub-element index to ID
+  int             nTrackSubIdStart;   ///< Sub-element ID being tracked
+  int             nTrackSubIndStart;  ///< Sub-element Index being tracked
+  int             nTrackSubIdClicked; ///< Sub-element ID last clicked
+  
+} microSDL_tsXSelNum;
+
+
+///
+/// Create a SelNum Element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  pXData:      Ptr to extended element data structure
+/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
+/// \param[in]  colCheck:    Color for inner fill when checked
+/// \param[in]  bChecked:    Default state
+///
+/// \return The Element ID or MSDL_ID_NONE if failure
+///
+int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+  microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId);
+
+
+///
+/// Draw a SelNum element on the screen
+/// - Called from microSDL_ElemDraw()
+///
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
+///
+/// \return true if success, false otherwise
+///
+bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem);
+
+
+///
+/// Get the current counter associated with SelNum
+///
+/// \param[in]  pGui:        Ptr to GUI
+/// \param[in]  pSelElem:    Ptr to Element
+///
+/// \return Current counter value
+///
+int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum);
+
+
+///
+/// Handle a click event within the SelNum
+/// - This is called internally by the SelNum touch handler
+///
+/// \param[in]  pGui:        Ptr to GUI
+/// \param[in]  pSelElem:    Ptr to Element
+///
+/// \return none
+///
+void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum);
+
+
+
+///
+/// Handle touch events to SelNum element
+/// - Called from microSDL_NotifyElemTouch()
+///
+/// /param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// /param[in]  eTouch:      Touch event type
+/// /param[in]  nRelX:       Touch X coord relative to element
+/// /param[in]  nRelY:       Touch Y coord relative to element
+///
+/// \return true if success, false otherwise
+///
+bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY);
 
 
 // ============================================================================
