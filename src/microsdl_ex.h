@@ -282,7 +282,10 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
 
 
 // ============================================================================
-// Extended Element: SelNum
+// Extended Element: SelNum (Number Selector)
+// - Demonstration of a compound element consisting of
+//   a counter text field along with an increment and
+//   decrement button.
 // ============================================================================
 
 /// Extended data for SelNum element
@@ -290,11 +293,15 @@ typedef struct {
 
   // Core functionality for SelNum
   int             nCounter;           ///< Counter for demo purposes
+  
+  // Sub Element ID definitions
+  int             ID_BTN_INC;         ///< Sub Element ID for Increment Button
+  int             ID_BTN_DEC;         ///< Sub Element ID for Decrement Button
+  int             ID_TXT;             ///< Sub Element ID for counter display
    
-  // Internal sub-element members & handling
+  // Internal sub-element members & handlers
   int             nSubElemCnt;        ///< Number of sub-elements allocated
-  microSDL_tsElem asElem[3];          ///< Storage for sub-elements
-  int             anElemId[3];        ///< Lookup for sub-element index to ID
+  microSDL_tsElem asElem[4];          ///< Storage for sub-elements
   int             nTrackSubIdStart;   ///< Sub-element ID being tracked
   int             nTrackSubIndStart;  ///< Sub-element Index being tracked
   int             nTrackSubIdClicked; ///< Sub-element ID last clicked
@@ -309,9 +316,8 @@ typedef struct {
 /// \param[in]  nElemId:     Element ID to assign (0..32767 or MSDL_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
-/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
-/// \param[in]  colCheck:    Color for inner fill when checked
-/// \param[in]  bChecked:    Default state
+/// \param[in]  rElem:       Rectangle coordinates defining element size
+/// \param[in]  nFontId:     Font ID to use for drawing the element
 ///
 /// \return The Element ID or MSDL_ID_NONE if failure
 ///
@@ -343,6 +349,18 @@ int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSel
 
 
 ///
+/// Set the current counter associated with SelNum
+///
+/// \param[in]  pGui:        Ptr to GUI
+/// \param[in]  pSelElem:    Ptr to Element
+/// \param[in]  nCount:      New counter value
+///
+/// \return none
+///
+void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum,int nCount);
+
+
+///
 /// Handle a click event within the SelNum
 /// - This is called internally by the SelNum touch handler
 ///
@@ -352,7 +370,6 @@ int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSel
 /// \return none
 ///
 void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum);
-
 
 
 ///

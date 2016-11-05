@@ -728,15 +728,17 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui);
 // Element General Functions
 // ------------------------------------------------------------------------
 
+
 ///
 /// Look up the Element Index from the Element ID
 ///
-/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  asELem:      Pointer to array of elements
+/// \param[in]  nNumElem:    Number of elements in array
 /// \param[in]  nElemId:     ID of the element to find
 ///
 /// \return Index of element or MSDL_ID_NONE if not found
 ///
-int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId);
+int microSDL_ElemFindIndFromId(microSDL_tsElem* asElem,unsigned nNumElem,int nElemId);
 
 
 /// Find an Element Index from coordinates

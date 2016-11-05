@@ -81,7 +81,7 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
 {
   // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXGaugeUpdate() invalid ID=%d\n",nElemInd);
     return;
@@ -289,8 +289,8 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 
 bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId)
 {
- // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  // Fetch the control data elements
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
     return false;
@@ -305,7 +305,7 @@ bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId)
 void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked)
 {
   // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
     return;
@@ -328,7 +328,7 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
 void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
 {
   // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxToggleState() invalid ID=%d\n",nElemInd);
     return;
@@ -424,7 +424,7 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   
   // Get our element (as it will be the one being tracked)
   int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (nElemInd == MSDL_IND_NONE) {
     // Shouldn't get here
     return false;
@@ -532,7 +532,7 @@ void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
         int nTickLen,SDL_Color colTick)
 {
   // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXSliderSetStyle() invalid ID=%d\n",nElemInd);
     return;
@@ -553,7 +553,7 @@ void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
 int microSDL_ElemXSliderGetPos(microSDL_tsGui* pGui,int nElemId)
 {
  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXSliderGetPos() invalid ID=%d\n",nElemInd);
     return false;
@@ -568,7 +568,7 @@ int microSDL_ElemXSliderGetPos(microSDL_tsGui* pGui,int nElemId)
 void microSDL_ElemXSliderSetPos(microSDL_tsGui* pGui,int nElemId,int nPos)
 {
   // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemXSliderSetPos() invalid ID=%d\n",nElemInd);
     return;
@@ -716,7 +716,7 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   
   // Get our element (as it will be the one being tracked)
   int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);  
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (nElemInd == MSDL_IND_NONE) {
     // Shouldn't get here
     return false;
@@ -811,7 +811,6 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId)
 {
   microSDL_tsElem sElem;
-  int             nSubElemId;
   int             nSubInd;
   bool            bOk = true;
   if (pXData == NULL) { return MSDL_ID_NONE; }
@@ -819,6 +818,11 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // Determine relative coordinate offset
   int   nOffsetX = rElem.x;
   int   nOffsetY = rElem.y;
+  
+  // Define
+  pXData->ID_BTN_INC  = 100;
+  pXData->ID_BTN_DEC  = 101;
+  pXData->ID_TXT      = 102;
   
   // Initialize composite element
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SELNUM,rElem,NULL,MSDL_FONT_NONE);
@@ -836,7 +840,6 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 
   // Clear the sub-elements
   for (nSubInd=0;nSubInd<3;nSubInd++) {
-    pXData->anElemId[nSubInd] = MSDL_ID_NONE;
     microSDL_ResetElem(&(pXData->asElem[nSubInd]));
   }
   
@@ -849,7 +852,13 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE; 
 
-  int nSubElemCnt = 0;
+  // Start sub-element index at 1 since index 0 is reserved
+  // for any temporary element creation
+  int nSubElemCnt = MSDL_IND_FIRST;
+  
+  // Determine the maximum number of sub-elements we can create
+  // Note that we do this without #define to avoid pollution
+  int nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
 
   // Now create the sub elements
   // - Ensure page is set to MSDL_PAGE_NONE so that
@@ -865,24 +874,27 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // - For demonstration purposes, the sub-element IDs have
   //   been hardcoded without #defines.
   
-  nSubElemId = microSDL_ElemCreateBtnTxt(pGui,100,MSDL_PAGE_NONE,
+  microSDL_ElemCreateBtnTxt(pGui,pXData->ID_BTN_INC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
-  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
-  pXData->anElemId[nSubElemCnt] = nSubElemId;
-  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);
+  if (nSubElemCnt<nSubElemMax) {
+    pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  }
   
-  nSubElemId = microSDL_ElemCreateBtnTxt(pGui,101,MSDL_PAGE_NONE,
+  microSDL_ElemCreateBtnTxt(pGui,pXData->ID_BTN_DEC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
-  pXData->anElemId[nSubElemCnt] = nSubElemId;
-  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  if (nSubElemCnt<nSubElemMax) {
+    pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  }
   
-  nSubElemId = microSDL_ElemCreateTxt(pGui,102,MSDL_PAGE_NONE,
+  microSDL_ElemCreateTxt(pGui,pXData->ID_TXT,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
-  pXData->anElemId[nSubElemCnt] = nSubElemId;
-  pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  if (nSubElemCnt<nSubElemMax) {
+    pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
+  }
   
   // Record the number of sub-elements
   pXData->nSubElemCnt = nSubElemCnt;
@@ -956,17 +968,20 @@ int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSel
   return pSelNum->nCounter;
 }
 
-int microSDL_ElemXSelNumFindIndById(microSDL_tsXSelNum* pSelNum,int nElemId)
+void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum,int nCount)
 {
-  unsigned  nSubInd;
-  int       nFound = MSDL_IND_NONE;
-  for (nSubInd=0;nSubInd<pSelNum->nSubElemCnt;nSubInd++) {
-    if (pSelNum->asElem[nSubInd].nId == nElemId) {
-      nFound = nSubInd;
-    }
+  if (pSelNum == NULL) {
+    return;
   }
-  return nFound;  
+  pSelNum->nCounter = nCount;
+  
+  // TODO: Ideally, we would leverage the existing ElemSetTxtStr() function
+  //       but that one operates on elements within GUI array only.
+  int nIND_TXT = microSDL_ElemFindIndFromId(pSelNum->asElem,pSelNum->nSubElemCnt,pSelNum->ID_TXT);
+  sprintf(pSelNum->asElem[nIND_TXT].acStr,"%d",pSelNum->nCounter);
+  pSelNum->asElem[nIND_TXT].bNeedRedraw = true;
 }
+
 
 // Handle the compound element main functionality
 // - This routine is called by microSDL_ElemXSelNumTouch() to handle
@@ -982,45 +997,24 @@ void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
   int nElemIdClicked = pSelNum->nTrackSubIdClicked;
   int nCounter = pSelNum->nCounter;
   
-  // Get sub-element index of main elements
-  //int nBtnIncId = 100;
-  //int nBtnDecId = 101;
-  //int nTxtId = 102;
-  //int nBtnIncInd = microSDL_ElemXSelNumFindIndById(pSelNum,nBtnIncId);
-  //int nBtnDecInd = microSDL_ElemXSelNumFindIndById(pSelNum,nBtnDecId);
-  //int nTxtInd = microSDL_ElemXSelNumFindIndById(pSelNum,nTxtId);
-  
-  switch (nElemIdClicked) {
+  // Increment button
+  if (nElemIdClicked == pSelNum->ID_BTN_INC) {
+    // Increment
+    if (nCounter<100) {
+      nCounter++;
+    }
+    microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);  
     
-    // Increment Button
-    case 100:
-      // Increment
-      if (nCounter<100) {
-        nCounter++;
-      }
-      pSelNum->nCounter = nCounter;
-      // TODO: Need to replace the hardcoded sub-element index
-      //       with a lookup from the sub-element ID (eg. nBtnIncInd)
-      sprintf(pSelNum->asElem[2].acStr,"%d",nCounter);
-      pSelNum->asElem[2].bNeedRedraw = true;      
-      break;
-      
-    // Decrement Button
-    case 101:
-      // Decrement
-      if (nCounter>0) {
-        nCounter--;
-      }
-      pSelNum->nCounter = nCounter;      
-      // TODO: Need to replace the hardcoded sub-element index
-      //       with a lookup from the sub-element ID  (eg. nBtnDecInd)
-      sprintf(pSelNum->asElem[2].acStr,"%d",nCounter);
-      pSelNum->asElem[2].bNeedRedraw = true;
-      break;
-      
-    default:
-      break;
+  // Decrement button
+  } else if (nElemIdClicked == pSelNum->ID_BTN_DEC) {
+    // Decrement
+    if (nCounter>0) {
+      nCounter--;
+    }
+    microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
+
   }
+  
   // Reset the clicked indicator
   pSelNum->nTrackSubIdClicked = MSDL_ID_NONE;
 }
@@ -1040,7 +1034,7 @@ bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   
   // Get our element (as it will be the one being tracked)
   int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (nElemInd == MSDL_IND_NONE) {
     // Shouldn't get here
     return false;

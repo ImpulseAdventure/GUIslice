@@ -735,21 +735,20 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
 //   always returns MSDL_IND_TEMP (equal to index 0).
 //   This is done because the temporary element will
 //   have its own ID assigned in nId and not MSDL_ID_TEMP.
-int microSDL_ElemFindIndFromId(microSDL_tsGui* pGui,int nElemId)
+int microSDL_ElemFindIndFromId(microSDL_tsElem* asElem,unsigned nNumElem,int nElemId)
 {
   unsigned  nInd;
   int       nFound = MSDL_IND_NONE;
   if (nElemId == MSDL_ID_TEMP) {
     return MSDL_IND_TEMP;
   }
-  for (nInd=MSDL_IND_FIRST;nInd<pGui->nElemCnt;nInd++) {
-    if (pGui->psElem[nInd].nId == nElemId) {
+  for (nInd=MSDL_IND_FIRST;nInd<nNumElem;nInd++) {
+    if (asElem[nInd].nId == nElemId) {
       nFound = nInd;
     }
   }
   return nFound;
 }
-
 
 int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 {
@@ -937,7 +936,7 @@ int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,
 
 void microSDL_ElemDraw(microSDL_tsGui* pGui,int nElemId)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemDraw() invalid ID=%d\n",nElemId);
     return;
@@ -952,7 +951,7 @@ void microSDL_ElemDraw(microSDL_tsGui* pGui,int nElemId)
 
 void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetFillEn() invalid ID=%d\n",nElemId);
     return;
@@ -964,7 +963,7 @@ void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn)
 
 void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetCol() invalid ID=%d\n",nElemId);
     return;
@@ -980,7 +979,7 @@ void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL
 
 void microSDL_ElemSetTxtAlign(microSDL_tsGui* pGui,int nElemId,unsigned nAlign)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetTxtAlign() invalid ID=%d\n",nElemId);
     return;
@@ -993,7 +992,7 @@ void microSDL_ElemSetTxtAlign(microSDL_tsGui* pGui,int nElemId,unsigned nAlign)
 
 void microSDL_ElemSetTxtStr(microSDL_tsGui* pGui,int nElemId,const char* pStr)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetTxtStr() invalid ID=%d\n",nElemId);
     return;
@@ -1005,7 +1004,7 @@ void microSDL_ElemSetTxtStr(microSDL_tsGui* pGui,int nElemId,const char* pStr)
 
 void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetTxtCol() invalid ID=%d\n",nElemId);
     return;
@@ -1017,7 +1016,7 @@ void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal)
 
 void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemUpdateFont() invalid ID=%d\n",nElemId);
     return;
@@ -1029,7 +1028,7 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId)
 
 void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetRedraw() invalid ID=%d\n",nElemId);
     return;
@@ -1040,7 +1039,7 @@ void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw)
 
 void microSDL_ElemSetGlow(microSDL_tsGui* pGui,int nElemId,bool bGlowing)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemSetGlow() invalid ID=%d\n",nElemId);
     return;
@@ -1052,7 +1051,7 @@ void microSDL_ElemSetGlow(microSDL_tsGui* pGui,int nElemId,bool bGlowing)
 
 bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: microSDL_ElemGetGlow() invalid ID=%d\n",nElemId);
     return false;
@@ -1063,7 +1062,7 @@ bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId)
 
 void microSDL_ElemSetDrawFunc(microSDL_tsGui* pGui,int nElemId,MSDL_CB_DRAW funcCb)
 {
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
     fprintf(stderr,"ERROR: ElemSetDrawFunc() invalid ID=%d\n",nElemId);
     return;
@@ -1393,7 +1392,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
       return sElem;
     }
     // Ensure the ID isn't already taken
-    if (microSDL_ElemFindIndFromId(pGui,nElemId) != MSDL_IND_NONE) {
+    if (microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId) != MSDL_IND_NONE) {
       printf("ERROR: microSDL_Create() called with existing ID (%d)\n",nElemId);
       return sElem;
     }
@@ -1664,13 +1663,6 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   }
 
   
-  // --------------------------------------------------------------------------
-  // Cleanup
-  // --------------------------------------------------------------------------
-  
-  // Indicate that the item no longer needs a redraw
-  //xxx pGui->psElem[nElemInd].bNeedRedraw = false;
-  
   return true;
 }
 
@@ -1695,140 +1687,8 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
     return false;
   }
 
+  // Draw the element
   bOk = microSDL_ElemDrawByRef(pGui,&(pGui->psElem[nElemInd]));
-/*
-  microSDL_tsElem   sElem;
-  sElem = pGui->psElem[nElemInd];
-  
-  // --------------------------------------------------------------------------
-  // Custom drawing
-  // --------------------------------------------------------------------------
-  
-  // Handle any extended element types
-  // - If the pfuncXDraw callback is defined, then let the callback
-  //   function supersede all default handling here
-  // - Note that the end of the callback function is expected
-  //   to clear the redraw flag
-  if (sElem.pfuncXDraw != NULL) {
-    (*sElem.pfuncXDraw)((void*)(pGui),(void*)(&sElem));
-    return true;
-  }  
-  
-  // --------------------------------------------------------------------------
-  // Init for default drawing
-  // --------------------------------------------------------------------------
-  
-  bool              bGlowing;
-  int               nElemX,nElemY;
-  unsigned          nElemW,nElemH;
-  SDL_Surface*      surfTxt = NULL;
-  
-  nElemX    = sElem.rElem.x;
-  nElemY    = sElem.rElem.y;
-  nElemW    = sElem.rElem.w;
-  nElemH    = sElem.rElem.h;
-  bGlowing  = sElem.bGlowing; // Is the element currently glowing?
-  
-  // --------------------------------------------------------------------------
-  // Background
-  // --------------------------------------------------------------------------
-  
-  // Fill in the background
-  // - This also changes the fill color if it is a button
-  //   being selected
-  if (sElem.bFillEn) {
-    // TODO: Remove nType check during glowing. Instead use
-    // an enable?
-    if ((sElem.nType == MSDL_TYPE_BTN) && (bGlowing)) {
-      microSDL_FillRect(pGui,sElem.rElem,sElem.colElemGlow);
-    } else {
-      microSDL_FillRect(pGui,sElem.rElem,sElem.colElemFill);
-    }
-  } else {
-    // TODO: If unfilled, then we might need
-    // to redraw the background layer(s)
-  }
-
-  // --------------------------------------------------------------------------
-  // Frame
-  // --------------------------------------------------------------------------
-
-  // Frame the region
-  #ifdef DBG_FRAME
-  // For debug purposes, draw a frame around every element
-  microSDL_FrameRect(pGui,sElem.rElem,MSDL_COL_GRAY_DK);
-  #else
-  if (sElem.bFrameEn) {
-    microSDL_FrameRect(pGui,sElem.rElem,sElem.colElemFrame);
-  }
-  #endif
-
-  
-  // --------------------------------------------------------------------------
-  // Image overlays
-  // --------------------------------------------------------------------------
-  
-  // Draw any images associated with element
-  if (sElem.pSurf != NULL) {
-    if ((bGlowing) && (sElem.pSurfGlow != NULL)) {
-      microSDL_ApplySurface(pGui,nElemX,nElemY,sElem.pSurfGlow,pGui->surfScreen);
-    } else {
-      microSDL_ApplySurface(pGui,nElemX,nElemY,sElem.pSurf,pGui->surfScreen);
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  // Text overlays
-  // --------------------------------------------------------------------------
- 
-  // Overlay the text
-  bool    bRenderTxt = true;
-  bRenderTxt &= (sElem.acStr[0] != '\0');
-  bRenderTxt &= (sElem.pTxtFont != NULL);
-
-  if (bRenderTxt) {
-
-    // Define margined element bounds
-    int         nTxtX = nElemX;
-    int         nTxtY = nElemY;
-    unsigned    nMargin = sElem.nTxtMargin;
-    TTF_Font*   pFont = sElem.pTxtFont;
-
-    // Fetch the size of the text to allow for justification
-    int nTxtSzW,nTxtSzH;
-    TTF_SizeText(pFont,sElem.acStr,&nTxtSzW,&nTxtSzH);
-
-    surfTxt = TTF_RenderText_Solid(pFont,sElem.acStr,sElem.colElemText);
-    if (surfTxt == NULL) {
-      fprintf(stderr,"ERROR: TTF_RenderText_Solid failed (%s)\n",sElem.acStr);
-      return false;
-    }
-
-    // Handle text alignments
-
-    // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
-    if      (sElem.eTxtAlign & MSDL_ALIGNH_LEFT)      { nTxtX = nElemX+nMargin; }
-    else if (sElem.eTxtAlign & MSDL_ALIGNH_RIGHT)     { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
-    else                                              { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
-
-    // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
-    if      (sElem.eTxtAlign & MSDL_ALIGNV_TOP)       { nTxtY = nElemY+nMargin; }
-    else if (sElem.eTxtAlign & MSDL_ALIGNV_BOT)       { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
-    else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
-
-
-    microSDL_ApplySurface(pGui,nTxtX,nTxtY,surfTxt,pGui->surfScreen);
-
-    if (surfTxt != NULL) {
-      SDL_FreeSurface(surfTxt);
-      surfTxt = NULL;
-    }
-  }
-*/
-  
-  // --------------------------------------------------------------------------
-  // Cleanup
-  // --------------------------------------------------------------------------
   
   // Indicate that the item no longer needs a redraw
   pGui->psElem[nElemInd].bNeedRedraw = false;
@@ -1836,7 +1696,6 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
   return bOk;
  
 }
-
 
 
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
@@ -2080,7 +1939,7 @@ bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int n
   if (nElemId == MSDL_ID_NONE) {
     return true;
   }
-  int nElemInd = microSDL_ElemFindIndFromId(pGui,nElemId);
+  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
   if (nElemInd == MSDL_IND_NONE) {
     return true;
   }
