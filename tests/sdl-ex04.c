@@ -15,8 +15,9 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
+      E_ELEM_CHECK1,E_ELEM_RADIO1,E_ELEM_RADIO2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
 enum {E_FONT_BTN,E_FONT_TXT};
+enum {E_GROUP1};
 
 // Free-running counter for display
 unsigned m_nCount = 0;
@@ -28,7 +29,7 @@ microSDL_tsGui        m_gui;
 microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
-microSDL_tsXCheckbox  m_asXCheck[2];
+microSDL_tsXCheckbox  m_asXCheck[3];
 microSDL_tsXSlider    m_sXSlider;
 
 // Create page elements
@@ -57,24 +58,32 @@ bool InitOverlays()
   // Create progress bar
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
-    0,100,0,MSDL_COL_GREEN_DK,false);
+  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+    (SDL_Rect){80,80,50,10},0,100,0,MSDL_COL_GREEN_DK,false);
   
   // Create checkbox 1
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,110,20,20},
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,100,20,20},
     "Check1:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],(SDL_Rect){80,110,20,20},
-    MSDL_COL_ORANGE,false);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
+    (SDL_Rect){80,100,20,20},false,MSDLX_CHECKBOX_STYLE_X,MSDL_COL_BLUE_LT,false);
 
-  // Create checkbox 2
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,150,20,20},
-    "Check2:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_MAIN,&m_asXCheck[1],(SDL_Rect){80,150,20,20},
-    MSDL_COL_ORANGE,false);
-  
+  // Create radio 1
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,135,20,20},
+    "Radio1:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
+    (SDL_Rect){80,135,20,20},true,MSDLX_CHECKBOX_STYLE_ROUND,MSDL_COL_ORANGE,false);
+  microSDL_ElemSetGroup(&m_gui,E_ELEM_RADIO1,E_GROUP1);
+
+  // Create radio 2
+  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,160,20,20},
+    "Radio2:",E_FONT_TXT);
+  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
+    (SDL_Rect){80,160,20,20},true,MSDLX_CHECKBOX_STYLE_ROUND,MSDL_COL_ORANGE,false);
+  microSDL_ElemSetGroup(&m_gui,E_ELEM_RADIO2,E_GROUP1);
+    
   // Create slider
-  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,(SDL_Rect){160,140,100,20},
-    0,100,60,5,false);
+  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
+    (SDL_Rect){160,140,100,20},0,100,60,5,false);
   microSDL_ElemXSliderSetStyle(&m_gui,E_ELEM_SLIDER,true,(SDL_Color){0,0,128},10,
           5,(SDL_Color){64,64,64});
   nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(SDL_Rect){160,160,60,20},
@@ -105,7 +114,7 @@ int main( int argc, char* args[] )
   // Load Fonts
   bOk = microSDL_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = microSDL_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,8);
+  bOk = microSDL_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 
@@ -116,6 +125,7 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
 
+  
   // -----------------------------------
   // Main event loop
 
@@ -142,6 +152,7 @@ int main( int argc, char* args[] )
     // Periodically redraw screen in case of any changes
     microSDL_PageRedrawGo(&m_gui);
 
+  
     // -----------------------------------
   
     // Poll for touchscreen presses
@@ -163,8 +174,11 @@ int main( int argc, char* args[] )
     } // Touchscreen press
   } // bQuit
 
-  // Read checkbox state:
-  // bool bCheck = microSDL_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
+  // Read checkbox state
+  // - Either read individual checkboxes
+  //   bool bCheck = microSDL_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
+  // - Or find one in the group that was checked (eg. for radio buttons)
+  //   int nCheckedId = microSDL_ElemXCheckboxFindChecked(&m_gui,MSDL_GROUP_ID_NONE);
 
   // -----------------------------------
   // Close down display

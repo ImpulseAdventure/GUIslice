@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.3    (2016/11/04)
+// - Version 0.3.4    (2016/11/06)
 // =======================================================================
 
 // Extended element definitions
@@ -89,10 +89,18 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem);
 // Extended Element: Checkbox
 // ============================================================================
 
+typedef enum {
+  MSDLX_CHECKBOX_STYLE_BOX,
+  MSDLX_CHECKBOX_STYLE_X,
+  MSDLX_CHECKBOX_STYLE_ROUND,          
+} microSDL_teXCheckboxStyle;
+
 /// Extended data for Checkbox element
 typedef struct {
-  bool            bChecked;     ///< Indicates if it is selected (checked)
-  SDL_Color       colCheck;     ///< Color of checked inner fill
+  bool                        bRadio;       ///< Radio-button operation if true
+  microSDL_teXCheckboxStyle   nStyle;       ///< Drawing style for element
+  bool                        bChecked;     ///< Indicates if it is selected (checked)
+  SDL_Color                   colCheck;     ///< Color of checked inner fill
 } microSDL_tsXCheckbox;
 
 
@@ -104,13 +112,16 @@ typedef struct {
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining checkbox size
+/// \param[in]  bRadio:      Radio-button functionality if true
+/// \param[in]  nStyle:      Drawing style for checkbox / radio button
 /// \param[in]  colCheck:    Color for inner fill when checked
 /// \param[in]  bChecked:    Default state
 ///
 /// \return The Element ID or MSDL_ID_NONE if failure
 ///
 int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,SDL_Color colCheck,bool bChecked);
+  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,
+  microSDL_teXCheckboxStyle nStyle,SDL_Color colCheck,bool bChecked);
 
 
 ///
@@ -135,6 +146,15 @@ bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId);
 ///
 void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked);
 
+///
+/// Find the checkbox within a group that has been checked
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nGroupId:    Group ID to search
+///
+/// \return Element ID or MSDL_ID_NONE if none checked
+///
+int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId);
 
 ///
 /// Toggle a Checkbox element's current state
@@ -288,16 +308,12 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
 //   decrement button.
 // ============================================================================
 
+
 /// Extended data for SelNum element
 typedef struct {
 
   // Core functionality for SelNum
   int             nCounter;           ///< Counter for demo purposes
-  
-  // Sub Element ID definitions
-  int             ID_BTN_INC;         ///< Sub Element ID for Increment Button
-  int             ID_BTN_DEC;         ///< Sub Element ID for Decrement Button
-  int             ID_TXT;             ///< Sub Element ID for counter display
    
   // Internal sub-element members & handlers
   int             nSubElemCnt;        ///< Number of sub-elements allocated
@@ -307,6 +323,11 @@ typedef struct {
   int             nTrackSubIdClicked; ///< Sub-element ID last clicked
   
 } microSDL_tsXSelNum;
+
+// Private sub Element ID definitions
+static const int  SELNUM_ID_BTN_INC = 100;
+static const int  SELNUM_ID_BTN_DEC = 101;
+static const int  SELNUM_ID_TXT     = 102;
 
 
 ///

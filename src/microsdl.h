@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.3    (2016/11/04)
+// - Version 0.3.4    (2016/11/06)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -90,7 +90,7 @@ extern "C" {
     // Public usage
     MSDL_GROUP_ID_USER_BASE = 0,      ///< Starting Group ID for user assignments
     // Internal usage
-    MSDL_GROUP_ID_NONE,               ///< No Group ID has been assigned
+    MSDL_GROUP_ID_NONE      = -6999,  ///< No Group ID has been assigned
   };
   
   /// Font ID enumerations
@@ -631,6 +631,20 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
 
 
+///
+/// Draw a framed circle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nMidX:       Center X coordinate
+/// \param[in]  nMidY:       Center Y coordinate
+/// \param[in]  nRadius:     Radius of circle
+/// \param[in]  nCol:        Color RGB value for the frame
+///
+/// \return none
+///
+void microSDL_FrameCircle(microSDL_tsGui* pGui,Sint16 nMidX,Sint16 nMidY,
+  Uint16 nRadius,SDL_Color nCol);
+
 // -----------------------------------------------------------------------
 // Font Functions
 // -----------------------------------------------------------------------
@@ -897,6 +911,28 @@ void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn);
 void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow);
 
 
+///
+/// Set the group ID for an element
+/// - Typically used to associate radio button elements together
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  nGroupId:    Group ID to assign
+///
+/// \return none
+///
+void microSDL_ElemSetGroup(microSDL_tsGui* pGui,int nElemId,int nGroupId);
+
+
+///
+/// Get the group ID for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to update
+///
+/// \return Group ID or MSDL_GROUP_ID_NONE if unassigned
+///
+int microSDL_ElemGetGroup(microSDL_tsGui* pGui,int nElemId);
 
 
 /// Set the alignment of a textual element (horizontal and vertical)

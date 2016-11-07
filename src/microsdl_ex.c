@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.3    (2016/11/04)
+// - Version 0.3.4    (2016/11/06)
 // =======================================================================
 
 
@@ -58,6 +58,7 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = false;          // Element is not "clickable"
+  sElem.nGroup          = MSDL_GROUP_ID_NONE;  
   pXData->nGaugeMin     = nMin;
   pXData->nGaugeMax     = nMax;
   pXData->nGaugeVal     = nVal;
@@ -256,7 +257,8 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
 int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,SDL_Color colCheck,bool bChecked)
+  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,microSDL_teXCheckboxStyle nStyle,
+  SDL_Color colCheck,bool bChecked)
 {
   microSDL_tsElem sElem;
   bool            bOk = true;
@@ -266,8 +268,12 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   sElem.bGlowing        = false;
+  // Default group assignment. Can override later with ElemSetGroup()
+  sElem.nGroup          = MSDL_GROUP_ID_NONE;
+  pXData->bRadio        = bRadio;
   pXData->bChecked      = bChecked;
-  pXData->colCheck      = colCheck;  
+  pXData->colCheck      = colCheck;
+  pXData->nStyle        = nStyle;
   sElem.pXData          = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw      = &microSDL_ElemXCheckboxDraw;
@@ -301,6 +307,52 @@ bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId)
   return pCheckbox->bChecked;
 }
 
+
+// Determine which checkbox in group has been "checked"
+int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId)
+{
+  int                     nCurInd;
+  int                     nFoundId = MSDL_ID_NONE;
+  microSDL_tsElem*        pCurElem = NULL;
+  microSDL_teType         nCurType;
+  int                     nCurGroup;
+  microSDL_tsXCheckbox*   pCurCheckbox = NULL;
+  bool                    bCurChecked;
+  
+  if (pGui == NULL) {
+    // TODO: Error
+    return nFoundId;
+  }
+  
+  for (nCurInd=MSDL_IND_FIRST;nCurInd<pGui->nElemCnt;nCurInd++) {
+    // Fetch extended data
+    pCurElem      = &pGui->psElem[nCurInd];
+    nCurType      = pCurElem->nType;
+    // Only want to proceed if it is a checkbox
+    if (nCurType != MSDL_TYPEX_CHECKBOX) {
+      continue;
+    }
+
+    nCurGroup     = pCurElem->nGroup;
+    pCurCheckbox  = (microSDL_tsXCheckbox*)(pCurElem->pXData);
+    bCurChecked   = pCurCheckbox->bChecked;
+   
+    // If this is in a different group, ignore it
+    if (nCurGroup != nGroupId) {
+      continue;
+    }
+
+    // Did we find an element in the group that was checked?
+    if (bCurChecked) {
+      nFoundId = pCurElem->nId;
+      break;
+    }
+  } // nCurInd
+  return nFoundId;
+}
+
+
+
 // Update the checkbox control's current state
 void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked)
 {
@@ -310,13 +362,60 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
     fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
     return;
   }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
-   
-  // Update the data element
+  microSDL_tsElem*        pElem = &pGui->psElem[nElemInd];
+  microSDL_tsXCheckbox*   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
+  bool                    bRadio = pCheckbox->bRadio;
+  int                     nGroup = pElem->nGroup;
+  
+  
+  // If radio-button style, then proceed to deselect any
+  // other selected items in the group
+  if (bRadio) {
+    int                   nCurInd;
+    microSDL_tsElem*      pCurElem = NULL;
+    microSDL_tsXCheckbox* pCurCheckbox = NULL;
+    microSDL_teType       nCurType;
+    int                   nCurGroup;
+    bool                  bCurChecked;
+    for (nCurInd=MSDL_IND_FIRST;nCurInd<pGui->nElemCnt;nCurInd++) {
+      // Fetch extended data
+      pCurElem      = &pGui->psElem[nCurInd];
+      nCurType      = pCurElem->nType;
+      
+      // Only want to proceed if it is a checkbox
+      if (nCurType != MSDL_TYPEX_CHECKBOX) {
+        continue;
+      }
+      
+      nCurGroup     = pCurElem->nGroup;
+      pCurCheckbox  = (microSDL_tsXCheckbox*)(pCurElem->pXData);
+      bCurChecked   = pCurCheckbox->bChecked;
+
+      // If this is in a different group, ignore it
+      if (nCurGroup != nGroup) {
+        continue;
+      }
+      
+      // Is this our element? If so, ignore the deselect operation
+      if (nCurInd == nElemInd) {
+        continue;
+      }
+
+      // If the other element was checked, deselect it
+      if (bCurChecked) {
+        pCurCheckbox->bChecked  = false;
+        pCurElem->bNeedRedraw   = true;
+      }              
+
+    } // nInd
+      
+  } // bRadio
+
+  
+  // Update our data element
   bool  bCheckedOld = pCheckbox->bChecked;
   pCheckbox->bChecked = bChecked;
-
+  
   // Element needs redraw
   if (bChecked != bCheckedOld) {
     pElem->bNeedRedraw = true;
@@ -338,7 +437,14 @@ void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
    
   // Update the data element
   bool bCheckNew = (pCheckbox->bChecked)?false:true;
-  pCheckbox->bChecked = bCheckNew;
+  
+  // Assign the new state. We call the API here instead
+  // of just setting bChecked as we want to leverage any
+  // logic for radio-button operations, even though it
+  // doesn't make as much sense to call a Toggle() operation
+  // on a radio button.
+  //pCheckbox->bChecked = bCheckNew;
+  microSDL_ElemXCheckboxSetState(pGui,nElemId,bCheckNew);
 
   // Element needs redraw
   pElem->bNeedRedraw = true;
@@ -365,27 +471,61 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  bool  bChecked = pCheckbox->bChecked;
-  bool  bGlowing = pElem->bGlowing;
+  bool                      bChecked  = pCheckbox->bChecked;
+  microSDL_teXCheckboxStyle nStyle    = pCheckbox->nStyle;
+  bool                      bGlowing  = pElem->bGlowing;
   
   // Draw the background
   microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
 
-  // Draw the center indicator if checked
-  rInner = microSDL_ExpandRect(pElem->rElem,-5,-5);
-  if (bChecked) {
-    // If checked, fill in the inner region
-    microSDL_FillRect(pGui,rInner,pCheckbox->colCheck);
-  } else {
-    // Assume the background fill has already been done so
-    // we don't need to do anything more in the unchecked case
-  }
-
-  // Draw a frame around the checkbox
-  if (bGlowing) {
-    microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
-  } else {
-    microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  // Generic coordinate calcs
+  int nX0,nY0,nX1,nY1,nMidX,nMidY;
+  nX0 = pElem->rElem.x;
+  nY0 = pElem->rElem.y;
+  nX1 = pElem->rElem.x + pElem->rElem.w - 1;
+  nY1 = pElem->rElem.y + pElem->rElem.h - 1;  
+  nMidX = (nX0+nX1)/2;
+  nMidY = (nY0+nY1)/2;
+  if (nStyle == MSDLX_CHECKBOX_STYLE_BOX) {
+    // Draw the center indicator if checked
+    rInner = microSDL_ExpandRect(pElem->rElem,-5,-5);
+    if (bChecked) {
+      // If checked, fill in the inner region
+      microSDL_FillRect(pGui,rInner,pCheckbox->colCheck);
+    } else {
+      // Assume the background fill has already been done so
+      // we don't need to do anything more in the unchecked case
+    }
+    // Draw a frame around the checkbox
+    if (bGlowing) {
+      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
+    } else {
+      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+    }    
+  } else if (nStyle == MSDLX_CHECKBOX_STYLE_X) {
+    // Draw an X through center if checked
+    if (bChecked) {
+      microSDL_Line(pGui,nX0,nY0,nX1,nY1,pCheckbox->colCheck);
+      microSDL_Line(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
+    }
+    // Draw a frame around the checkbox
+    if (bGlowing) {
+      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
+    } else {
+      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+    }        
+  } else if (nStyle == MSDLX_CHECKBOX_STYLE_ROUND) {
+    // Draw inner circle if checked
+    if (bChecked) {
+      microSDL_FrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
+    }
+    // Draw a frame around the checkbox
+    if (bGlowing) {
+      microSDL_FrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemGlow);  
+    } else {
+      microSDL_FrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemFrame);  
+    }        
+    
   }
   
   // Clear the redraw flag
@@ -460,7 +600,8 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
       if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
         // Toggle the state
         bool bCheckNew = (pCheckbox->bChecked)?false:true;
-        pCheckbox->bChecked = bCheckNew;        
+        //pCheckbox->bChecked = bCheckNew;        
+        microSDL_ElemXCheckboxSetState(pGui,nElemId,bCheckNew);
       }
       break;
       
@@ -502,6 +643,7 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   sElem.bGlowing        = false;
+  sElem.nGroup          = MSDL_GROUP_ID_NONE;  
   pXData->nPosMin       = nPosMin;
   pXData->nPosMax       = nPosMax;
   pXData->nPos          = nPos;
@@ -797,16 +939,11 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
 // - Checkbox with custom handler for touch tracking which
 //   enables glow to be defined whenever touch is tracked over
 //   the element.
-//
-// - Internal hardcoded sub-element IDs:
-//   - 100 : Button (increment)
-//   - 101 : Button (decrement)
-//   - 102 : Counter text
 // ============================================================================
 
 
 // Create a compound element
-// - For now just two buttons
+// - For now just two buttons and a text area
 int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId)
 {
@@ -819,17 +956,13 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   int   nOffsetX = rElem.x;
   int   nOffsetY = rElem.y;
   
-  // Define
-  pXData->ID_BTN_INC  = 100;
-  pXData->ID_BTN_DEC  = 101;
-  pXData->ID_TXT      = 102;
-  
   // Initialize composite element
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SELNUM,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   sElem.bGlowing        = false;
+  sElem.nGroup          = MSDL_GROUP_ID_NONE;  
 
   pXData->nCounter            = 0;
   
@@ -838,8 +971,13 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->nTrackSubIndStart   = MSDL_IND_NONE;
   pXData->nTrackSubIdClicked  = MSDL_ID_NONE;
 
+  // Determine the maximum number of elements that we can store
+  // in the sub-element array. We do this at run-time with sizeof()
+  // instead of using #define to avoid polluting the global namespace.
+  int nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
+  
   // Clear the sub-elements
-  for (nSubInd=0;nSubInd<3;nSubInd++) {
+  for (nSubInd=0;nSubInd<nSubElemMax;nSubInd++) {
     microSDL_ResetElem(&(pXData->asElem[nSubInd]));
   }
   
@@ -856,10 +994,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // for any temporary element creation
   int nSubElemCnt = MSDL_IND_FIRST;
   
-  // Determine the maximum number of sub-elements we can create
-  // Note that we do this without #define to avoid pollution
-  int nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
-
+ 
   // Now create the sub elements
   // - Ensure page is set to MSDL_PAGE_NONE so that
   //   we create the element struct but not add it to a specific page.
@@ -871,10 +1006,8 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // - The element IDs assigned to the sub-elements are
   //   arbitrary (with local scope in the compound element),
   //   so they don't need to be unique globally across the GUI.
-  // - For demonstration purposes, the sub-element IDs have
-  //   been hardcoded without #defines.
   
-  microSDL_ElemCreateBtnTxt(pGui,pXData->ID_BTN_INC,MSDL_PAGE_NONE,
+  microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);
@@ -882,7 +1015,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
   }
   
-  microSDL_ElemCreateBtnTxt(pGui,pXData->ID_BTN_DEC,MSDL_PAGE_NONE,
+  microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
@@ -890,7 +1023,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
   }
   
-  microSDL_ElemCreateTxt(pGui,pXData->ID_TXT,MSDL_PAGE_NONE,
+  microSDL_ElemCreateTxt(pGui,SELNUM_ID_TXT,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
   if (nSubElemCnt<nSubElemMax) {
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
@@ -977,7 +1110,7 @@ void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSe
   
   // TODO: Ideally, we would leverage the existing ElemSetTxtStr() function
   //       but that one operates on elements within GUI array only.
-  int nIND_TXT = microSDL_ElemFindIndFromId(pSelNum->asElem,pSelNum->nSubElemCnt,pSelNum->ID_TXT);
+  int nIND_TXT = microSDL_ElemFindIndFromId(pSelNum->asElem,pSelNum->nSubElemCnt,SELNUM_ID_TXT);
   sprintf(pSelNum->asElem[nIND_TXT].acStr,"%d",pSelNum->nCounter);
   pSelNum->asElem[nIND_TXT].bNeedRedraw = true;
 }
@@ -998,7 +1131,7 @@ void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
   int nCounter = pSelNum->nCounter;
   
   // Increment button
-  if (nElemIdClicked == pSelNum->ID_BTN_INC) {
+  if (nElemIdClicked == SELNUM_ID_BTN_INC) {
     // Increment
     if (nCounter<100) {
       nCounter++;
@@ -1006,7 +1139,7 @@ void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
     microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);  
     
   // Decrement button
-  } else if (nElemIdClicked == pSelNum->ID_BTN_DEC) {
+  } else if (nElemIdClicked == SELNUM_ID_BTN_DEC) {
     // Decrement
     if (nCounter>0) {
       nCounter--;
