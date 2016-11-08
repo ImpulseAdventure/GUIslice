@@ -8,6 +8,7 @@
 
 #include <libgen.h>       // For path parsing
 
+
 // Defines for resources
 #define IMG_BTN_QUIT      "/res/btn-exit32x32.bmp"
 #define IMG_BTN_QUIT_SEL  "/res/btn-exit_sel32x32.bmp"
@@ -18,12 +19,22 @@ char*   strImgQuitSel;
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 
+bool                  m_bQuit = false;
+
 // Instantiate the GUI
-#define MAX_ELEM    30
-microSDL_tsGui      m_gui;
-microSDL_tsElem     m_asElem[MAX_ELEM];
+#define MAX_ELEM      30
+microSDL_tsGui        m_gui;
+microSDL_tsElem       m_asElem[MAX_ELEM];
 
 
+// Button callbacks
+bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+{
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+    m_bQuit = true;
+  }
+  return true;
+}
 
 // - strPath: Path to executable passed in to locate resource files
 bool InitOverlays(char *strPath)
@@ -46,7 +57,7 @@ bool InitOverlays(char *strPath)
   strcpy(strImgQuitSel, strPath);
   strcat(strImgQuitSel, IMG_BTN_QUIT_SEL);     
   nElemId = microSDL_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-          (SDL_Rect){258,70,32,32},strImgQuit,strImgQuitSel);
+          (SDL_Rect){258,70,32,32},strImgQuit,strImgQuitSel,&CbBtnQuit);
   free(strImgQuit);
   free(strImgQuitSel);
 
@@ -55,10 +66,6 @@ bool InitOverlays(char *strPath)
 
 int main( int argc, char* args[] )
 {
-  bool              bQuit = false;  
-  int               nClickX,nClickY;
-  unsigned          nClickPress;
-  int               nTrackElemClicked;
 
   // -----------------------------------
   // Initialize
@@ -82,29 +89,12 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  bQuit = false;
-  while (!bQuit) {
-
-    // Periodically redraw screen in case of any changes
-    microSDL_PageRedrawGo(&m_gui);  
+  m_bQuit = false;
+  while (!m_bQuit) {
     
-    // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
- 
-      // Track the touch event and find any associated object
-      microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
-
-      // Any selectable object clicked? (MSDL_ID_NONE if no)
-      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
-        // Quit button pressed
-        bQuit = true;
-      }
-  
-      // Clear click event
-      microSDL_ClearTrackElemClicked(&m_gui);
-  
-    } // Touchscreen press
+    // Periodically call microSDL update function
+    microSDL_Update(&m_gui);
+    
   } // bQuit
 
 

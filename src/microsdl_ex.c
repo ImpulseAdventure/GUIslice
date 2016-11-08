@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.4    (2016/11/06)
+// - Version 0.4    (2016/11/08)
 // =======================================================================
 
 
@@ -66,7 +66,7 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->colGauge      = colGauge;
   sElem.pXData          = (void*)(pXData);
   sElem.pfuncXDraw      = &microSDL_ElemXGaugeDraw;
-  sElem.pfuncXTouch     = NULL;           // No need to track touches
+  sElem.pfuncXTouch    = NULL;           // No need to track touches
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   if (nPage != MSDL_PAGE_NONE) {  
@@ -280,7 +280,7 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // Specify the custom touch tracking callback
   // - NOTE: This is optional (and can be set to NULL).
   //   See the discussion under microSDL_ElemXCheckboxTouch()
-  sElem.pfuncXTouch     = &microSDL_ElemXCheckboxTouch;
+  sElem.pfuncXTouch    = &microSDL_ElemXCheckboxTouch;
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE;  
@@ -517,6 +517,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   } else if (nStyle == MSDLX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
     if (bChecked) {
+      // TODO: A FillCircle() may look better here
       microSDL_FrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
     }
     // Draw a frame around the checkbox
@@ -544,16 +545,8 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 //   tracking allows us to change the glow state of the element
 //   dynamically, as well as updating the checkbox state if the
 //   user releases over it (ie. a click event).
-// - Without the callback, we would need to depend on the default
-//   click event (nTrackElemIndClicked) and the main loop would
-//   therefore be responsible for calling the toggle function and
-//   redraw. For example:
-//     if (nTrackElemIndClicked == E_ELEM_CHECK) {
-//       microSDL_ElemXCheckboxToggleState(&m_gui,E_ELEM_CHECK);
-//       microSDL_ElemDraw(&m_gui,E_ELEM_CHECK);
-//     }
 //   
-bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY)
+bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
   microSDL_tsGui*           pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
@@ -561,48 +554,42 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   
   // Typecast the parameters to match the GUI
   pGui  = (microSDL_tsGui*)(pvGui);
-  
-  // Get our element (as it will be the one being tracked)
-  int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (nElemInd == MSDL_IND_NONE) {
-    // Shouldn't get here
-    return false;
-  }
-  
-  
-  pElem = &(pGui->psElem[nElemInd]);
+  pElem = (microSDL_tsElem*)(pvElem);
   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);  
 
+  bool  bRadio      = pCheckbox->bRadio;
   bool  bCheckedOld = pCheckbox->bChecked;
   bool  bGlowingOld = pElem->bGlowing;  
   
   switch(eTouch) {
     
-    case MSDL_TOUCH_DOWN:
-      // Start glowing as must be over it
+    case MSDL_TOUCH_DOWN_IN:
       pElem->bGlowing = true;
       break;
       
-    case MSDL_TOUCH_MOVE:
-      // Glow only if current coordinate is within element
-      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        pElem->bGlowing = true;
-      } else {
-        pElem->bGlowing = false;
-      }
+    case MSDL_TOUCH_MOVE_IN:
+      pElem->bGlowing = true;
       break;
-      
-    case MSDL_TOUCH_UP:
-      // End glow
+    case MSDL_TOUCH_MOVE_OUT:
       pElem->bGlowing = false;
-      // Accept "clicked" event if current coordinate is within element
-      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        // Toggle the state
-        bool bCheckNew = (pCheckbox->bChecked)?false:true;
-        //pCheckbox->bChecked = bCheckNew;        
-        microSDL_ElemXCheckboxSetState(pGui,nElemId,bCheckNew);
+      break;
+
+      
+    case MSDL_TOUCH_UP_IN:
+      pElem->bGlowing = false;
+      // Now that we released on element, update the state
+      bool  bCheckNew;
+      if (bRadio) {
+        // Radio button action: set
+        bCheckNew = true;
+      } else {
+        // Checkbox button action: toggle
+        bCheckNew = (pCheckbox->bChecked)?false:true;
       }
+      microSDL_ElemXCheckboxSetState(pGui,pElem->nId,bCheckNew);
+      break;
+    case MSDL_TOUCH_UP_OUT:
+      pElem->bGlowing = false;
       break;
       
     default:
@@ -621,7 +608,6 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,i
   return true;
 
 }
-
 
 // ============================================================================
 // Extended Element: Slider
@@ -845,81 +831,68 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   return true;
 }
 
+
 // This callback function is called by microSDL_NotifyElemTouch()
 // after any touch event
-bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY)
+bool microSDL_ElemXSliderTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
-  microSDL_tsGui*           pGui = NULL;
+  //microSDL_tsGui*         pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
   microSDL_tsXSlider*       pSlider = NULL;
   
   // Typecast the parameters to match the GUI
-  pGui  = (microSDL_tsGui*)(pvGui);
-  
-  // Get our element (as it will be the one being tracked)
-  int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (nElemInd == MSDL_IND_NONE) {
-    // Shouldn't get here
-    return false;
-  }
-  
-  pElem = &(pGui->psElem[nElemInd]);
-  pSlider = (microSDL_tsXSlider*)(pElem->pXData);  
+  //pGui    = (microSDL_tsGui*)(pvGui);
+  pElem     = (microSDL_tsElem*)(pvElem);
+  pSlider   = (microSDL_tsXSlider*)(pElem->pXData);  
 
   bool  bGlowingOld = pElem->bGlowing;  
   int   nPosRng;
   int   nPos;
+  bool  bUpdatePos = false;
   
   switch(eTouch) {
     
-    case MSDL_TOUCH_DOWN:
+    case MSDL_TOUCH_DOWN_IN:
       // Start glowing as must be over it
       pElem->bGlowing = true;
-      // Calc new position
-      nPosRng = pSlider->nPosMax - pSlider->nPosMin;
-      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
-      // Clip position
-      if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
-      if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
-      // Update
-      pSlider->nPos = nPos;
-      pElem->bNeedRedraw = true;
+      bUpdatePos = true;
       break;
       
-    case MSDL_TOUCH_MOVE:
-      // Glow only if current coordinate is within element
-      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        pElem->bGlowing = true;
-      } else {
-        pElem->bGlowing = false;
-      }
-      // Calc new position
-      nPosRng = pSlider->nPosMax - pSlider->nPosMin;
-      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
-      // Clip position
-      if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
-      if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
-      // Update
-      pSlider->nPos = nPos;
-      pElem->bNeedRedraw = true;
+    case MSDL_TOUCH_MOVE_IN:
+      pElem->bGlowing = true;
+      bUpdatePos = true;
+      break;
+    case MSDL_TOUCH_MOVE_OUT:
+      pElem->bGlowing = false;
+      bUpdatePos = true;
       break;
       
-    case MSDL_TOUCH_UP:
+    case MSDL_TOUCH_UP_IN:
       // End glow
       pElem->bGlowing = false;
-      // Accept "clicked" event if current coordinate is within element
-      if (microSDL_IsInWH(pGui,nRelX,nRelY,pElem->rElem.w,pElem->rElem.h)) {
-        // TODO: Anything to do when release? Perhaps issue callback?
-      } else {
-        // TODO: Maybe reset position of slider if released outside?        
-      }
-      pElem->bNeedRedraw = true;      
+      // TODO: Consider adding extra callback here?
+      break;
+    case MSDL_TOUCH_UP_OUT:
+      // End glow
+      pElem->bGlowing = false;
       break;
       
     default:
       return false;
       break;
+  }
+  
+  // Do we need to update the slider position?
+  if (bUpdatePos) {
+    // Calc new position
+    nPosRng = pSlider->nPosMax - pSlider->nPosMin;
+    nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+    // Clip position
+    if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
+    if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
+    // Update
+    pSlider->nPos = nPos;
+    pElem->bNeedRedraw = true;    
   }
   
   // If the checkbox changed state, redraw
@@ -932,6 +905,7 @@ bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   return true;
 
 }
+
 
 
 // ============================================================================
@@ -969,7 +943,6 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->nSubElemCnt         = 0;
   pXData->nTrackSubIdStart    = MSDL_ID_NONE;
   pXData->nTrackSubIndStart   = MSDL_IND_NONE;
-  pXData->nTrackSubIdClicked  = MSDL_ID_NONE;
 
   // Determine the maximum number of elements that we can store
   // in the sub-element array. We do this at run-time with sizeof()
@@ -985,7 +958,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // Specify the custom drawing callback
   sElem.pfuncXDraw      = &microSDL_ElemXSelNumDraw;
   // Specify the custom touch tracking callback
-  sElem.pfuncXTouch     = &microSDL_ElemXSelNumTouch;
+  sElem.pfuncXTouch    = &microSDL_ElemXSelNumTouch;
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE; 
@@ -1008,7 +981,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   //   so they don't need to be unique globally across the GUI.
   
   microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,MSDL_PAGE_NONE,
-    (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId);
+    (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&microSDL_ElemXSelNumClick);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);
   if (nSubElemCnt<nSubElemMax) {
@@ -1016,7 +989,7 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   }
   
   microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,MSDL_PAGE_NONE,
-    (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId);
+    (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&microSDL_ElemXSelNumClick);
   microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
   if (nSubElemCnt<nSubElemMax) {
@@ -1122,73 +1095,89 @@ void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSe
 // - The code here will generally represent the core
 //   functionality of the compound element and any communication
 //   between sub-elements.
-void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
+bool microSDL_ElemXSelNumClick(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 {
-  if (pSelNum == NULL) {
-    return;
-  }
-  int nElemIdClicked = pSelNum->nTrackSubIdClicked;
-  int nCounter = pSelNum->nCounter;
-  
-  // Increment button
-  if (nElemIdClicked == SELNUM_ID_BTN_INC) {
-    // Increment
-    if (nCounter<100) {
-      nCounter++;
-    }
-    microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);  
-    
-  // Decrement button
-  } else if (nElemIdClicked == SELNUM_ID_BTN_DEC) {
-    // Decrement
-    if (nCounter>0) {
-      nCounter--;
-    }
-    microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
+  microSDL_tsGui*     pGui    = (microSDL_tsGui*)(pvGui);
+  microSDL_tsElem*    pElem   = (microSDL_tsElem*)(pvElem);
+  microSDL_tsXSelNum* pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);
+  int nCounter  = pSelNum->nCounter;
 
-  }
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+
+    // Get currently selected sub-element ID
+    int nSubElemId = pSelNum->nTrackSubIdStart;
+    if (nSubElemId == SELNUM_ID_BTN_INC) {
+      // Increment button
+      if (nCounter<100) {
+        nCounter++;
+      }
+      microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);  
+
+    } else if (nSubElemId == SELNUM_ID_BTN_DEC) {
+      // Decrement button
+      if (nCounter>0) {
+        nCounter--;
+      }
+      microSDL_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
+
+    }
+  } // eTouch
   
-  // Reset the clicked indicator
-  pSelNum->nTrackSubIdClicked = MSDL_ID_NONE;
+  return true;
 }
 
-// Touch event callback for a compound element
-// - We redirect the touch events to the appropriate sub-element
-bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY)
+
+
+bool microSDL_ElemXSelNumTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
-  microSDL_tsGui*     pGui = NULL;
-  microSDL_tsElem*    pElem = NULL;
-  microSDL_tsXSelNum* pSelNum = NULL;
+  microSDL_tsGui*           pGui = NULL;
+  microSDL_tsElem*          pElem = NULL;
+  microSDL_tsXSelNum*       pSelNum = NULL;
   
-  int                 nSubInd;
+  // Callback function pointer for sub-element
+  MSDL_CB_TOUCH   pfuncXTouch;
   
   // Typecast the parameters to match the GUI
   pGui  = (microSDL_tsGui*)(pvGui);
-  
-  // Get our element (as it will be the one being tracked)
-  int nElemId = pGui->nTrackElemIdStart;
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (nElemInd == MSDL_IND_NONE) {
-    // Shouldn't get here
-    return false;
-  }
-  
-  
-  pElem = &(pGui->psElem[nElemInd]);
+  pElem = (microSDL_tsElem*)(pvElem);
   pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);  
-
+  
   // Get absolute coordinate
   int nAbsX = pElem->rElem.x + nRelX;
   int nAbsY = pElem->rElem.y + nRelY;
   
   int   nCurTrackSubIndStart = pSelNum->nTrackSubIndStart;
+  microSDL_tsElem* pSubElem = NULL;
+  
+  if (nCurTrackSubIndStart != MSDL_IND_NONE) {
+    pSubElem = &(pSelNum->asElem[nCurTrackSubIndStart]);
+  }
+  
+  int nSubInd;
+
+  // Handle any main element operations
+  switch(eTouch) {
+    case MSDL_TOUCH_DOWN_IN:
+    case MSDL_TOUCH_MOVE_IN:
+      pElem->bGlowing = true;
+      break;
+    case MSDL_TOUCH_MOVE_OUT:
+    case MSDL_TOUCH_UP_IN:
+    case MSDL_TOUCH_UP_OUT:
+    default:
+      pElem->bGlowing = false;
+      break;
+  }
+  
+  // Handle any sub-element operations
   switch(eTouch) {
     
-    case MSDL_TOUCH_DOWN:
-      // Determine what sub-element we just touched on
+    case MSDL_TOUCH_DOWN_IN:
+      // Determine the sub-element we are over
       for (nSubInd=0;nSubInd<pSelNum->nSubElemCnt;nSubInd++) {
         if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nSubInd].rElem)) {
           pSelNum->nTrackSubIndStart = nSubInd;
+          pSelNum->nTrackSubIdStart = pSelNum->asElem[nSubInd].nId;
           // Mark it as glowing
           pSelNum->asElem[nSubInd].bGlowing = true;
           pSelNum->asElem[nSubInd].bNeedRedraw = true;
@@ -1196,40 +1185,49 @@ bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
       }
       break;
       
-    case MSDL_TOUCH_MOVE:
-      if (nCurTrackSubIndStart == MSDL_IND_NONE) {
-        break;
-      }
-      // Continue to glow if still over tracked element
-      // Glow only if current coordinate is within element
-      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nCurTrackSubIndStart].rElem)) {
+    case MSDL_TOUCH_MOVE_IN:
+      if (pSubElem == NULL) { break; }      
+      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSubElem->rElem)) {
         // Still over tracked item
         // Mark it as glowing
-        pSelNum->asElem[nCurTrackSubIndStart].bGlowing = true;
-        pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
+        pSubElem->bGlowing = true;
+        pSubElem->bNeedRedraw = true;
       } else {
         // Not over tracked item
         // Disable glow
-        pSelNum->asElem[nCurTrackSubIndStart].bGlowing = false;
-        pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
-      }
+        pSubElem->bGlowing = false;
+        pSubElem->bNeedRedraw = true;    
+      }   
       break;
       
-    case MSDL_TOUCH_UP:
-      if (nCurTrackSubIndStart == MSDL_IND_NONE) {
-        break;
-      }
-      // End glow
-      pSelNum->asElem[nCurTrackSubIndStart].bGlowing = false;
-      pSelNum->asElem[nCurTrackSubIndStart].bNeedRedraw = true;
-      // Accept "clicked" event if current coordinate is within element
-      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSelNum->asElem[nCurTrackSubIndStart].rElem)) {
-        // Touch-up within tracked sub-element
-        pSelNum->nTrackSubIdClicked = pSelNum->asElem[nCurTrackSubIndStart].nId;
-        // Clear the tracking
-        pSelNum->nTrackSubIndStart = MSDL_IND_NONE;
-        // Handle click event for sub-element
-        microSDL_ElemXSelNumClick(pGui,pSelNum);
+    case MSDL_TOUCH_MOVE_OUT:
+    case MSDL_TOUCH_UP_OUT:
+      if (pSubElem == NULL) { break; }   
+      // We are even outside compound element, so disable glow
+      pSubElem->bGlowing = false;
+      pSubElem->bNeedRedraw = true;  
+      break;
+        
+    case MSDL_TOUCH_UP_IN:
+      // Touch up
+      if (pSubElem == NULL) { break; }      
+      pSubElem->bGlowing = false;
+      pSubElem->bNeedRedraw = true;        
+      if (microSDL_IsInRect(pGui,nAbsX,nAbsY,pSubElem->rElem)) {
+        // Released over tracked element, treat as click event
+        // Fetch the sub-element callback (if enabled)
+        pfuncXTouch = pSubElem->pfuncXTouch;
+        if (pfuncXTouch != NULL) {
+          // Callback
+          // Note that the callback function is passed a pointer
+          // to the compound element, not the sub-element. This
+          // allows the handler to interact with other sub-elements if required.
+          (*pfuncXTouch)((void*)(pGui),(void*)(pElem),eTouch,nRelX,nRelY);
+        }
+        // Clear tracked sub-element
+        pSelNum->nTrackSubIndStart = MSDL_IND_NONE;        
+      } else {
+        // Released outside tracked element, ignore
       }
       break;
       
@@ -1244,5 +1242,7 @@ bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int
   return true;
 
 }
+
+
 
 // ============================================================================

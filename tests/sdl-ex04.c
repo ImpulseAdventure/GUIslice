@@ -19,8 +19,10 @@ enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
 enum {E_FONT_BTN,E_FONT_TXT};
 enum {E_GROUP1};
 
+bool                  m_bQuit = false;
+
 // Free-running counter for display
-unsigned m_nCount = 0;
+unsigned              m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_ELEM      30
@@ -31,6 +33,17 @@ microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
 microSDL_tsXCheckbox  m_asXCheck[3];
 microSDL_tsXSlider    m_sXSlider;
+
+
+
+// Button callbacks
+bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+{
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+    m_bQuit = true;
+  }
+  return true;
+}
 
 // Create page elements
 bool InitOverlays()
@@ -46,7 +59,7 @@ bool InitOverlays()
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){160,80,80,40},"Quit",E_FONT_BTN);
+    (SDL_Rect){160,80,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
@@ -96,10 +109,6 @@ bool InitOverlays()
 int main( int argc, char* args[] )
 {
   bool                bOk = true;
-  bool                bQuit = false;  
-  int                 nClickX,nClickY;
-  unsigned            nClickPress;
-  int                 nTrackElemClicked;
   char                acTxt[100];
 
   // -----------------------------------
@@ -129,8 +138,8 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  bQuit = false;
-  while (!bQuit) {
+  m_bQuit = false;
+  while (!m_bQuit) {
 
     // General counter
     m_nCount++;
@@ -148,30 +157,9 @@ int main( int argc, char* args[] )
     sprintf(acTxt,"Slider: %u",nPos);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_SLIDER,acTxt);
     
-    
-    // Periodically redraw screen in case of any changes
-    microSDL_PageRedrawGo(&m_gui);
+    // Periodically call microSDL update function    
+    microSDL_Update(&m_gui);
 
-  
-    // -----------------------------------
-  
-    // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
- 
-      // Track the touch event and find any associated object
-      microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
-     
-      // Any selectable object clicked? (MSDL_ID_NONE if no)
-      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
-        // Quit button pressed
-        bQuit = true;
-      }
-
-      // Clear click event
-      microSDL_ClearTrackElemClicked(&m_gui);
-  
-    } // Touchscreen press
   } // bQuit
 
   // Read checkbox state

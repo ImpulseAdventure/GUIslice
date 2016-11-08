@@ -16,22 +16,28 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 enum {E_FONT_BTN};
 
-// Instantiate the GUI
-#define MAX_ELEM  30
-#define MAX_FONT  10
-microSDL_tsGui  m_gui;
-microSDL_tsElem m_asElem[MAX_ELEM];
-microSDL_tsFont m_asFont[MAX_FONT];
+bool                  m_bQuit = false;
 
+// Instantiate the GUI
+#define MAX_ELEM      30
+#define MAX_FONT      10
+microSDL_tsGui        m_gui;
+microSDL_tsElem       m_asElem[MAX_ELEM];
+microSDL_tsFont       m_asFont[MAX_FONT];
+
+// Button callbacks
+bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+{
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+    m_bQuit = true;
+  }
+  return true;
+}
 
 int main( int argc, char* args[] )
 {
   bool              bOk = true;
-  bool              bQuit = false;  
-  int               nClickX,nClickY;
-  unsigned          nClickPress;
   int               nElemId;
-  int               nTrackElemClicked;
 
   // -----------------------------------
   // Initialize
@@ -58,7 +64,7 @@ int main( int argc, char* args[] )
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN);
+    (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------
   // Start display
@@ -69,29 +75,12 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  bQuit = false;
-  while (!bQuit) {
+  m_bQuit = false;
+  while (!m_bQuit) {
   
-    // Periodically redraw screen in case of any changes
-    microSDL_PageRedrawGo(&m_gui);       
-    
-    // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
- 
-      // Track the touch event and find any associated object
-      microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
+    // Periodically call microSDL update function    
+    microSDL_Update(&m_gui);   
 
-      // Any selectable object clicked? (MSDL_ID_NONE if no)
-      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
-        // Quit button pressed
-        bQuit = true;
-      }
-  
-      // Clear click event
-      microSDL_ClearTrackElemClicked(&m_gui);
-
-    } // Touchscreen press
   } // bQuit
 
 

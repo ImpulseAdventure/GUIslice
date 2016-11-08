@@ -3,6 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 05: Multiple page handling
+//               Compound elements
 //
 
 #include "microsdl.h"
@@ -21,6 +22,8 @@ enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
       E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
+bool                  m_bQuit = false;
+
 // Free-running counter for display
 unsigned m_nCount = 0;
 
@@ -32,6 +35,25 @@ microSDL_tsElem     m_asElem[MAX_ELEM];
 microSDL_tsFont     m_asFont[MAX_FONT];
 microSDL_tsXGauge   m_sXGauge;
 microSDL_tsXSelNum  m_sXSelNum[3];
+
+// Button callbacks
+// - Show example of common callback function
+bool CbBtnCommon(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+{
+  microSDL_tsElem* pElem = (microSDL_tsElem*)(pvElem);
+  int nElemId = pElem->nId;
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+    if (nElemId == E_ELEM_BTN_QUIT) {
+      m_bQuit = true;
+    } else if (nElemId == E_ELEM_BTN_EXTRA) {
+      microSDL_SetPageCur(&m_gui,E_PG_EXTRA);
+    } else if (nElemId == E_ELEM_BTN_BACK) {
+      microSDL_SetPageCur(&m_gui,E_PG_MAIN);
+    }
+  }
+  return true;
+}
+
 
 // Create the default elements on each page
 // - strPath: Path to executable passed in to locate resource files
@@ -63,11 +85,11 @@ bool InitOverlays(char *strPath)
 
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){100,140,50,20},"Quit",E_FONT_BTN);
+    (SDL_Rect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
 
   // Create Extra button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (SDL_Rect){170,140,50,20},"Extra",E_FONT_BTN);
+    (SDL_Rect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
 
   // Create counter
   nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,60,50,10},
@@ -95,7 +117,7 @@ bool InitOverlays(char *strPath)
 
   // Create Back button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (SDL_Rect){50,170,50,20},"Back",E_FONT_BTN);
+    (SDL_Rect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
 
   // Create a few labels
   Sint16    nPosY = 50;
@@ -121,11 +143,6 @@ bool InitOverlays(char *strPath)
 int main( int argc, char* args[] )
 {
   bool              bOk = true;
-  bool              bQuit = false;  
-  int               nClickX,nClickY;
-  unsigned          nClickPress;
-  int               nTrackElemClicked;
-
   char              acTxt[100];
 
   // -----------------------------------
@@ -163,55 +180,24 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  bQuit = false;
-  while (!bQuit) {
+  m_bQuit = false;
+  while (!m_bQuit) {
 
     m_nCount++;
 
     // -----------------------------------
-    // Perform some drawing updates depending on the active page
-
-    // Perform some updates on a page
-    // NOTE: We can still call the element update functions
-    //       even though the page may not be visible. If desired,
-    //       one can determine the active page by calling
-    //         microSDL_GetPageCur(&m_gui);
+    // Perform drawing updates
+    // - Note: we can make the updates conditional on the active
+    //   page by checking microSDL_GetPageCur() first.
 
     sprintf(acTxt,"%u",m_nCount);
     microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
 
     microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
 
-
-    // Periodically redraw screen in case of any changes
-    microSDL_PageRedrawGo(&m_gui);
+    // Periodically call microSDL update function    
+    microSDL_Update(&m_gui);
     
-    // -----------------------------------
-  
-    // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
- 
-      // Track the touch event and find any associated object
-      microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
-
-      // Any selectable object clicked?
-      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
-        // Quit button pressed
-        bQuit = true;
-      } else if (nTrackElemClicked == E_ELEM_BTN_EXTRA) {
-        microSDL_SetPageCur(&m_gui,E_PG_EXTRA);
-      } else if (nTrackElemClicked == E_ELEM_BTN_BACK) {
-        microSDL_SetPageCur(&m_gui,E_PG_MAIN);
-      } else if (nTrackElemClicked == E_ELEM_COMP1) {
-        // Selected a button within the compound element
-        // Ignore for now as compound element should handle it
-      } // nTrackElemClicked
-  
-      // Clear click event
-      microSDL_ClearTrackElemClicked(&m_gui);
-
-    } // Touchscreen press
   } // bQuit
 
 

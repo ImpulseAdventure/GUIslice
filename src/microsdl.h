@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.4    (2016/11/06)
+// - Version 0.4    (2016/11/08)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -181,11 +181,13 @@ typedef enum {
 #define MSDL_COL_ORANGE     (SDL_Color) {255,165,0}     ///< Orange
 #define MSDL_COL_BROWN      (SDL_Color) {165,42,42}     ///< Brown
 
-/// Touch event type for extended element touch tracking
+/// Touch event type for element touch tracking
 typedef enum  {
-    MSDL_TOUCH_DOWN,    /// Touch event (up)
-    MSDL_TOUCH_MOVE,    /// Touch event (move/drag)
-    MSDL_TOUCH_UP       /// Touch event (down)
+    MSDL_TOUCH_DOWN_IN,    /// Touch event (down) inside element, start tracking
+    MSDL_TOUCH_MOVE_IN,    /// Touch event (move/drag) inside tracked element
+    MSDL_TOUCH_MOVE_OUT,   /// Touch event (move/drag) outside tracked element
+    MSDL_TOUCH_UP_IN,      /// Touch event (up) inside tracked element
+    MSDL_TOUCH_UP_OUT,     /// Touch event (up) outside tracked element
 } microSDL_teTouch;
 
 // -----------------------------------------------------------------------
@@ -196,7 +198,7 @@ typedef enum  {
 typedef bool (*MSDL_CB_DRAW)(void* pvGui,void* pvElem);
 
 // Callback function for element touch tracking
-typedef bool (*MSDL_CB_TOUCH)(void* pvGui,microSDL_teTouch eTouch,int nX,int nY);
+typedef bool (*MSDL_CB_TOUCH)(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY);
 
 ///
 /// Element Struct
@@ -241,6 +243,9 @@ typedef struct {
   unsigned            nTxtMargin;     ///< Margin of overlay text within rect region
   TTF_Font*           pTxtFont;       ///< Font ptr for overlay text
  
+  // Sub-element tracking
+  int                 nSubIdTrack;    ///< Sub-element ID being tracked (TODO)
+  
   void*               pXData;         ///< Ptr to extended data structure
   
   /// Callback func ptr for drawing
@@ -248,6 +253,7 @@ typedef struct {
   
   /// Callback func ptr for touch
   MSDL_CB_TOUCH       pfuncXTouch;
+  
   
 } microSDL_tsElem;
 
@@ -295,7 +301,6 @@ typedef struct {
                                           ///< Set to MSDL_ID_NONE if no elements are
                                           ///< currently being tracked.
   
-  int               nTrackElemIdClicked;  ///< Last Element ID clicked
   int               nClickLastX;          ///< Last touch event X coord
   int               nClickLastY;          ///< Last touch event Y coord
   unsigned          nClickLastPress;      ///< Last touch event pressure (0=none))
@@ -376,6 +381,17 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
 ///
 void microSDL_Quit(microSDL_tsGui* pGui);
 
+
+///
+/// Perform main microSDL handling functions
+/// - Handles any touch events
+/// - Performs any necessary screen redraw
+///
+/// \param[in]  pGui:    Pointer to GUI
+///
+/// \return None
+///
+void microSDL_Update(microSDL_tsGui* pGui);
 
 // ------------------------------------------------------------------------
 // Graphics General Functions
@@ -808,11 +824,12 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
 /// \param[in]  rElem:       Rectangle coordinates defining text background size
 /// \param[in]  acStr:       String to copy into element
 /// \param[in]  nFontId:     Font ID to use for text display
+/// \param[in]  cbTouch:     Callback for touch events
 ///
 /// \return The Element ID or MSDL_ID_NONE if failure
 ///
 int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,const char* acStr,int nFontId);
+  SDL_Rect rElem,const char* acStr,int nFontId,MSDL_CB_TOUCH cbTouch);
 
 
 ///
@@ -827,11 +844,12 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
 /// \param[in]  rElem:       Rectangle coordinates defining image size
 /// \param[in]  acImg:       Filename of BMP image to load (unselected state)
 /// \param[in]  acImgSel:    Filename of BMP image to load (selected state)
+/// \param[in]  cbTouch:     Callback for touch events
 ///
 /// \return The Element ID or MSDL_ID_NONE if failure
 ///
 int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,const char* acImg,const char* acImgSel);
+  SDL_Rect rElem,const char* acImg,const char* acImgSel,MSDL_CB_TOUCH cbTouch);
 
 
 ///
@@ -1086,29 +1104,6 @@ void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId);
 // Tracking Functions
 // ------------------------------------------------------------------------
 
-
-
-///
-/// Fetch the ID of the last clicked element
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return Element ID or MSDL_ID_NONE if no new elements selected
-///
-int microSDL_GetTrackElemClicked(microSDL_tsGui* pGui);
-
-
-///
-/// Resets the indicator of a last clicked element,
-/// which should be called after the previous
-/// element returned by microSDL_GetTrackElemClicked()
-/// has been handled.
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return none
-///
-void microSDL_ClearTrackElemClicked(microSDL_tsGui* pGui);
 
 ///
 /// Handles a touch event and performs the necessary
@@ -1443,12 +1438,13 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
 /// This routine is called by microSDL_TrackClick().
 ///
 /// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nTrackIdNew: Element ID to start tracking
 /// \param[in]  nX:          X coordinate of event
 /// \param[in]  nY:          Y coordinate of event
 ///
 /// \return none
 ///
-void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY);
+void microSDL_TrackTouchDownClick1(microSDL_tsGui* pGui,int nTrackIdNew,int nX,int nY);
 
 ///
 /// Handle a mouse-up event and track any
@@ -1457,13 +1453,13 @@ void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nX,int nY);
 /// This routine is called by microSDL_TrackClick().
 ///
 /// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bInTracked:  In bounds of tracked element
 /// \param[in]  nX:          X coordinate of event
 /// \param[in]  nY:          Y coordinate of event
 ///
 /// \return none
 ///
-void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
-
+void microSDL_TrackTouchUpClick1(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
 
 ///
 /// Handle a mouse-move event and track any
@@ -1472,13 +1468,13 @@ void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,int nX,int nY);
 /// This routine is called by microSDL_TrackClick().
 ///
 /// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bInTracked:  In bounds of tracked element
 /// \param[in]  nX:          X coordinate of event
 /// \param[in]  nY:          Y coordinate of event
 ///
 /// \return none
 ///
-void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,int nX,int nY);
-
+void microSDL_TrackTouchDownMove1(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
 
 ///
 /// Notify an element of a touch event. This is an optional

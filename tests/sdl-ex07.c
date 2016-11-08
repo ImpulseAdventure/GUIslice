@@ -17,8 +17,10 @@ enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
       E_SLIDER_R,E_SLIDER_G,E_SLIDER_B};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_HEAD,E_FONT_TITLE};
 
+bool      m_bQuit = false;
+
 // Free-running counter for display
-unsigned m_nCount = 0;
+unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_ELEM      30
@@ -28,6 +30,14 @@ microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXSlider    m_sXSlider_R,m_sXSlider_G,m_sXSlider_B;
 
+// Button callbacks
+bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+{
+  if (eTouch == MSDL_TOUCH_UP_IN) {
+    m_bQuit = true;
+  }
+  return true;
+}
 
 // Create page elements
 bool InitOverlays()
@@ -67,7 +77,7 @@ bool InitOverlays()
   
   // Create Quit button with text label
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){250,60,50,30},"SAVE",E_FONT_BTN);
+    (SDL_Rect){250,60,50,30},"SAVE",E_FONT_BTN,&CbBtnQuit);
   microSDL_ElemSetCol(&m_gui,nElemId,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224});    
   microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
   
@@ -77,7 +87,7 @@ bool InitOverlays()
   microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
 
   nElemId = microSDL_ElemCreateBtnTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,
-    (SDL_Rect){140,65,80,20},"Kitchen...",E_FONT_BTN);
+    (SDL_Rect){140,65,80,20},"Kitchen...",E_FONT_BTN,NULL);
   microSDL_ElemSetCol(&m_gui,nElemId,(SDL_Color){64,64,64},(SDL_Color){32,32,32},(SDL_Color){0,0,224});    
   microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
   
@@ -141,10 +151,6 @@ bool InitOverlays()
 int main( int argc, char* args[] )
 {
   bool                bOk = true;
-  bool                bQuit = false;  
-  int                 nClickX,nClickY;
-  unsigned            nClickPress;
-  int                 nTrackElemClicked;
 
   // -----------------------------------
   // Initialize
@@ -176,8 +182,8 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  bQuit = false;
-  while (!bQuit) {
+  m_bQuit = false;
+  while (!m_bQuit) {
 
     // General counter
     m_nCount++;
@@ -185,37 +191,16 @@ int main( int argc, char* args[] )
     // -----------------------------------
 
     // Update elements on active page
-
-    // TODO: Replace with Slider callback
+    // - TODO: Replace with Slider callback
     int nPosR = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_R);
     int nPosG = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_G);
     int nPosB = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_B);
     SDL_Color colRGB = (SDL_Color){nPosR,nPosG,nPosB};
     microSDL_ElemSetCol(&m_gui,E_ELEM_COLOR,MSDL_COL_WHITE,colRGB,MSDL_COL_WHITE);
     
-        
-    // Periodically redraw screen in case of any changes
-    microSDL_PageRedrawGo(&m_gui);
-
-    // -----------------------------------
-  
-    // Poll for touchscreen presses
-    if (microSDL_GetTsClick(&m_gui,&nClickX,&nClickY,&nClickPress)) {
- 
-      // Track the touch event and find any associated object
-      microSDL_TrackClick(&m_gui,nClickX,nClickY,nClickPress);
-      nTrackElemClicked = microSDL_GetTrackElemClicked(&m_gui);
-     
-      // Any selectable object clicked? (MSDL_ID_NONE if no)
-      if (nTrackElemClicked == E_ELEM_BTN_QUIT) {
-        // Quit button pressed
-        bQuit = true;
-      }
-
-      // Clear click event
-      microSDL_ClearTrackElemClicked(&m_gui);
-  
-    } // Touchscreen press
+    // Periodically call microSDL update function
+    microSDL_Update(&m_gui);
+    
   } // bQuit
 
   // Read slider state:

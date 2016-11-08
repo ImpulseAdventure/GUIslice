@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.3.4    (2016/11/06)
+// - Version 0.4    (2016/11/08)
 // =======================================================================
 
 // Extended element definitions
@@ -183,13 +183,14 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem);
 /// - Called from microSDL_NotifyElemTouch()
 ///
 /// /param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// /param[in]  pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
 /// /param[in]  eTouch:      Touch event type
 /// /param[in]  nRelX:       Touch X coord relative to element
 /// /param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
-bool microSDL_ElemXCheckboxTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY);
+bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY);
 
 
 // ============================================================================
@@ -292,13 +293,14 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem);
 /// - Called from microSDL_NotifyElemTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
-bool microSDL_ElemXSliderTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY);
+bool microSDL_ElemXSliderTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY);
 
 
 // ============================================================================
@@ -385,26 +387,29 @@ void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSe
 /// Handle a click event within the SelNum
 /// - This is called internally by the SelNum touch handler
 ///
-/// \param[in]  pGui:        Ptr to GUI
-/// \param[in]  pSelElem:    Ptr to Element
+/// /param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
+/// \param[in]  eTouch:      Touch event type
+/// \param[in]  nX:          Touch X coord
+/// \param[in]  nY:          Touch Y coord
 ///
 /// \return none
 ///
-void microSDL_ElemXSelNumClick(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum);
-
+bool microSDL_ElemXSelNumClick(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY);
 
 ///
 /// Handle touch events to SelNum element
 /// - Called from microSDL_NotifyElemTouch()
 ///
-/// /param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
-/// /param[in]  eTouch:      Touch event type
-/// /param[in]  nRelX:       Touch X coord relative to element
-/// /param[in]  nRelY:       Touch Y coord relative to element
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to microSDL_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to microSDL_tsElem*)
+/// \param[in]  eTouch:      Touch event type
+/// \param[in]  nRelX:       Touch X coord relative to element
+/// \param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
-bool microSDL_ElemXSelNumTouch(void* pvGui,microSDL_teTouch eTouch,int nRelX,int nRelY);
+bool microSDL_ElemXSelNumTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY);
 
 
 // ============================================================================
