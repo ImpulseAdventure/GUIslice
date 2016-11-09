@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4    (2016/11/08)
+// - Version 0.4.1    (2016/11/08)
 // =======================================================================
 
 // Extended element definitions
@@ -55,22 +55,21 @@ typedef struct {
 /// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
 ///                (true = vertical, false = horizontal)
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to Element or NULL if failure
 ///
-int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXGauge* pXData,SDL_Rect rElem,int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert);
 
 ///
 /// Update a Gauge element's current value
 /// - Note that min & max values are assigned in create()
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nVal:        New value to show in gauge
 ///
 /// \return none
 ///
-void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal);
+void microSDL_ElemXGaugeUpdate(microSDL_tsElem* pElem,int nVal);
 
 ///
 /// Draw a gauge element on the screen
@@ -97,6 +96,7 @@ typedef enum {
 
 /// Extended data for Checkbox element
 typedef struct {
+  microSDL_tsGui*             pGui;         ///< Ptr to GUI (for radio group control)
   bool                        bRadio;       ///< Radio-button operation if true
   microSDL_teXCheckboxStyle   nStyle;       ///< Drawing style for element
   bool                        bChecked;     ///< Indicates if it is selected (checked)
@@ -117,9 +117,9 @@ typedef struct {
 /// \param[in]  colCheck:    Color for inner fill when checked
 /// \param[in]  bChecked:    Default state
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Element pointer or NULL if failure
 ///
-int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,
   microSDL_teXCheckboxStyle nStyle,SDL_Color colCheck,bool bChecked);
 
@@ -127,24 +127,22 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 ///
 /// Get a Checkbox element's current state
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 ///
 /// \return Current state
 ///
-bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId);
+bool microSDL_ElemXCheckboxGetState(microSDL_tsElem* pElem);
 
 
 ///
 /// Set a Checkbox element's current state
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bChecked:    New state
 ///
 /// \return none
 ///
-void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked);
+void microSDL_ElemXCheckboxSetState(microSDL_tsElem* pElem,bool bChecked);
 
 ///
 /// Find the checkbox within a group that has been checked
@@ -159,12 +157,11 @@ int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId);
 ///
 /// Toggle a Checkbox element's current state
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 ///
 /// \return none
 ///
-void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId);
+void microSDL_ElemXCheckboxToggleState(microSDL_tsElem* pElem);
 
 
 ///
@@ -229,9 +226,9 @@ typedef struct {
 /// \param[in]  nThumbSz:    Size of the thumb control
 /// \param[in]  bVert:       Orientation (true for vertical)
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Element pointer or NULL if failure
 ///
-int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSlider* pXData,SDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert);
 
@@ -239,8 +236,7 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 ///
 /// Set a Slider element's current position
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bTrim:       Show a colored trim?
 /// \param[in]  colTrim:     Color of trim
 /// \param[in]  nTickDiv:    Number of tick divisions to show (0 for none)
@@ -249,7 +245,7 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 ///
 /// \return none
 ///
-void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
+void microSDL_ElemXSliderSetStyle(microSDL_tsElem* pElem,
         bool bTrim,SDL_Color colTrim,unsigned nTickDiv,
         int nTickLen,SDL_Color colTick);
 
@@ -257,24 +253,22 @@ void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
 ///
 /// Get a Slider element's current position
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 ///
 /// \return Current slider position
 ///
-int microSDL_ElemXSliderGetPos(microSDL_tsGui* pGui,int nElemId);
+int microSDL_ElemXSliderGetPos(microSDL_tsElem* pElem);
 
 
 ///
 /// Set a Slider element's current position
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nPos:        New position value
 ///
 /// \return none
 ///
-void microSDL_ElemXSliderSetPos(microSDL_tsGui* pGui,int nElemId,int nPos);
+void microSDL_ElemXSliderSetPos(microSDL_tsElem* pElem,int nPos);
 
 
 ///
@@ -342,9 +336,9 @@ static const int  SELNUM_ID_TXT     = 102;
 /// \param[in]  rElem:       Rectangle coordinates defining element size
 /// \param[in]  nFontId:     Font ID to use for drawing the element
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to Element or NULL if failure
 ///
-int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId);
 
 

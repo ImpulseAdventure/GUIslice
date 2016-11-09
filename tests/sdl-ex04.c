@@ -48,58 +48,58 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 // Create page elements
 bool InitOverlays()
 {
-  int nElemId;
+  microSDL_tsElem*  pElem;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create background box
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
-
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  
   // Create Quit button with text label
-  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){160,80,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
     "Count:",E_FONT_TXT);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_YELLOW);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_YELLOW);
 
   // Create progress bar
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+  pElem = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (SDL_Rect){80,80,50,10},0,100,0,MSDL_COL_GREEN_DK,false);
   
   // Create checkbox 1
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,100,20,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,100,20,20},
     "Check1:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
+  pElem = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (SDL_Rect){80,100,20,20},false,MSDLX_CHECKBOX_STYLE_X,MSDL_COL_BLUE_LT,false);
 
   // Create radio 1
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,135,20,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,135,20,20},
     "Radio1:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
+  pElem = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
     (SDL_Rect){80,135,20,20},true,MSDLX_CHECKBOX_STYLE_ROUND,MSDL_COL_ORANGE,false);
-  microSDL_ElemSetGroup(&m_gui,E_ELEM_RADIO1,E_GROUP1);
+  microSDL_ElemSetGroup(pElem,E_GROUP1);
 
   // Create radio 2
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,160,20,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,160,20,20},
     "Radio2:",E_FONT_TXT);
-  nElemId = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
+  pElem = microSDL_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (SDL_Rect){80,160,20,20},true,MSDLX_CHECKBOX_STYLE_ROUND,MSDL_COL_ORANGE,false);
-  microSDL_ElemSetGroup(&m_gui,E_ELEM_RADIO2,E_GROUP1);
+  microSDL_ElemSetGroup(pElem,E_GROUP1);
     
   // Create slider
-  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
+  pElem = microSDL_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
     (SDL_Rect){160,140,100,20},0,100,60,5,false);
-  microSDL_ElemXSliderSetStyle(&m_gui,E_ELEM_SLIDER,true,(SDL_Color){0,0,128},10,
+  microSDL_ElemXSliderSetStyle(pElem,true,(SDL_Color){0,0,128},10,
           5,(SDL_Color){64,64,64});
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(SDL_Rect){160,160,60,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(SDL_Rect){160,160,60,20},
     "Slider: ???",E_FONT_TXT);
   
   return true;
@@ -148,14 +148,14 @@ int main( int argc, char* args[] )
 
     // Update elements on active page
     sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_COUNT),acTxt);
 
-    microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(microSDL_ElemGet(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
     
     // TODO: Replace with Slider callback
-    int nPos = microSDL_ElemXSliderGetPos(&m_gui,E_ELEM_SLIDER);
+    int nPos = microSDL_ElemXSliderGetPos(microSDL_ElemGet(&m_gui,E_ELEM_SLIDER));  
     sprintf(acTxt,"Slider: %u",nPos);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_SLIDER,acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_SLIDER),acTxt);
     
     // Periodically call microSDL update function    
     microSDL_Update(&m_gui);

@@ -55,7 +55,6 @@ bool DrawScannerCb(void* pvGui,void* pvElem)
   // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
-  int nElemId = microSDL_ElemGetIdFromElem(&m_gui,pElem);
   
   // Draw the background
   microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
@@ -88,7 +87,7 @@ bool DrawScannerCb(void* pvGui,void* pvElem)
   microSDL_ViewSet(&m_gui,MSDL_VIEW_ID_SCREEN);
   
   // Clear the redraw flag
-  microSDL_ElemSetRedraw(&m_gui,nElemId,false);
+  microSDL_ElemSetRedraw(pElem,false);
   
   return true;
 }
@@ -106,7 +105,8 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 // - strPath: Path to executable passed in to locate resource files
 bool InitOverlays(char *strPath)
 {
-  int   nElemId;
+  microSDL_tsElem*  pElem = NULL;
+  int               nViewId;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_BLACK);
@@ -116,74 +116,74 @@ bool InitOverlays(char *strPath)
   char* strImgLogoPath = (char*)malloc(strlen(strPath)+strlen(IMG_LOGO)+1);
   strcpy(strImgLogoPath, strPath);
   strcat(strImgLogoPath, IMG_LOGO);  
-  nElemId = microSDL_ElemCreateImg(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){160-100,5,200,40},
+  pElem = microSDL_ElemCreateImg(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){160-100,5,200,40},
     strImgLogoPath);
 
   // Create background box
-  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create Quit button with text label
-  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,60,50,10},
     "Searches:",E_FONT_TXT);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){80,60,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);
 
   // Create progress bar
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  nElemId = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
+  pElem = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){80,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
   
   // Create other labels
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,100,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,100,50,10},
     "Coord X:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(SDL_Rect){100,100,50,10},
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(SDL_Rect){100,100,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);
 
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,120,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,120,50,10},
     "Coord Y:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(SDL_Rect){100,120,50,10},
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(SDL_Rect){100,120,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);
 
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,140,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,140,50,10},
     "Coord Z:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(SDL_Rect){100,140,50,10},
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(SDL_Rect){100,140,50,10},
     "",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);
 
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){120,210,170,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){120,210,170,20},
     "Example of microSDL GUI C library",E_FONT_BTN);
-  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_LEFT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_RED_LT);
+  microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_LEFT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_RED_LT);
 
   // --------------------------------------------------------------------------
   // Create scanner with viewport
-  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
+  microSDL_ElemSetCol(pElem,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190,75-11,100,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){190,75-11,100,10},
     "SCANNER",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_BLUE_DK);
-  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_BLUE_DK);
+  microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_MID);
   
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(SDL_Rect){190-1,75-1,100+2,100+2});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(SDL_Rect){190-1,75-1,100+2,100+2});
+  microSDL_ElemSetCol(pElem,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
   // Set the callback function to handle all drawing for the element
-  microSDL_ElemSetDrawFunc(&m_gui,nElemId,&DrawScannerCb);
+  microSDL_ElemSetDrawFunc(pElem,&DrawScannerCb);
   
-  nElemId = microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
+  nViewId = microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
   // --------------------------------------------------------------------------
 
   
@@ -271,23 +271,24 @@ int main( int argc, char* args[] )
     microSDL_ViewSetOrigin(&m_gui,E_VIEW,nOriginX,nOriginY);
     // Manually mark the scanner view as needing redraw
     // since it depends on E_VIEW
-    microSDL_ElemSetRedraw(&m_gui,E_ELEM_SCAN,true);
+    microSDL_ElemSetRedraw(microSDL_ElemGet(&m_gui,E_ELEM_SCAN),true);
 
     // -----------------------------------------------
 
     // Perform any immediate updates on active page
     sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_TXT_COUNT,acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_COUNT),acTxt);
 
     sprintf(acTxt,"%4.2f",m_fCoordX-50);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAX,acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAX),acTxt);
     sprintf(acTxt,"%4.2f",m_fCoordY-50);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAY,acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAY),acTxt);
     sprintf(acTxt,"%4.2f",m_fCoordZ);
-    microSDL_ElemSetTxtStr(&m_gui,E_ELEM_DATAZ,acTxt);
-    microSDL_ElemSetTxtCol(&m_gui,E_ELEM_DATAZ,(m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
+    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAZ),acTxt);
+    microSDL_ElemSetTxtCol(microSDL_ElemGet(&m_gui,E_ELEM_DATAZ),
+            (m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
 
-    microSDL_ElemXGaugeUpdate(&m_gui,E_ELEM_PROGRESS,50+50*sin(m_nCount/500.0));
+    microSDL_ElemXGaugeUpdate(microSDL_ElemGet(&m_gui,E_ELEM_PROGRESS),50+50*sin(m_nCount/500.0));
 
     // -----------------------------------------------
 

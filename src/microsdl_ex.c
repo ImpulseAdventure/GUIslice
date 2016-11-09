@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4    (2016/11/08)
+// - Version 0.4.1    (2016/11/08)
 // =======================================================================
 
 
@@ -47,13 +47,16 @@
 // Create a gauge element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
-int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXGauge* pXData,SDL_Rect rElem,
   int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
 {
-  microSDL_tsElem sElem;
-  bool            bOk = true;
-  if (pXData == NULL) { return MSDL_ID_NONE; }
+  if ((pGui == NULL) || (pXData == NULL)) {
+    fprintf(stderr,"ERROR: ElemXGaugeCreate() called with NULL ptr\n");
+    return NULL;
+  }    
+  microSDL_tsElem   sElem;
+  microSDL_tsElem*  pElem = NULL;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_GAUGE,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
@@ -66,29 +69,27 @@ int microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->colGauge      = colGauge;
   sElem.pXData          = (void*)(pXData);
   sElem.pfuncXDraw      = &microSDL_ElemXGaugeDraw;
-  sElem.pfuncXTouch    = NULL;           // No need to track touches
+  sElem.pfuncXTouch     = NULL;           // No need to track touches
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
-  if (nPage != MSDL_PAGE_NONE) {  
-    bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    pElem = microSDL_ElemAdd(pGui,sElem);
+    return pElem;
   } else {
     // Save as temporary element
     pGui->psElem[MSDL_IND_TEMP] = sElem;
+    return &(pGui->psElem[MSDL_IND_TEMP]);
   }
-  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 // Update the gauge control's current position
-void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
+void microSDL_ElemXGaugeUpdate(microSDL_tsElem* pElem,int nVal)
 {
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXGaugeUpdate() invalid ID=%d\n",nElemInd);
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXGaugeUpdate() called with NULL ptr\n");
     return;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  microSDL_tsXGauge*  pGauge = (microSDL_tsXGauge*)(pElem->pXData);
+  }   
+  microSDL_tsXGauge*  pGauge  = (microSDL_tsXGauge*)(pElem->pXData);
   
   // Update the data element
   int nValOld = pGauge->nGaugeVal;
@@ -107,6 +108,11 @@ void microSDL_ElemXGaugeUpdate(microSDL_tsGui* pGui,int nElemId,int nVal)
 //   simpler callback function definition & scalability.
 bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXGaugeDraw() called with NULL ptr\n");
+    return false;
+  }   
+  
   // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
@@ -127,7 +133,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   microSDL_tsXGauge* pGauge;
   pGauge = (microSDL_tsXGauge*)(pElem->pXData);
   if (pGauge == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemXGaugeDraw() pXData is NULL\n");
+    fprintf(stderr,"ERROR: ElemXGaugeDraw() pXData is NULL\n");
     return false;
   }
   
@@ -141,7 +147,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   int   nRng = pGauge->nGaugeMax - pGauge->nGaugeMin;
 
   if (nRng == 0) {
-    fprintf(stderr,"ERROR: microSDL_ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
+    fprintf(stderr,"ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
   float   fScl;
@@ -160,7 +166,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   } else if ((nMin < 0) && (nMax == 0)) {
     nGaugeMid = -nMin*fScl;
   } else {
-    fprintf(stderr,"ERROR: microSDL_ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
+    fprintf(stderr,"ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
@@ -256,13 +262,16 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 // Create a checkbox element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
-int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,microSDL_teXCheckboxStyle nStyle,
   SDL_Color colCheck,bool bChecked)
 {
-  microSDL_tsElem sElem;
-  bool            bOk = true;
-  if (pXData == NULL) { return MSDL_ID_NONE; }
+  if ((pGui == NULL) || (pXData == NULL)) {
+    fprintf(stderr,"ERROR: ElemXCheckboxCreate() called with NULL ptr\n");
+    return NULL;
+  }      
+  microSDL_tsElem   sElem;
+  microSDL_tsElem*  pElem = NULL;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_CHECKBOX,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
@@ -270,6 +279,12 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.bGlowing        = false;
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup          = MSDL_GROUP_ID_NONE;
+  // Save a pointer to the GUI in the extended element data
+  // - We do this so that we can later perform actions on
+  //   other elements (ie. when clicking radio button, others
+  //   are deselected).
+  pXData->pGui          = pGui;
+  // Define other extended data
   pXData->bRadio        = bRadio;
   pXData->bChecked      = bChecked;
   pXData->colCheck      = colCheck;
@@ -280,30 +295,23 @@ int microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // Specify the custom touch tracking callback
   // - NOTE: This is optional (and can be set to NULL).
   //   See the discussion under microSDL_ElemXCheckboxTouch()
-  sElem.pfuncXTouch    = &microSDL_ElemXCheckboxTouch;
+  sElem.pfuncXTouch     = &microSDL_ElemXCheckboxTouch;
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE;  
-  if (nPage != MSDL_PAGE_NONE) {  
-    bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    pElem = microSDL_ElemAdd(pGui,sElem);
+    return pElem;
   } else {
     // Save as temporary element
     pGui->psElem[MSDL_IND_TEMP] = sElem;
+    return &(pGui->psElem[MSDL_IND_TEMP]);
   }
-  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-bool microSDL_ElemXCheckboxGetState(microSDL_tsGui* pGui,int nElemId)
+bool microSDL_ElemXCheckboxGetState(microSDL_tsElem* pElem)
 {
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
-    return false;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
   microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
-  
   return pCheckbox->bChecked;
 }
 
@@ -316,14 +324,12 @@ int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId)
   microSDL_tsElem*        pCurElem = NULL;
   microSDL_teType         nCurType;
   int                     nCurGroup;
-  microSDL_tsXCheckbox*   pCurCheckbox = NULL;
   bool                    bCurChecked;
-  
+
   if (pGui == NULL) {
-    // TODO: Error
-    return nFoundId;
-  }
-  
+    fprintf(stderr,"ERROR: ElemXCheckboxFindChecked() called with NULL ptr\n");
+    return MSDL_ID_NONE;
+  }   
   for (nCurInd=MSDL_IND_FIRST;nCurInd<pGui->nElemCnt;nCurInd++) {
     // Fetch extended data
     pCurElem      = &pGui->psElem[nCurInd];
@@ -334,8 +340,7 @@ int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId)
     }
 
     nCurGroup     = pCurElem->nGroup;
-    pCurCheckbox  = (microSDL_tsXCheckbox*)(pCurElem->pXData);
-    bCurChecked   = pCurCheckbox->bChecked;
+    bCurChecked   = microSDL_ElemXCheckboxGetState(pCurElem);
    
     // If this is in a different group, ignore it
     if (nCurGroup != nGroupId) {
@@ -354,32 +359,35 @@ int microSDL_ElemXCheckboxFindChecked(microSDL_tsGui* pGui,int nGroupId)
 
 
 // Update the checkbox control's current state
-void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bChecked)
+void microSDL_ElemXCheckboxSetState(microSDL_tsElem* pElem,bool bChecked)
 {
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxUpdate() invalid ID=%d\n",nElemInd);
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXCheckboxSetState() called with NULL ptr\n");
     return;
-  }
-  microSDL_tsElem*        pElem = &pGui->psElem[nElemInd];
+  }   
   microSDL_tsXCheckbox*   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
-  bool                    bRadio = pCheckbox->bRadio;
-  int                     nGroup = pElem->nGroup;
+  microSDL_tsGui*         pGui      = pCheckbox->pGui;
+  bool                    bRadio    = pCheckbox->bRadio;
+  int                     nGroup    = pElem->nGroup;
+  int                     nElemId   = pElem->nId;
   
   
-  // If radio-button style, then proceed to deselect any
-  // other selected items in the group
-  if (bRadio) {
+  // If radio-button style and we are selecting an element
+  // then proceed to deselect any other selected items in the group.
+  // Note that SetState calls itself to deselect other items so it
+  // is important to qualify this logic with bChecked=true
+  if (bRadio && bChecked) {
     int                   nCurInd;
+    int                   nCurId;
     microSDL_tsElem*      pCurElem = NULL;
-    microSDL_tsXCheckbox* pCurCheckbox = NULL;
     microSDL_teType       nCurType;
     int                   nCurGroup;
-    bool                  bCurChecked;
+    
+    // We use the GUI pointer for access to other elements   
     for (nCurInd=MSDL_IND_FIRST;nCurInd<pGui->nElemCnt;nCurInd++) {
       // Fetch extended data
       pCurElem      = &pGui->psElem[nCurInd];
+      nCurId        = pCurElem->nId;
       nCurType      = pCurElem->nType;
       
       // Only want to proceed if it is a checkbox
@@ -388,8 +396,6 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
       }
       
       nCurGroup     = pCurElem->nGroup;
-      pCurCheckbox  = (microSDL_tsXCheckbox*)(pCurElem->pXData);
-      bCurChecked   = pCurCheckbox->bChecked;
 
       // If this is in a different group, ignore it
       if (nCurGroup != nGroup) {
@@ -397,15 +403,12 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
       }
       
       // Is this our element? If so, ignore the deselect operation
-      if (nCurInd == nElemInd) {
+      if (nCurId == nElemId) {
         continue;
       }
 
-      // If the other element was checked, deselect it
-      if (bCurChecked) {
-        pCurCheckbox->bChecked  = false;
-        pCurElem->bNeedRedraw   = true;
-      }              
+      // Deselect all other elements
+      microSDL_ElemXCheckboxSetState(pCurElem,false);        
 
     } // nInd
       
@@ -424,27 +427,15 @@ void microSDL_ElemXCheckboxSetState(microSDL_tsGui* pGui,int nElemId,bool bCheck
 }
 
 // Toggle the checkbox control's state
-void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
-{
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxToggleState() invalid ID=%d\n",nElemInd);
+void microSDL_ElemXCheckboxToggleState(microSDL_tsElem* pElem)
+{  
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXCheckboxToggleState() called with NULL ptr\n");
     return;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
-  microSDL_tsXCheckbox*  pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
-   
+  }     
   // Update the data element
-  bool bCheckNew = (pCheckbox->bChecked)?false:true;
-  
-  // Assign the new state. We call the API here instead
-  // of just setting bChecked as we want to leverage any
-  // logic for radio-button operations, even though it
-  // doesn't make as much sense to call a Toggle() operation
-  // on a radio button.
-  //pCheckbox->bChecked = bCheckNew;
-  microSDL_ElemXCheckboxSetState(pGui,nElemId,bCheckNew);
+  bool bCheckNew = (microSDL_ElemXCheckboxGetState(pElem))? false : true;
+  microSDL_ElemXCheckboxSetState(pElem,bCheckNew);
 
   // Element needs redraw
   pElem->bNeedRedraw = true;
@@ -457,6 +448,10 @@ void microSDL_ElemXCheckboxToggleState(microSDL_tsGui* pGui,int nElemId)
 //   simpler callback function definition & scalability.
 bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXCheckboxDraw() called with NULL ptr\n");
+    return false;
+  }   
   // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
@@ -467,7 +462,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   microSDL_tsXCheckbox* pCheckbox;
   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);
   if (pCheckbox == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemXCheckboxDraw() pXData is NULL\n");
+    fprintf(stderr,"ERROR: ElemXCheckboxDraw() pXData is NULL\n");
     return false;
   }
   
@@ -548,12 +543,16 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 //   
 bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
-  microSDL_tsGui*           pGui = NULL;
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXCheckboxTouch() called with NULL ptr\n");
+    return false;
+  }       
+  //microSDL_tsGui*           pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
   microSDL_tsXCheckbox*     pCheckbox = NULL;
   
   // Typecast the parameters to match the GUI
-  pGui  = (microSDL_tsGui*)(pvGui);
+  //pGui  = (microSDL_tsGui*)(pvGui);
   pElem = (microSDL_tsElem*)(pvElem);
   pCheckbox = (microSDL_tsXCheckbox*)(pElem->pXData);  
 
@@ -586,7 +585,7 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouc
         // Checkbox button action: toggle
         bCheckNew = (pCheckbox->bChecked)?false:true;
       }
-      microSDL_ElemXCheckboxSetState(pGui,pElem->nId,bCheckNew);
+      microSDL_ElemXCheckboxSetState(pElem,bCheckNew);
       break;
     case MSDL_TOUCH_UP_OUT:
       pElem->bGlowing = false;
@@ -617,13 +616,16 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouc
 // Create a slider element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw and touch
-int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSlider* pXData,SDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert)
 {
-  microSDL_tsElem sElem;
-  bool            bOk = true;
-  if (pXData == NULL) { return MSDL_ID_NONE; }
+  if ((pGui == NULL) || (pXData == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSliderCreate() called with NULL ptr\n");
+    return NULL;
+  }     
+  microSDL_tsElem   sElem;
+  microSDL_tsElem*  pElem = NULL;
   sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPEX_SLIDER,rElem,NULL,MSDL_FONT_NONE);
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
@@ -646,26 +648,24 @@ int microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   sElem.colElemFrame    = MSDL_COL_GRAY;
   sElem.colElemFill     = MSDL_COL_BLACK;
   sElem.colElemGlow     = MSDL_COL_WHITE;
-  if (nPage != MSDL_PAGE_NONE) {  
-    bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    pElem = microSDL_ElemAdd(pGui,sElem);
+    return pElem;
   } else {
     // Save as temporary element
     pGui->psElem[MSDL_IND_TEMP] = sElem;
+    return &(pGui->psElem[MSDL_IND_TEMP]);
   }
-  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
-void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
+void microSDL_ElemXSliderSetStyle(microSDL_tsElem* pElem,
         bool bTrim,SDL_Color colTrim,unsigned nTickDiv,
         int nTickLen,SDL_Color colTick)
 {
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSliderSetStyle() invalid ID=%d\n",nElemInd);
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXSliderSetStyle() called with NULL ptr\n");
     return;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  }   
   microSDL_tsXSlider*  pSlider = (microSDL_tsXSlider*)(pElem->pXData);
 
   pSlider->bTrim      = bTrim;
@@ -678,30 +678,24 @@ void microSDL_ElemXSliderSetStyle(microSDL_tsGui* pGui,int nElemId,
   pElem->bNeedRedraw      = true;
 }
 
-int microSDL_ElemXSliderGetPos(microSDL_tsGui* pGui,int nElemId)
+int microSDL_ElemXSliderGetPos(microSDL_tsElem* pElem)
 {
- // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSliderGetPos() invalid ID=%d\n",nElemInd);
-    return false;
-  }
-  microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXSliderGetPos() called with NULL ptr\n");
+    return 0;
+  }     
   microSDL_tsXSlider*  pSlider = (microSDL_tsXSlider*)(pElem->pXData);
   
   return pSlider->nPos;
 }
 
 // Update the slider control's current state
-void microSDL_ElemXSliderSetPos(microSDL_tsGui* pGui,int nElemId,int nPos)
+void microSDL_ElemXSliderSetPos(microSDL_tsElem* pElem,int nPos)
 {
-  // Fetch the control data elements
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
-  if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSliderSetPos() invalid ID=%d\n",nElemInd);
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemXSliderSetPos() called with NULL ptr\n");
     return;
-  }
-  microSDL_tsElem*      pElem = &pGui->psElem[nElemInd];
+  }       
   microSDL_tsXSlider*   pSlider = (microSDL_tsXSlider*)(pElem->pXData);
   int                   nPosOld;
   // Clip position
@@ -724,6 +718,10 @@ void microSDL_ElemXSliderSetPos(microSDL_tsGui* pGui,int nElemId,int nPos)
 //   simpler callback function definition & scalability.
 bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSliderDraw() called with NULL ptr\n");
+    return false;
+  }     
   // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
@@ -732,7 +730,7 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   microSDL_tsXSlider* pSlider;
   pSlider = (microSDL_tsXSlider*)(pElem->pXData);
   if (pSlider == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSliderDraw() pXData is NULL\n");
+    fprintf(stderr,"ERROR: ElemXSliderDraw() pXData is NULL\n");
     return false;
   }
   
@@ -749,7 +747,7 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   SDL_Color colTick   = pSlider->colTick;
   
   if (bVert) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSliderDraw() bVert=true not supported yet\n");
+    fprintf(stderr,"ERROR: ElemXSliderDraw() bVert=true not supported yet\n");
     return false;
   }
   
@@ -836,6 +834,10 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
 // after any touch event
 bool microSDL_ElemXSliderTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSliderTouch() called with NULL ptr\n");
+    return false;
+  }    
   //microSDL_tsGui*         pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
   microSDL_tsXSlider*       pSlider = NULL;
@@ -918,13 +920,15 @@ bool microSDL_ElemXSliderTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,
 
 // Create a compound element
 // - For now just two buttons and a text area
-int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId)
 {
+  if ((pGui == NULL) || (pXData == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumCreate() called with NULL ptr\n");
+    return NULL;
+  }   
   microSDL_tsElem sElem;
   int             nSubInd;
-  bool            bOk = true;
-  if (pXData == NULL) { return MSDL_ID_NONE; }
   
   // Determine relative coordinate offset
   int   nOffsetX = rElem.x;
@@ -979,24 +983,26 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   // - The element IDs assigned to the sub-elements are
   //   arbitrary (with local scope in the compound element),
   //   so they don't need to be unique globally across the GUI.
-  
-  microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,MSDL_PAGE_NONE,
+  microSDL_tsElem*  pElemTmp = NULL;
+  microSDL_tsElem*  pElem = NULL;
+
+  pElemTmp = microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&microSDL_ElemXSelNumClick);
-  microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
-  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);
+  microSDL_ElemSetCol(pElemTmp,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+  microSDL_ElemSetTxtCol(pElemTmp,MSDL_COL_WHITE);
   if (nSubElemCnt<nSubElemMax) {
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
   }
   
-  microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,MSDL_PAGE_NONE,
+  pElemTmp = microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&microSDL_ElemXSelNumClick);
-  microSDL_ElemSetCol(pGui,MSDL_ID_TEMP,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
-  microSDL_ElemSetTxtCol(pGui,MSDL_ID_TEMP,MSDL_COL_WHITE);  
+  microSDL_ElemSetCol(pElemTmp,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+  microSDL_ElemSetTxtCol(pElemTmp,MSDL_COL_WHITE);  
   if (nSubElemCnt<nSubElemMax) {
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
   }
   
-  microSDL_ElemCreateTxt(pGui,SELNUM_ID_TXT,MSDL_PAGE_NONE,
+  pElemTmp = microSDL_ElemCreateTxt(pGui,SELNUM_ID_TXT,MSDL_PAGE_NONE,
     (SDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
   if (nSubElemCnt<nSubElemMax) {
     pXData->asElem[nSubElemCnt++] = microSDL_ElemGetTemp(pGui);
@@ -1006,13 +1012,14 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
   pXData->nSubElemCnt = nSubElemCnt;
 
   // Now proceed to add to page
-  if (nPage != MSDL_PAGE_NONE) {  
-    bOk = microSDL_ElemAdd(pGui,sElem);
+  if (nPage != MSDL_PAGE_NONE) {
+    pElem = microSDL_ElemAdd(pGui,sElem);
+    return pElem;
   } else {
     // Save as temporary element
     pGui->psElem[MSDL_IND_TEMP] = sElem;
+    return &(pGui->psElem[MSDL_IND_TEMP]);
   }
-  return (bOk)? sElem.nId : MSDL_ID_NONE;
 }
 
 
@@ -1025,6 +1032,10 @@ int microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
 //   the sub-element.
 bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumDraw() called with NULL ptr\n");
+    return false;
+  }     
   // Typecast the parameters to match the GUI and element types
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
@@ -1034,7 +1045,7 @@ bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
   microSDL_tsXSelNum* pSelNum;
   pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);
   if (pSelNum == NULL) {
-    fprintf(stderr,"ERROR: microSDL_ElemXSelNumDraw() pXData is NULL\n");
+    fprintf(stderr,"ERROR: ElemXSelNumDraw() pXData is NULL\n");
     return false;
   }
   
@@ -1068,15 +1079,17 @@ bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
 // Fetch the current value of the element's counter
 int microSDL_ElemXSelNumGetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum)
 {
-  if (pSelNum == NULL) {
+  if ((pGui == NULL) || (pSelNum == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumGetCounter() called with NULL ptr\n");
     return 0;
-  }
+  }     
   return pSelNum->nCounter;
 }
 
 void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSelNum,int nCount)
 {
-  if (pSelNum == NULL) {
+  if ((pGui == NULL) || (pSelNum == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumSetCounter() called with NULL ptr\n");
     return;
   }
   pSelNum->nCounter = nCount;
@@ -1097,6 +1110,10 @@ void microSDL_ElemXSelNumSetCounter(microSDL_tsGui* pGui,microSDL_tsXSelNum* pSe
 //   between sub-elements.
 bool microSDL_ElemXSelNumClick(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumClick() called with NULL ptr\n");
+    return false;
+  }  
   microSDL_tsGui*     pGui    = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*    pElem   = (microSDL_tsElem*)(pvElem);
   microSDL_tsXSelNum* pSelNum = (microSDL_tsXSelNum*)(pElem->pXData);
@@ -1130,6 +1147,10 @@ bool microSDL_ElemXSelNumClick(void* pvGui,void *pvElem,microSDL_teTouch eTouch,
 
 bool microSDL_ElemXSelNumTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nRelX,int nRelY)
 {
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSelNumTouch() called with NULL ptr\n");
+    return false;
+  }    
   microSDL_tsGui*           pGui = NULL;
   microSDL_tsElem*          pElem = NULL;
   microSDL_tsXSelNum*       pSelNum = NULL;

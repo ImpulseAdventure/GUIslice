@@ -19,7 +19,7 @@ microSDL_tsElem m_asElem[MAX_ELEM];
 
 int main( int argc, char* args[] )
 {
-  int     nElemId;
+  microSDL_tsElem*  pElem = NULL;
 
   // Initialize
   microSDL_InitEnv(&m_gui);
@@ -29,8 +29,8 @@ int main( int argc, char* args[] )
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create page elements
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);

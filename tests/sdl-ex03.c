@@ -39,14 +39,14 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 // - strPath: Path to executable passed in to locate resource files
 bool InitOverlays(char *strPath)
 {
-  int   nElemId;
+  microSDL_tsElem*  pElem = NULL;
   
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create background box
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create Quit button with image label
   // - Extra code to demonstrate path generation based on location of executable
@@ -56,7 +56,7 @@ bool InitOverlays(char *strPath)
   strcat(strImgQuit, IMG_BTN_QUIT);  
   strcpy(strImgQuitSel, strPath);
   strcat(strImgQuitSel, IMG_BTN_QUIT_SEL);     
-  nElemId = microSDL_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElem = microSDL_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
           (SDL_Rect){258,70,32,32},strImgQuit,strImgQuitSel,&CbBtnQuit);
   free(strImgQuit);
   free(strImgQuitSel);

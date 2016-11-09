@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4    (2016/11/08)
+// - Version 0.4.1    (2016/11/08)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -661,6 +661,7 @@ SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
 void microSDL_FrameCircle(microSDL_tsGui* pGui,Sint16 nMidX,Sint16 nMidY,
   Uint16 nRadius,SDL_Color nCol);
 
+
 // -----------------------------------------------------------------------
 // Font Functions
 // -----------------------------------------------------------------------
@@ -791,6 +792,16 @@ int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY);
 int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 
 
+/// Get a pointer to an Element from its ID
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID
+///
+/// \return Pointer to Element or NULL if not found
+///
+microSDL_tsElem* microSDL_ElemGet(microSDL_tsGui* pGui,int nElemId);
+
+
 // ------------------------------------------------------------------------
 // Element Creation Functions
 // ------------------------------------------------------------------------
@@ -807,9 +818,9 @@ int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 /// \param[in]  pStr:        String to copy into element
 /// \param[in]  nFontId:     Font ID to use for text display
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to the Element or NULL if failure
 ///
-int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* pStr,int nFontId);
 
 
@@ -826,11 +837,10 @@ int microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
 /// \param[in]  nFontId:     Font ID to use for text display
 /// \param[in]  cbTouch:     Callback for touch events
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to the Element or NULL if failure
 ///
-int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acStr,int nFontId,MSDL_CB_TOUCH cbTouch);
-
 
 ///
 /// Create a graphical Button Element
@@ -846,9 +856,9 @@ int microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
 /// \param[in]  acImgSel:    Filename of BMP image to load (selected state)
 /// \param[in]  cbTouch:     Callback for touch events
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to the Element or NULL if failure
 ///
-int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
+microSDL_tsElem* microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
   SDL_Rect rElem,const char* acImg,const char* acImgSel,MSDL_CB_TOUCH cbTouch);
 
 
@@ -861,10 +871,9 @@ int microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining box size
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to the Element or NULL if failure
 ///
-int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem);
-
+microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem);
 
 ///
 /// Create an image Element
@@ -876,9 +885,9 @@ int microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect r
 /// \param[in]  rElem:       Rectangle coordinates defining box size
 /// \param[in]  acImg:       Filename of BMP image to load
 ///
-/// \return The Element ID or MSDL_ID_NONE if failure
+/// \return Pointer to the Element or NULL if failure
 ///
-int microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
+microSDL_tsElem* microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
   const char* acImg);
 
 
@@ -906,57 +915,50 @@ void microSDL_ElemDraw(microSDL_tsGui* pGui,int nElemId);
 ///
 /// Set the fill state for an Element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bFillEn:     True if filled, false otherwise
 ///
 /// \return none
 ///
-void microSDL_ElemSetFillEn(microSDL_tsGui* pGui,int nElemId,bool bFillEn);
-
+void microSDL_ElemSetFillEn(microSDL_tsElem* pElem,bool bFillEn);
 
 ///
 /// Update the common color selection for an Element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  colFrame:    Color for the frame
 /// \param[in]  colFill:     Color for the fill
 /// \param[in]  colGlow:     Color when glowing
 ///
 /// \return none
 ///
-void microSDL_ElemSetCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow);
-
+void microSDL_ElemSetCol(microSDL_tsElem* pElem,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow);
 
 ///
 /// Set the group ID for an element
 /// - Typically used to associate radio button elements together
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nGroupId:    Group ID to assign
 ///
 /// \return none
 ///
-void microSDL_ElemSetGroup(microSDL_tsGui* pGui,int nElemId,int nGroupId);
+void microSDL_ElemSetGroup(microSDL_tsElem* pElem,int nGroupId);
 
 
 ///
 /// Get the group ID for an element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 ///
 /// \return Group ID or MSDL_GROUP_ID_NONE if unassigned
 ///
-int microSDL_ElemGetGroup(microSDL_tsGui* pGui,int nElemId);
+int microSDL_ElemGetGroup(microSDL_tsElem* pElem);
 
 
 /// Set the alignment of a textual element (horizontal and vertical)
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nId:         Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nAlign:      Alignment to specify:
 ///                           - MSDL_ALIGN_TOP_LEFT
 ///                           - MSDL_ALIGN_TOP_MID
@@ -970,77 +972,70 @@ int microSDL_ElemGetGroup(microSDL_tsGui* pGui,int nElemId);
 ///
 /// \return none
 ///
-void microSDL_ElemSetTxtAlign(microSDL_tsGui* pGui,int nElemId,unsigned nAlign);
+void microSDL_ElemSetTxtAlign(microSDL_tsElem* pElem,unsigned nAlign);
 
 
 ///
 /// Update the text string associated with an Element ID
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  pStr:        String to copy into element
 ///
 /// \return none
 ///
-void microSDL_ElemSetTxtStr(microSDL_tsGui* pGui,int nElemId,const char* pStr);
+void microSDL_ElemSetTxtStr(microSDL_tsElem* pElem,const char* pStr);
 
 ///
 /// Update the text string color associated with an Element ID
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  colVal:      RGB color to change to
 ///
 /// \return none
 ///
-void microSDL_ElemSetTxtCol(microSDL_tsGui* pGui,int nElemId,SDL_Color colVal);
+void microSDL_ElemSetTxtCol(microSDL_tsElem* pElem,SDL_Color colVal);
 
 
 ///
 /// Update the Font selected for an Element's text
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nFontId:     Font ID to select
 ///
 /// \return none
 ///
-void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,int nElemId,int nFontId);
-
+void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,microSDL_tsElem* pElem,int nFontId);
 
 ///
 /// Update the need-redraw status for an element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bRedraw:     True if redraw required, false otherwise
 ///
 /// \return none
 ///
-void microSDL_ElemSetRedraw(microSDL_tsGui* pGui,int nElemId,bool bRedraw);
+void microSDL_ElemSetRedraw(microSDL_tsElem* pElem,bool bRedraw);
 
 
 ///
 /// Update the glowing indicator for an element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bGlowing:    True if element is glowing
 ///
 /// \return none
 ///
-void microSDL_ElemSetGlow(microSDL_tsGui* pGui,int nElemId,bool bGlowing);
+void microSDL_ElemSetGlow(microSDL_tsElem* pElem,bool bGlowing);
 
 
 ///
 /// Get the glowing indicator for an element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to examine
+/// \param[in]  pElem:       Pointer to Element
 ///
 /// \return True if element is glowing
 ///
-bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId);
+bool microSDL_ElemGetGlow(microSDL_tsElem* pElem);
 
 ///
 /// Assign the drawing callback function for an element
@@ -1048,12 +1043,12 @@ bool microSDL_ElemGetGlow(microSDL_tsGui* pGui,int nElemId);
 ///   an element, enabling the creation of a custom element
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to update
+/// \param[in]  pElem:       Pointer to Element
 /// \param[in]  funcCb:      Function pointer to drawing routine
 ///
 /// \return none
 ///
-void microSDL_ElemSetDrawFunc(microSDL_tsGui* pGui,int nElemId,MSDL_CB_DRAW funcCb);
+void microSDL_ElemSetDrawFunc(microSDL_tsElem* pElem,MSDL_CB_DRAW funcCb);
 
 
 // ------------------------------------------------------------------------
@@ -1296,9 +1291,9 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  sElem:       Element to add to environment
 ///
-/// \return true if success, false if fail
+/// \return Pointer to Element or NULL if fail
 ///
-bool microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem);
+microSDL_tsElem* microSDL_ElemAdd(microSDL_tsGui* pGui,microSDL_tsElem sElem);
 
 
 ///
@@ -1444,7 +1439,7 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
 ///
 /// \return none
 ///
-void microSDL_TrackTouchDownClick1(microSDL_tsGui* pGui,int nTrackIdNew,int nX,int nY);
+void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nTrackIdNew,int nX,int nY);
 
 ///
 /// Handle a mouse-up event and track any
@@ -1459,7 +1454,7 @@ void microSDL_TrackTouchDownClick1(microSDL_tsGui* pGui,int nTrackIdNew,int nX,i
 ///
 /// \return none
 ///
-void microSDL_TrackTouchUpClick1(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
+void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
 
 ///
 /// Handle a mouse-move event and track any
@@ -1474,7 +1469,7 @@ void microSDL_TrackTouchUpClick1(microSDL_tsGui* pGui,bool bInTracked,int nX,int
 ///
 /// \return none
 ///
-void microSDL_TrackTouchDownMove1(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
+void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
 
 ///
 /// Notify an element of a touch event. This is an optional
