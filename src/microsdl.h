@@ -4,9 +4,9 @@
 // =======================================================================
 // microSDL library
 // - Calvin Hass
-// - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4.1    (2016/11/08)
+// - Version 0.4.2    (2016/11/09)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -200,10 +200,13 @@ typedef bool (*MSDL_CB_DRAW)(void* pvGui,void* pvElem);
 // Callback function for element touch tracking
 typedef bool (*MSDL_CB_TOUCH)(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY);
 
+// Forward declaration so we can have element reference in element
+typedef struct microSDL_tsElem microSDL_tsElem;
+
 ///
 /// Element Struct
 /// - Represents a single graphic element in the microSDL environment
-/// - A page is made up of a number of elments
+/// - A page is made up of a number of elements
 /// - Each element is created with a user-specified ID for further
 ///   accesses (or MSDL_ID_AUTO for it to be auto-generated)
 /// - Display order of elements in a page is based upon the creation order
@@ -211,7 +214,7 @@ typedef bool (*MSDL_CB_TOUCH)(void* pvGui,void *pvElem,microSDL_teTouch eTouch,i
 /// - Extensions to the core element types is provided through the
 ///   pXData reference and pfuncX* callback functions.
 ///
-typedef struct {
+struct microSDL_tsElem {
   bool                bValid;         ///< Element was created properly
   int                 nId;            ///< Element ID specified by user
   int                 nPage;          ///< Page ID containing this element
@@ -244,7 +247,7 @@ typedef struct {
   TTF_Font*           pTxtFont;       ///< Font ptr for overlay text
  
   // Sub-element tracking
-  int                 nSubIdTrack;    ///< Sub-element ID being tracked (TODO)
+  microSDL_tsElem*    pSubElemTrack;  ///< Sub-element ptr being tracked (TODO)
   
   void*               pXData;         ///< Ptr to extended data structure
   
@@ -254,9 +257,7 @@ typedef struct {
   /// Callback func ptr for touch
   MSDL_CB_TOUCH       pfuncXTouch;
   
-  
-} microSDL_tsElem;
-
+};
 
 
 /// Font reference structure
@@ -297,9 +298,7 @@ typedef struct {
   unsigned          nViewCnt;             ///< Number of viewports allocated
   int               nViewIndCur;          ///< Currently-active viewport index
 
-  int               nTrackElemIdStart;    ///< Element ID currently being touch-tracked.
-                                          ///< Set to MSDL_ID_NONE if no elements are
-                                          ///< currently being tracked.
+  microSDL_tsElem*  pElemTracked;         ///< Element currently being touch-tracked (NULL for none))
   
   int               nClickLastX;          ///< Last touch event X coord
   int               nClickLastY;          ///< Last touch event Y coord
@@ -799,7 +798,7 @@ int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 ///
 /// \return Pointer to Element or NULL if not found
 ///
-microSDL_tsElem* microSDL_ElemGet(microSDL_tsGui* pGui,int nElemId);
+microSDL_tsElem* microSDL_ElemPtr(microSDL_tsGui* pGui,int nElemId);
 
 
 // ------------------------------------------------------------------------
@@ -1325,7 +1324,7 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd);
 ///
 /// \return Contents of temporary element struct
 ///
-microSDL_tsElem microSDL_ElemGetTemp(microSDL_tsGui* pGui);
+microSDL_tsElem microSDL_ElemPtrTemp(microSDL_tsGui* pGui);
 
 
 ///
@@ -1364,6 +1363,17 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 ///
 bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd);
 
+
+/// Get a pointer to an Element from its ID but search
+/// an arbitrary array of elements
+///
+/// \param[in]  asElem:      Pointer to array of elements
+/// \param[in]  nNumElem:    Number of elements in array
+/// \param[in]  nElemId:     Element ID
+///
+/// \return Pointer to Element or NULL if not found
+///
+microSDL_tsElem* microSDL_ElemPtrFromArr(microSDL_tsElem* asElem,int nNumElem,int nElemId);
 
 ///
 /// Free up any surfaces associated with the Elements
@@ -1427,63 +1437,19 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
 
 
 ///
-/// Handle a mouse-down event and track any
-/// button glowing state changes.
-///
-/// This routine is called by microSDL_TrackClick().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nTrackIdNew: Element ID to start tracking
-/// \param[in]  nX:          X coordinate of event
-/// \param[in]  nY:          Y coordinate of event
-///
-/// \return none
-///
-void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nTrackIdNew,int nX,int nY);
-
-///
-/// Handle a mouse-up event and track any
-/// button selection state changes
-///
-/// This routine is called by microSDL_TrackClick().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  bInTracked:  In bounds of tracked element
-/// \param[in]  nX:          X coordinate of event
-/// \param[in]  nY:          Y coordinate of event
-///
-/// \return none
-///
-void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
-
-///
-/// Handle a mouse-move event and track any
-/// button glowing state changes
-///
-/// This routine is called by microSDL_TrackClick().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  bInTracked:  In bounds of tracked element
-/// \param[in]  nX:          X coordinate of event
-/// \param[in]  nY:          Y coordinate of event
-///
-/// \return none
-///
-void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY);
-
-///
 /// Notify an element of a touch event. This is an optional
 /// behavior useful in some extended element types.
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  eTouch:      Touch event type
-/// \param[in]  nX:          X coordinate of event (absolute coordinate)
-/// \param[in]  nY:          Y coordinate of event (absolute coordinate)
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  pElem:      Pointer to Element
+/// \param[in]  eTouch:     Touch event type
+/// \param[in]  nX:         X coordinate of event (absolute coordinate)
+/// \param[in]  nY:         Y coordinate of event (absolute coordinate)
 ///
 /// \return true if success, false if error
 ///
-bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int nX,int nY);
-
+bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_tsElem* pElem,
+        microSDL_teTouch eTouch,int nX,int nY);
 
 ///
 /// Close all loaded fonts

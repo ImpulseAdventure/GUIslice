@@ -106,7 +106,6 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 bool InitOverlays(char *strPath)
 {
   microSDL_tsElem*  pElem = NULL;
-  int               nViewId;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_BLACK);
@@ -183,7 +182,7 @@ bool InitOverlays(char *strPath)
   // Set the callback function to handle all drawing for the element
   microSDL_ElemSetDrawFunc(pElem,&DrawScannerCb);
   
-  nViewId = microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
+  microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
   // --------------------------------------------------------------------------
 
   
@@ -271,24 +270,24 @@ int main( int argc, char* args[] )
     microSDL_ViewSetOrigin(&m_gui,E_VIEW,nOriginX,nOriginY);
     // Manually mark the scanner view as needing redraw
     // since it depends on E_VIEW
-    microSDL_ElemSetRedraw(microSDL_ElemGet(&m_gui,E_ELEM_SCAN),true);
+    microSDL_ElemSetRedraw(microSDL_ElemPtr(&m_gui,E_ELEM_SCAN),true);
 
     // -----------------------------------------------
 
     // Perform any immediate updates on active page
     sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
 
     sprintf(acTxt,"%4.2f",m_fCoordX-50);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAX),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAX),acTxt);
     sprintf(acTxt,"%4.2f",m_fCoordY-50);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAY),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAY),acTxt);
     sprintf(acTxt,"%4.2f",m_fCoordZ);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_DATAZ),acTxt);
-    microSDL_ElemSetTxtCol(microSDL_ElemGet(&m_gui,E_ELEM_DATAZ),
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAZ),acTxt);
+    microSDL_ElemSetTxtCol(microSDL_ElemPtr(&m_gui,E_ELEM_DATAZ),
             (m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemGet(&m_gui,E_ELEM_PROGRESS),50+50*sin(m_nCount/500.0));
+    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),50+50*sin(m_nCount/500.0));
 
     // -----------------------------------------------
 

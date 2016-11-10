@@ -1,9 +1,9 @@
 // =======================================================================
 // microSDL library
 // - Calvin Hass
-// - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4.1    (2016/11/08)
+// - Version 0.4.2    (2016/11/09)
 // =======================================================================
 
 // MicroSDL library
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.4.1"
+#define MICROSDL_VER "0.4.2"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -118,7 +118,7 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsElem* psElem,unsigned nMaxEle
   }
 
   // Element currently started tracking
-  pGui->nTrackElemIdStart     = MSDL_ID_NONE;
+  pGui->pElemTracked          = NULL;
   
   // Last touch event
   pGui->nClickLastX           = 0;
@@ -818,6 +818,9 @@ int microSDL_ElemFindIndFromId(microSDL_tsElem* asElem,unsigned nNumElem,int nEl
   return nFound;
 }
 
+// TODO: Consider making this accept tsElem array so that we
+// can search an arbitrary list of elements, whether they are
+// stored at the GUI level, page level or compound element level.
 int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY)
 {
   unsigned  nInd;
@@ -852,6 +855,8 @@ int microSDL_ElemFindIndFromCoord(microSDL_tsGui* pGui,int nX, int nY)
             #ifdef DBG_TOUCH
             printf("En \n");
             #endif
+            // No more search to do
+            break;
         } else {
             #ifdef DBG_TOUCH
             printf("Dis\n");
@@ -877,16 +882,17 @@ int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   return pElem->nId;
 }
 
-microSDL_tsElem* microSDL_ElemGet(microSDL_tsGui* pGui,int nElemId)
+microSDL_tsElem* microSDL_ElemPtr(microSDL_tsGui* pGui,int nElemId)
 {
   int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);
   if (!microSDL_ElemIndValid(pGui,nElemInd)) {
-    fprintf(stderr,"ERROR: ElemGet() invalid ID=%d\n",nElemId);
+    fprintf(stderr,"ERROR: ElemPtr() invalid ID=%d\n",nElemId);
     return NULL;
   }
   microSDL_tsElem* pElem = &pGui->psElem[nElemInd];
   return pElem;
 }
+
 
 // ------------------------------------------------------------------------
 // Element Creation Functions
@@ -1237,7 +1243,8 @@ void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
 // Tracking Functions
 // ------------------------------------------------------------------------
 
-
+// This routine is responsible for the touch event state machine
+// and dispatching to the clickable element that covers the coordinate
 void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress)
 {
   if (pGui == NULL) {
@@ -1248,41 +1255,109 @@ void microSDL_TrackClick(microSDL_tsGui* pGui,int nX,int nY,unsigned nPress)
   printf(" TS : (%3d,%3d) Pressure=%3u\n",nX,nY,nPress);
   #endif
 
-  bool  bInTracked    = false;
-  int   nTrackIndNew  = MSDL_IND_NONE;
-  int   nTrackIdNew   = MSDL_ID_NONE;
-
+  microSDL_tsElem*  pTrackedOld = NULL;
+  microSDL_tsElem*  pTrackedNew = NULL;
+  
   // Fetch the item currently being tracked (if any)
-  int nTrackIdOld   = pGui->nTrackElemIdStart;
-  int nTrackIndOld  = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nTrackIdOld);
+  pTrackedOld = pGui->pElemTracked;
+  
+  // Reset the in-tracked flag
+  bool  bInTracked = false;
   
   if ((pGui->nClickLastPress == 0) && (nPress > 0)) {
-    // TouchDown
-    // - Find element we are over
-    nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
-    nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);     
-    microSDL_TrackTouchDownClick(pGui,nTrackIdNew,nX,nY);
-  } else if ((pGui->nClickLastPress > 0) && (nPress == 0)) {
-    // TouchUp
-    if (nTrackIndOld != MSDL_IND_NONE) {
-      // Are we still over tracked element?
-      bInTracked = microSDL_IsInRect(pGui,nX,nY,pGui->psElem[nTrackIndOld].rElem);
+    // ---------------------------------
+    // Touch Down Event
+    // ---------------------------------
+    
+    // End glow on previously tracked element (if any)
+    // - We shouldn't really enter a "Touch Down" event
+    //   with an element still marked as being tracked
+    if (pTrackedOld != NULL) {
+      microSDL_ElemSetGlow(pTrackedOld,false);
     }
-    microSDL_TrackTouchUpClick(pGui,bInTracked,nX,nY);
+    
+    // Determine the new element to start tracking
+    int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
+    if (nTrackIndNew == MSDL_IND_NONE) {
+      // Clear the tracked element reference
+      pGui->pElemTracked = NULL;
+    } else {
+      // We found an element, so mark it as being the tracked element
+      pTrackedNew = &(pGui->psElem[nTrackIndNew]);
+
+      // Set the new tracked element reference
+      pGui->pElemTracked = pTrackedNew;
+
+      // Start glow on new element
+      microSDL_ElemSetGlow(pTrackedNew,true);
+      
+      // Notify element for optional custom handling
+      // - We do this after we have determined which element should
+      //   receive the touch tracking
+      microSDL_NotifyElemTouch(pGui,pTrackedNew,MSDL_TOUCH_DOWN_IN,nX,nY);
+    }
+   
+  } else if ((pGui->nClickLastPress > 0) && (nPress == 0)) {
+    // ---------------------------------
+    // Touch Up Event
+    // ---------------------------------
+
+    if (pTrackedOld != NULL) {
+      // Are we still over tracked element?
+      bInTracked = microSDL_IsInRect(pGui,nX,nY,pTrackedOld->rElem);
+    }
+    
+    if (!bInTracked) {
+      // Released not over tracked element
+      microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_UP_OUT,nX,nY);
+    } else {
+      // Notify original tracked element for optional custom handling
+      microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_UP_IN,nX,nY);
+
+      // Clear glow state
+      microSDL_ElemSetGlow(pTrackedOld,false);
+    }  
+
+    // Clear the element tracking state
+    pGui->pElemTracked = NULL;
+    
   } else if ((pGui->nClickLastX != nX) || (pGui->nClickLastY != nY)) {
-    // TouchMove
-    // - Only track movement if touch is down
+    // ---------------------------------
+    // Touch Move Event
+    // ---------------------------------
+    
+    // We only track movement if touch is "down"
     if (nPress>0) {
-      // TouchDownMove
-      if (nTrackIndOld != MSDL_IND_NONE) {
-        // Are we still over tracked element?
-        bInTracked = microSDL_IsInRect(pGui,nX,nY,pGui->psElem[nTrackIndOld].rElem);
-      }
-      microSDL_TrackTouchDownMove(pGui,bInTracked,nX,nY);
+
+      // Determine if we are still over tracked element
+      if (pTrackedOld != NULL) {
+        bInTracked = microSDL_IsInRect(pGui,nX,nY,pTrackedOld->rElem);
+      }   
+
+      if (!bInTracked) {
+
+        // Not currently over tracked element
+        // - Notify tracked element that we moved out of it
+        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_MOVE_OUT,nX,nY);
+        
+        // Ensure the tracked element is no longer glowing
+        if (pTrackedOld) {
+          microSDL_ElemSetGlow(pTrackedOld,false);
+        }
+      } else {
+        // We are still over tracked element
+        // - Notify tracked element
+        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_MOVE_IN,nX,nY);
+
+        // Ensure it is glowing
+        microSDL_ElemSetGlow(pTrackedOld,true);
+        
+      }      
+      
     }
   }
 
-  // Save sample
+  // Save raw touch status so that we can detect transitions
   pGui->nClickLastX      = nX;
   pGui->nClickLastY      = nY;
   pGui->nClickLastPress  = nPress;
@@ -1623,7 +1698,7 @@ int microSDL_ElemGetIdFromInd(microSDL_tsGui* pGui,int nElemInd)
   }
 }
 
-microSDL_tsElem microSDL_ElemGetTemp(microSDL_tsGui* pGui)
+microSDL_tsElem microSDL_ElemPtrTemp(microSDL_tsGui* pGui)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ElemGetTemp() called with NULL ptr\n");
@@ -1856,6 +1931,17 @@ bool microSDL_ElemDrawByInd(microSDL_tsGui* pGui,int nElemInd)
  
 }
 
+microSDL_tsElem* microSDL_ElemPtrFromArr(microSDL_tsElem* asElem,int nNumElem,int nElemId)
+{
+  int nElemInd = microSDL_ElemFindIndFromId(asElem,nNumElem,nElemId);
+  if ((nElemInd < 0) && (nElemInd >= nNumElem)) {
+    fprintf(stderr,"ERROR: ElemPtrFromArr() invalid ID=%d\n",nElemId);
+    return NULL;
+  }
+  microSDL_tsElem* pElem = &asElem[nElemInd];
+  return pElem;
+}
+
 
 void microSDL_ElemCloseAll(microSDL_tsGui* pGui)
 {
@@ -1967,187 +2053,27 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect)
 
 
 
-
-// Handle MOUSEDOWN
-void microSDL_TrackTouchDownClick(microSDL_tsGui* pGui,int nTrackIdNew,int nX,int nY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: TrackTouchDownClick() called with NULL ptr\n");
-    return;
-  }    
-  // Assume no buttons already started tracking, but check
-  // just in case
-  int nTrackIdOld = pGui->nTrackElemIdStart;
-
-  if (nTrackIdNew != MSDL_ID_NONE) {
-    // Touch click down on button
-    
-    // End glow on last element (if any)
-    if (nTrackIdOld != MSDL_ID_NONE) {
-      microSDL_tsElem* pElemOld = microSDL_ElemGet(pGui,nTrackIdOld);
-      microSDL_ElemSetGlow(pElemOld,false);
-    }
-
-    // Set the currently tracked element
-    pGui->nTrackElemIdStart = nTrackIdNew;
-    microSDL_tsElem* pElemNew = microSDL_ElemGet(pGui,nTrackIdNew);
-    
-    // Start glow on new element
-    microSDL_ElemSetGlow(pElemNew,true);
-
-    if (nTrackIdNew != MSDL_ID_NONE) {
-      microSDL_ElemSetRedraw(pElemNew,true);
-    }
-        
-    // Notify element for optional custom handling
-    // - We do this after we have determined which element should
-    //   receive the touch tracking
-    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_DOWN_IN,nX,nY);
-    
-  }
-}
-
-// Handle MOUSEUP
-//
-void microSDL_TrackTouchUpClick(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: TrackTouchUpClick() called with NULL ptr\n");
-    return;
-  }    
-  int nTrackIdOld = pGui->nTrackElemIdStart;
-  
-  // Find button at point of mouse-up
-  // - We use this to determine if we had up-event
-  //   over the original tracked button
-  // NOTE: We could possibly use pGui->nTrackElemIdStart instead
-  // TODO: just check if over tracked element  
-  int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
-  int nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);
-
-  if (nTrackIdNew == MSDL_ID_NONE) {
-    // Release not over a button
-    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_UP_OUT,nX,nY);    
-  } else {
-    // Released over button
-    // Was it released over original tracked element?
-    if (nTrackIdNew == pGui->nTrackElemIdStart) {
-      // Notify original tracked element for optional custom handling
-      // - We do this before any changes are made to nTrackElemIdStart
-      microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_UP_IN,nX,nY);
-    } else {
-      // No, ignore
-      microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_UP_OUT,nX,nY);
-    }
-  }
-
-  // Clear glow state
-  if (nTrackIdOld != MSDL_ID_NONE) {
-    microSDL_ElemSetGlow(microSDL_ElemGet(pGui,nTrackIdOld),false);
-  }  
-  
-  // Mark this element as needing redraw
-  // - Redraw the tracked item to reflect that it is no longer glowing
-  if (pGui->nTrackElemIdStart != MSDL_ID_NONE) {
-    microSDL_ElemSetRedraw(microSDL_ElemGet(pGui,pGui->nTrackElemIdStart),true);
-  }
-
-  // Clear the element tracking state
-  pGui->nTrackElemIdStart = MSDL_ID_NONE;
-
-}
-
-// Handle MOUSEMOVE while MOUSEDOWN
-void microSDL_TrackTouchDownMove(microSDL_tsGui* pGui,bool bInTracked,int nX,int nY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: TrackTouchDownMove() called with NULL ptr\n");
-    return;
-  }    
-  // Fetch the item currently being tracked
-  int nTrackIdOld = pGui->nTrackElemIdStart;
-  
-  // Determine the element we are currently over
-  // TODO: just check if over tracked element
-  int nTrackIndNew = microSDL_ElemFindIndFromCoord(pGui,nX,nY);
-  int nTrackIdNew = microSDL_ElemGetIdFromInd(pGui,nTrackIndNew);
-  
-  if (nTrackIdNew == MSDL_ID_NONE) {
-    // Not currently over a button
-    // Notify original tracked element for optional custom handling
-    // - We do this before any changes are made to nTrackElemIdStart      
-    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_MOVE_OUT,nX,nY);
-    // If we were previously glowing, stop it now
-    if (nTrackIdOld != MSDL_ID_NONE) {
-      microSDL_tsElem*  pElemOld = microSDL_ElemGet(pGui,nTrackIdOld);
-      if (microSDL_ElemGetGlow(pElemOld)) {
-        microSDL_ElemSetGlow(pElemOld,false);
-      }
-    }
-  } else if (nTrackIdOld == nTrackIdNew) {
-    // Still over same button
-    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_MOVE_IN,nX,nY);
-    
-    // If not already glowing, do it now
-    microSDL_ElemSetGlow(microSDL_ElemGet(pGui,nTrackIdOld),true);
-  } else {
-    // Moved over a different element
-    microSDL_NotifyElemTouch(pGui,MSDL_TOUCH_MOVE_OUT,nX,nY);    
-  }
-  
-}
-
-// Callback to Extended Element for notification of touch event
-// - Note that this call depends on the current tracked element
-//   (nTrackElemIdStart)
-// - If the touch callback function is not set, then the default
-//   handler can be used instead. The default handler does touch
-//   tracking and sets the glowing status.
-bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_teTouch eTouch,int nX,int nY)
+// Notifies an element of a touch event by invoking its touch callback
+// function (if enabled) and passing in relative coordinates.
+bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_tsElem* pElem,
+        microSDL_teTouch eTouch,int nX,int nY)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: NotifyElemTouch() called with NULL ptr\n");
     return false;
   }    
-  // Callback function pointer
-  MSDL_CB_TOUCH   pfuncXTouch;
-  
-  // For initial touch-down event, microSDL_TrackTouchDownClick() will
-  // find the element owning the coordinate and then set the ID
-  // into nTrackElemIdStart before calling microSDL_NotifyElemTouch().
-  
-  // For initial click on element, nTrackElemIdStart is set to the index
-  // of the element and we enter NotifyElemTouch with eTouch=MSDL_TOUCH_DOWN.
-  //
-  // For continued move / dragging, NotifyElemTouch is called with
-  // nTrackElemIdStart still set to the initial element that accepted the
-  // touch-down event. NotifyElemTouch is called with eTouch=MSDL_TOUCH_MOVE.
-  //
-  // For click release, nTrackElemIdStart is still set to the ID of the
-  // element that initially accepted the touch-down event, and
-  // NotifyElemTouch is called with eTouch=MSDL_TOUCH_DOWN.
-  
-  // Determine the element currently being tracked
-  int nElemId = pGui->nTrackElemIdStart;
-  
-  // Find element
-  if (nElemId == MSDL_ID_NONE) {
-    return true;
-  }
-  // TODO: Use pTrackElem instead of looking it up
-  int nElemInd = microSDL_ElemFindIndFromId(pGui->psElem,pGui->nElemCnt,nElemId);  
-  if (nElemInd == MSDL_IND_NONE) {
-    return true;
+  // Ensure that the element exists!
+  if (pElem == NULL) {
+    return false;
   }
   
   // Fetch the extended element callback (if enabled)
-  pfuncXTouch = pGui->psElem[nElemInd].pfuncXTouch;
+  MSDL_CB_TOUCH pfuncXTouch = pElem->pfuncXTouch;
   if (pfuncXTouch != NULL) {
     // Pass in the relative position from corner of element region
-    int nElemPosX = pGui->psElem[nElemInd].rElem.x;
-    int nElemPosY = pGui->psElem[nElemInd].rElem.y;
-    microSDL_tsElem*  pTrackElem = &pGui->psElem[nElemInd];
-    (*pfuncXTouch)((void*)(pGui),(void*)(pTrackElem),eTouch,nX-nElemPosX,nY-nElemPosY);
+    int nElemPosX = pElem->rElem.x;
+    int nElemPosY = pElem->rElem.y;
+    (*pfuncXTouch)((void*)(pGui),(void*)(pElem),eTouch,nX-nElemPosX,nY-nElemPosY);
   }
   
   return true;
@@ -2201,7 +2127,7 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
   pElem->nTxtMargin       = 0;
   pElem->pTxtFont         = NULL;
   
-  pElem->nSubIdTrack      = MSDL_ID_NONE;
+  pElem->pSubElemTrack    = NULL;
   
   pElem->pXData           = NULL;
   pElem->pfuncXDraw       = NULL;

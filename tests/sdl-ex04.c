@@ -148,14 +148,14 @@ int main( int argc, char* args[] )
 
     // Update elements on active page
     sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemGet(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
     
     // TODO: Replace with Slider callback
-    int nPos = microSDL_ElemXSliderGetPos(microSDL_ElemGet(&m_gui,E_ELEM_SLIDER));  
+    int nPos = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_ELEM_SLIDER));  
     sprintf(acTxt,"Slider: %u",nPos);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_SLIDER),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_SLIDER),acTxt);
     
     // Periodically call microSDL update function    
     microSDL_Update(&m_gui);

@@ -1,6 +1,7 @@
 //
 // MicroSDL GUI Library Examples
-// - Calvin Hass ( http://www.impulseadventure.com/elec/ )
+// - Calvin Hass
+// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 02: Accept touch input
 //
 

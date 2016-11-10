@@ -42,54 +42,54 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 // Create page elements
 bool InitOverlays()
 {
-  int nElemId;
+  microSDL_tsElem*  pElem = NULL;
 
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create Title with offset shadow
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){2,2,320,50},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){2,2,320,50},
     "Home Automation",E_FONT_TITLE);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,(SDL_Color){32,32,60});
-  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
-  microSDL_ElemSetFillEn(&m_gui,nElemId,false);
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){0,0,320,50},
+  microSDL_ElemSetTxtCol(pElem,(SDL_Color){32,32,60});
+  microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_MID);
+  microSDL_ElemSetFillEn(pElem,false);
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){0,0,320,50},
     "Home Automation",E_FONT_TITLE);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,(SDL_Color){128,128,240});
-  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_MID);
-  microSDL_ElemSetFillEn(&m_gui,nElemId,false);
+  microSDL_ElemSetTxtCol(pElem,(SDL_Color){128,128,240});
+  microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_MID);
+  microSDL_ElemSetFillEn(pElem,false);
   
   // Create background box
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,180});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,180});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
   
   // Create dividers
-  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,100,280,1});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_GRAY_DK,MSDL_COL_BLACK,MSDL_COL_BLACK);  
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,100,280,1});
+  microSDL_ElemSetCol(pElem,MSDL_COL_GRAY_DK,MSDL_COL_BLACK,MSDL_COL_BLACK);  
   
-  nElemId = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){235,60,1,35});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_GRAY_DK,MSDL_COL_BLACK,MSDL_COL_BLACK);  
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){235,60,1,35});
+  microSDL_ElemSetCol(pElem,MSDL_COL_GRAY_DK,MSDL_COL_BLACK,MSDL_COL_BLACK);  
   
   
   // Create color box
-  nElemId = microSDL_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(SDL_Rect){20,90+30,130,100});
-  microSDL_ElemSetCol(&m_gui,nElemId,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(SDL_Rect){20,90+30,130,100});
+  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
   
   // Create Quit button with text label
-  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (SDL_Rect){250,60,50,30},"SAVE",E_FONT_BTN,&CbBtnQuit);
-  microSDL_ElemSetCol(&m_gui,nElemId,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224});    
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
+  microSDL_ElemSetCol(pElem,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224});    
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
   
   // Create dummy selector
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,65,100,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,65,100,20},
     "Selected Room:",E_FONT_HEAD);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);
 
-  nElemId = microSDL_ElemCreateBtnTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,
+  pElem = microSDL_ElemCreateBtnTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,
     (SDL_Rect){140,65,80,20},"Kitchen...",E_FONT_BTN,NULL);
-  microSDL_ElemSetCol(&m_gui,nElemId,(SDL_Color){64,64,64},(SDL_Color){32,32,32},(SDL_Color){0,0,224});    
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
+  microSDL_ElemSetCol(pElem,(SDL_Color){64,64,64},(SDL_Color){32,32,32},(SDL_Color){0,0,224});    
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
   
   // Create sliders
   // - Define element arrangement
@@ -102,47 +102,47 @@ bool InitOverlays()
   int nLabelH   = 20;
   int nSlideX = nLabelX + nLabelW + 20;
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,120,20},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,120,20},
     "Set LED RGB:",E_FONT_HEAD);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_WHITE);
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_WHITE);
   nCtrlY += 25;
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Red:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);  
-  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);  
+  pElem = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
           (SDL_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,255,5,false);
-  microSDL_ElemSetCol(&m_gui,E_SLIDER_R,(SDL_Color){255,0,0},MSDL_COL_BLACK,MSDL_COL_WHITE);          
-  microSDL_ElemXSliderSetStyle(&m_gui,E_SLIDER_R,true,(SDL_Color){128,0,0},10,
+  microSDL_ElemSetCol(pElem,(SDL_Color){255,0,0},MSDL_COL_BLACK,MSDL_COL_WHITE);          
+  microSDL_ElemXSliderSetStyle(pElem,true,(SDL_Color){128,0,0},10,
           5,(SDL_Color){64,64,64});
   nCtrlY += nCtrlGap;
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Green:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);  
-  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);  
+  pElem = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
           (SDL_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,128,5,false);
-  microSDL_ElemSetCol(&m_gui,E_SLIDER_G,(SDL_Color){0,255,0},MSDL_COL_BLACK,MSDL_COL_WHITE);
-  microSDL_ElemXSliderSetStyle(&m_gui,E_SLIDER_G,true,(SDL_Color){0,128,0},10,
+  microSDL_ElemSetCol(pElem,(SDL_Color){0,255,0},MSDL_COL_BLACK,MSDL_COL_WHITE);
+  microSDL_ElemXSliderSetStyle(pElem,true,(SDL_Color){0,128,0},10,
           5,(SDL_Color){64,64,64});
   nCtrlY += nCtrlGap;
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Blue:",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_GRAY_LT);  
-  nElemId = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_GRAY_LT);  
+  pElem = microSDL_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
           (SDL_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,0,5,false);
-  microSDL_ElemSetCol(&m_gui,E_SLIDER_B,(SDL_Color){0,0,255},MSDL_COL_BLACK,MSDL_COL_WHITE);          
-  microSDL_ElemXSliderSetStyle(&m_gui,E_SLIDER_B,true,(SDL_Color){0,0,128},10,
+  microSDL_ElemSetCol(pElem,(SDL_Color){0,0,255},MSDL_COL_BLACK,MSDL_COL_WHITE);          
+  microSDL_ElemXSliderSetStyle(pElem,true,(SDL_Color){0,0,128},10,
           5,(SDL_Color){64,64,64});
   nCtrlY += nCtrlGap;
 
   
-  nElemId = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){250,230,60,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){250,230,60,10},
     "microSDL GUI Example",E_FONT_TXT);
-  microSDL_ElemSetTxtCol(&m_gui,nElemId,MSDL_COL_BLACK); 
-  microSDL_ElemSetTxtAlign(&m_gui,nElemId,MSDL_ALIGN_MID_RIGHT); 
-  microSDL_ElemSetFillEn(&m_gui,nElemId,false); 
+  microSDL_ElemSetTxtCol(pElem,MSDL_COL_BLACK); 
+  microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_RIGHT); 
+  microSDL_ElemSetFillEn(pElem,false); 
   
   return true;
 }
@@ -192,11 +192,11 @@ int main( int argc, char* args[] )
 
     // Update elements on active page
     // - TODO: Replace with Slider callback
-    int nPosR = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_R);
-    int nPosG = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_G);
-    int nPosB = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_B);
+    int nPosR = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_R));
+    int nPosG = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_G));
+    int nPosB = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_B));
     SDL_Color colRGB = (SDL_Color){nPosR,nPosG,nPosB};
-    microSDL_ElemSetCol(&m_gui,E_ELEM_COLOR,MSDL_COL_WHITE,colRGB,MSDL_COL_WHITE);
+    microSDL_ElemSetCol(microSDL_ElemPtr(&m_gui,E_ELEM_COLOR),MSDL_COL_WHITE,colRGB,MSDL_COL_WHITE);
     
     // Periodically call microSDL update function
     microSDL_Update(&m_gui);
@@ -204,7 +204,7 @@ int main( int argc, char* args[] )
   } // bQuit
 
   // Read slider state:
-  // int nPosR = microSDL_ElemXSliderGetPos(&m_gui,E_SLIDER_R);
+  // int nPosR = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_R));
 
   // -----------------------------------
   // Close down display

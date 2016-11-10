@@ -191,9 +191,9 @@ int main( int argc, char* args[] )
     //   page by checking microSDL_GetPageCur() first.
 
     sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemGet(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemGet(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
 
     // Periodically call microSDL update function    
     microSDL_Update(&m_gui);

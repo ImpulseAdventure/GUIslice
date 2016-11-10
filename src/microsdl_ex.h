@@ -4,9 +4,9 @@
 // =======================================================================
 // microSDL library (extensions)
 // - Calvin Hass
-// - http:/www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.4.1    (2016/11/08)
+// - Version 0.4.2    (2016/11/09)
 // =======================================================================
 
 // Extended element definitions
