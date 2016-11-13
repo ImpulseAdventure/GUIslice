@@ -25,16 +25,19 @@ bool                  m_bQuit = false;
 unsigned              m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM      30
 #define MAX_FONT      10
 microSDL_tsGui        m_gui;
-microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXGauge     m_sXGauge;
 microSDL_tsXCheckbox  m_asXCheck[3];
 microSDL_tsXSlider    m_sXSlider;
 
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    30
+microSDL_tsPage             m_asPage[MAX_PAGE];
+microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
 
+#define MAX_STR             100
 
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
@@ -45,14 +48,18 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
   return true;
 }
 
+
 // Create page elements
 bool InitOverlays()
 {
   microSDL_tsElem*  pElem;
+  
+  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
 
+  
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
-
+  
   // Create background box
   pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
   microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
@@ -101,7 +108,7 @@ bool InitOverlays()
           5,(SDL_Color){64,64,64});
   pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(SDL_Rect){160,160,60,20},
     "Slider: ???",E_FONT_TXT);
-  
+
   return true;
 }
 
@@ -116,7 +123,9 @@ int main( int argc, char* args[] )
 
   microSDL_InitEnv(&m_gui);
 
-  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  // Initialize the collection
+  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -134,10 +143,15 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
 
-  
+  // Save some element references for quick access
+  microSDL_tsElem*  pElemCnt        = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  microSDL_tsElem*  pElemProgress   = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  microSDL_tsElem*  pElemSlider     = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER);
+  microSDL_tsElem*  pElemSliderTxt  = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER);
+
   // -----------------------------------
   // Main event loop
-
+  
   m_bQuit = false;
   while (!m_bQuit) {
 
@@ -147,15 +161,15 @@ int main( int argc, char* args[] )
     // -----------------------------------
 
     // Update elements on active page
-    sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    snprintf(acTxt,MAX_STR,"%u",m_nCount);
+    microSDL_ElemSetTxtStr(pElemCnt,acTxt);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(pElemProgress,((m_nCount/200)%100));
     
     // TODO: Replace with Slider callback
-    int nPos = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_ELEM_SLIDER));  
-    sprintf(acTxt,"Slider: %u",nPos);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_SLIDER),acTxt);
+    int nPos = microSDL_ElemXSliderGetPos(pElemSlider);  
+    snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
+    microSDL_ElemSetTxtStr(pElemSliderTxt,acTxt);
     
     // Periodically call microSDL update function    
     microSDL_Update(&m_gui);
@@ -166,7 +180,7 @@ int main( int argc, char* args[] )
   // - Either read individual checkboxes
   //   bool bCheck = microSDL_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
   // - Or find one in the group that was checked (eg. for radio buttons)
-  //   int nCheckedId = microSDL_ElemXCheckboxFindChecked(&m_gui,MSDL_GROUP_ID_NONE);
+  //   microSDL_tsElem* pElem = microSDL_ElemXCheckboxFindChecked(&m_gui,MSDL_GROUP_ID_NONE);
 
   // -----------------------------------
   // Close down display

@@ -23,9 +23,14 @@ enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 bool                  m_bQuit = false;
 
 // Instantiate the GUI
-#define MAX_ELEM      30
 microSDL_tsGui        m_gui;
-microSDL_tsElem       m_asElem[MAX_ELEM];
+
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    30
+microSDL_tsPage             m_asPage[MAX_PAGE];
+microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
+
+
 
 
 // Button callbacks
@@ -41,6 +46,8 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 bool InitOverlays(char *strPath)
 {
   microSDL_tsElem*  pElem = NULL;
+  
+  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
@@ -72,7 +79,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,NULL,0,NULL,0)) { exit(1); }
+  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 

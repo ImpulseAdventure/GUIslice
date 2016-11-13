@@ -32,14 +32,19 @@ float     m_fCoordY = 0;
 float     m_fCoordZ = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM    30
 #define MAX_FONT    10
 #define MAX_VIEW    5
 microSDL_tsGui      m_gui;
-microSDL_tsElem     m_asElem[MAX_ELEM];
 microSDL_tsFont     m_asFont[MAX_FONT];
 microSDL_tsView     m_asView[MAX_VIEW];
 microSDL_tsXGauge   m_sXGauge;
+
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    30
+microSDL_tsPage             m_asPage[MAX_PAGE];
+microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
+
+#define MAX_STR             100
 
 
 // Scanner drawing callback function
@@ -48,7 +53,7 @@ microSDL_tsXGauge   m_sXGauge;
 //   the Box element type with a custom rendering function.
 // - It uses a viewport (E_VIEW) to allow for a local
 //   coordinate system and clipping.
-bool DrawScannerCb(void* pvGui,void* pvElem)
+bool CbDrawScanner(void* pvGui,void* pvElem)
 {
   int nInd;
 
@@ -107,6 +112,8 @@ bool InitOverlays(char *strPath)
 {
   microSDL_tsElem*  pElem = NULL;
 
+  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
+  
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_BLACK);
 
@@ -180,50 +187,13 @@ bool InitOverlays(char *strPath)
   pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(SDL_Rect){190-1,75-1,100+2,100+2});
   microSDL_ElemSetCol(pElem,MSDL_COL_BLUE_LT,MSDL_COL_BLACK,MSDL_COL_BLACK);
   // Set the callback function to handle all drawing for the element
-  microSDL_ElemSetDrawFunc(pElem,&DrawScannerCb);
+  microSDL_ElemSetDrawFunc(pElem,&CbDrawScanner);
   
   microSDL_ViewCreate(&m_gui,E_VIEW,(SDL_Rect){190,75,100,100},50,50);
   // --------------------------------------------------------------------------
 
-  
   return true;
 }
-
-// This is an immediate-draw routine that updates
-// the viewport element. The viewport provides a
-// local coordinate system and clipping.
-void DrawViewport()
-{
-  int nInd;
-  // Temp redraw view
-  // Draw the viewport background
-  microSDL_ElemDraw(&m_gui,E_ELEM_SCAN);
-
-  // Switch to drawing coordinate space within the viewport
-  // - Until the next ViewSet() command, all drawing
-  //   will be done with local coordinates that
-  //   are remapped and clipped to match the viewport.
-  microSDL_ViewSet(&m_gui,E_VIEW);
-
-  // Perform the drawing of example graphic primitives
-  microSDL_Line(&m_gui,0,-200,0,+200,MSDL_COL_GRAY_DK);
-  microSDL_Line(&m_gui,-200,0,+200,0,MSDL_COL_GRAY_DK);
-
-  microSDL_FrameRect(&m_gui,(SDL_Rect){-30,-20,60,40},MSDL_COL_BLUE_DK);
-  for (nInd=-5;nInd<=5;nInd++) {
-    microSDL_Line(&m_gui,0,0,0+nInd*20,100,MSDL_COL_PURPLE);
-  }
-
-  microSDL_FillRect(&m_gui,(SDL_Rect){1,1,10,10},MSDL_COL_RED_DK);
-  microSDL_FillRect(&m_gui,(SDL_Rect){1,-10,10,10},MSDL_COL_GREEN_DK);
-  microSDL_FillRect(&m_gui,(SDL_Rect){-10,1,10,10},MSDL_COL_BLUE_DK);
-  microSDL_FillRect(&m_gui,(SDL_Rect){-10,-10,10,10},MSDL_COL_YELLOW);
-
-  // Restore the drawing coordinate space to the screen
-  microSDL_ViewSet(&m_gui,MSDL_VIEW_ID_SCREEN);
-
-}
-
 
 int main( int argc, char* args[] )
 {
@@ -234,7 +204,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
+  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -252,6 +222,14 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
 
+  // Save some element references for quick access
+  microSDL_tsElem*  pElemScan       = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SCAN);
+  microSDL_tsElem*  pElemCount      = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  microSDL_tsElem*  pElemDataX      = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAX);
+  microSDL_tsElem*  pElemDataY      = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAY);
+  microSDL_tsElem*  pElemDataZ      = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAZ);
+  microSDL_tsElem*  pElemProgress   = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  
   // -----------------------------------
   // Main event loop
 
@@ -270,24 +248,23 @@ int main( int argc, char* args[] )
     microSDL_ViewSetOrigin(&m_gui,E_VIEW,nOriginX,nOriginY);
     // Manually mark the scanner view as needing redraw
     // since it depends on E_VIEW
-    microSDL_ElemSetRedraw(microSDL_ElemPtr(&m_gui,E_ELEM_SCAN),true);
+    microSDL_ElemSetRedraw(pElemScan,true);
 
     // -----------------------------------------------
 
     // Perform any immediate updates on active page
-    sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    snprintf(acTxt,MAX_STR,"%u",m_nCount);
+    microSDL_ElemSetTxtStr(pElemCount,acTxt);
 
-    sprintf(acTxt,"%4.2f",m_fCoordX-50);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAX),acTxt);
-    sprintf(acTxt,"%4.2f",m_fCoordY-50);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAY),acTxt);
-    sprintf(acTxt,"%4.2f",m_fCoordZ);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_DATAZ),acTxt);
-    microSDL_ElemSetTxtCol(microSDL_ElemPtr(&m_gui,E_ELEM_DATAZ),
-            (m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
+    snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordX-50);
+    microSDL_ElemSetTxtStr(pElemDataX,acTxt);
+    snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordY-50);
+    microSDL_ElemSetTxtStr(pElemDataY,acTxt);
+    snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordZ);
+    microSDL_ElemSetTxtStr(pElemDataZ,acTxt);
+    microSDL_ElemSetTxtCol(pElemDataZ,(m_fCoordY>50)?MSDL_COL_GREEN_LT:MSDL_COL_RED_DK);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),50+50*sin(m_nCount/500.0));
+    microSDL_ElemXGaugeUpdate(pElemProgress,50+50*sin(m_nCount/500.0));
 
     // -----------------------------------------------
 

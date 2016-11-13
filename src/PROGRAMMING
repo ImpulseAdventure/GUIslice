@@ -1,6 +1,59 @@
 Notes on microSDL code:
 =======================
 
+General
+- The code is pure C but has been designed with object-oriented
+  principles in mind.
+- The microSDL library simply includes a pair of source files
+  so no installation is required.
+- The library does not use any dynamic memory allocation.
+  Instead, all configurable storage data structures are allocated
+  in user code and are passed in to microSDL initialization routines.
+- Callback functions are provided to support extending the
+  base functionality.
+
+Initialization
+- Call microSDL_Init() to associate the pages and element collections
+  in user space with the GUI code.
+- Create one or more pages with microSDL_PageAdd()
+- Create elements with microSDL_ElemCreate*() which adds them to
+  the specified page.
+
+Main loop
+- Periodically, the user should call microSDL_Update() to refresh
+  any graphic elements and handle any touch events.
+
+Page Drawing
+- Note that element drawing order is based on creation order
+  within the current page.
+- It is possible for elements to overlap, but note that care
+  must then be taken to define the sequence of element creation.
+- To keep the library simple, clipping is not implemented at
+  this time (except within Viewport)
+- The current page is redrawn with periodic calls to microSDL_Update().
+  This automatically redraws any elements that have been
+  marked as changed. It then follows this up with a page flip.
+
+  
+Element Defaults
+- The ElemCreate*() functions create a variety of objects with stylistic
+  defaults applied (frame, fill, alignment, etc.) These can be overridden
+  by calling the ElemSet*() functions after calling the default
+  ElemCreate*() function.
+- Callback functions can be specified for an element's Redraw and
+  Touch events. Setting a callback to NULL disables the callback.
+  When a callback is specified, the default functionality is disabled.
+
+Memory Allocation
+- microSDL is intended to be an extremely simple library framework and
+  thus avoids any dynamic memory allocation. The caller allocates storage
+  for these elements and then passes pointers for the storage arrays
+  to microSDL.
+
+
+
+
+ARCHITECTURE
 
 Element ID
 - User-supplied ID given to an element when created
@@ -8,51 +61,28 @@ Element ID
 - User functions generally reference an Element by
   its Element ID
 - If no further reference is required to an element after
-  creation, an anonymous ID can be provided (MSDL_ID_ANON)
+  creation, an auto-generated ID can be provided (MSDL_ID_AUTO)
 
-Element Index
-- Internal index into array of elements
-- Implementation converts Element ID into Element Index by
-  searching for the ID
+GUI
+- Contains the core library state
+- Contains one or more pages
 
 Pages
-- Elements contain a reference to a Page ID
-- The Page ID can also be specified as MSDL_PAGE_ALL if the
-  element is to be drawn on all pages.
-- Page drawing functions will redraw all elements associated
-  with the page
-- A current page ID member is provided to help manage transitions
-  between pages and redrawing the active page.
+- Pages contain an element collection
 
-Page Drawing
-- Note that element drawing order is based on creation order
-  (qualified by the specific page).
-- It is possible for elements to overlap, but note that care
-  must then be taken to define the sequence of element creation.
-- To keep the library simple, clipping is not implemented at
-  this time (except within Viewport)
-- The current page is redrawn with periodic calls to PageRedrawGo().
-  This automatically redraws any elements that have been
-  marked as changed. It then follows this up with a page flip.
-- Manual redraw is still possible by using ElemDraw() and then
-  PageRedrawGo().
-  
-Element Defaults
-- The ElemCreate*() functions create a variety of objects with stylistic
-  defaults applied (frame, fill, alignment, etc.) These can be overridden
-  by setting the Elem struct members after calling the default
-  ElemCreate*() function.
-- Callback functions can be specified for an element's Redraw and
-  Touch events. Setting a callback to NULL disables the callback.
-  When a callback is specified, the default functionality is disabled.
+Element Collection
+- An element collection contains one or more elements
 
-Event Loop
-- The event loop is based on polling for touch events, tracking these
-  transitions and invoking the page redraw periodically (PageRedrawGo).
+Element
+- An element is a graphic item of type MSDL_TYPE_* that can
+  be one of the core primitives (button, text, box, image, etc.)
+  or one of the extended elements (checkbox, slider, etc.)
+- An element can contain extended / custom data structures
+  (stored in pXData).
+- A compound element contains one or more sub-elements and is
+  used to create complex widgets that encapsulate the internal
+  operations between the sub-elements.
+- A compound element can be created by adding an element
+  collection to the extended data region. See example XSelNum for details.
 
-Memory Allocation
-- microSDL is intended to be an extremely simple library framework and
-  thus avoids any dynamic memory allocation. The caller allocates storage
-  for these elements and then passes pointers for the storage arrays
-  to microSDL.
 

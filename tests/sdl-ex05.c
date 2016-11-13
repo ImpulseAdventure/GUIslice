@@ -28,13 +28,20 @@ bool     m_bQuit = false;
 unsigned m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM    30
 #define MAX_FONT    10
 microSDL_tsGui      m_gui;
-microSDL_tsElem     m_asElem[MAX_ELEM];
 microSDL_tsFont     m_asFont[MAX_FONT];
 microSDL_tsXGauge   m_sXGauge;
 microSDL_tsXSelNum  m_sXSelNum[3];
+
+#define MAX_PAGE            2
+#define MAX_ELEM_PG_MAIN    10
+#define MAX_ELEM_PG_EXTRA   10
+microSDL_tsPage             m_asPage[MAX_PAGE];
+microSDL_tsElem             m_asElemMain[MAX_ELEM_PG_MAIN];
+microSDL_tsElem             m_asElemExtra[MAX_ELEM_PG_EXTRA];
+
+#define MAX_STR             100
 
 // Button callbacks
 // - Show example of common callback function
@@ -60,7 +67,10 @@ bool CbBtnCommon(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 bool InitOverlays(char *strPath)
 {
   microSDL_tsElem*  pElem = NULL;
-
+  
+  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asElemMain,MAX_ELEM_PG_MAIN);
+  microSDL_PageAdd(&m_gui,E_PG_EXTRA,m_asElemExtra,MAX_ELEM_PG_EXTRA);
+  
   // -----------------------------------
   // Background
   char* strImgBkgndPath = (char*)malloc(strlen(strPath)+strlen(IMG_BKGND)+1);
@@ -143,13 +153,13 @@ bool InitOverlays(char *strPath)
 int main( int argc, char* args[] )
 {
   bool              bOk = true;
-  char              acTxt[100];
+  char              acTxt[MAX_STR];
 
   // -----------------------------------
   // Initialize
 
   microSDL_InitEnv(&m_gui);
-  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -177,6 +187,10 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
   
+  // Save some element references for quick access
+  microSDL_tsElem*  pElemCnt        = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  microSDL_tsElem*  pElemProgress   = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  
   // -----------------------------------
   // Main event loop
 
@@ -190,11 +204,12 @@ int main( int argc, char* args[] )
     // - Note: we can make the updates conditional on the active
     //   page by checking microSDL_GetPageCur() first.
 
-    sprintf(acTxt,"%u",m_nCount);
-    microSDL_ElemSetTxtStr(microSDL_ElemPtr(&m_gui,E_ELEM_TXT_COUNT),acTxt);
+    snprintf(acTxt,MAX_STR,"%u",m_nCount);
+    microSDL_ElemSetTxtStr(pElemCnt,acTxt);
 
-    microSDL_ElemXGaugeUpdate(microSDL_ElemPtr(&m_gui,E_ELEM_PROGRESS),((m_nCount/200)%100));
+    microSDL_ElemXGaugeUpdate(pElemProgress,((m_nCount/200)%100));
 
+    
     // Periodically call microSDL update function    
     microSDL_Update(&m_gui);
     

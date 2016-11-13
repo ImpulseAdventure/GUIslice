@@ -1,8 +1,6 @@
 FEATURES
 ========
-* Circle drawing primitive
 * Polygon drawing primitive
-* Element grouping (to support radio buttons)
 * Keypress handler
 
 IMPROVEMENTS
@@ -11,5 +9,5 @@ IMPROVEMENTS
 
 BUGS
 ====
-* 
+* ?
 

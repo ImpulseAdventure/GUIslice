@@ -1,6 +1,6 @@
 microSDL library
 
-A simple GUI framework suitable for embedded displays based on SDL1.2
+A lightweight GUI framework suitable for embedded displays based on SDL1.2
 - Web Page: http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 
 - Pure C library, no dynamic memory allocation

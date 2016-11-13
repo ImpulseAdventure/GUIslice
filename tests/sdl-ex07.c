@@ -23,12 +23,16 @@ bool      m_bQuit = false;
 unsigned  m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_ELEM      30
 #define MAX_FONT      10
 microSDL_tsGui        m_gui;
-microSDL_tsElem       m_asElem[MAX_ELEM];
 microSDL_tsFont       m_asFont[MAX_FONT];
 microSDL_tsXSlider    m_sXSlider_R,m_sXSlider_G,m_sXSlider_B;
+
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    30
+microSDL_tsPage             m_asPage[MAX_PAGE];
+microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
+
 
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
@@ -44,6 +48,8 @@ bool InitOverlays()
 {
   microSDL_tsElem*  pElem = NULL;
 
+  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
+  
   // Background flat color
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
@@ -157,7 +163,7 @@ int main( int argc, char* args[] )
 
   microSDL_InitEnv(&m_gui);
 
-  if (!microSDL_Init(&m_gui,m_asElem,MAX_ELEM,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }  
 
   microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
 
@@ -179,6 +185,12 @@ int main( int argc, char* args[] )
   // Start up display on main page
   microSDL_SetPageCur(&m_gui,E_PG_MAIN);
 
+  // Save some element references for quick access  
+  microSDL_tsElem*  pElemSliderR  = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_R);
+  microSDL_tsElem*  pElemSliderG  = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_G);
+  microSDL_tsElem*  pElemSliderB  = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_B);
+  microSDL_tsElem*  pElemColor    = microSDL_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_COLOR);
+  
   // -----------------------------------
   // Main event loop
 
@@ -192,11 +204,11 @@ int main( int argc, char* args[] )
 
     // Update elements on active page
     // - TODO: Replace with Slider callback
-    int nPosR = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_R));
-    int nPosG = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_G));
-    int nPosB = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_B));
+    int nPosR = microSDL_ElemXSliderGetPos(pElemSliderR);
+    int nPosG = microSDL_ElemXSliderGetPos(pElemSliderG);
+    int nPosB = microSDL_ElemXSliderGetPos(pElemSliderB);
     SDL_Color colRGB = (SDL_Color){nPosR,nPosG,nPosB};
-    microSDL_ElemSetCol(microSDL_ElemPtr(&m_gui,E_ELEM_COLOR),MSDL_COL_WHITE,colRGB,MSDL_COL_WHITE);
+    microSDL_ElemSetCol(pElemColor,MSDL_COL_WHITE,colRGB,MSDL_COL_WHITE);
     
     // Periodically call microSDL update function
     microSDL_Update(&m_gui);
@@ -204,7 +216,7 @@ int main( int argc, char* args[] )
   } // bQuit
 
   // Read slider state:
-  // int nPosR = microSDL_ElemXSliderGetPos(microSDL_ElemPtr(&m_gui,E_SLIDER_R));
+  // int nPosR = microSDL_ElemXSliderGetPos(pElemSliderR);
 
   // -----------------------------------
   // Close down display
