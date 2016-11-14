@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5    (2016/11/12)
+// - Version 0.5.0.1    (2016/11/12)
 // =======================================================================
 
 // MicroSDL library
@@ -35,7 +35,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.5"
+#define MICROSDL_VER "0.5.0.1"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -862,7 +862,7 @@ microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int 
 // ------------------------------------------------------------------------
 
 
-int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
+int microSDL_ElemGetId(microSDL_tsElem* pElem)
 {
   return pElem->nId;
 }
@@ -1828,6 +1828,8 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
 
 
 // Helper function for microSDL_ElemAdd()
+// - Note that this copies the content of pElem to collection element array
+//   so the pointer can be released after the call
 microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem)
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
@@ -1848,7 +1850,8 @@ microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_t
   // - This performs a copy so that we can discard the element
   //   pointer after the call is complete
   int nElemInd = pCollect->nElemCnt;  
-  microSDL_CollectAdd(pCollect,pElem);
+  pCollect->asElem[nElemInd] = *pElem;
+  pCollect->nElemCnt++;
 
   return &(pCollect->asElem[nElemInd]);    
 }
@@ -2254,30 +2257,6 @@ void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,
   }
 }
 
-// Note that this copies the content of pElem to collection element array
-// so the pointer can disappear after the call
-microSDL_tsElem* microSDL_CollectAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem)
-{
-  if ((pCollect == NULL) || (pElem == NULL)) {
-    fprintf(stderr,"ERROR: CollectAdd() called with NULL ptr\n");
-    return NULL;
-  }
-  if (pCollect->nElemCnt+1 >= (pCollect->nElemMax)) {
-    fprintf(stderr,"ERROR: CollectAdd() too many elements\n");
-    return NULL;
-  }
-  // In case the element creation failed, trap that here
-  if (!pElem->bValid) {
-    fprintf(stderr,"ERROR: CollectAdd() skipping add of invalid element\n");
-    return NULL;
-  }
-  // Copy the element to the internal array
-  int nElemInd = pCollect->nElemCnt;
-  pCollect->asElem[nElemInd] = *pElem;
-  pCollect->nElemCnt++;
-
-  return &(pCollect->asElem[nElemInd]);  
-}
 
 microSDL_tsElem* microSDL_CollectFindElemById(microSDL_tsCollect* pCollect,int nElemId)
 {
@@ -2355,57 +2334,6 @@ void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect)
   }  
 }
 
-// Find an element index in a collection from a coordinate
-int microSDL_CollectFindIndFromCoord(microSDL_tsCollect* pCollect,int nX, int nY)
-{
-  unsigned  nInd;
-  bool      bFound = false;
-  int       nFoundInd = MSDL_IND_NONE;
-
-  #ifdef DBG_TOUCH
-  // Highlight current touch for coordinate debug
-  SDL_Rect    rMark = microSDL_ExpandRect((SDL_Rect){(Sint16)nX,(Sint16)nY,1,1},1,1);
-  microSDL_FrameRect(pGui,rMark,MSDL_COL_YELLOW);
-  printf("    ElemFindFromCoord(%3d,%3d):\n",nX,nY);
-  #endif
-
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
-
-    // Are we within the rect?
-    if (microSDL_IsInRect(nX,nY,pCollect->asElem[nInd].rElem)) {
-      #ifdef DBG_TOUCH
-      printf("      [%3u]:In  ",nInd);
-      #endif
-
-      // Only return element index if clickable
-      if (pCollect->asElem[nInd].bClickEn) {
-          if (bFound) {
-              fprintf(stderr,"WARNING: Overlapping clickable regions detected\n");
-          }
-          bFound = true;  
-          nFoundInd = nInd;
-          #ifdef DBG_TOUCH
-          printf("En \n");
-          #endif
-          // No more search to do
-          break;
-      } else {
-          #ifdef DBG_TOUCH
-          printf("Dis\n");
-          #endif
-      }
-
-    } // microSDL_IsInRect()
-    else {
-      #ifdef DBG_TOUCH
-      printf("      [%3u]:Out\n",nInd);
-      #endif
-    }
-  }
-
-  // Return index or MSDL_IND_NONE if none found
-  return nFoundInd;
-}
 
 // Find an element index in a collection from a coordinate
 microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,int nX, int nY)

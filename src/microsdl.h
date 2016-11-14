@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5    (2016/11/12)
+// - Version 0.5.0.1    (2016/11/12)
 // =======================================================================
 
 #ifdef __cplusplus
@@ -44,7 +44,7 @@ extern "C" {
   ///   microSDL auto-assign an ID value for the Element. These
   ///   auto-assigned values will begin at MSDL_ID_AUTO_BASE.
   /// - Negative Element ID values are reserved 
-  enum {
+  typedef enum {
     // Public usage
     MSDL_ID_USER_BASE       = 0,      ///< Starting Element ID for user assignments
     MSDL_ID_NONE            = -1999,  ///< No Element ID has been assigned
@@ -53,7 +53,7 @@ extern "C" {
     // Internal usage
     MSDL_ID_AUTO_BASE       = 32768,  ///< Starting Element ID to start auto-assignment
                                       ///< (when MSDL_ID_AUTO is specified)            
-  };
+  } microSDL_teElemId;
 
 
   /// Page ID enumerations
@@ -62,12 +62,12 @@ extern "C" {
   /// - Application code can assign arbitrary Page ID values
   ///   in the range of 0...32767
   /// - Negative Page ID values are reserved   
-  enum {
+  typedef enum {
     // Public usage
     MSDL_PAGE_USER_BASE     = 0,      ///< Starting Page ID for user assignments
     // Internal usage
     MSDL_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
-  };
+  } microSDL_tePageId;
 
   /// View ID enumerations
   /// - The View ID is the primary means for user code to
@@ -75,21 +75,21 @@ extern "C" {
   /// - Application code can assign arbitrary View ID values
   ///   in the range of 0...32767
   /// - Negative View ID values are reserved   
-  enum {
+  typedef enum {
     // Public usage
     MSDL_VIEW_ID_USER_BASE  = 0,      ///< Starting Page ID for user assignments
     MSDL_VIEW_ID_SCREEN     = -3999,  ///< Default Viewport ID used for main screen
     // Internal usage
     MSDL_VIEW_ID_NONE,                ///< No Viewport ID has been assigned
-  };
+  } microSDL_teViewId;
 
   /// Group ID enumerations
-  enum {
+  typedef enum {
     // Public usage
     MSDL_GROUP_ID_USER_BASE = 0,      ///< Starting Group ID for user assignments
     // Internal usage
     MSDL_GROUP_ID_NONE      = -6999,  ///< No Group ID has been assigned
-  };
+  } microSDL_teGroupId;
   
   /// Font ID enumerations
   /// - The Font ID is the primary means for user code to
@@ -97,30 +97,30 @@ extern "C" {
   /// - Application code can assign arbitrary Font ID values
   ///   in the range of 0...32767
   /// - Negative Font ID values are reserved    
-  enum {
+  typedef enum {
     // Public usage
     MSDL_FONT_USER_BASE     = 0,      ///< Starting Font ID for user assignments
     MSDL_FONT_NONE          = -4999,  ///< No Font ID has been assigned
-  };
+  } microSDL_teFontId;
   
 
   /// View Index enumerations
   /// - The View Index is used for internal purposes as an offset
   //    into the GUI's array of views
-  enum {
+  typedef enum {
     // Internal usage
     MSDL_VIEW_IND_NONE      = -5999,  ///< No Viewport Index is available
     MSDL_VIEW_IND_SCREEN,             ///< Default Viewport Index used for main screen
-  };
+  } microSDL_teViewInd;
   
   /// Element Index enumerations
   /// - The Element Index is used for internal purposes as an offset
   //    into the GUI's array of elements
-  enum {
+  typedef enum {
     // Internal usage
     MSDL_IND_NONE           = -9999,  ///< No Element Index is available
     MSDL_IND_FIRST          = 0,      ///< User elements start at index 0
-  };
+  } microSDL_teElemInd;
 
 
 /// Element type
@@ -509,6 +509,22 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 ///
 bool microSDL_IsInRect(int nSelX,int nSelY,SDL_Rect rRect);
 
+
+///
+/// Expand or contract a rectangle in width and/or height (equal
+/// amounts on both side), based on the centerpoint of the rectangle.
+///
+/// \param[in]  rRect:       Rectangular region before resizing
+/// \param[in]  nExpandW:    Number of pixels to expand the width (if positive)
+///                          of contract the width (if negative)
+/// \param[in]  nExpandH:    Number of pixels to expand the height (if positive)
+///                          of contract the height (if negative)
+///
+/// \return SDL_Rect() with resized dimensions
+///
+SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
+
+
 ///
 /// Determine if a coordinate is inside of a width x height region.
 /// - This routine is useful in determining if a relative coordinate
@@ -525,44 +541,12 @@ bool microSDL_IsInRect(int nSelX,int nSelY,SDL_Rect rRect);
 bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,Uint16 nWidth,Uint16 nHeight);
 
 
-///
-/// Indicate whether the screen requires page flip
-/// - This is generally called with bNeeded=true whenever
-///   drawing has been done to the active page. Page flip
-///   is actually performed later when calling PageFlipGo().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  bNeeded:     True if screen requires page flip
-///
-/// \return None
-///
-void microSDL_PageFlipSet(microSDL_tsGui* pGui,bool bNeeded);
-
-
-///
-/// Get state of pending page flip state
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return True if screen requires page flip
-///
-bool microSDL_PageFlipGet(microSDL_tsGui* pGui);
-
-
-///
-/// Update the visible screen if page has been marked for flipping
-/// - On some hardware this can trigger a double-buffering
-///   page flip.
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return None
-///
-void microSDL_PageFlipGo(microSDL_tsGui* pGui);
 
 
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
+// - These routines cause immediate drawing to occur on the
+//   primary screen
 // ------------------------------------------------------------------------
 
 
@@ -652,20 +636,6 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 
 
 ///
-/// Expand or contract a rectangle in width and/or height (equal
-/// amounts on both side), based on the centerpoint of the rectangle.
-///
-/// \param[in]  rRect:       Rectangular region before resizing
-/// \param[in]  nExpandW:    Number of pixels to expand the width (if positive)
-///                of contract the width (if negative)
-/// \param[in]  nExpandH:    Number of pixels to expand the height (if positive)
-///                of contract the height (if negative)
-/// \return SDL_Rect() with resized dimensions
-///
-SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
-
-
-///
 /// Draw a framed circle
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -680,10 +650,10 @@ void microSDL_FrameCircle(microSDL_tsGui* pGui,Sint16 nMidX,Sint16 nMidY,
   Uint16 nRadius,SDL_Color nCol);
 
 
+
 // -----------------------------------------------------------------------
 // Font Functions
 // -----------------------------------------------------------------------
-
 
 ///
 /// Load a font into the local font cache and assign
@@ -772,21 +742,94 @@ bool microSDL_PageRedrawGet(microSDL_tsGui* pGui);
 ///
 void microSDL_PageRedrawGo(microSDL_tsGui* pGui);
 
+///
+/// Indicate whether the screen requires page flip
+/// - This is generally called with bNeeded=true whenever
+///   drawing has been done to the active page. Page flip
+///   is actually performed later when calling PageFlipGo().
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bNeeded:     True if screen requires page flip
+///
+/// \return None
+///
+void microSDL_PageFlipSet(microSDL_tsGui* pGui,bool bNeeded);
+
+
+///
+/// Get state of pending page flip state
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return True if screen requires page flip
+///
+bool microSDL_PageFlipGet(microSDL_tsGui* pGui);
+
+
+///
+/// Update the visible screen if page has been marked for flipping
+/// - On some hardware this can trigger a double-buffering
+///   page flip.
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return None
+///
+void microSDL_PageFlipGo(microSDL_tsGui* pGui);
+
+
+/// Add a page to the GUI
+/// - This call associates an element array with the collection within the page
+/// - Once a page has been added to the GUI, elements can be added to the page
+///   by specifying the same page ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nPageId:      Page ID to assign
+/// \param[in]  psElem:       Element array storage to associate with the page
+/// \param[in]  nMaxElem:     Maximum number of elements that can be added to page
+///
+/// \return none
+///
+void microSDL_PageAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsElem* psElem,unsigned nMaxElem);
+
+/// Find a page in the GUI by its ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nPageId:      Page ID to search
+///
+/// \return Ptr to a page or NULL if none found
+///
+microSDL_tsPage* microSDL_PageFindById(microSDL_tsGui* pGui,int nPageId);
+
+/// Find an element in the GUI by its Page ID and Element ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nPageId:      Page ID to search
+/// \param[in]  nElemId:      Element ID to search
+///
+/// \return Ptr to an element or NULL if none found
+///
+microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int nElemId);
+
+/// Perform a redraw calculation on the page to determine if additional
+/// elements should also be redrawn. This routine checks to see if any
+/// transparent elements have been marked as needing redraw. If so, the
+/// whole page may be marked as needing redraw (or at least the other
+/// elements that have been exposed underneath).
+///
+/// \param[in]  pGui:         Pointer to GUI
+///
+/// \return none
+///
+void microSDL_PageRedrawCalc(microSDL_tsGui* pGui);
+
+
 
 // ------------------------------------------------------------------------
 // Element General Functions
 // ------------------------------------------------------------------------
 
 
-
-/// Get an Element ID from an element structure
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElem:       Pointer to element structure
-///
-/// \return ID of element or MSDL_ID_NONE if not found
-///
-int microSDL_ElemGetIdFromElem(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 
 
 
@@ -1026,6 +1069,16 @@ void microSDL_ElemSetGlow(microSDL_tsElem* pElem,bool bGlowing);
 ///
 bool microSDL_ElemGetGlow(microSDL_tsElem* pElem);
 
+
+/// Get an Element ID from an element structure
+///
+/// \param[in]  pElem:       Pointer to element structure
+///
+/// \return ID of element or MSDL_ID_NONE if not found
+///
+int microSDL_ElemGetId(microSDL_tsElem* pElem);
+
+
 ///
 /// Assign the drawing callback function for an element
 /// - This allows the user to override the default rendering for
@@ -1049,6 +1102,7 @@ void microSDL_ElemSetDrawFunc(microSDL_tsElem* pElem,MSDL_CB_DRAW funcCb);
 /// \return none
 ///
 void microSDL_ElemSetTickFunc(microSDL_tsElem* pElem,MSDL_CB_TICK funcCb);
+
 
 // ------------------------------------------------------------------------
 // Viewport Functions
@@ -1092,6 +1146,142 @@ bool microSDL_ViewSetOrigin(microSDL_tsGui* pGui,int nViewId,unsigned nOriginX,u
 /// \return none
 ///
 void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId);
+
+
+// ------------------------------------------------------------------------
+// Element Collection Functions
+// ------------------------------------------------------------------------
+
+
+/// Reset the members of an element collection
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  asElem:       Array of elements to associate with the collection
+/// \param[in]  nElemMax:     Maximum number of element in the element array
+///
+/// \return none
+/// 
+void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,unsigned nElemMax);
+
+
+/// Add an element to a collection
+/// - Note that the contents of pElem are copied to the collection's
+///   element array so the pElem pointer can be discarded are the
+///   call is complete.
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElem:        Ptr to the element to add
+///
+/// \return Pointer to the element in the collection that has been added
+///         or NULL if there was an error
+/// 
+microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem);
+
+
+/// Find an element in a collection by its Element ID
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nElemId:      Element ID to search for
+///
+/// \return Pointer to the element in the collection that was found
+///         or NULL if no matches found
+/// 
+microSDL_tsElem* microSDL_CollectFindElemById(microSDL_tsCollect* pCollect,int nElemId);
+
+
+/// Find an element in a collection by a coordinate coordinate
+/// - A match is found if the element is "clickable" (bClickEn=true)
+///   and the coordinate falls within the element's bounds (rElem).
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nX:           Absolute X coordinate to use for search
+/// \param[in]  nY:           Absolute Y coordinate to use for search
+///
+/// \return Pointer to the element in the collection that was found
+///         or NULL if no matches found
+/// 
+microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,int nX, int nY);
+
+
+/// Allocate the next available Element ID in a collection
+///
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Element ID that is reserved for use
+/// 
+int microSDL_CollectGetNextId(microSDL_tsCollect* pCollect);
+
+
+/// Get the element within a collection that is currently being tracked
+///
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Pointer to the element in the collection that is
+///         currently being tracked or NULL if no elements
+///         are being tracked
+///
+microSDL_tsElem* microSDL_CollectGetElemTracked(microSDL_tsCollect* pCollect);
+
+
+/// Set the element within a collection that is currently being tracked
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElem:        Ptr to element to mark as being tracked
+///
+/// \return none
+///
+void microSDL_CollectSetElemTracked(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem);
+
+
+/// Assign the parent element reference to all elements within a collection
+/// - This is generally used in the case of compound elements where updates to
+///   a sub-element should cause the parent (compound element) to be redrawn
+///   as well.)
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElemParent:  Ptr to element that is the parent
+///
+/// \return none
+///
+void microSDL_CollectSetParent(microSDL_tsCollect* pCollect,microSDL_tsElem* pElemParent);
+
+
+/// Handle touch events within the element collection
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+/// \param[in]  bTouchDown:   Touch event was a pressure applied (down)
+/// \param[in]  bTouchUp:     Touch event was a pressure release (up)
+/// \param[in]  bTouchMove:   Touch event was a movement with pressure
+/// \param[in]  nX:           X coordinate of touch event
+/// \param[in]  nY:           Y coordinate of touch event
+///
+/// \return none
+///
+void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY);
+
+
+/// Handle redraw requests to the element collection
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+/// \param[in]  bRedrawAll:   Force all element collection to be redrawn
+///
+/// \return none
+///
+void microSDL_CollectRedraw(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bRedrawAll);
+
+
+/// Handle tick events to the element collection
+/// - This is callled from the GUI's microSDL_Update() call
+///   and can be used to trigger background element activity
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+///
+/// \return none
+///
+void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect);
 
 
 // ------------------------------------------------------------------------
@@ -1471,29 +1661,9 @@ bool microSDL_CleanStart(const char* sTTY);
 
 
 // =======================
-// Element Collection
-void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,unsigned nElemMax);
-microSDL_tsElem* microSDL_CollectAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem);
-microSDL_tsElem* microSDL_CollectFindElemById(microSDL_tsCollect* pCollect,int nElemId);
-int microSDL_CollectFindIndFromCoord(microSDL_tsCollect* pCollect,int nX, int nY);
-microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,int nX, int nY);
-int microSDL_CollectGetNextId(microSDL_tsCollect* pCollect);
-microSDL_tsElem* microSDL_CollectGetElemTracked(microSDL_tsCollect* pCollect);
-void microSDL_CollectSetElemTracked(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem);
-microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem);
-void microSDL_CollectSetParent(microSDL_tsCollect* pCollect,microSDL_tsElem* pElemParent);
 
-void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY);
-void microSDL_CollectRedraw(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bRedrawAll);
-void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect);
 
-//void microSDL_InitPages(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPage);
-void microSDL_PageAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsElem* psElem,unsigned nMaxElem);
-microSDL_tsPage* microSDL_PageFindById(microSDL_tsGui* pGui,int nPageId);
-microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int nElemId);
-void microSDL_PageRedrawCalc(microSDL_tsGui* pGui);
 
-//TODO: PageCloseAll()
 
 #ifdef __cplusplus
 }
