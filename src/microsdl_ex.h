@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.0.1    (2016/11/12)
+// - Version 0.5.1    (2016/11/16)
 // =======================================================================
 
 // Extended element definitions
@@ -33,7 +33,7 @@ typedef struct {
   int             nGaugeMin;    ///< Minimum control value
   int             nGaugeMax;    ///< Maximum control value
   int             nGaugeVal;    ///< Current control value
-  SDL_Color       colGauge;     ///< Color of gauge fill bar
+  microSDL_Color  colGauge;     ///< Color of gauge fill bar
   bool            bGaugeVert;   ///< Vertical if true, else Horizontal
 } microSDL_tsXGauge;
 
@@ -58,7 +58,7 @@ typedef struct {
 /// \return Pointer to Element or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXGauge* pXData,SDL_Rect rElem,int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert);
+  microSDL_tsXGauge* pXData,microSDL_Rect rElem,int nMin,int nMax,int nVal,microSDL_Color colGauge,bool bVert);
 
 ///
 /// Update a Gauge element's current value
@@ -88,10 +88,11 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem);
 // Extended Element: Checkbox
 // ============================================================================
 
+/// Checkbox drawing style
 typedef enum {
-  MSDLX_CHECKBOX_STYLE_BOX,
-  MSDLX_CHECKBOX_STYLE_X,
-  MSDLX_CHECKBOX_STYLE_ROUND,          
+  MSDLX_CHECKBOX_STYLE_BOX,                 ///< Inner box
+  MSDLX_CHECKBOX_STYLE_X,                   ///< Crossed
+  MSDLX_CHECKBOX_STYLE_ROUND,               ///< Circular
 } microSDL_teXCheckboxStyle;
 
 /// Extended data for Checkbox element
@@ -100,7 +101,7 @@ typedef struct {
   bool                        bRadio;       ///< Radio-button operation if true
   microSDL_teXCheckboxStyle   nStyle;       ///< Drawing style for element
   bool                        bChecked;     ///< Indicates if it is selected (checked)
-  SDL_Color                   colCheck;     ///< Color of checked inner fill
+  microSDL_Color              colCheck;     ///< Color of checked inner fill
 } microSDL_tsXCheckbox;
 
 
@@ -120,8 +121,8 @@ typedef struct {
 /// \return Element pointer or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,
-  microSDL_teXCheckboxStyle nStyle,SDL_Color colCheck,bool bChecked);
+  microSDL_tsXCheckbox* pXData,microSDL_Rect rElem,bool bRadio,
+  microSDL_teXCheckboxStyle nStyle,microSDL_Color colCheck,bool bChecked);
 
 
 ///
@@ -204,9 +205,9 @@ typedef struct {
   // Style config
   unsigned        nTickDiv;       ///< Style: number of tickmark divisions (0 for none)
   int             nTickLen;       ///< Style: length of tickmarks
-  SDL_Color       colTick;        ///< Style: color of ticks
+  microSDL_Color  colTick;        ///< Style: color of ticks
   bool            bTrim;          ///< Style: show a trim color
-  SDL_Color       colTrim;        ///< Style: color of trim
+  microSDL_Color  colTrim;        ///< Style: color of trim
   // State
   int             nPos;           ///< Current position value of the slider
 } microSDL_tsXSlider;
@@ -229,7 +230,7 @@ typedef struct {
 /// \return Element pointer or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXSlider* pXData,SDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
+  microSDL_tsXSlider* pXData,microSDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert);
 
 
@@ -246,8 +247,8 @@ microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int
 /// \return none
 ///
 void microSDL_ElemXSliderSetStyle(microSDL_tsElem* pElem,
-        bool bTrim,SDL_Color colTrim,unsigned nTickDiv,
-        int nTickLen,SDL_Color colTick);
+        bool bTrim,microSDL_Color colTrim,unsigned nTickDiv,
+        int nTickLen,microSDL_Color colTick);
 
 
 ///
@@ -332,7 +333,7 @@ typedef struct {
 /// \return Pointer to Element or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId);
+  microSDL_tsXSelNum* pXData,microSDL_Rect rElem,int nFontId);
 
 
 ///

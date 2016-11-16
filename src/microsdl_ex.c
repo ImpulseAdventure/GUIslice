@@ -3,20 +3,16 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.0.1    (2016/11/12)
+// - Version 0.5.1    (2016/11/16)
 // =======================================================================
 
 
 // MicroSDL library
 #include "microsdl.h"
 #include "microsdl_ex.h"
+#include "microsdl_drv_sdl1.h"
 
 #include <stdio.h>
-
-#include "SDL/SDL.h"
-#include "SDL/SDL_getenv.h"
-#include "SDL/SDL_ttf.h"
-
 
 // ----------------------------------------------------------------------------
 // Extended element definitions
@@ -48,8 +44,8 @@
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
 microSDL_tsElem* microSDL_ElemXGaugeCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXGauge* pXData,SDL_Rect rElem,
-  int nMin,int nMax,int nVal,SDL_Color colGauge,bool bVert)
+  microSDL_tsXGauge* pXData,microSDL_Rect rElem,
+  int nMin,int nMax,int nVal,microSDL_Color colGauge,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     fprintf(stderr,"ERROR: ElemXGaugeCreate() called with NULL ptr\n");
@@ -117,9 +113,9 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
   
-  SDL_Rect    rGauge;
-  int         nElemX,nElemY;
-  unsigned    nElemW,nElemH;
+  microSDL_Rect   rGauge;
+  int             nElemX,nElemY;
+  unsigned        nElemW,nElemH;
 
   nElemX = pElem->rElem.x;
   nElemY = pElem->rElem.y;
@@ -138,7 +134,7 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
   
   // Draw the background
-  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
   
   
   bool  bVert = pGauge->bGaugeVert;
@@ -222,10 +218,10 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   #endif
 
   // Draw the gauge fill region
-  microSDL_FillRect(pGui,rGauge,pGauge->colGauge);
+  microSDL_DrawFillRect(pGui,rGauge,pGauge->colGauge);
 
   // Draw the midpoint line
-  SDL_Rect    rMidLine;
+  microSDL_Rect   rMidLine;
   if (bVert) {
     rMidLine.x = nElemX;
     rMidLine.y = nElemY+nGaugeMid;
@@ -239,10 +235,10 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
   
   // Paint the filled progress region
-  microSDL_FillRect(pGui,rMidLine,pElem->colElemFrame);
+  microSDL_DrawFillRect(pGui,rMidLine,pElem->colElemFrame);
 
   // Draw a frame around the gauge
-  microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
   // Clear the redraw flag
   microSDL_ElemSetRedraw(pElem,false);
@@ -263,8 +259,8 @@ bool microSDL_ElemXGaugeDraw(void* pvGui,void* pvElem)
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
 microSDL_tsElem* microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXCheckbox* pXData,SDL_Rect rElem,bool bRadio,microSDL_teXCheckboxStyle nStyle,
-  SDL_Color colCheck,bool bChecked)
+  microSDL_tsXCheckbox* pXData,microSDL_Rect rElem,bool bRadio,microSDL_teXCheckboxStyle nStyle,
+  microSDL_Color colCheck,bool bChecked)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     fprintf(stderr,"ERROR: ElemXCheckboxCreate() called with NULL ptr\n");
@@ -276,6 +272,7 @@ microSDL_tsElem* microSDL_ElemXCheckboxCreate(microSDL_tsGui* pGui,int nElemId,i
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
+  sElem.bGlowEn         = true;
   sElem.bGlowing        = false;
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup          = MSDL_GROUP_ID_NONE;
@@ -456,7 +453,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   microSDL_tsGui*   pGui  = (microSDL_tsGui*)(pvGui);
   microSDL_tsElem*  pElem = (microSDL_tsElem*)(pvElem);
   
-  SDL_Rect    rInner;
+  microSDL_Rect    rInner;
   
   // Fetch the element's extended data structure
   microSDL_tsXCheckbox* pCheckbox;
@@ -471,7 +468,7 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   bool                      bGlowing  = pElem->bGlowing;
   
   // Draw the background
-  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
 
   // Generic coordinate calcs
   int nX0,nY0,nX1,nY1,nMidX,nMidY;
@@ -486,40 +483,40 @@ bool microSDL_ElemXCheckboxDraw(void* pvGui,void* pvElem)
     rInner = microSDL_ExpandRect(pElem->rElem,-5,-5);
     if (bChecked) {
       // If checked, fill in the inner region
-      microSDL_FillRect(pGui,rInner,pCheckbox->colCheck);
+      microSDL_DrawFillRect(pGui,rInner,pCheckbox->colCheck);
     } else {
       // Assume the background fill has already been done so
       // we don't need to do anything more in the unchecked case
     }
     // Draw a frame around the checkbox
     if (bGlowing) {
-      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
+      microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
     } else {
-      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+      microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
     }    
   } else if (nStyle == MSDLX_CHECKBOX_STYLE_X) {
     // Draw an X through center if checked
     if (bChecked) {
-      microSDL_Line(pGui,nX0,nY0,nX1,nY1,pCheckbox->colCheck);
-      microSDL_Line(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
+      microSDL_DrawLine(pGui,nX0,nY0,nX1,nY1,pCheckbox->colCheck);
+      microSDL_DrawLine(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
     }
     // Draw a frame around the checkbox
     if (bGlowing) {
-      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
+      microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
     } else {
-      microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+      microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
     }        
   } else if (nStyle == MSDLX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
     if (bChecked) {
       // TODO: A FillCircle() may look better here
-      microSDL_FrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
+      microSDL_DrawFrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
     }
     // Draw a frame around the checkbox
     if (bGlowing) {
-      microSDL_FrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemGlow);  
+      microSDL_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemGlow);  
     } else {
-      microSDL_FrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemFrame);  
+      microSDL_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemFrame);  
     }        
     
   }
@@ -616,7 +613,7 @@ bool microSDL_ElemXCheckboxTouch(void* pvGui,void* pvElem,microSDL_teTouch eTouc
 // - Defines default styling for the element
 // - Defines callback for redraw and touch
 microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXSlider* pXData,SDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
+  microSDL_tsXSlider* pXData,microSDL_Rect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
@@ -629,6 +626,7 @@ microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int
   sElem.bFrameEn        = false;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
+  sElem.bGlowEn         = true;  
   sElem.bGlowing        = false;
   sElem.nGroup          = MSDL_GROUP_ID_NONE;  
   pXData->nPosMin       = nPosMin;
@@ -658,8 +656,8 @@ microSDL_tsElem* microSDL_ElemXSliderCreate(microSDL_tsGui* pGui,int nElemId,int
 }
 
 void microSDL_ElemXSliderSetStyle(microSDL_tsElem* pElem,
-        bool bTrim,SDL_Color colTrim,unsigned nTickDiv,
-        int nTickLen,SDL_Color colTick)
+        bool bTrim,microSDL_Color colTrim,unsigned nTickDiv,
+        int nTickLen,microSDL_Color colTick)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemXSliderSetStyle() called with NULL ptr\n");
@@ -733,17 +731,18 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  bool      bGlowing  = pElem->bGlowing; 
-  int       nPos      = pSlider->nPos;
-  int       nPosMin   = pSlider->nPosMin;
-  int       nPosMax   = pSlider->nPosMax;
-  bool      bVert     = pSlider->bVert;
-  int       nThumbSz  = pSlider->nThumbSz;
-  bool      bTrim     = pSlider->bTrim;
-  SDL_Color colTrim   = pSlider->colTrim;
-  unsigned  nTickDiv  = pSlider->nTickDiv;
-  int       nTickLen  = pSlider->nTickLen;
-  SDL_Color colTick   = pSlider->colTick;
+  bool            bGlowEn   = pElem->bGlowEn; 
+  bool            bGlowing  = pElem->bGlowing; 
+  int             nPos      = pSlider->nPos;
+  int             nPosMin   = pSlider->nPosMin;
+  int             nPosMax   = pSlider->nPosMax;
+  bool            bVert     = pSlider->bVert;
+  int             nThumbSz  = pSlider->nThumbSz;
+  bool            bTrim     = pSlider->bTrim;
+  microSDL_Color  colTrim   = pSlider->colTrim;
+  unsigned        nTickDiv  = pSlider->nTickDiv;
+  int             nTickLen  = pSlider->nTickLen;
+  microSDL_Color  colTick   = pSlider->colTick;
   
   if (bVert) {
     fprintf(stderr,"ERROR: ElemXSliderDraw() bVert=true not supported yet\n");
@@ -769,14 +768,14 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   
   
   // Draw the background
-  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
 
   // Draw any ticks
   if (nTickDiv>0) {
     unsigned  nTickInd;
     int       nTickGap = nCtrlRng/(nTickDiv-1);
     for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
-      microSDL_Line(pGui,nX0+nMargin+nTickInd*nTickGap,nYMid,
+      microSDL_DrawLine(pGui,nX0+nMargin+nTickInd*nTickGap,nYMid,
               nX0+nMargin+nTickInd*nTickGap,nYMid+nTickLen,colTick);
     }
   }  
@@ -784,11 +783,11 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   // Draw the track
   if (!bVert) {
     // Make the track highlight during glow
-    microSDL_Line(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
-            (bGlowing)? pElem->colElemGlow : pElem->colElemFrame);
+    microSDL_DrawLine(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
+            (bGlowEn && bGlowing)? pElem->colElemGlow : pElem->colElemFrame);
     // Optionally draw a trim line
     if (bTrim) {
-      microSDL_Line(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
+      microSDL_DrawLine(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
     }
     
   } else {
@@ -797,7 +796,7 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   
 
   int       nCtrlX0,nCtrlY0;
-  SDL_Rect  rThumb;
+  microSDL_Rect  rThumb;
   nCtrlX0   = nX0+nCtrlPos-nThumbSz;
   nCtrlY0   = nYMid-nThumbSz;
   rThumb.x  = nCtrlX0;
@@ -806,16 +805,16 @@ bool microSDL_ElemXSliderDraw(void* pvGui,void* pvElem)
   rThumb.h  = 2*nThumbSz;
   
   // Draw the thumb control
-  microSDL_FillRect(pGui,rThumb,pElem->colElemFill);
+  microSDL_DrawFillRect(pGui,rThumb,pElem->colElemFill);
   if (bGlowing) {
-    microSDL_FrameRect(pGui,rThumb,pElem->colElemGlow);
+    microSDL_DrawFrameRect(pGui,rThumb,pElem->colElemGlow);
   } else {
-    microSDL_FrameRect(pGui,rThumb,pElem->colElemFrame);    
+    microSDL_DrawFrameRect(pGui,rThumb,pElem->colElemFrame);    
   }
   if (bTrim) {
-    SDL_Rect  rThumbTrim;
+    microSDL_Rect  rThumbTrim;
     rThumbTrim = microSDL_ExpandRect(rThumb,-1,-1);
-    microSDL_FrameRect(pGui,rThumbTrim,pSlider->colTrim);
+    microSDL_DrawFrameRect(pGui,rThumbTrim,pSlider->colTrim);
   }
     
 
@@ -922,7 +921,7 @@ static const int  SELNUM_ID_TXT     = 102;
 // Create a compound element
 // - For now just two buttons and a text area
 microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_tsXSelNum* pXData,SDL_Rect rElem,int nFontId)
+  microSDL_tsXSelNum* pXData,microSDL_Rect rElem,int nFontId)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     fprintf(stderr,"ERROR: ElemXSelNumCreate() called with NULL ptr\n");
@@ -937,6 +936,7 @@ microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
+  sElem.bGlowEn         = true;
   sElem.bGlowing        = false;
   sElem.nGroup          = MSDL_GROUP_ID_NONE;  
 
@@ -983,21 +983,21 @@ microSDL_tsElem* microSDL_ElemXSelNumCreate(microSDL_tsGui* pGui,int nElemId,int
   int   nOffsetY = rElem.y;  
   
   pElemTmp = microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,MSDL_PAGE_NONE,
-    (SDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&microSDL_ElemXSelNumClick);
-  microSDL_ElemSetCol(pElemTmp,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+    (microSDL_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&microSDL_ElemXSelNumClick);
+  microSDL_ElemSetCol(pElemTmp,(microSDL_Color){0,0,192},(microSDL_Color){0,0,128},(microSDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pElemTmp,MSDL_COL_WHITE);
   pElem = microSDL_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
   
   pElemTmp = microSDL_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,MSDL_PAGE_NONE,
-    (SDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&microSDL_ElemXSelNumClick);
-  microSDL_ElemSetCol(pElemTmp,(SDL_Color){0,0,192},(SDL_Color){0,0,128},(SDL_Color){0,0,224}); 
+    (microSDL_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&microSDL_ElemXSelNumClick);
+  microSDL_ElemSetCol(pElemTmp,(microSDL_Color){0,0,192},(microSDL_Color){0,0,128},(microSDL_Color){0,0,224}); 
   microSDL_ElemSetTxtCol(pElemTmp,MSDL_COL_WHITE);  
   pElem = microSDL_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
   
   pElemTmp = microSDL_ElemCreateTxt(pGui,SELNUM_ID_TXT,MSDL_PAGE_NONE,
-    (SDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
+    (microSDL_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
   pElem = microSDL_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
 
@@ -1040,7 +1040,7 @@ bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
   }
   
   // Draw the compound element fill (background)
-  microSDL_FillRect(pGui,pElem->rElem,pElem->colElemFill);
+  microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
   
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
@@ -1051,7 +1051,7 @@ bool microSDL_ElemXSelNumDraw(void* pvGui,void* pvElem)
   // - This could instead be done by creating a sub-element
   //   of type box.
   // - We don't need to show any glowing of the compound element
-  microSDL_FrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
   // Clear the redraw flag
   microSDL_ElemSetRedraw(pElem,false);

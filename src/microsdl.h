@@ -6,19 +6,18 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.0.1    (2016/11/12)
+// - Version 0.5.1    (2016/11/16)
 // =======================================================================
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
+  
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "SDL/SDL.h"
-#include "SDL/SDL_ttf.h"
+#include <inttypes.h>
 
   
 // -----------------------------------------------------------------------
@@ -140,43 +139,43 @@ typedef enum {
 } microSDL_teType;
 
 // Element text alignment
-#define MSDL_ALIGNV_TOP       0x10
-#define MSDL_ALIGNV_MID       0x20
-#define MSDL_ALIGNV_BOT       0x40
-#define MSDL_ALIGNH_LEFT      0x01
-#define MSDL_ALIGNH_MID       0x02
-#define MSDL_ALIGNH_RIGHT     0x04
-#define MSDL_ALIGN_TOP_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_TOP
-#define MSDL_ALIGN_TOP_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_TOP
-#define MSDL_ALIGN_TOP_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_TOP
-#define MSDL_ALIGN_MID_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_MID
-#define MSDL_ALIGN_MID_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_MID
-#define MSDL_ALIGN_MID_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_MID
-#define MSDL_ALIGN_BOT_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_BOT
-#define MSDL_ALIGN_BOT_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_BOT
-#define MSDL_ALIGN_BOT_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_BOT
+#define MSDL_ALIGNV_TOP       0x10                                ///< Vertical align to top
+#define MSDL_ALIGNV_MID       0x20                                ///< Vertical align to middle
+#define MSDL_ALIGNV_BOT       0x40                                ///< Vertical align to bottom
+#define MSDL_ALIGNH_LEFT      0x01                                ///< Horizontal align to left
+#define MSDL_ALIGNH_MID       0x02                                ///< Horizontal align to middle
+#define MSDL_ALIGNH_RIGHT     0x04                                ///< Horizontal align to right
+#define MSDL_ALIGN_TOP_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_TOP ///< Align to top-left
+#define MSDL_ALIGN_TOP_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_TOP ///< Align to middle of top
+#define MSDL_ALIGN_TOP_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_TOP ///< Align to top-right
+#define MSDL_ALIGN_MID_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_MID ///< Align to middle of left side
+#define MSDL_ALIGN_MID_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_MID ///< Align to center
+#define MSDL_ALIGN_MID_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_MID ///< Align to middle of right side
+#define MSDL_ALIGN_BOT_LEFT   MSDL_ALIGNH_LEFT  | MSDL_ALIGNV_BOT ///< Align to bottom-left
+#define MSDL_ALIGN_BOT_MID    MSDL_ALIGNH_MID   | MSDL_ALIGNV_BOT ///< Align to middle of bottom
+#define MSDL_ALIGN_BOT_RIGHT  MSDL_ALIGNH_RIGHT | MSDL_ALIGNV_BOT ///< Align to bottom-right
 
 
 // Basic color definition
-#define MSDL_COL_BLUE_DK    (SDL_Color) {0,0,255}       ///< Blue (dark)
-#define MSDL_COL_BLUE_LT    (SDL_Color) {128,128,255}   ///< Blue (light)
-#define MSDL_COL_RED_DK     (SDL_Color) {255,0,0}       ///< Red (dark)
-#define MSDL_COL_RED_LT     (SDL_Color) {255,128,128}   ///< Red (light)
-#define MSDL_COL_GREEN_DK   (SDL_Color) {0,255,0}       ///< Green (dark)
-#define MSDL_COL_GREEN_LT   (SDL_Color) {128,255,128}   ///< Green (light)
-#define MSDL_COL_YELLOW     (SDL_Color) {255,255,0}     ///< Yellow
-#define MSDL_COL_YELLOW_DK  (SDL_Color) {64,64,0}       ///< Yellow (dark)
-#define MSDL_COL_BLACK      (SDL_Color) {0,0,0}         ///< Black
-#define MSDL_COL_GRAY_DK    (SDL_Color) {64,64,64}      ///< Gray (dark)
-#define MSDL_COL_GRAY       (SDL_Color) {128,128,128}   ///< Gray
-#define MSDL_COL_GRAY_LT    (SDL_Color) {192,192,192}   ///< Gray (light)
-#define MSDL_COL_WHITE      (SDL_Color) {255,255,255}   ///< White
-#define MSDL_COL_PURPLE     (SDL_Color) {128,0,128}     ///< Purple
-#define MSDL_COL_CYAN       (SDL_Color) {0,255,255}     ///< Cyan
-#define MSDL_COL_MAGENTA    (SDL_Color) {255,0,255}     ///< Magenta
-#define MSDL_COL_TEAL       (SDL_Color) {0,128,128}     ///< Teal
-#define MSDL_COL_ORANGE     (SDL_Color) {255,165,0}     ///< Orange
-#define MSDL_COL_BROWN      (SDL_Color) {165,42,42}     ///< Brown
+#define MSDL_COL_BLUE_DK    (microSDL_Color) {0,0,255}       ///< Blue (dark)
+#define MSDL_COL_BLUE_LT    (microSDL_Color) {128,128,255}   ///< Blue (light)
+#define MSDL_COL_RED_DK     (microSDL_Color) {255,0,0}       ///< Red (dark)
+#define MSDL_COL_RED_LT     (microSDL_Color) {255,128,128}   ///< Red (light)
+#define MSDL_COL_GREEN_DK   (microSDL_Color) {0,255,0}       ///< Green (dark)
+#define MSDL_COL_GREEN_LT   (microSDL_Color) {128,255,128}   ///< Green (light)
+#define MSDL_COL_YELLOW     (microSDL_Color) {255,255,0}     ///< Yellow
+#define MSDL_COL_YELLOW_DK  (microSDL_Color) {64,64,0}       ///< Yellow (dark)
+#define MSDL_COL_BLACK      (microSDL_Color) {0,0,0}         ///< Black
+#define MSDL_COL_GRAY_DK    (microSDL_Color) {64,64,64}      ///< Gray (dark)
+#define MSDL_COL_GRAY       (microSDL_Color) {128,128,128}   ///< Gray
+#define MSDL_COL_GRAY_LT    (microSDL_Color) {192,192,192}   ///< Gray (light)
+#define MSDL_COL_WHITE      (microSDL_Color) {255,255,255}   ///< White
+#define MSDL_COL_PURPLE     (microSDL_Color) {128,0,128}     ///< Purple
+#define MSDL_COL_CYAN       (microSDL_Color) {0,255,255}     ///< Cyan
+#define MSDL_COL_MAGENTA    (microSDL_Color) {255,0,255}     ///< Magenta
+#define MSDL_COL_TEAL       (microSDL_Color) {0,128,128}     ///< Teal
+#define MSDL_COL_ORANGE     (microSDL_Color) {255,165,0}     ///< Orange
+#define MSDL_COL_BROWN      (microSDL_Color) {165,42,42}     ///< Brown
 
 /// Touch event type for element touch tracking
 typedef enum  {
@@ -187,18 +186,41 @@ typedef enum  {
     MSDL_TOUCH_UP_OUT,     /// Touch event (up) outside tracked element
 } microSDL_teTouch;
 
+
+// -----------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------
+
+/// Callback function for element drawing
+typedef bool (*MSDL_CB_DRAW)(void* pvGui,void* pvElem);
+
+/// Callback function for element touch tracking
+typedef bool (*MSDL_CB_TOUCH)(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nX,int nY);
+
+/// Callback function for element tick
+typedef bool (*MSDL_CB_TICK)(void* pvGui,void* pvElem);
+
+
 // -----------------------------------------------------------------------
 // Structures
 // -----------------------------------------------------------------------
 
-// Callback function for element drawing
-typedef bool (*MSDL_CB_DRAW)(void* pvGui,void* pvElem);
 
-// Callback function for element touch tracking
-typedef bool (*MSDL_CB_TOUCH)(void* pvGui,void* pvElem,microSDL_teTouch eTouch,int nX,int nY);
+/// Rectangular region. Defines X,Y corner coordinates plus dimensions.
+typedef struct microSDL_Rect {
+  int16_t   x;    ///< X coordinate of cornder
+  int16_t   y;    ///< Y coordinate of corner
+  uint16_t  w;    ///< Width of region
+  uint16_t  h;    ///< Height of region
+} microSDL_Rect;
 
-// Callback function for element tick
-typedef bool (*MSDL_CB_TICK)(void* pvGui,void* pvElem);
+/// Color structure. Defines RGB triplet.
+typedef struct microSDL_Color {
+  uint8_t r;      ///< RGB red value
+  uint8_t g;      ///< RGB green value
+  uint8_t b;      ///< RGB blue value
+  uint8_t unused; ///< Unused value to pad structure
+} microSDL_Color;
 
 
 // Forward declaration so we can have element reference in element
@@ -214,18 +236,19 @@ typedef struct microSDL_tsElem microSDL_tsElem;
 /// - Extensions to the core element types is provided through the
 ///   pXData reference and pfuncX* callback functions.
 ///
-struct microSDL_tsElem {
+typedef struct microSDL_tsElem {
 
   int                 nId;            ///< Element ID specified by user
   microSDL_teType     nType;          ///< Element type enumeration
-  SDL_Rect            rElem;          ///< Rect region containing element
+  microSDL_Rect       rElem;          ///< Rect region containing element
   int                 nGroup;         ///< Group ID that the element belongs to  
   bool                bValid;         ///< Element was created properly
   
+  bool                bGlowEn;        ///< Enable glowing visual state
   bool                bGlowing;       ///< Element is currently glowing
-
-  SDL_Surface*        pSurf;          ///< Surface ptr to draw (normal)
-  SDL_Surface*        pSurfGlow;      ///< Surface ptr to draw (glowing)
+  
+  void*               pvSurfNorm;     ///< Surface ptr to draw (normal)
+  void*               pvSurfGlow;     ///< Surface ptr to draw (glowing)
 
   bool                bClickEn;       ///< Element accepts touch events
   bool                bFrameEn;       ///< Element is drawn with frame
@@ -234,9 +257,9 @@ struct microSDL_tsElem {
                                       ///< if elements underneath are visible and must
                                       ///< be redrawn as well.
 
-  SDL_Color           colElemFrame;   ///< Color for frame
-  SDL_Color           colElemFill;    ///< Color for background fill
-  SDL_Color           colElemGlow;    ///< Color to use when touch cause glowing
+  microSDL_Color      colElemFrame;   ///< Color for frame
+  microSDL_Color      colElemFill;    ///< Color for background fill
+  microSDL_Color      colElemGlow;    ///< Color to use when touch cause glowing
 
   bool                bNeedRedraw;    ///< Element needs to be redrawn
 
@@ -247,27 +270,26 @@ struct microSDL_tsElem {
   microSDL_tsElem*    pElemParent;  
   
   char                acStr[MSDL_ELEM_STRLEN_MAX];  ///< Text string to overlay
-  SDL_Color           colElemText;    ///< Color of overlay text
+  microSDL_Color      colElemText;    ///< Color of overlay text
   unsigned            eTxtAlign;      ///< Alignment of overlay text
   unsigned            nTxtMargin;     ///< Margin of overlay text within rect region
-  TTF_Font*           pTxtFont;       ///< Font ptr for overlay text
+  void*               pvTxtFont;      ///< Void ptr to Font for overlay text
 
   void*               pXData;         ///< Ptr to extended data structure
   
-  /// Callback func ptr for drawing
-  MSDL_CB_DRAW        pfuncXDraw;
+  MSDL_CB_DRAW        pfuncXDraw;     ///< Callback func ptr for drawing
+  MSDL_CB_TOUCH       pfuncXTouch;    ///< Callback func ptr for touch
+  MSDL_CB_TICK        pfuncXTick;     ///< Callback func ptr for timer/main loop tick
   
-  /// Callback func ptr for touch
-  MSDL_CB_TOUCH       pfuncXTouch;
-  
-  /// Callback func ptr for timer/main loop tick
-  MSDL_CB_TICK        pfuncXTick;
-  
-};
+} microSDL_tsElem;
 
 
+/// Element collection struct
+/// - Collections are used to maintain a list of elements and any
+///   touch tracking status.
+/// - Pages and Compound Elements both instantiate a Collection
 typedef struct {
-  microSDL_tsElem*      pElemParent;
+  microSDL_tsElem*      pElemParent;      ///< Pointer to parent element (or NULL if none))
 
   microSDL_tsElem*      asElem;           ///< Array of elements
   unsigned              nElemMax;         ///< Maximum number of elements to allocate
@@ -280,8 +302,8 @@ typedef struct {
 
 /// Font reference structure
 typedef struct {
-  int         nId;      ///< Font ID specified by user
-  TTF_Font*   pFont;    ///< Ptr to the Font (TTF_Font)
+  int     nId;      ///< Font ID specified by user
+  void*   pvFont;   ///< Void ptr to the Font (type defined by driver)
 } microSDL_tsFont;
 
 
@@ -289,10 +311,10 @@ typedef struct {
 /// - Viewports allow drawing operations to be done within
 ///   a local coordinate system and clipped to a region.
 typedef struct {
-  int         nId;        ///< View ID specified by user
-  SDL_Rect    rView;      ///< Rect defining the viewport
-  unsigned    nOriginX;   ///< Position within rView for local origin
-  unsigned    nOriginY;   ///< Position within rView for local origin
+  int               nId;        ///< View ID specified by user
+  microSDL_Rect     rView;      ///< Rect defining the viewport
+  unsigned          nOriginX;   ///< Position within rView for local origin
+  unsigned          nOriginY;   ///< Position within rView for local origin
 } microSDL_tsView;
 
 
@@ -317,42 +339,40 @@ typedef struct {
 /// - Maintains list of one or more pages
 typedef struct {
 
-  microSDL_tsFont*  psFont;       ///< Collection of loaded fonts
-  unsigned          nFontMax;     ///< Maximum number of fonts to allocate
-  unsigned          nFontCnt;     ///< Number of fonts allocated
+  microSDL_tsFont*    asFont;           ///< Collection of loaded fonts
+  unsigned            nFontMax;         ///< Maximum number of fonts to allocate
+  unsigned            nFontCnt;         ///< Number of fonts allocated
 
-  microSDL_tsElem   sElemTmp;         ///< Temporary element
+  microSDL_tsElem     sElemTmp;         ///< Temporary element
   
-  microSDL_tsView*  psView;               ///< Collection of viewports
-  unsigned          nViewMax;             ///< Maximum number of viewports to allocate
-  unsigned          nViewCnt;             ///< Number of viewports allocated
-  int               nViewIndCur;          ///< Currently-active viewport index
+  microSDL_tsView*    asView;           ///< Collection of viewports
+  unsigned            nViewMax;         ///< Maximum number of viewports to allocate
+  unsigned            nViewCnt;         ///< Number of viewports allocated
+  int                 nViewIndCur;      ///< Currently-active viewport index
 
-  int               nTouchLastX;          ///< Last touch event X coord
-  int               nTouchLastY;          ///< Last touch event Y coord
-  unsigned          nTouchLastPress;      ///< Last touch event pressure (0=none))
+  int                 nTouchLastX;      ///< Last touch event X coord
+  int                 nTouchLastY;      ///< Last touch event Y coord
+  unsigned            nTouchLastPress;  ///< Last touch event pressure (0=none))
 
   // Touchscreen library interface
   #ifdef INC_TS
-  struct tsdev*     ts;                   ///< Ptr to touchscreen device
+  struct tsdev*       ts;               ///< Ptr to touchscreen device
   #endif
 
  
   // Primary surface definitions
-  SDL_Surface*      surfScreen;           ///< Surface ptr for screen
-  SDL_Surface*      surfBkgnd;            ///< Surface ptr for background
+  void*               pvSurfScreen;     ///< Surface ptr for screen
+  void*               pvSurfBkgnd;      ///< Surface ptr for background
   
   // Pages
-  microSDL_tsPage*    asPage;             ///< Array of pages
-  unsigned            nPageMax;           ///< Maximum number of pages
-  unsigned            nPageCnt;           ///< Current page index
+  microSDL_tsPage*    asPage;           ///< Array of pages
+  unsigned            nPageMax;         ///< Maximum number of pages
+  unsigned            nPageCnt;         ///< Current page index
   
-  microSDL_tsPage*    pCurPage;           ///< Currently active page
-  microSDL_tsCollect* pCurPageCollect;    ///< Ptr to active page collection
+  microSDL_tsPage*    pCurPage;         ///< Currently active page
+  microSDL_tsCollect* pCurPageCollect;  ///< Ptr to active page collection
   
 } microSDL_tsGui;
-
-
 
 
 
@@ -360,11 +380,9 @@ typedef struct {
 // General Functions
 // ------------------------------------------------------------------------
 
-
 ///
 /// Configure environment variables suitable for
-/// default microSDL operation with PiTFT on
-/// Raspberry Pi.
+/// default driver operations.
 ///
 /// - NOTE: Users with other hardware may need to
 ///   supply their own initialization routine
@@ -375,7 +393,6 @@ typedef struct {
 /// \return None
 ///
 void microSDL_InitEnv(microSDL_tsGui* pGui);
-
 
 ///
 /// Initialize the microSDL library
@@ -391,16 +408,16 @@ void microSDL_InitEnv(microSDL_tsGui* pGui);
 /// - microSDL_m_surfScreen is initialized
 ///
 /// \param[in]  pGui:      Pointer to GUI
-/// \param[in]  psPage:    Pointer to Page array
+/// \param[in]  asPage:    Pointer to Page array
 /// \param[in]  nMaxPage:  Size of Page array
-/// \param[in]  psFont:    Pointer to Font array
+/// \param[in]  asFont:    Pointer to Font array
 /// \param[in]  nMaxFont:  Size of Font array
-/// \param[in]  psView:    Pointer to View array
+/// \param[in]  asView:    Pointer to View array
 /// \param[in]  nMaxView:  Size of View array
 ///
 /// \return true if success, false if fail
 ///
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPage,microSDL_tsFont* psFont,unsigned nMaxFont,microSDL_tsView* psView,unsigned nMaxView);
+bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPage,microSDL_tsFont* asFont,unsigned nMaxFont,microSDL_tsView* asView,unsigned nMaxView);
 
 
 
@@ -428,72 +445,10 @@ void microSDL_Quit(microSDL_tsGui* pGui);
 ///
 void microSDL_Update(microSDL_tsGui* pGui);
 
+
 // ------------------------------------------------------------------------
 // Graphics General Functions
 // ------------------------------------------------------------------------
-
-///
-/// Load a bitmap (*.bmp) from a file and create
-/// a new surface. Transparency is supported
-/// via use of the color pink (0xFF00FF).
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pStrFname:   String containing file path to *.bmp file
-///
-/// \return SDL surface pointer or NULL if error
-///
-SDL_Surface *microSDL_LoadBmp(microSDL_tsGui* pGui,char* pStrFname);
-
-
-
-///
-/// Configure the background image to use the provided surface.
-/// - The background is used when redrawing the entire page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pSurf:       Surface to use for the background image
-///
-/// \return true if success, false if fail
-///
-bool microSDL_SetBkgnd(microSDL_tsGui* pGui,SDL_Surface* pSurf);
-
-///
-/// Configure the background to use a bitmap image
-/// - The background is used when redrawing the entire page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pStrFname:   Filename to BMP file
-///
-/// \return true if success, false if fail
-///
-bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname);
-
-///
-/// Configure the background to use a solid color
-/// - The background is used when redrawing the entire page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nCol:        RGB Color to use
-///
-/// \return true if success, false if fail
-///
-bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,SDL_Color nCol);
-
-
-///
-/// Copy one surface to another.
-/// - This is typically used to copy a shape
-///   to the main screen surface.
-///
-/// \param[in]  pGui:          Pointer to GUI
-/// \param[in]  nX:            Destination X coordinate of copy
-/// \param[in]  nY:            Destination Y coordinate of copy
-/// \param[in]  pSrc:          Ptr to source surface (eg. a loaded image)
-/// \param[in]  pDest:         Ptr to destination surface (typically the screen)
-///
-/// \return none
-///
-void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc, SDL_Surface* pDest);
 
 
 ///
@@ -507,7 +462,7 @@ void microSDL_ApplySurface(microSDL_tsGui* pGui,int x, int y, SDL_Surface* pSrc,
 ///
 /// \return true if inside region, false otherwise
 ///
-bool microSDL_IsInRect(int nSelX,int nSelY,SDL_Rect rRect);
+bool microSDL_IsInRect(int nSelX,int nSelY,microSDL_Rect rRect);
 
 
 ///
@@ -520,9 +475,9 @@ bool microSDL_IsInRect(int nSelX,int nSelY,SDL_Rect rRect);
 /// \param[in]  nExpandH:    Number of pixels to expand the height (if positive)
 ///                          of contract the height (if negative)
 ///
-/// \return SDL_Rect() with resized dimensions
+/// \return microSDL_Rect() with resized dimensions
 ///
-SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
+microSDL_Rect microSDL_ExpandRect(microSDL_Rect rRect,int16_t nExpandW,int16_t nExpandH);
 
 
 ///
@@ -538,7 +493,7 @@ SDL_Rect microSDL_ExpandRect(SDL_Rect rRect,Sint16 nExpandW,Sint16 nExpandH);
 ///
 /// \return true if inside region, false otherwise
 ///
-bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,Uint16 nWidth,Uint16 nHeight);
+bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t nHeight);
 
 
 
@@ -552,8 +507,8 @@ bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,Uint16 nWidth,Uint
 
 ///
 /// Set a pixel on the active screen to the given color with lock
-/// - Calls upon microSDL_SetPixelRaw() but wraps with a surface lock lock
-/// - If repeated access is needed, use microSDL_SetPixelRaw() instead
+/// - Calls upon microSDL_DrvDrawSetPixelRaw() but wraps with a surface lock lock
+/// - If repeated access is needed, use microSDL_DrvDrawSetPixelRaw() instead
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nX:          Pixel X coordinate to set
@@ -563,7 +518,7 @@ bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,Uint16 nWidth,Uint
 ///
 /// \return none
 ///
-void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,bool bMapEn);
+void microSDL_DrawSetPixel(microSDL_tsGui* pGui,int16_t nX,int16_t nY,microSDL_Color nCol,bool bMapEn);
 
 
 ///
@@ -578,7 +533,7 @@ void microSDL_SetPixel(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,SDL_Color nCol,b
 ///
 /// \return none
 ///
-void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 nY1,SDL_Color nCol);
+void microSDL_DrawLine(microSDL_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,microSDL_Color nCol);
 
 
 ///
@@ -593,7 +548,7 @@ void microSDL_Line(microSDL_tsGui* pGui,Sint16 nX0,Sint16 nY0,Sint16 nX1,Sint16 
 ///
 /// \return none
 ///
-void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Color nCol);
+void microSDL_DrawLineH(microSDL_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,microSDL_Color nCol);
 
 
 ///
@@ -608,7 +563,7 @@ void microSDL_LineH(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nW,SDL_Col
 ///
 /// \return none
 ///
-void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Color nCol);
+void microSDL_DrawLineV(microSDL_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,microSDL_Color nCol);
 
 
 ///
@@ -620,7 +575,7 @@ void microSDL_LineV(microSDL_tsGui* pGui,Sint16 nX, Sint16 nY, Uint16 nH,SDL_Col
 ///
 /// \return none
 ///
-void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
+void microSDL_DrawFrameRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol);
 
 
 ///
@@ -632,8 +587,7 @@ void microSDL_FrameRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 ///
 /// \return none
 ///
-void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
-
+void microSDL_DrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol);
 
 ///
 /// Draw a framed circle
@@ -646,8 +600,8 @@ void microSDL_FillRect(microSDL_tsGui* pGui,SDL_Rect rRect,SDL_Color nCol);
 ///
 /// \return none
 ///
-void microSDL_FrameCircle(microSDL_tsGui* pGui,Sint16 nMidX,Sint16 nMidY,
-  Uint16 nRadius,SDL_Color nCol);
+void microSDL_DrawFrameCircle(microSDL_tsGui* pGui,int16_t nMidX,int16_t nMidY,
+  uint16_t nRadius,microSDL_Color nCol);
 
 
 
@@ -674,11 +628,12 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId, const char* acFontName, 
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nFontId:     ID value used to reference the font (supplied
-///                originally to microSDL_FontAdd()
+///                          originally to microSDL_FontAdd()
 ///
-/// \return A TTF_Font pointer or NULL if error
+/// \return A void pointer to the font data or NULL if error
+///         The type is defined by the driver.
 ///
-TTF_Font* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId);
+void* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId);
 
 
 
@@ -824,15 +779,6 @@ microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int 
 void microSDL_PageRedrawCalc(microSDL_tsGui* pGui);
 
 
-
-// ------------------------------------------------------------------------
-// Element General Functions
-// ------------------------------------------------------------------------
-
-
-
-
-
 // ------------------------------------------------------------------------
 // Element Creation Functions
 // ------------------------------------------------------------------------
@@ -852,7 +798,7 @@ void microSDL_PageRedrawCalc(microSDL_tsGui* pGui);
 /// \return Pointer to the Element or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,const char* pStr,int nFontId);
+  microSDL_Rect rElem,const char* pStr,int nFontId);
 
 
 ///
@@ -871,7 +817,7 @@ microSDL_tsElem* microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPa
 /// \return Pointer to the Element or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,const char* acStr,int nFontId,MSDL_CB_TOUCH cbTouch);
+  microSDL_Rect rElem,const char* acStr,int nFontId,MSDL_CB_TOUCH cbTouch);
 
 ///
 /// Create a graphical Button Element
@@ -890,7 +836,7 @@ microSDL_tsElem* microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int 
 /// \return Pointer to the Element or NULL if failure
 ///
 microSDL_tsElem* microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
-  SDL_Rect rElem,const char* acImg,const char* acImgSel,MSDL_CB_TOUCH cbTouch);
+  microSDL_Rect rElem,const char* acImg,const char* acImgSel,MSDL_CB_TOUCH cbTouch);
 
 
 ///
@@ -904,7 +850,7 @@ microSDL_tsElem* microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int 
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem);
+microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,microSDL_Rect rElem);
 
 ///
 /// Create an image Element
@@ -918,31 +864,23 @@ microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPa
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-microSDL_tsElem* microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,SDL_Rect rElem,
+microSDL_tsElem* microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,microSDL_Rect rElem,
   const char* acImg);
-
-
-
-// ------------------------------------------------------------------------
-// Element Drawing Functions
-// ------------------------------------------------------------------------
-
-///
-/// Draw an element to the active display
-/// - Element is referenced by a page ID and element ID
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nPageId:     ID of page containing element
-/// \param[in]  nElemId:     ID of element
-///
-/// \return none
-///
-void microSDL_ElemDraw(microSDL_tsGui* pGui,int nPageId,int nElemId);
 
 
 // ------------------------------------------------------------------------
 // Element Update Functions
 // ------------------------------------------------------------------------
+
+
+/// Get an Element ID from an element structure
+///
+/// \param[in]  pElem:       Pointer to element structure
+///
+/// \return ID of element or MSDL_ID_NONE if not found
+///
+int microSDL_ElemGetId(microSDL_tsElem* pElem);
+
 
 ///
 /// Set the fill state for an Element
@@ -964,7 +902,7 @@ void microSDL_ElemSetFillEn(microSDL_tsElem* pElem,bool bFillEn);
 ///
 /// \return none
 ///
-void microSDL_ElemSetCol(microSDL_tsElem* pElem,SDL_Color colFrame,SDL_Color colFill,SDL_Color colGlow);
+void microSDL_ElemSetCol(microSDL_tsElem* pElem,microSDL_Color colFrame,microSDL_Color colFill,microSDL_Color colGlow);
 
 ///
 /// Set the group ID for an element
@@ -1025,7 +963,7 @@ void microSDL_ElemSetTxtStr(microSDL_tsElem* pElem,const char* pStr);
 ///
 /// \return none
 ///
-void microSDL_ElemSetTxtCol(microSDL_tsElem* pElem,SDL_Color colVal);
+void microSDL_ElemSetTxtCol(microSDL_tsElem* pElem,microSDL_Color colVal);
 
 
 ///
@@ -1048,6 +986,26 @@ void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,microSDL_tsElem* pElem,int nFo
 ///
 void microSDL_ElemSetRedraw(microSDL_tsElem* pElem,bool bRedraw);
 
+///
+/// Update the glowing enable for an element
+///
+/// \param[in]  pElem:      Pointer to Element
+/// \param[in]  bGlowEn:    True if element should support glowing
+///
+/// \return none
+///
+void microSDL_ElemSetGlowEn(microSDL_tsElem* pElem,bool bGlowEn);
+
+
+///
+/// Get the glowing enable for an element
+///
+/// \param[in]  pElem:       Pointer to Element
+///
+/// \return True if element supports glowing
+///
+bool microSDL_ElemGetGlowEn(microSDL_tsElem* pElem);
+
 
 ///
 /// Update the glowing indicator for an element
@@ -1068,15 +1026,6 @@ void microSDL_ElemSetGlow(microSDL_tsElem* pElem,bool bGlowing);
 /// \return True if element is glowing
 ///
 bool microSDL_ElemGetGlow(microSDL_tsElem* pElem);
-
-
-/// Get an Element ID from an element structure
-///
-/// \param[in]  pElem:       Pointer to element structure
-///
-/// \return ID of element or MSDL_ID_NONE if not found
-///
-int microSDL_ElemGetId(microSDL_tsElem* pElem);
 
 
 ///
@@ -1104,6 +1053,25 @@ void microSDL_ElemSetDrawFunc(microSDL_tsElem* pElem,MSDL_CB_DRAW funcCb);
 void microSDL_ElemSetTickFunc(microSDL_tsElem* pElem,MSDL_CB_TICK funcCb);
 
 
+
+// ------------------------------------------------------------------------
+// Element Drawing Functions
+// ------------------------------------------------------------------------
+
+///
+/// Draw an element to the active display
+/// - Element is referenced by a page ID and element ID
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     ID of page containing element
+/// \param[in]  nElemId:     ID of element
+///
+/// \return none
+///
+void microSDL_ElemDraw(microSDL_tsGui* pGui,int nPageId,int nElemId);
+
+
+
 // ------------------------------------------------------------------------
 // Viewport Functions
 // ------------------------------------------------------------------------
@@ -1119,7 +1087,7 @@ void microSDL_ElemSetTickFunc(microSDL_tsElem* pElem,MSDL_CB_TICK funcCb);
 ///
 /// \return The Viewport ID or MSDL_VIEW_ID_NONE if failure
 ///
-int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,SDL_Rect rView,unsigned nOriginX,unsigned nOriginY);
+int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,microSDL_Rect rView,unsigned nOriginX,unsigned nOriginY);
 
 
 ///
@@ -1305,17 +1273,6 @@ void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect);
 void microSDL_TrackTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,int nX,int nY,unsigned nPress);
 
 
-///
-/// Get the last touch event from the SDL_Event handler
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[out] pnX:         Ptr to X coordinate of last touch event
-/// \param[out] pnY:         Ptr to Y coordinate of last touch event
-/// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, 1 for touch)
-///
-/// \return true if an event was detected or false otherwise
-///
-bool microSDL_GetSdlTouch(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 
 
 // ------------------------------------------------------------------------
@@ -1362,97 +1319,6 @@ int microSDL_GetTsTouch(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPre
 // ------------------------------------------------------------------------
 
 
-
-///
-/// Convert an RGB color triplet into the surface pixel value
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nCol:        RGB value for conversion
-///
-/// \return A pixel value for the current screen format
-///
-Uint32 microSDL_GenPixelColor(microSDL_tsGui* pGui,SDL_Color nCol);
-
-
-///
-/// Get the pixel at (X,Y)
-/// - Based on code from:
-/// -   https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideo.html
-///
-/// PRE:
-/// - Surface must be locked
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  surf:        SDL surface pointer
-/// \param[in]  nX:          Pixel X coordinate
-/// \param[in]  nY:          Pixel Y coordinate
-///
-/// \return Pixel color value from the coordinate or 0 if error
-///
-Uint32 microSDL_GetPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf,int nX,int nY);
-
-
-///
-/// Set the pixel at (X,Y) on a surface to the given pixel value
-///
-/// PRE:
-/// - Surface must be locked
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  surf:        SDL surface pointer
-/// \param[in]  nX:          Pixel X coordinate
-/// \param[in]  nY:          Pixel Y coordinate
-/// \param[in]  nPixelVal:   Pixel color value
-///
-/// \return none
-///
-void microSDL_PutPixelRaw(microSDL_tsGui* pGui,SDL_Surface *surf, int nX, int nY, Uint32 nPixelVal);
-
-
-///
-/// Set a pixel on the active screen to the given color
-///
-/// PRE:
-/// - The surface must be locked first
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nX:          Pixel X coordinate to set
-/// \param[in]  nY:          Pixel Y coordinate to set
-/// \param[in]  nPixelCol:   Color pixel value ot assign
-///
-/// \return none
-///
-void microSDL_SetPixelRaw(microSDL_tsGui* pGui,Sint16 nX,Sint16 nY,Uint32 nPixelCol);
-
-
-///
-/// Lock an SDL surface so that direct pixel manipulation
-/// can be done safely.
-///
-/// POST:
-/// - Primary screen surface is locked
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return true if success, false otherwise
-///
-bool microSDL_Lock(microSDL_tsGui* pGui);
-
-
-///
-/// Unlock the SDL surface after pixel manipulation is
-/// complete.
-///
-/// POST:
-/// - Primary screen surface is unlocked
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return none
-///
-void microSDL_Unlock(microSDL_tsGui* pGui);
-
-
 ///
 /// Create a new element with default styling
 ///
@@ -1470,7 +1336,7 @@ void microSDL_Unlock(microSDL_tsGui* pGui);
 /// \return Initialized structure
 ///
 microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId,microSDL_teType nType,
-  SDL_Rect rElem,const char* pStr,int nFontId);
+  microSDL_Rect rElem,const char* pStr,int nFontId);
 
 
 ///
@@ -1503,6 +1369,28 @@ microSDL_tsElem* microSDL_ElemAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsEl
 void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
   const char* acImageSel);
 
+///
+/// Configure the background to use a bitmap image
+/// - The background is used when redrawing the entire page
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pStrFname:   Filename to BMP file
+///
+/// \return true if success, false if fail
+///
+bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname);
+
+
+///
+/// Configure the background to use a solid color
+/// - The background is used when redrawing the entire page
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nCol:        RGB Color to use
+///
+/// \return true if success, false if fail
+///
+bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol);
 
 /// Draw an element to the active display
 /// - Element is referenced by an element pointer
@@ -1589,7 +1477,7 @@ int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId);
 ///
 /// \return none
 ///
-void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16* pnX,Sint16* pnY);
+void microSDL_ViewRemapPt(microSDL_tsGui* pGui,int16_t* pnX,int16_t* pnY);
 
 ///
 /// Remap a rectangle from local to global using the
@@ -1602,7 +1490,7 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,Sint16* pnX,Sint16* pnY);
 ///
 /// \return none
 ///
-void microSDL_ViewRemapRect(microSDL_tsGui* pGui,SDL_Rect* prRect);
+void microSDL_ViewRemapRect(microSDL_tsGui* pGui,microSDL_Rect* prRect);
 
 
 ///
@@ -1648,16 +1536,7 @@ void microSDL_ResetElem(microSDL_tsElem* pElem);
 ///
 void microSDL_ResetView(microSDL_tsView* pView);
 
-///
-/// Ensure SDL initializes cleanly to workaround
-/// possible issues if previous SDL application
-/// failed to close down gracefully.
-///
-/// \param[in]  sTTY:       Terminal device (eg. "/dev/tty0")
-///
-/// \return true if success
-///
-bool microSDL_CleanStart(const char* sTTY);
+
 
 
 // =======================

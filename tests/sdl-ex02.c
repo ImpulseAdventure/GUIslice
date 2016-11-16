@@ -63,12 +63,12 @@ int main( int argc, char* args[] )
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create background box
-  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(microSDL_Rect){10,50,300,150});
   microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create Quit button with text label
   pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
+    (microSDL_Rect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------
   // Start display

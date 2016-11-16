@@ -7,6 +7,8 @@
 
 #include "microsdl.h"
 
+#include <unistd.h>      // For sleep()
+
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX};
@@ -34,7 +36,7 @@ int main( int argc, char* args[] )
   microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
 
   // Create page elements
-  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(SDL_Rect){10,50,300,150});
+  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(microSDL_Rect){10,50,300,150});
   microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Start up display on main page
@@ -44,7 +46,7 @@ int main( int argc, char* args[] )
   microSDL_Update(&m_gui);
   
   // Main code here...
-  SDL_Delay(2000);
+  sleep(2);
   
   // Close down display
   microSDL_Quit(&m_gui);

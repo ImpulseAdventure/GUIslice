@@ -83,11 +83,11 @@ bool InitOverlays(char *strPath)
   // PAGE: MAIN
 
   // Create background box
-  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){20,50,280,150});
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(microSDL_Rect){20,50,280,150});
   microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create title
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){10,10,310,40},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(microSDL_Rect){10,10,310,40},
     "microSDL Demo",E_FONT_TITLE);
   microSDL_ElemSetTxtAlign(pElem,MSDL_ALIGN_MID_MID);
   microSDL_ElemSetFillEn(pElem,false);
@@ -95,56 +95,56 @@ bool InitOverlays(char *strPath)
 
   // Create Quit button with text label
   pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (SDL_Rect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
+    (microSDL_Rect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
 
   // Create Extra button with text label
   pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (SDL_Rect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
+    (microSDL_Rect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
 
   // Create counter
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(microSDL_Rect){40,60,50,10},
     "Count:",E_FONT_TXT);
-  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(SDL_Rect){100,60,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(microSDL_Rect){100,60,50,10},
     "",E_FONT_TXT);
   microSDL_ElemSetTxtCol(pElem,MSDL_COL_YELLOW);
 
   // Create progress bar
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(SDL_Rect){40,80,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_MAIN,(microSDL_Rect){40,80,50,10},
     "Progress:",E_FONT_TXT);
-  pElem = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(SDL_Rect){100,80,50,10},
+  pElem = microSDL_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(microSDL_Rect){100,80,50,10},
     0,100,0,MSDL_COL_GREEN_DK,false);
 
   // Add compound element
   pElem = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
-    (SDL_Rect){160,60,120,50},E_FONT_BTN);  
+    (microSDL_Rect){160,60,120,50},E_FONT_BTN);  
   
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
-  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){40,40,240,160});
+  pElem = microSDL_ElemCreateBox(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(microSDL_Rect){40,40,240,160});
   microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
 
   // Create Back button with text label
   pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (SDL_Rect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
+    (microSDL_Rect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
 
   // Create a few labels
-  Sint16    nPosY = 50;
-  Sint16    nSpaceY = 20;
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  int16_t    nPosY = 50;
+  int16_t    nSpaceY = 20;
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(microSDL_Rect){60,nPosY,50,10},
     "Data 1",E_FONT_TXT); nPosY += nSpaceY;
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(microSDL_Rect){60,nPosY,50,10},
     "Data 2",E_FONT_TXT); nPosY += nSpaceY;
-  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(SDL_Rect){60,nPosY,50,10},
+  pElem = microSDL_ElemCreateTxt(&m_gui,MSDL_ID_AUTO,E_PG_EXTRA,(microSDL_Rect){60,nPosY,50,10},
     "Data 3",E_FONT_TXT); nPosY += nSpaceY;
   
   // Add compound element
   pElem = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
-    (SDL_Rect){130,60,120,50},E_FONT_BTN);
+    (microSDL_Rect){130,60,120,50},E_FONT_BTN);
 
   pElem = microSDL_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
-    (SDL_Rect){130,120,120,50},E_FONT_BTN);    
+    (microSDL_Rect){130,120,120,50},E_FONT_BTN);    
     
   return true;
 }
