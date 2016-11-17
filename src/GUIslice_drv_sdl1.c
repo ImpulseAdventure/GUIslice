@@ -1,9 +1,9 @@
 // =======================================================================
-// microSDL library (driver layer for SDL1.2)
+// GUIslice library (driver layer for SDL1.2)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.1    (2016/11/16)
+// - Version 0.6    (2016/11/16)
 // =======================================================================
 
 // =======================================================================
@@ -11,7 +11,7 @@
 // =======================================================================
 
 // MicroSDL library
-#include "microsdl_drv_sdl1.h"
+#include "GUIslice_drv_sdl1.h"
 
 #include <stdio.h>
 
@@ -29,14 +29,14 @@
 
 
 // =======================================================================
-// Public APIs to microSDL core library
+// Public APIs to GUIslice core library
 // =======================================================================
 
 // -----------------------------------------------------------------------
 // Configuration Functions
 // -----------------------------------------------------------------------
 
-bool microSDL_DrvInit(microSDL_tsGui* pGui)
+bool gslc_DrvInit(gslc_tsGui* pGui)
 {
   
   // Primary surface definitions
@@ -49,7 +49,7 @@ bool microSDL_DrvInit(microSDL_tsGui* pGui)
   // clean up.
   // TODO: Allow compiler option to skip this workaround
   // TODO: Allow determination of the TTY to use
-  microSDL_DrvCleanStart(VT_WRK_TTY);
+  gslc_DrvCleanStart(VT_WRK_TTY);
 #endif  
 
   // Setup SDL
@@ -98,7 +98,7 @@ bool microSDL_DrvInit(microSDL_tsGui* pGui)
 // programmatically, but it can also be done via export
 // commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void microSDL_DrvInitEnv(microSDL_tsGui* pGui)
+void gslc_DrvInitEnv(gslc_tsGui* pGui)
 {
   // This line already appears to be set in env
   putenv((char*)"FRAMEBUFFER=/dev/fb1");
@@ -132,7 +132,7 @@ void microSDL_DrvInitEnv(microSDL_tsGui* pGui)
 // -----------------------------------------------------------------------
 
 
-bool microSDL_DrvScreenLock(microSDL_tsGui* pGui)
+bool gslc_DrvScreenLock(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvScreenLock() called with NULL ptr\n");
@@ -151,7 +151,7 @@ bool microSDL_DrvScreenLock(microSDL_tsGui* pGui)
 }
 
 
-void microSDL_DrvScreenUnlock(microSDL_tsGui* pGui)
+void gslc_DrvScreenUnlock(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvScreenUnlock() called with NULL ptr\n");
@@ -165,7 +165,7 @@ void microSDL_DrvScreenUnlock(microSDL_tsGui* pGui)
   }
 }
 
-SDL_Surface* microSDL_DrvLoadBmp(microSDL_tsGui* pGui,char* pStrFname)
+SDL_Surface* gslc_DrvLoadBmp(gslc_tsGui* pGui,char* pStrFname)
 {
   //The image that's loaded
   SDL_Surface* surfLoaded = NULL;
@@ -191,12 +191,12 @@ SDL_Surface* microSDL_DrvLoadBmp(microSDL_tsGui* pGui,char* pStrFname)
     if( surfOptimized != NULL ) {
 
       // Support optional transparency
-      if (MSDL_BMP_TRANS_EN) {
+      if (GSLC_BMP_TRANS_EN) {
         // Color key surface
         // - Use transparency color key defined in BMP_TRANS_RGB
         SDL_SetColorKey( surfOptimized, SDL_SRCCOLORKEY,
-          SDL_MapRGB( surfOptimized->format, MSDL_BMP_TRANS_RGB ) );
-      } // MSDL_BMP_TRANS_EN
+          SDL_MapRGB( surfOptimized->format, GSLC_BMP_TRANS_RGB ) );
+      } // GSLC_BMP_TRANS_EN
     }
   }
 
@@ -205,7 +205,7 @@ SDL_Surface* microSDL_DrvLoadBmp(microSDL_tsGui* pGui,char* pStrFname)
 }
 
 
-bool microSDL_DrvSetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
+bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,char* pStrFname)
 {
   if (strlen(pStrFname)==0) {
     // TODO: Error handling
@@ -216,7 +216,7 @@ bool microSDL_DrvSetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
     SDL_FreeSurface((SDL_Surface*)(pGui->pvSurfBkgnd));
     pGui->pvSurfBkgnd = NULL;
   }
-  pGui->pvSurfBkgnd = microSDL_DrvLoadBmp(pGui,pStrFname);
+  pGui->pvSurfBkgnd = gslc_DrvLoadBmp(pGui,pStrFname);
   if (pGui->pvSurfBkgnd == NULL) {
     return false;
   }
@@ -224,11 +224,11 @@ bool microSDL_DrvSetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
   return true;
 }
 
-bool microSDL_DrvSetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol)
+bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol)
 {
   if (pGui->pvSurfBkgnd != NULL ) {
     // Dispose of previous background
-    microSDL_DrvSurfaceDestruct(pGui->pvSurfBkgnd);
+    gslc_DrvSurfaceDestruct(pGui->pvSurfBkgnd);
     pGui->pvSurfBkgnd = NULL;
   }
   SDL_Surface*  pSurfScreen = (SDL_Surface*)(pGui->pvSurfScreen);
@@ -253,38 +253,38 @@ bool microSDL_DrvSetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol)
 }
 
 
-void microSDL_DrvSetElemImageNorm(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage)
+void gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage)
 {
   SDL_Surface*    pSurf;
   if (pElem->pvSurfNorm != NULL) {
     fprintf(stderr,"ERROR: DrvSetElemImageNorm(%s) with pvSurfNorm already set\n",acImage);
     return;
   }
-  pSurf = microSDL_DrvLoadBmp(pGui,(char*)acImage);
+  pSurf = gslc_DrvLoadBmp(pGui,(char*)acImage);
   if (pSurf == NULL) {
-    fprintf(stderr,"ERROR: DrvSetElemImageNorm(%s) call to microSDL_DrvLoadBmp failed\n",acImage);
+    fprintf(stderr,"ERROR: DrvSetElemImageNorm(%s) call to gslc_DrvLoadBmp failed\n",acImage);
     return;
   }
   pElem->pvSurfNorm = pSurf;
 }
 
 
-void microSDL_DrvSetElemImageGlow(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage)
+void gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage)
 {
   SDL_Surface*    pSurf;
   if (pElem->pvSurfGlow != NULL) {
     fprintf(stderr,"ERROR: DrvSetElemImageGlow(%s) with pvSurfGlow already set\n",acImage);
     return;
   }
-  pSurf = microSDL_DrvLoadBmp(pGui,(char*)acImage);
+  pSurf = gslc_DrvLoadBmp(pGui,(char*)acImage);
   if (pSurf == NULL) {
-    fprintf(stderr,"ERROR: DrvSetElemImageGlow(%s) call to microSDL_DrvLoadBmp failed\n",acImage);
+    fprintf(stderr,"ERROR: DrvSetElemImageGlow(%s) call to gslc_DrvLoadBmp failed\n",acImage);
     return;
   }
   pElem->pvSurfGlow = pSurf;  
 }
 
-void microSDL_DrvPasteSurface(microSDL_tsGui* pGui,int nX, int nY, void* pvSrc, void* pvDest)
+void gslc_DrvPasteSurface(gslc_tsGui* pGui,int nX, int nY, void* pvSrc, void* pvDest)
 {
   if ((pGui == NULL) || (pvSrc == NULL) || (pvDest == NULL)) {
     fprintf(stderr,"ERROR: DrvPasteSurface() called with NULL ptr\n");
@@ -296,10 +296,10 @@ void microSDL_DrvPasteSurface(microSDL_tsGui* pGui,int nX, int nY, void* pvSrc, 
   offset.x = nX;
   offset.y = nY;
   SDL_BlitSurface(pSrc,NULL,pDest,&offset);
-  microSDL_PageFlipSet(pGui,true);
+  gslc_PageFlipSet(pGui,true);
 }
 
-void microSDL_DrvSurfaceDestruct(void* pvSurf)
+void gslc_DrvSurfaceDestruct(void* pvSurf)
 {
   SDL_Surface*  pSurf = (SDL_Surface*)(pvSurf);
   if (pSurf == NULL) {
@@ -308,13 +308,13 @@ void microSDL_DrvSurfaceDestruct(void* pvSurf)
   SDL_FreeSurface(pSurf);
 }
 
-void microSDL_DrvSetClipRect(microSDL_tsGui* pGui,microSDL_Rect* pRect)
+void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
 {
   SDL_Surface*  pScreen = (SDL_Surface*)(pGui->pvSurfScreen);
   if (pRect == NULL) {
     SDL_SetClipRect(pScreen,NULL);
   } else {
-    SDL_Rect  rSRect = microSDL_DrvAdaptRect(*pRect);
+    SDL_Rect  rSRect = gslc_DrvAdaptRect(*pRect);
     SDL_SetClipRect(pScreen,&rSRect);
   }
 }
@@ -325,7 +325,7 @@ void microSDL_DrvSetClipRect(microSDL_tsGui* pGui,microSDL_Rect* pRect)
 // Font handling Functions
 // -----------------------------------------------------------------------
 
-void microSDL_DrvFontsDestruct(microSDL_tsGui* pGui)
+void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 {
   unsigned  nFontInd;
   TTF_Font* pFont = NULL;
@@ -340,7 +340,7 @@ void microSDL_DrvFontsDestruct(microSDL_tsGui* pGui)
   TTF_Quit();  
 }
 
-bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,gslc_tsElem* pElem)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: DrvDrawTxt() with NULL ptr\n"); 
@@ -371,7 +371,7 @@ bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   int nTxtSzW,nTxtSzH;
   TTF_SizeText(pFont,pElem->acStr,&nTxtSzW,&nTxtSzH);
 
-  surfTxt = TTF_RenderText_Solid(pFont,pElem->acStr,microSDL_DrvAdaptColor(pElem->colElemText));
+  surfTxt = TTF_RenderText_Solid(pFont,pElem->acStr,gslc_DrvAdaptColor(pElem->colElemText));
   if (surfTxt == NULL) {
     fprintf(stderr,"ERROR: DrvDrawTxt() failed in TTF_RenderText_Solid() (%s)\n",pElem->acStr);
     return false;
@@ -380,17 +380,17 @@ bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   // Handle text alignments
 
   // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
-  if      (pElem->eTxtAlign & MSDL_ALIGNH_LEFT)     { nTxtX = nElemX+nMargin; }
-  else if (pElem->eTxtAlign & MSDL_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
+  if      (pElem->eTxtAlign & GSLC_ALIGNH_LEFT)     { nTxtX = nElemX+nMargin; }
+  else if (pElem->eTxtAlign & GSLC_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
   else                                              { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
 
   // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
-  if      (pElem->eTxtAlign & MSDL_ALIGNV_TOP)      { nTxtY = nElemY+nMargin; }
-  else if (pElem->eTxtAlign & MSDL_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
+  if      (pElem->eTxtAlign & GSLC_ALIGNV_TOP)      { nTxtY = nElemY+nMargin; }
+  else if (pElem->eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
   else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
 
 
-  microSDL_DrvPasteSurface(pGui,nTxtX,nTxtY,surfTxt,pGui->pvSurfScreen);
+  gslc_DrvPasteSurface(pGui,nTxtX,nTxtY,surfTxt,pGui->pvSurfScreen);
 
   if (surfTxt != NULL) {
     SDL_FreeSurface(surfTxt);
@@ -405,7 +405,7 @@ bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
 // Screen Management Functions
 // -----------------------------------------------------------------------
 
-void microSDL_DrvPageFlipNow(microSDL_tsGui* pGui)
+void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
   SDL_Surface*  pScreen = (SDL_Surface*)(pGui->pvSurfScreen);  
   SDL_Flip(pScreen);
@@ -416,7 +416,7 @@ void microSDL_DrvPageFlipNow(microSDL_tsGui* pGui)
 // Graphics Primitives Functions
 // -----------------------------------------------------------------------  
 
-uint32_t microSDL_DrvAdaptColorRaw(microSDL_tsGui* pGui,microSDL_Color nCol)
+uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_Color nCol)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvAdaptColorRaw() called with NULL ptr\n");
@@ -428,7 +428,7 @@ uint32_t microSDL_DrvAdaptColorRaw(microSDL_tsGui* pGui,microSDL_Color nCol)
 
 // - Based on code from:
 // -   https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideo.html
-uint32_t microSDL_DrvDrawGetPixelRaw(microSDL_tsGui* pGui, int nX, int nY)
+uint32_t gslc_DrvDrawGetPixelRaw(gslc_tsGui* pGui, int nX, int nY)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvDrawGetPixelRaw() called with NULL ptr\n");
@@ -478,7 +478,7 @@ uint32_t microSDL_DrvDrawGetPixelRaw(microSDL_tsGui* pGui, int nX, int nY)
 // - Based on code from:
 // -   https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideo.html
 // - Added range checks from surface clipping rect
-void microSDL_DrvDrawSetPixelRaw(microSDL_tsGui* pGui,int nX, int nY, uint32_t nPixelVal)
+void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int nX, int nY, uint32_t nPixelVal)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvDrawSetPixelRaw() called with NULL ptr\n");
@@ -527,10 +527,10 @@ void microSDL_DrvDrawSetPixelRaw(microSDL_tsGui* pGui,int nX, int nY, uint32_t n
   }
 }
 
-void microSDL_DrvDrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol)
+void gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
 {
   // Typecast
-  SDL_Rect      rSRect  = microSDL_DrvAdaptRect(rRect);
+  SDL_Rect      rSRect  = gslc_DrvAdaptRect(rRect);
   SDL_Surface*  pScreen   = (SDL_Surface*)(pGui->pvSurfScreen);
   
   // Call SDL optimized routine
@@ -543,7 +543,7 @@ void microSDL_DrvDrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_
 // Touch Functions
 // -----------------------------------------------------------------------  
 
-bool microSDL_DrvGetTouch(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: DrvGetTouch() called with NULL ptr\n");
@@ -610,7 +610,7 @@ bool microSDL_DrvGetTouch(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPre
 // - By starting in text mode, we should then observe a VT
 //   switch event as we attempt to transition to graphics mode
 //   in the call to SDL_SetVideoMode().
-bool microSDL_DrvCleanStart(const char* sTTY)
+bool gslc_DrvCleanStart(const char* sTTY)
 {
 #ifdef VT_WRK_EN    
     int     nFD = -1;
@@ -645,7 +645,7 @@ bool microSDL_DrvCleanStart(const char* sTTY)
 // -----------------------------------------------------------------------
 
 // Simple typecasting for abstraction layer
-SDL_Rect  microSDL_DrvAdaptRect(microSDL_Rect rRect)
+SDL_Rect  gslc_DrvAdaptRect(gslc_Rect rRect)
 {
   SDL_Rect  rSRect;
   rSRect.x = rRect.x;
@@ -656,7 +656,7 @@ SDL_Rect  microSDL_DrvAdaptRect(microSDL_Rect rRect)
 }
 
 // Simple typecasting for abstraction layer
-SDL_Color  microSDL_DrvAdaptColor(microSDL_Color sCol)
+SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol)
 {
   SDL_Color  sSCol;
   sSCol.r = sCol.r;

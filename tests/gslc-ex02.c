@@ -1,11 +1,11 @@
 //
-// microSDL GUI Library Examples
+// GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 02: Accept touch input
 //
 
-#include "microsdl.h"
+#include "GUIslice.h"
 
 
 // Defines for resources
@@ -16,22 +16,22 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 enum {E_FONT_BTN};
 
-bool                  m_bQuit = false;
+bool    m_bQuit = false;
 
 // Instantiate the GUI
-#define MAX_FONT      10
-microSDL_tsGui        m_gui;
-microSDL_tsFont       m_asFont[MAX_FONT];
+#define MAX_FONT            10
+gslc_tsGui                  m_gui;
+gslc_tsFont                 m_asFont[MAX_FONT];
 
 #define MAX_PAGE            1
 #define MAX_ELEM_PG_MAIN    30
-microSDL_tsPage             m_asPage[MAX_PAGE];
-microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
+bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
-  if (eTouch == MSDL_TOUCH_UP_IN) {
+  if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
   }
   return true;
@@ -40,41 +40,41 @@ bool CbBtnQuit(void* pvGui,void *pvElem,microSDL_teTouch eTouch,int nX,int nY)
 int main( int argc, char* args[] )
 {
   bool              bOk = true;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
 
   // -----------------------------------
   // Initialize
 
-  microSDL_InitEnv(&m_gui);
-  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  gslc_InitEnv(&m_gui);
+  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
 
-  microSDL_InitTs(&m_gui,"/dev/input/touchscreen");
+  gslc_InitTs(&m_gui,"/dev/input/touchscreen");
 
   // Load Fonts
-  bOk = microSDL_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  if (!bOk) { printf("ERROR: microSDL_FontAdd() failed\n"); exit(1); }
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
+  if (!bOk) { printf("ERROR: gslc_FontAdd() failed\n"); exit(1); }
 
 
   // -----------------------------------
   // Create page elements
-  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
-  microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK);
 
   // Create background box
-  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(microSDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});
+  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
-  pElem = microSDL_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (microSDL_Rect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
+  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+    (gslc_Rect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------
   // Start display
 
   // Start up display on main page
-  microSDL_SetPageCur(&m_gui,E_PG_MAIN);
+  gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
   // -----------------------------------
   // Main event loop
@@ -82,8 +82,8 @@ int main( int argc, char* args[] )
   m_bQuit = false;
   while (!m_bQuit) {
   
-    // Periodically call microSDL update function    
-    microSDL_Update(&m_gui);   
+    // Periodically call GUIslice update function    
+    gslc_Update(&m_gui);   
 
   } // bQuit
 
@@ -91,7 +91,7 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Close down display
 
-  microSDL_Quit(&m_gui);
+  gslc_Quit(&m_gui);
 
   return 0;
 }

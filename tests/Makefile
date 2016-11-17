@@ -1,5 +1,5 @@
 ##
-## Makefile for microSDL library
+## Makefile for GUIslice library
 ## - Calvin Hass
 ## - http://www.impulseadventure.com/elec/
 ##
@@ -9,20 +9,24 @@ CC = gcc
 INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 
-# Define compiler flags for microSDL
-MSDLFLAGS = -DINC_TS -DVT_WRK_EN
+# Define compiler flags for GUIslice
+GSLC_FLAGS = -DINC_TS -DVT_WRK_EN
+GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
+
+# Select display driver for GUIslice
+GSLC_DRV = ../src/GUIslice_drv_sdl1.c
 
 LDFLAGS = -L/usr/local/lib
 LDLIBS = -lSDL -lSDL_ttf -lSDL_image -lts -lm
 
 SRC = test-sdl.c \
-	sdl-ex01.c \
-	sdl-ex02.c \
-	sdl-ex03.c \
-	sdl-ex04.c \
-	sdl-ex05.c \
-	sdl-ex06.c \
-	sdl-ex07.c
+	gslc-ex01.c \
+	gslc-ex02.c \
+	gslc-ex03.c \
+	gslc-ex04.c \
+	gslc-ex05.c \
+	gslc-ex06.c \
+	gslc-ex07.c
 	
 
 OBJ = $(SRC:.c=.o)
@@ -40,31 +44,31 @@ test-sdl: test-sdl.c
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ test-sdl.c $(LDFLAGS) $(LDLIBS)
 
-sdl-ex01: sdl-ex01.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c
+gslc-ex01: gslc-ex01.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex01.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex01.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex02: sdl-ex02.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c
+gslc-ex02: gslc-ex02.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex02.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex02.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex03: sdl-ex03.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c
+gslc-ex03: gslc-ex03.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex03.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex03.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex04: sdl-ex04.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c
+gslc-ex04: gslc-ex04.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex04.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex04.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex05: sdl-ex05.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c
+gslc-ex05: gslc-ex05.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex05.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex05.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex06: sdl-ex06.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c
+gslc-ex06: gslc-ex06.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex06.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-sdl-ex07: sdl-ex07.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c
+gslc-ex07: gslc-ex07.c $(GSLC_CORE) $(GSLC_DRV)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ sdl-ex07.c ../src/microsdl.c ../src/microsdl_drv_sdl1.c ../src/microsdl_ex.c $(MSDLFLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex07.c $(GSLC_CORE) $(GSLC_DRV) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 

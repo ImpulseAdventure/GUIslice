@@ -1,17 +1,17 @@
 // =======================================================================
-// microSDL library
+// GUIslice library
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.1    (2016/11/16)
+// - Version 0.6    (2016/11/16)
 // =======================================================================
 
 // MicroSDL library
-#include "microsdl.h"
-#include "microsdl_ex.h"
+#include "GUIslice.h"
+#include "GUIslice_ex.h"
 
 // Include rendering driver
-#include "microsdl_drv_sdl1.h"
+#include "GUIslice_drv_sdl1.h"
 
 #include <stdio.h>
 
@@ -26,7 +26,7 @@
 
 
 // Version definition
-#define MICROSDL_VER "0.5.1"
+#define GUISLICE_VER "0.6"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -44,14 +44,14 @@
 // depending on the driver being used. It can also
 // be done via export commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void microSDL_InitEnv(microSDL_tsGui* pGui)
+void gslc_InitEnv(gslc_tsGui* pGui)
 {
-  microSDL_DrvInitEnv(pGui);
+  gslc_DrvInitEnv(pGui);
 }
 
 
 
-bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPage,microSDL_tsFont* asFont,unsigned nMaxFont,microSDL_tsView* asView,unsigned nMaxView)
+bool gslc_Init(gslc_tsGui* pGui,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView)
 {
   unsigned  nInd;
   
@@ -68,19 +68,19 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPag
   pGui->nFontMax    = nMaxFont;
   pGui->nFontCnt    = 0;
   for (nInd=0;nInd<(pGui->nFontMax);nInd++) {
-    microSDL_ResetFont(&(pGui->asFont[nInd]));
+    gslc_ResetFont(&(pGui->asFont[nInd]));
   }
  
   // Initialize temporary element
-  microSDL_ResetElem(&(pGui->sElemTmp));
+  gslc_ResetElem(&(pGui->sElemTmp));
 
   // Initialize collection of views with user-supplied pointer
   pGui->asView      = asView;
   pGui->nViewMax    = nMaxView;
   pGui->nViewCnt    = 0;
-  pGui->nViewIndCur = MSDL_VIEW_IND_SCREEN;
+  pGui->nViewIndCur = GSLC_VIEW_IND_SCREEN;
   for (nInd=0;nInd<(pGui->nViewMax);nInd++) {
-    microSDL_ResetView(&(pGui->asView[nInd]));
+    gslc_ResetView(&(pGui->asView[nInd]));
   }
   
   // Last touch event
@@ -94,21 +94,21 @@ bool microSDL_Init(microSDL_tsGui* pGui,microSDL_tsPage* asPage,unsigned nMaxPag
   #endif
 
   // Initialize the rendering driver
-  return microSDL_DrvInit(pGui);
+  return gslc_DrvInit(pGui);
 }
 
 
-void microSDL_Quit(microSDL_tsGui* pGui)
+void gslc_Quit(gslc_tsGui* pGui)
 {
   // Close all elements and fonts
-  microSDL_GuiDestruct(pGui);
+  gslc_GuiDestruct(pGui);
 
   // Close down SDL
   SDL_Quit();
 }
 
-// Main polling loop for microSDL
-void microSDL_Update(microSDL_tsGui* pGui)
+// Main polling loop for GUIslice
+void gslc_Update(gslc_tsGui* pGui)
 {
   int       nTouchX,nTouchY;
   unsigned  nTouchPress;
@@ -117,27 +117,27 @@ void microSDL_Update(microSDL_tsGui* pGui)
   // Poll for touchscreen presses
   // - Conditional compiling for tslib or selected driver mode
   #ifdef INC_TS  
-  bTouchEvent = microSDL_GetTsTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
+  bTouchEvent = gslc_GetTsTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
   #else
-  bTouchEvent = microSDL_DrvGetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
+  bTouchEvent = gslc_DrvGetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
   #endif
   
   if (bTouchEvent) {
     // Track and handle the touch events
     // - Handle the events on the current page
-    microSDL_TrackTouch(pGui,pGui->pCurPageCollect,nTouchX,nTouchY,nTouchPress);
+    gslc_TrackTouch(pGui,pGui->pCurPageCollect,nTouchX,nTouchY,nTouchPress);
   }
   
   // Issue a timer tick to all pages
   int nPage;
-  microSDL_tsCollect* pCollect = NULL;
+  gslc_tsCollect* pCollect = NULL;
   for (nPage=0;nPage<pGui->nPageCnt;nPage++) {
     pCollect = &pGui->asPage[nPage].sCollect;
-    microSDL_CollectTick(pGui,pCollect);
+    gslc_CollectTick(pGui,pCollect);
   }
   
   // Perform any redraw required for current page
-  microSDL_PageRedrawGo(pGui);
+  gslc_PageRedrawGo(pGui);
 }
 
 // ------------------------------------------------------------------------
@@ -145,7 +145,7 @@ void microSDL_Update(microSDL_tsGui* pGui)
 // ------------------------------------------------------------------------
 
 
-bool microSDL_IsInRect(int nSelX,int nSelY,microSDL_Rect rRect)
+bool gslc_IsInRect(int nSelX,int nSelY,gslc_Rect rRect)
 {
   if ( (nSelX >= rRect.x) && (nSelX <= rRect.x+rRect.w) && 
      (nSelY >= rRect.y) && (nSelY <= rRect.y+rRect.h) ) {
@@ -155,7 +155,7 @@ bool microSDL_IsInRect(int nSelX,int nSelY,microSDL_Rect rRect)
   }
 }
 
-bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t nHeight)
+bool gslc_IsInWH(gslc_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t nHeight)
 {
   if ( (nSelX >= 0) && (nSelX <= nWidth-1) && 
      (nSelY >= 0) && (nSelY <= nHeight-1) ) {
@@ -167,7 +167,7 @@ bool microSDL_IsInWH(microSDL_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,ui
 
 // Ensure the coordinates are increasing from nX0->nX1 and nY0->nY1
 // NOTE: UNUSED
-void microSDL_OrderCoord(int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1)
+void gslc_OrderCoord(int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1)
 {
   int16_t  nTmp;
   if ((*pnX1) < (*pnX0)) {
@@ -189,36 +189,36 @@ void microSDL_OrderCoord(int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1
 // bMapEn specifies whether viewport remapping is enabled or not
 // - This should be disabled if the caller has already performed the
 //   the coordinate remapping.
-void microSDL_DrawSetPixel(microSDL_tsGui* pGui,int16_t nX,int16_t nY,microSDL_Color nCol,bool bMapEn)
+void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol,bool bMapEn)
 {
   // Support viewport local coordinate remapping
   if (bMapEn) {
-    if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-      microSDL_ViewRemapPt(pGui,&nX,&nY);
+    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+      gslc_ViewRemapPt(pGui,&nX,&nY);
     }
   }
 
-  if (microSDL_DrvScreenLock(pGui)) {
-    uint32_t nColRaw = microSDL_DrvAdaptColorRaw(pGui,nCol);    
-    microSDL_DrvDrawSetPixelRaw(pGui,nX,nY,nColRaw);
-    microSDL_DrvScreenUnlock(pGui);
-  }   // microSDL_DrvScreenLock
-  microSDL_PageFlipSet(pGui,true);
+  if (gslc_DrvScreenLock(pGui)) {
+    uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);    
+    gslc_DrvDrawSetPixelRaw(pGui,nX,nY,nColRaw);
+    gslc_DrvScreenUnlock(pGui);
+  }   // gslc_DrvScreenLock
+  gslc_PageFlipSet(pGui,true);
 }
 
 // Draw an arbitrary line using Bresenham's algorithm
 // - Algorithm reference: https://rosettacode.org/wiki/Bitmap/Bresenham's_line_algorithm#C
-void microSDL_DrawLine(microSDL_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,microSDL_Color nCol)
+void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_Color nCol)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,&nX0,&nY0);
-    microSDL_ViewRemapPt(pGui,&nX1,&nY1);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapPt(pGui,&nX0,&nY0);
+    gslc_ViewRemapPt(pGui,&nX1,&nY1);
   }
 
 #if (DRV_HAS_DRAW_LINE) 
   // Call optimized driver line drawing
-  microSDL_DrvDrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+  gslc_DrvDrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
   
 #else
   // Perform Bresenham's line algorithm
@@ -236,23 +236,23 @@ void microSDL_DrawLine(microSDL_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,
     if (nDY == 0) {
       return;
     } else if (nDY >= 0) {
-      microSDL_DrawLineV(pGui,nX0,nY0,nDY,nCol);
+      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol);
     } else {
-      microSDL_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
+      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
     }
   } else if (nDY == 0) {
     if (nDX >= 0) {
-      microSDL_DrawLineH(pGui,nX0,nY0,nDX,nCol);
+      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol);
     } else {
-      microSDL_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
+      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
     }
   }
 
-  uint32_t nColRaw = microSDL_DrvAdaptColorRaw(pGui,nCol);   
-  if (microSDL_DrvScreenLock(pGui)) {
+  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);   
+  if (gslc_DrvScreenLock(pGui)) {
     for (;;) {
       // Set the pixel
-      microSDL_DrvDrawSetPixelRaw(pGui,nX0,nY0,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nX0,nY0,nColRaw);
       
       // Calculate next coordinates
       if ( (nX0 == nX1) && (nY0 == nY1) ) break;
@@ -260,51 +260,51 @@ void microSDL_DrawLine(microSDL_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,
       if (nE2 > -nDX) { nErr -= nDY; nX0 += nSX; }
       if (nE2 <  nDY) { nErr += nDX; nY0 += nSY; }
     }
-  }   // microSDL_DrvScreenLock  
+  }   // gslc_DrvScreenLock  
 #endif
   
-  microSDL_PageFlipSet(pGui,true);  
+  gslc_PageFlipSet(pGui,true);  
   
 }
 
 
-void microSDL_DrawLineH(microSDL_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,microSDL_Color nCol)
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,&nX,&nY);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapPt(pGui,&nX,&nY);
   }
 
   uint16_t nOffset;
-  uint32_t nColRaw = microSDL_DrvAdaptColorRaw(pGui,nCol);
-  if (microSDL_DrvScreenLock(pGui)) {
+  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
+  if (gslc_DrvScreenLock(pGui)) {
     for (nOffset=0;nOffset<nW;nOffset++) {
-      microSDL_DrvDrawSetPixelRaw(pGui,nX+nOffset,nY,nColRaw);    
+      gslc_DrvDrawSetPixelRaw(pGui,nX+nOffset,nY,nColRaw);    
     }
-    microSDL_DrvScreenUnlock(pGui);
-  }   // microSDL_DrvScreenLock
-  microSDL_PageFlipSet(pGui,true);  
+    gslc_DrvScreenUnlock(pGui);
+  }   // gslc_DrvScreenLock
+  gslc_PageFlipSet(pGui,true);  
 }
 
-void microSDL_DrawLineV(microSDL_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,microSDL_Color nCol)
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,&nX,&nY);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapPt(pGui,&nX,&nY);
   }
   uint16_t nOffset;
-  uint32_t nColRaw = microSDL_DrvAdaptColorRaw(pGui,nCol);
-  if (microSDL_DrvScreenLock(pGui)) {
+  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
+  if (gslc_DrvScreenLock(pGui)) {
     for (nOffset=0;nOffset<nH;nOffset++) {
-      microSDL_DrvDrawSetPixelRaw(pGui,nX,nY+nOffset,nColRaw);    
+      gslc_DrvDrawSetPixelRaw(pGui,nX,nY+nOffset,nColRaw);    
     }
-    microSDL_DrvScreenUnlock(pGui);
-  }   // microSDL_DrvScreenLock
-  microSDL_PageFlipSet(pGui,true);
+    gslc_DrvScreenUnlock(pGui);
+  }   // gslc_DrvScreenLock
+  gslc_PageFlipSet(pGui,true);
 }
 
 
-void microSDL_DrawFrameRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol)
+void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
 {
   // Ensure dimensions are valid
   if ((rRect.w == 0) || (rRect.h == 0)) {
@@ -312,13 +312,13 @@ void microSDL_DrawFrameRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Co
   }
 
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapRect(pGui,&rRect);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapRect(pGui,&rRect);
   }
 
 #if (DRV_HAS_DRAW_RECT_FRAME)
   // Call optimized driver implementation
-  microSDL_DrvDrawFrameRect(pGui,rRect,nCol);
+  gslc_DrvDrawFrameRect(pGui,rRect,nCol);
 #else
   // Emulate rect frame with four lines
   int16_t  nX,nY;
@@ -327,16 +327,16 @@ void microSDL_DrawFrameRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Co
   nY = rRect.y;
   nW = rRect.w;
   nH = rRect.h;
-  microSDL_DrawLineH(pGui,nX,nY,nW-1,nCol);                 // Top
-  microSDL_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol); // Bottom
-  microSDL_DrawLineV(pGui,nX,nY,nH-1,nCol);                 // Left
-  microSDL_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol); // Right
+  gslc_DrawLineH(pGui,nX,nY,nW-1,nCol);                 // Top
+  gslc_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol); // Bottom
+  gslc_DrawLineV(pGui,nX,nY,nH-1,nCol);                 // Left
+  gslc_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol); // Right
 #endif
   
-  microSDL_PageFlipSet(pGui,true);  
+  gslc_PageFlipSet(pGui,true);  
 }
 
-void microSDL_DrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol)
+void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
 {
   // Ensure dimensions are valid
   if ((rRect.w == 0) || (rRect.h == 0)) {
@@ -344,26 +344,26 @@ void microSDL_DrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Col
   }
 
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapRect(pGui,&rRect);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapRect(pGui,&rRect);
   }
 
 #if (DRV_HAS_DRAW_RECT_FILL)
   // Call optimized driver implementation
-  microSDL_DrvDrawFillRect(pGui,rRect,nCol);
+  gslc_DrvDrawFillRect(pGui,rRect,nCol);
 #else
   // TODO: Emulate it with individual line draws
 #endif
   
-  microSDL_PageFlipSet(pGui,true);    
+  gslc_PageFlipSet(pGui,true);    
 }
 
 
 // Expand or contract a rectangle in width and/or height (equal
 // amounts on both side), based on the centerpoint of the rectangle.
-microSDL_Rect microSDL_ExpandRect(microSDL_Rect rRect,int16_t nExpandW,int16_t nExpandH)
+gslc_Rect gslc_ExpandRect(gslc_Rect rRect,int16_t nExpandW,int16_t nExpandH)
 {
-  microSDL_Rect  rNew = {0,0,0,0};
+  gslc_Rect  rNew = {0,0,0,0};
 
   // Detect error case of contracting region too far
   if (rRect.w + (2*nExpandW) < 0) {
@@ -394,30 +394,30 @@ microSDL_Rect microSDL_ExpandRect(microSDL_Rect rRect,int16_t nExpandW,int16_t n
 
 // Draw a circle using midpoint circle algorithm
 // - Algorithm reference: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
-void microSDL_DrawFrameCircle(microSDL_tsGui* pGui,int16_t nMidX,int16_t nMidY,
-  uint16_t nRadius,microSDL_Color nCol)
+void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
+  uint16_t nRadius,gslc_Color nCol)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != MSDL_VIEW_IND_SCREEN) {
-    microSDL_ViewRemapPt(pGui,&nMidX,&nMidY);
+  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+    gslc_ViewRemapPt(pGui,&nMidX,&nMidY);
   }
-  uint32_t nColRaw = microSDL_DrvAdaptColorRaw(pGui,nCol);
+  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
   
   int nX    = nRadius;
   int nY    = 0;
   int nErr  = 0;
   
-  if (microSDL_DrvScreenLock(pGui)) {
+  if (gslc_DrvScreenLock(pGui)) {
     while (nX >= nY)
     {
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY + nY,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY + nX,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY + nX,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY + nY,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY - nY,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY - nX,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY - nX,nColRaw);
-      microSDL_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY - nY,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY + nY,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY + nX,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY + nX,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY + nY,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY - nY,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY - nX,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY - nX,nColRaw);
+      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY - nY,nColRaw);
 
       nY    += 1;
       nErr  += 1 + 2*nY;
@@ -428,10 +428,10 @@ void microSDL_DrawFrameCircle(microSDL_tsGui* pGui,int16_t nMidX,int16_t nMidY,
       }
     } // while
 
-    microSDL_DrvScreenUnlock(pGui);
-  }   // microSDL_DrvScreenLock
+    gslc_DrvScreenUnlock(pGui);
+  }   // gslc_DrvScreenLock
   
-  microSDL_PageFlipSet(pGui,true);
+  gslc_PageFlipSet(pGui,true);
 }
 
 
@@ -440,7 +440,7 @@ void microSDL_DrawFrameCircle(microSDL_tsGui* pGui,int16_t nMidX,int16_t nMidY,
 // Font Functions
 // -----------------------------------------------------------------------
 
-bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId,const char* acFontName,unsigned nFontSz)
+bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId,const char* acFontName,unsigned nFontSz)
 {
   if (pGui->nFontCnt+1 >= (pGui->nFontMax)) {
     fprintf(stderr,"ERROR: FontAdd() added too many fonts\n");
@@ -460,7 +460,7 @@ bool microSDL_FontAdd(microSDL_tsGui* pGui,int nFontId,const char* acFontName,un
 }
 
 
-void* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
+void* gslc_FontGet(gslc_tsGui* pGui,int nFontId)
 {
   unsigned  nFontInd;
   for (nFontInd=0;nFontInd<pGui->nFontCnt;nFontInd++) {
@@ -479,11 +479,11 @@ void* microSDL_FontGet(microSDL_tsGui* pGui,int nFontId)
 // ------------------------------------------------------------------------
 
 
-void microSDL_PageAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsElem* psElem,unsigned nMaxElem)
+void gslc_PageAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* psElem,unsigned nMaxElem)
 {
-  microSDL_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
+  gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
 
-  microSDL_CollectReset(&pPage->sCollect,psElem,nMaxElem);
+  gslc_CollectReset(&pPage->sCollect,psElem,nMaxElem);
   
   // Assign the requested Page ID
   pPage->nPageId = nPageId;
@@ -492,33 +492,33 @@ void microSDL_PageAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsElem* psElem,u
   pGui->nPageCnt++;
   
   // Default the page pointer to the first page we create
-  if (microSDL_GetPageCur(pGui) == MSDL_PAGE_NONE) {
-    microSDL_SetPageCur(pGui,nPageId);
+  if (gslc_GetPageCur(pGui) == GSLC_PAGE_NONE) {
+    gslc_SetPageCur(pGui,nPageId);
   }
   
   // Force the page to redraw
-  microSDL_PageRedrawSet(pGui,true);
+  gslc_PageRedrawSet(pGui,true);
 
 }
 
-int microSDL_GetPageCur(microSDL_tsGui* pGui)
+int gslc_GetPageCur(gslc_tsGui* pGui)
 {
   if (pGui->pCurPage == NULL) {
-    return MSDL_PAGE_NONE;
+    return GSLC_PAGE_NONE;
   }
   return pGui->pCurPage->nPageId;
 }
 
 
-void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
+void gslc_SetPageCur(gslc_tsGui* pGui,int nPageId)
 {
-  int nPageSaved = MSDL_PAGE_NONE;
+  int nPageSaved = GSLC_PAGE_NONE;
   if (pGui->pCurPage != NULL) {
     nPageSaved = pGui->pCurPage->nPageId;
   }
   
   // Find the page
-  microSDL_tsPage* pPage = microSDL_PageFindById(pGui,nPageId);
+  gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
     fprintf(stderr,"ERROR: SetPageCur() can't find page (ID=%d)\n",nPageId);
     exit(1);
@@ -532,19 +532,19 @@ void microSDL_SetPageCur(microSDL_tsGui* pGui,int nPageId)
   
   // A change of page should always force a future redraw
   if (nPageSaved != nPageId) {
-    microSDL_PageRedrawSet(pGui,true);
+    gslc_PageRedrawSet(pGui,true);
   }
 }
 
 
 // Adjust the flag that indicates whether the entire page
 // requires a redraw.
-void microSDL_PageRedrawSet(microSDL_tsGui* pGui,bool bRedraw)
+void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)
 {
   pGui->pCurPage->bPageNeedRedraw = bRedraw;
 }
 
-bool microSDL_PageRedrawGet(microSDL_tsGui* pGui)
+bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 {
   return pGui->pCurPage->bPageNeedRedraw;
 }
@@ -558,17 +558,17 @@ bool microSDL_PageRedrawGet(microSDL_tsGui* pGui)
 // - For now, just mark the entire page as requiring redraw.
 // TODO: Determine which elements underneath should be redrawn based
 //       on the region exposed by the transparent element.
-void microSDL_PageRedrawCalc(microSDL_tsGui* pGui)
+void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
   int               nInd;
-  microSDL_tsElem*  pElem = NULL;
-  for (nInd=MSDL_IND_FIRST;nInd<pGui->pCurPageCollect->nElemCnt;nInd++) {
+  gslc_tsElem*  pElem = NULL;
+  for (nInd=GSLC_IND_FIRST;nInd<pGui->pCurPageCollect->nElemCnt;nInd++) {
     pElem = &(pGui->pCurPageCollect->asElem[nInd]);
     if (pElem->bNeedRedraw) {
       // Is the element transparent?
       if (!pElem->bFillEn) {
         // For now, mark the entire page as requiring redraw
-        microSDL_PageRedrawSet(pGui,true);
+        gslc_PageRedrawSet(pGui,true);
         // No need to check any more elements
         break;
       }
@@ -582,16 +582,16 @@ void microSDL_PageRedrawCalc(microSDL_tsGui* pGui)
 // - If the page has not been marked as needing redraw then only
 //   the elements that have been marked as needing redraw
 //   are rendered.
-void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
+void gslc_PageRedrawGo(gslc_tsGui* pGui)
 { 
   // Update any page redraw status that may be required
   // - Note that this routine handles cases where an element
   //   marked as requiring update is semi-transparent which can
   //   cause other elements to be redrawn as well.
-  microSDL_PageRedrawCalc(pGui);
+  gslc_PageRedrawCalc(pGui);
 
   // Determine final state of full-page redraw
-  bool  bPageRedraw = microSDL_PageRedrawGet(pGui);
+  bool  bPageRedraw = gslc_PageRedrawGet(pGui);
 
   // If a full page redraw is required, then start by
   // redrawing the background.
@@ -605,51 +605,51 @@ void microSDL_PageRedrawGo(microSDL_tsGui* pGui)
   //         for bBkgndNeedRedraw or make the background just
   //         another element).
   if (bPageRedraw) {
-    microSDL_DrvPasteSurface(pGui,0,0,pGui->pvSurfBkgnd,pGui->pvSurfScreen);
+    gslc_DrvPasteSurface(pGui,0,0,pGui->pvSurfBkgnd,pGui->pvSurfScreen);
   }
     
   // Draw other elements (as needed)
-  microSDL_CollectRedraw(pGui,pGui->pCurPageCollect,bPageRedraw);
+  gslc_CollectRedraw(pGui,pGui->pCurPageCollect,bPageRedraw);
 
   // Clear the page redraw flag
-  microSDL_PageRedrawSet(pGui,false);
+  gslc_PageRedrawSet(pGui,false);
   
   // Page flip the entire screen
   // - TODO: We could also call Update instead of Flip as that would
   //         limit the region to refresh.
-  microSDL_PageFlipGo(pGui);
+  gslc_PageFlipGo(pGui);
   
 }
 
 
-void microSDL_PageFlipSet(microSDL_tsGui* pGui,bool bNeeded)
+void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 {
   pGui->pCurPage->bPageNeedFlip = bNeeded;
 }
 
-bool microSDL_PageFlipGet(microSDL_tsGui* pGui)
+bool gslc_PageFlipGet(gslc_tsGui* pGui)
 {
   return pGui->pCurPage->bPageNeedFlip;
 }
 
-void microSDL_PageFlipGo(microSDL_tsGui* pGui)
+void gslc_PageFlipGo(gslc_tsGui* pGui)
 {
   if (pGui->pCurPage->bPageNeedFlip) {
-    microSDL_DrvPageFlipNow(pGui);
+    gslc_DrvPageFlipNow(pGui);
     
     // Indicate that page flip is no longer required
-    microSDL_PageFlipSet(pGui,false);
+    gslc_PageFlipSet(pGui,false);
   }
 }
 
 
-microSDL_tsPage* microSDL_PageFindById(microSDL_tsGui* pGui,int nPageId)
+gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int nPageId)
 {
   int nInd;
   
   // Loop through list of pages
   // Return pointer to page
-  microSDL_tsPage*  pFoundPage = NULL;
+  gslc_tsPage*  pFoundPage = NULL;
   for (nInd=0;nInd<pGui->nPageMax;nInd++) {
     if (pGui->asPage[nInd].nPageId == nPageId) {
       pFoundPage = &pGui->asPage[nInd];
@@ -668,19 +668,19 @@ microSDL_tsPage* microSDL_PageFindById(microSDL_tsGui* pGui,int nPageId)
   return pFoundPage;
 }
 
-microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int nElemId)
+gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int nPageId,int nElemId)
 {
-  microSDL_tsPage*  pPage = NULL;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsPage*  pPage = NULL;
+  gslc_tsElem*  pElem = NULL;
 
   // Get the page
-  pPage = microSDL_PageFindById(pGui,nPageId);
+  pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
     fprintf(stderr,"ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
     exit(1);
   }
   // Find the element in the page's element collection
-  pElem = microSDL_CollectFindElemById(&pPage->sCollect,nElemId);
+  pElem = gslc_CollectFindElemById(&pPage->sCollect,nElemId);
   return pElem;
 }
 
@@ -690,7 +690,7 @@ microSDL_tsElem* microSDL_PageFindElemById(microSDL_tsGui* pGui,int nPageId,int 
 // ------------------------------------------------------------------------
 
 
-int microSDL_ElemGetId(microSDL_tsElem* pElem)
+int gslc_ElemGetId(gslc_tsElem* pElem)
 {
   return pElem->nId;
 }
@@ -701,20 +701,20 @@ int microSDL_ElemGetId(microSDL_tsElem* pElem)
 // ------------------------------------------------------------------------
 
 
-microSDL_tsElem* microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPage,microSDL_Rect rElem,
+gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect rElem,
   const char* pStr,int nFontId)
 {
-  microSDL_tsElem   sElem;
-  microSDL_tsElem*  pElem = NULL;
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_TXT,rElem,pStr,nFontId);
-  sElem.colElemFill     = MSDL_COL_BLACK;
-  sElem.colElemFrame    = MSDL_COL_BLACK;
-  sElem.colElemGlow     = MSDL_COL_BLACK;
-  sElem.colElemText     = MSDL_COL_YELLOW;
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_TXT,rElem,pStr,nFontId);
+  sElem.colElemFill     = GSLC_COL_BLACK;
+  sElem.colElemFrame    = GSLC_COL_BLACK;
+  sElem.colElemGlow     = GSLC_COL_BLACK;
+  sElem.colElemText     = GSLC_COL_YELLOW;
   sElem.bFillEn         = true;
-  sElem.eTxtAlign       = MSDL_ALIGN_MID_LEFT;
-  if (nPage != MSDL_PAGE_NONE) {
-    pElem = microSDL_ElemAdd(pGui,nPage,&sElem);
+  sElem.eTxtAlign       = GSLC_ALIGN_MID_LEFT;
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
   } else {
     // Save as temporary element
@@ -724,30 +724,30 @@ microSDL_tsElem* microSDL_ElemCreateTxt(microSDL_tsGui* pGui,int nElemId,int nPa
 }
 
 
-microSDL_tsElem* microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_Rect rElem,const char* acStr,int nFontId,MSDL_CB_TOUCH cbTouch)
+gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
+  gslc_Rect rElem,const char* acStr,int nFontId,GSLC_CB_TOUCH cbTouch)
 {
-  microSDL_tsElem   sElem;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
   
   // Ensure the Font is loaded
-  if (microSDL_FontGet(pGui,nFontId) == NULL) {
+  if (gslc_FontGet(pGui,nFontId) == NULL) {
     fprintf(stderr,"ERROR: ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
     return NULL;
   }
 
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,acStr,nFontId);
-  sElem.colElemFill     = MSDL_COL_BLUE_LT;
-  sElem.colElemFrame    = MSDL_COL_BLUE_DK;
-  sElem.colElemGlow     = MSDL_COL_GREEN_LT;
-  sElem.colElemText     = MSDL_COL_BLACK;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,acStr,nFontId);
+  sElem.colElemFill     = GSLC_COL_BLUE_LT;
+  sElem.colElemFrame    = GSLC_COL_BLUE_DK;
+  sElem.colElemGlow     = GSLC_COL_GREEN_LT;
+  sElem.colElemText     = GSLC_COL_BLACK;
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
   sElem.bGlowEn         = true;
   sElem.pfuncXTouch     = cbTouch;
-  if (nPage != MSDL_PAGE_NONE) {
-    pElem = microSDL_ElemAdd(pGui,nPage,&sElem);
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
   } else {
     // Save as temporary element
@@ -756,24 +756,24 @@ microSDL_tsElem* microSDL_ElemCreateBtnTxt(microSDL_tsGui* pGui,int nElemId,int 
   }
 }
 
-microSDL_tsElem* microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_Rect rElem,const char* acImg,const char* acImgSel,MSDL_CB_TOUCH cbTouch)
+gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
+  gslc_Rect rElem,const char* acImg,const char* acImgSel,GSLC_CB_TOUCH cbTouch)
 {
-  microSDL_tsElem   sElem;
-  microSDL_tsElem*  pElem = NULL;
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BTN,rElem,"",MSDL_FONT_NONE);
-  sElem.colElemFill     = MSDL_COL_BLUE_LT;
-  sElem.colElemFrame    = MSDL_COL_BLUE_DK;
-  sElem.colElemGlow     = MSDL_COL_GREEN_LT;
-  sElem.colElemText     = MSDL_COL_BLACK;
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,"",GSLC_FONT_NONE);
+  sElem.colElemFill     = GSLC_COL_BLUE_LT;
+  sElem.colElemFrame    = GSLC_COL_BLUE_DK;
+  sElem.colElemGlow     = GSLC_COL_GREEN_LT;
+  sElem.colElemText     = GSLC_COL_BLACK;
   sElem.bFrameEn        = false;
   sElem.bFillEn         = false;
   sElem.bClickEn        = true;
   sElem.bGlowEn         = true;  
   sElem.pfuncXTouch     = cbTouch;  
-  microSDL_ElemSetImage(pGui,&sElem,acImg,acImgSel);
-  if (nPage != MSDL_PAGE_NONE) {
-    pElem = microSDL_ElemAdd(pGui,nPage,&sElem);
+  gslc_ElemSetImage(pGui,&sElem,acImg,acImgSel);
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
   } else {
     // Save as temporary element
@@ -783,17 +783,17 @@ microSDL_tsElem* microSDL_ElemCreateBtnImg(microSDL_tsGui* pGui,int nElemId,int 
 }
 
 
-microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPage,microSDL_Rect rElem)
+gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect rElem)
 {
-  microSDL_tsElem   sElem;
-  microSDL_tsElem*  pElem = NULL;
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,NULL,MSDL_FONT_NONE);
-  sElem.colElemFill     = MSDL_COL_BLACK;
-  sElem.colElemFrame    = MSDL_COL_GRAY;
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,GSLC_FONT_NONE);
+  sElem.colElemFill     = GSLC_COL_BLACK;
+  sElem.colElemFrame    = GSLC_COL_GRAY;
   sElem.bFillEn         = true;
   sElem.bFrameEn        = true;
-  if (nPage != MSDL_PAGE_NONE) {
-    pElem = microSDL_ElemAdd(pGui,nPage,&sElem);  
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem);  
     return pElem;
   } else {
     // Save as temporary element
@@ -803,18 +803,18 @@ microSDL_tsElem* microSDL_ElemCreateBox(microSDL_tsGui* pGui,int nElemId,int nPa
 }
 
 
-microSDL_tsElem* microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPage,
-  microSDL_Rect rElem,const char* acImg)
+gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,
+  gslc_Rect rElem,const char* acImg)
 {
-  microSDL_tsElem   sElem;
-  microSDL_tsElem*  pElem = NULL;
-  sElem = microSDL_ElemCreate(pGui,nElemId,nPage,MSDL_TYPE_BOX,rElem,"",MSDL_FONT_NONE);
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,"",GSLC_FONT_NONE);
   sElem.bFrameEn        = false;
   sElem.bFillEn         = false;
   sElem.bClickEn        = false;
-  microSDL_ElemSetImage(pGui,&sElem,acImg,acImg);
-  if (nPage != MSDL_PAGE_NONE) {
-    pElem = microSDL_ElemAdd(pGui,nPage,&sElem);
+  gslc_ElemSetImage(pGui,&sElem,acImg,acImg);
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
   } else {
     // Save as temporary element
@@ -834,16 +834,16 @@ microSDL_tsElem* microSDL_ElemCreateImg(microSDL_tsGui* pGui,int nElemId,int nPa
 // - Element is referenced by page ID and element ID
 // - This routine is typically called by user code for custom
 //   drawing callbacks
-void microSDL_ElemDraw(microSDL_tsGui* pGui,int nPageId,int nElemId)
+void gslc_ElemDraw(gslc_tsGui* pGui,int nPageId,int nElemId)
 {
-  microSDL_tsElem* pElem = microSDL_PageFindElemById(pGui,nPageId,nElemId);
-  microSDL_ElemDrawByRef(pGui,pElem);
+  gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
+  gslc_ElemDrawByRef(pGui,pElem);
 }
 
 // Draw an element to the active display
 // - Element is referenced by an element pointer
-// - TODO: Handle MSDL_TYPE_BKGND
-bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
+// - TODO: Handle GSLC_TYPE_BKGND
+bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: ElemDrawByRef() called with NULL ptr\n");
@@ -884,9 +884,9 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   // - This also changes the fill color if selected and glow state is enabled
   if (pElem->bFillEn) {
     if (bGlowEn && bGlowing) {
-      microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemGlow);
+      gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemGlow);
     } else {
-      microSDL_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+      gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
     }
   } else {
     // TODO: If unfilled, then we might need
@@ -900,10 +900,10 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  microSDL_DrawFrameRect(pGui,sElem.rElem,MSDL_COL_GRAY_DK);
+  gslc_DrawFrameRect(pGui,sElem.rElem,GSLC_COL_GRAY_DK);
   #else
   if (pElem->bFrameEn) {
-    microSDL_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+    gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   }
   #endif
 
@@ -915,9 +915,9 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   // Draw any images associated with element
   if (pElem->pvSurfNorm != NULL) {
     if ((bGlowEn && bGlowing) && (pElem->pvSurfGlow != NULL)) {
-      microSDL_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfGlow,pGui->pvSurfScreen);
+      gslc_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfGlow,pGui->pvSurfScreen);
     } else {
-      microSDL_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfNorm,pGui->pvSurfScreen);
+      gslc_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfNorm,pGui->pvSurfScreen);
     }
   }
 
@@ -931,14 +931,14 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
   if (bRenderTxt) {
 #if (DRV_HAS_DRAW_TEXT)    
     // Call the driver text rendering routine
-    microSDL_DrvDrawTxt(pGui,pElem);
+    gslc_DrvDrawTxt(pGui,pElem);
 #else
     // No text support in driver, so skip
 #endif
   }
 
   // Mark the element as no longer requiring redraw
-  microSDL_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,false);
   
   return true;
 }
@@ -949,17 +949,17 @@ bool microSDL_ElemDrawByRef(microSDL_tsGui* pGui,microSDL_tsElem* pElem)
 // Element Update Functions
 // ------------------------------------------------------------------------
 
-void microSDL_ElemSetFillEn(microSDL_tsElem* pElem,bool bFillEn)
+void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetFillEn() called with NULL ptr\n");
     return;
   }
   pElem->bFillEn          = bFillEn;  
-  microSDL_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,true); 
 }
 
-void microSDL_ElemSetCol(microSDL_tsElem* pElem,microSDL_Color colFrame,microSDL_Color colFill,microSDL_Color colGlow)
+void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colGlow)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetCol() called with NULL ptr\n");
@@ -968,10 +968,10 @@ void microSDL_ElemSetCol(microSDL_tsElem* pElem,microSDL_Color colFrame,microSDL
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
   pElem->colElemGlow      = colGlow;
-  microSDL_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,true); 
 }
 
-void microSDL_ElemSetGroup(microSDL_tsElem* pElem,int nGroupId)
+void gslc_ElemSetGroup(gslc_tsElem* pElem,int nGroupId)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetGroup() called with NULL ptr\n");
@@ -980,59 +980,59 @@ void microSDL_ElemSetGroup(microSDL_tsElem* pElem,int nGroupId)
   pElem->nGroup           = nGroupId;
 }
 
-int microSDL_ElemGetGroup(microSDL_tsElem* pElem)
+int gslc_ElemGetGroup(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemGetGroup() called with NULL ptr\n");
-    return MSDL_GROUP_ID_NONE;
+    return GSLC_GROUP_ID_NONE;
   }    
   return pElem->nGroup;  
 }
 
 
-void microSDL_ElemSetTxtAlign(microSDL_tsElem* pElem,unsigned nAlign)
+void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetTxtAlign() called with NULL ptr\n");
     return;
   }    
   pElem->eTxtAlign        = nAlign;
-  microSDL_ElemSetRedraw(pElem,true);  
+  gslc_ElemSetRedraw(pElem,true);  
 }
 
 
-void microSDL_ElemSetTxtStr(microSDL_tsElem* pElem,const char* pStr)
+void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetTxtStr() called with NULL ptr\n");
     return;
   }    
-  strncpy(pElem->acStr,pStr,MSDL_ELEM_STRLEN_MAX-1);
-  pElem->acStr[MSDL_ELEM_STRLEN_MAX-1] = '\0';  // Force termination
-  microSDL_ElemSetRedraw(pElem,true);
+  strncpy(pElem->acStr,pStr,GSLC_ELEM_STRLEN_MAX-1);
+  pElem->acStr[GSLC_ELEM_STRLEN_MAX-1] = '\0';  // Force termination
+  gslc_ElemSetRedraw(pElem,true);
 }
 
-void microSDL_ElemSetTxtCol(microSDL_tsElem* pElem,microSDL_Color colVal)
+void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_Color colVal)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetTxtCol() called with NULL ptr\n");
     return;
   }    
   pElem->colElemText      = colVal;
-  microSDL_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,true); 
 }
 
-void microSDL_ElemUpdateFont(microSDL_tsGui* pGui,microSDL_tsElem* pElem,int nFontId)
+void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: ElemUpdateFont() called with NULL ptr\n");
     return;
   }    
-  pElem->pvTxtFont = microSDL_FontGet(pGui,nFontId);
-  microSDL_ElemSetRedraw(pElem,true);
+  pElem->pvTxtFont = gslc_FontGet(pGui,nFontId);
+  gslc_ElemSetRedraw(pElem,true);
 }
 
-void microSDL_ElemSetRedraw(microSDL_tsElem* pElem,bool bRedraw)
+void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetRedraw() called with NULL ptr\n");
@@ -1043,21 +1043,21 @@ void microSDL_ElemSetRedraw(microSDL_tsElem* pElem,bool bRedraw)
   // Now propagate up the element hierarchy
   // (eg. in case of compound elements)
   if (pElem->pElemParent != NULL) {
-    microSDL_ElemSetRedraw(pElem->pElemParent,bRedraw);
+    gslc_ElemSetRedraw(pElem->pElemParent,bRedraw);
   }
 }
 
-void microSDL_ElemSetGlow(microSDL_tsElem* pElem,bool bGlowing)
+void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetGlow() called with NULL ptr\n");
     return;
   }    
   pElem->bGlowing         = bGlowing;
-  microSDL_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,true);
 }
 
-bool microSDL_ElemGetGlow(microSDL_tsElem* pElem)
+bool gslc_ElemGetGlow(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemGetGlow() called with NULL ptr\n");
@@ -1066,17 +1066,17 @@ bool microSDL_ElemGetGlow(microSDL_tsElem* pElem)
   return pElem->bGlowing;
 }
 
-void microSDL_ElemSetGlowEn(microSDL_tsElem* pElem,bool bGlowEn)
+void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetGlowEn() called with NULL ptr\n");
     return;
   }    
   pElem->bGlowEn         = bGlowEn;
-  microSDL_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,true);
 }
 
-bool microSDL_ElemGetGlowEn(microSDL_tsElem* pElem)
+bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemGetGlowEn() called with NULL ptr\n");
@@ -1085,17 +1085,17 @@ bool microSDL_ElemGetGlowEn(microSDL_tsElem* pElem)
   return pElem->bGlowEn;
 }
 
-void microSDL_ElemSetDrawFunc(microSDL_tsElem* pElem,MSDL_CB_DRAW funcCb)
+void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
     fprintf(stderr,"ERROR: ElemSetDrawFunc() called with NULL ptr\n");
     return;
   }    
   pElem->pfuncXDraw       = funcCb;
-  microSDL_ElemSetRedraw(pElem,true);   
+  gslc_ElemSetRedraw(pElem,true);   
 }
 
-void microSDL_ElemSetTickFunc(microSDL_tsElem* pElem,MSDL_CB_TICK funcCb)
+void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
     fprintf(stderr,"ERROR: ElemSetTickFunc() called with NULL ptr\n");
@@ -1110,18 +1110,18 @@ void microSDL_ElemSetTickFunc(microSDL_tsElem* pElem,MSDL_CB_TICK funcCb)
 // ------------------------------------------------------------------------
 
 // TODO: Consider changing return value to tsView*?
-int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,microSDL_Rect rView,unsigned nOriginX,unsigned nOriginY)
+int gslc_ViewCreate(gslc_tsGui* pGui,int nViewId,gslc_Rect rView,unsigned nOriginX,unsigned nOriginY)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewCreate() called with NULL ptr\n");
-    return MSDL_VIEW_ID_NONE;
+    return GSLC_VIEW_ID_NONE;
   }      
   if (pGui->nViewCnt+1 >= (pGui->nViewMax)) {
     fprintf(stderr,"ERROR: ViewCreate() too many views\n");
-    return MSDL_VIEW_ID_NONE;
+    return GSLC_VIEW_ID_NONE;
   }
   // Add the element to the internal array
-  microSDL_tsView   sView;
+  gslc_tsView   sView;
   sView.nId         = nViewId;
   sView.rView       = rView;
   sView.nOriginX    = nOriginX;
@@ -1132,16 +1132,16 @@ int microSDL_ViewCreate(microSDL_tsGui* pGui,int nViewId,microSDL_Rect rView,uns
   return nViewId;
 }
 
-bool microSDL_ViewSetOrigin(microSDL_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY)
+bool gslc_ViewSetOrigin(gslc_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewSetOrigin() called with NULL ptr\n");
     return false;
   }      
   // Find View
-  int nViewInd = microSDL_ViewFindIndFromId(pGui,nViewId);
-  // If MSDL_VIEW_ID_SCREEN is passed, then it will be ignored here
-  if (nViewInd == MSDL_VIEW_IND_NONE) {
+  int nViewInd = gslc_ViewFindIndFromId(pGui,nViewId);
+  // If GSLC_VIEW_ID_SCREEN is passed, then it will be ignored here
+  if (nViewInd == GSLC_VIEW_IND_NONE) {
     return false;
   }
   pGui->asView[nViewInd].nOriginX = nOriginX;
@@ -1149,31 +1149,31 @@ bool microSDL_ViewSetOrigin(microSDL_tsGui* pGui,int nViewId,unsigned nOriginX,u
   return true;
 }
 
-void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
+void gslc_ViewSet(gslc_tsGui* pGui,int nViewId)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewSet() called with NULL ptr\n");
     return;
   }      
   // Ensure that the view ID is valid
-  int nViewInd = MSDL_VIEW_IND_NONE;
-  if (nViewId == MSDL_VIEW_ID_SCREEN) {
-    nViewInd = MSDL_VIEW_IND_SCREEN;
+  int nViewInd = GSLC_VIEW_IND_NONE;
+  if (nViewId == GSLC_VIEW_ID_SCREEN) {
+    nViewInd = GSLC_VIEW_IND_SCREEN;
   } else {
-    nViewInd = microSDL_ViewFindIndFromId(pGui,nViewId); 
+    nViewInd = gslc_ViewFindIndFromId(pGui,nViewId); 
   }
 
-  if (nViewInd == MSDL_VIEW_IND_NONE) {
+  if (nViewInd == GSLC_VIEW_IND_NONE) {
     fprintf(stderr,"ERROR: ViewSet() invalid ID=%d\n",nViewId);
   }
 
   // Update the clipping rect temporarily
-  if (nViewInd == MSDL_VIEW_IND_SCREEN) {
+  if (nViewInd == GSLC_VIEW_IND_SCREEN) {
     // Set to full size of screen
-    microSDL_DrvSetClipRect(pGui,NULL);
-  } else if (microSDL_ViewIndValid(pGui,nViewInd)) {
+    gslc_DrvSetClipRect(pGui,NULL);
+  } else if (gslc_ViewIndValid(pGui,nViewInd)) {
     // Set to user-specified region    
-    microSDL_DrvSetClipRect(pGui,&(pGui->asView[nViewInd]).rView);
+    gslc_DrvSetClipRect(pGui,&(pGui->asView[nViewInd]).rView);
   } else {
     // INVALID
   }
@@ -1186,13 +1186,13 @@ void microSDL_ViewSet(microSDL_tsGui* pGui,int nViewId)
 // Tracking Functions
 // ------------------------------------------------------------------------
 
-void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY)
+void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY)
 {
-  microSDL_tsElem*  pTrackedOld = NULL;
-  microSDL_tsElem*  pTrackedNew = NULL;
+  gslc_tsElem*  pTrackedOld = NULL;
+  gslc_tsElem*  pTrackedNew = NULL;
   
   // Fetch the item currently being tracked (if any)
-  pTrackedOld = microSDL_CollectGetElemTracked(pCollect);
+  pTrackedOld = gslc_CollectGetElemTracked(pCollect);
   
   // Reset the in-tracked flag
   bool  bInTracked = false;
@@ -1206,28 +1206,28 @@ void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,boo
     // - We shouldn't really enter a "Touch Down" event
     //   with an element still marked as being tracked
     if (pTrackedOld != NULL) {
-      microSDL_ElemSetGlow(pTrackedOld,false);
+      gslc_ElemSetGlow(pTrackedOld,false);
     }
     
     // Determine the new element to start tracking
-    pTrackedNew = microSDL_CollectFindElemFromCoord(pCollect,nX,nY);
+    pTrackedNew = gslc_CollectFindElemFromCoord(pCollect,nX,nY);
     
     if (pTrackedNew == NULL) {
       // Didn't find an element, so clear the tracking reference   
-      microSDL_CollectSetElemTracked(pCollect,NULL);
+      gslc_CollectSetElemTracked(pCollect,NULL);
     } else {
       // Found an element, so mark it as being the tracked element
 
       // Set the new tracked element reference
-      microSDL_CollectSetElemTracked(pCollect,pTrackedNew);
+      gslc_CollectSetElemTracked(pCollect,pTrackedNew);
 
       // Start glow on new element
-      microSDL_ElemSetGlow(pTrackedNew,true);
+      gslc_ElemSetGlow(pTrackedNew,true);
       
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
-      microSDL_NotifyElemTouch(pGui,pTrackedNew,MSDL_TOUCH_DOWN_IN,nX,nY);
+      gslc_NotifyElemTouch(pGui,pTrackedNew,GSLC_TOUCH_DOWN_IN,nX,nY);
     }
    
   } else if (bTouchUp) {
@@ -1237,23 +1237,23 @@ void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,boo
 
     if (pTrackedOld != NULL) {
       // Are we still over tracked element?
-      bInTracked = microSDL_IsInRect(nX,nY,pTrackedOld->rElem);
+      bInTracked = gslc_IsInRect(nX,nY,pTrackedOld->rElem);
   
       if (!bInTracked) {
         // Released not over tracked element
-        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_UP_OUT,nX,nY);
+        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_UP_OUT,nX,nY);
       } else {
         // Notify original tracked element for optional custom handling
-        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_UP_IN,nX,nY);
+        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_UP_IN,nX,nY);
 
         // Clear glow state
-        microSDL_ElemSetGlow(pTrackedOld,false);
+        gslc_ElemSetGlow(pTrackedOld,false);
       }
 
     }
 
     // Clear the element tracking state
-    microSDL_CollectSetElemTracked(pCollect,NULL);
+    gslc_CollectSetElemTracked(pCollect,NULL);
     
   } else if (bTouchMove) {
     // ---------------------------------
@@ -1262,25 +1262,25 @@ void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,boo
     
     // Determine if we are still over tracked element
     if (pTrackedOld != NULL) {
-      bInTracked = microSDL_IsInRect(nX,nY,pTrackedOld->rElem);
+      bInTracked = gslc_IsInRect(nX,nY,pTrackedOld->rElem);
 
       if (!bInTracked) {
 
         // Not currently over tracked element
         // - Notify tracked element that we moved out of it
-        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_MOVE_OUT,nX,nY);
+        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_MOVE_OUT,nX,nY);
 
         // Ensure the tracked element is no longer glowing
         if (pTrackedOld) {
-          microSDL_ElemSetGlow(pTrackedOld,false);
+          gslc_ElemSetGlow(pTrackedOld,false);
         }
       } else {
         // We are still over tracked element
         // - Notify tracked element
-        microSDL_NotifyElemTouch(pGui,pTrackedOld,MSDL_TOUCH_MOVE_IN,nX,nY);
+        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_MOVE_IN,nX,nY);
 
         // Ensure it is glowing
-        microSDL_ElemSetGlow(pTrackedOld,true);
+        gslc_ElemSetGlow(pTrackedOld,true);
       }      
       
     }   
@@ -1290,7 +1290,7 @@ void microSDL_CollectTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,boo
 
 // This routine is responsible for the GUI-level touch event state machine
 // and dispatching to the touch even handler for the collection
-void microSDL_TrackTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,int nX,int nY,unsigned nPress)
+void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int nX,int nY,unsigned nPress)
 {
   if ((pGui == NULL) || (pCollect == NULL)) {
     fprintf(stderr,"ERROR: TrackTouch() called with NULL ptr\n");
@@ -1314,7 +1314,7 @@ void microSDL_TrackTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,int n
     }
   }
   
-  microSDL_CollectTouch(pGui,pCollect,bTouchDown,bTouchUp,bTouchMove,nX,nY);
+  gslc_CollectTouch(pGui,pCollect,bTouchDown,bTouchUp,bTouchMove,nX,nY);
 
   // Save raw touch status so that we can detect transitions
   pGui->nTouchLastX      = nX;
@@ -1332,7 +1332,7 @@ void microSDL_TrackTouch(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,int n
 
 // POST:
 // - pGui->ts mapped to touchscreen device
-bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev)
+bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: InitTs() called with NULL ptr\n");
@@ -1359,7 +1359,7 @@ bool microSDL_InitTs(microSDL_tsGui* pGui,const char* acDev)
   return true;
 }
 
-int microSDL_GetTsTouch(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
+int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: GetTsTouch() called with NULL ptr\n");
@@ -1387,35 +1387,35 @@ int microSDL_GetTsTouch(microSDL_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress
 
 
 // NOTE: nId is a positive ID specified by the user or
-//       MSDL_ID_AUTO if the user wants an auto-generated ID
+//       GSLC_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
 // NOTE: When we are creating sub-elements within a compound element,
-//       we usually pass nPageId=MSDL_PAGE_NONE. In this mode we
+//       we usually pass nPageId=GSLC_PAGE_NONE. In this mode we
 //       won't add the element to any page, but just create the
 //       element struct. However, in this mode we can't support
 //       auto-generated IDs since we don't know which IDs will
 //       be taken when we finally create the compound element.
-microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId,
-  microSDL_teType nType,microSDL_Rect rElem,const char* pStr,int nFontId)
+gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,
+  gslc_teType nType,gslc_Rect rElem,const char* pStr,int nFontId)
 {
-  microSDL_tsElem sElem;
+  gslc_tsElem sElem;
   // Assign defaults to the element record
-  microSDL_ResetElem(&sElem);
+  gslc_ResetElem(&sElem);
   
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ElemCreate() called with NULL ptr\n");
     return sElem;
   }  
 
-  microSDL_tsPage*    pPage = NULL;
-  microSDL_tsCollect* pCollect = NULL;
+  gslc_tsPage*    pPage = NULL;
+  gslc_tsCollect* pCollect = NULL;
   
   // If we are going to be adding the element to a page then we
   // perform some additional checks
-  if (nPageId == MSDL_PAGE_NONE) {
+  if (nPageId == GSLC_PAGE_NONE) {
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
-    if (nElemId == MSDL_ID_AUTO) {
+    if (nElemId == GSLC_ID_AUTO) {
       fprintf(stderr,"ERROR: ElemCreate() doesn't support temp elements with auto ID\n");
       return sElem;
     }
@@ -1423,7 +1423,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
     // Look up the targeted page to ensure that we check its
     // collection for collision with other IDs (or assign the
     // next available if auto-incremented)
-    pPage     = microSDL_PageFindById(pGui,nPageId);
+    pPage     = gslc_PageFindById(pGui,nPageId);
     if (pPage == NULL) {
       fprintf(stderr,"ERROR: ElemCreate() can't find page (ID=%d)\n",nPageId);
       return sElem;
@@ -1431,9 +1431,9 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
     pCollect  = &pPage->sCollect;
   
     // Validate the user-supplied ID
-    if (nElemId == MSDL_ID_AUTO) {
+    if (nElemId == GSLC_ID_AUTO) {
       // Get next auto-generated ID
-      nElemId = microSDL_CollectGetNextId(pCollect);
+      nElemId = gslc_CollectGetNextId(pCollect);
     } else {
       // Ensure the ID is positive
       if (nElemId < 0) {
@@ -1441,7 +1441,7 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
         return sElem;
       }
       // Ensure the ID isn't already taken
-      if (microSDL_CollectFindElemById(pCollect,nElemId) != NULL) {
+      if (gslc_CollectFindElemById(pCollect,nElemId) != NULL) {
         fprintf(stderr,"ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
         return sElem;
       }
@@ -1453,10 +1453,10 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
   sElem.nId             = nElemId;
   sElem.rElem           = rElem;
   sElem.nType           = nType;
-  microSDL_ElemUpdateFont(pGui,&sElem,nFontId);
+  gslc_ElemUpdateFont(pGui,&sElem,nFontId);
   if (pStr != NULL) {
-    strncpy(sElem.acStr,pStr,MSDL_ELEM_STRLEN_MAX-1);
-    sElem.acStr[MSDL_ELEM_STRLEN_MAX-1] = '\0';  // Force termination    
+    strncpy(sElem.acStr,pStr,GSLC_ELEM_STRLEN_MAX-1);
+    sElem.acStr[GSLC_ELEM_STRLEN_MAX-1] = '\0';  // Force termination    
   }  
   
   // If the element creation was successful, then set the valid flag
@@ -1466,10 +1466,10 @@ microSDL_tsElem microSDL_ElemCreate(microSDL_tsGui* pGui,int nElemId,int nPageId
 }
 
 
-// Helper function for microSDL_ElemAdd()
+// Helper function for gslc_ElemAdd()
 // - Note that this copies the content of pElem to collection element array
 //   so the pointer can be released after the call
-microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem)
+gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: CollectElemAdd() called with NULL ptr\n");
@@ -1500,7 +1500,7 @@ microSDL_tsElem* microSDL_CollectElemAdd(microSDL_tsCollect* pCollect,microSDL_t
 //
 // NOTE: The content (not address) of pElem is copied so the pointer
 //       can be released after the call.
-microSDL_tsElem* microSDL_ElemAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsElem* pElem)
+gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: ElemAdd() called with NULL ptr\n");
@@ -1508,19 +1508,19 @@ microSDL_tsElem* microSDL_ElemAdd(microSDL_tsGui* pGui,int nPageId,microSDL_tsEl
   }    
 
   // Fetch the page containing the item
-  microSDL_tsPage*      pPage     = microSDL_PageFindById(pGui,nPageId);
+  gslc_tsPage*      pPage     = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
     fprintf(stderr,"ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
     return NULL;
   }   
   
-  microSDL_tsCollect*   pCollect  = &pPage->sCollect;
+  gslc_tsCollect*   pCollect  = &pPage->sCollect;
   
-  return microSDL_CollectElemAdd(pCollect,pElem);
+  return gslc_CollectElemAdd(pCollect,pElem);
 }
 
 
-void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage,
+void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
   const char* acImageSel)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
@@ -1529,36 +1529,36 @@ void microSDL_ElemSetImage(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const cha
   }    
 
   if (strlen(acImage) > 0) {
-    microSDL_DrvSetElemImageNorm(pGui,pElem,acImage);
+    gslc_DrvSetElemImageNorm(pGui,pElem,acImage);
   }
 
   if (strlen(acImageSel) > 0) {
-    microSDL_DrvSetElemImageGlow(pGui,pElem,acImageSel);    
+    gslc_DrvSetElemImageGlow(pGui,pElem,acImageSel);    
   }
 
 }
 
-bool microSDL_SetBkgndImage(microSDL_tsGui* pGui,char* pStrFname)
+bool gslc_SetBkgndImage(gslc_tsGui* pGui,char* pStrFname)
 {
-  if (!microSDL_DrvSetBkgndImage(pGui,pStrFname)) {
+  if (!gslc_DrvSetBkgndImage(pGui,pStrFname)) {
     return false;
   }
-  microSDL_PageFlipSet(pGui,true);
+  gslc_PageFlipSet(pGui,true);
   return true;
 }
 
-bool microSDL_SetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol)
+bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol)
 {
-  if (!microSDL_DrvSetBkgndColor(pGui,nCol)) {
+  if (!gslc_DrvSetBkgndColor(pGui,nCol)) {
     return false;
   }
-  microSDL_PageFlipSet(pGui,true);
+  gslc_PageFlipSet(pGui,true);
   return true;  
 }
 
 
 
-bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
+bool gslc_ViewIndValid(gslc_tsGui* pGui,int nViewInd)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewIndValid() called with NULL ptr\n");
@@ -1572,14 +1572,14 @@ bool microSDL_ViewIndValid(microSDL_tsGui* pGui,int nViewInd)
 }
 
 // Search through the viewport array for a matching ID
-int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
+int gslc_ViewFindIndFromId(gslc_tsGui* pGui,int nViewId)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewFindIndFromId() called with NULL ptr\n");
-    return MSDL_IND_NONE;
+    return GSLC_IND_NONE;
   }    
   unsigned  nInd;
-  int nFound = MSDL_IND_NONE;
+  int nFound = GSLC_IND_NONE;
   for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
     if (pGui->asView[nInd].nId == nViewId) {
       nFound = nInd;
@@ -1590,17 +1590,17 @@ int microSDL_ViewFindIndFromId(microSDL_tsGui* pGui,int nViewId)
 
 // Translate a coordinate from local to global according
 // to the viewport region and origin.
-void microSDL_ViewRemapPt(microSDL_tsGui* pGui,int16_t* pnX,int16_t* pnY)
+void gslc_ViewRemapPt(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewRemapPt() called with NULL ptr\n");
     return;
   }    
   int nViewInd = pGui->nViewIndCur;
-  if (nViewInd == MSDL_VIEW_IND_SCREEN) {
+  if (nViewInd == GSLC_VIEW_IND_SCREEN) {
     return;
   }
-  if (!microSDL_ViewIndValid(pGui,nViewInd)) {
+  if (!gslc_ViewIndValid(pGui,nViewInd)) {
     return;
   }
   int   nFinalX,nFinalY;
@@ -1620,7 +1620,7 @@ void microSDL_ViewRemapPt(microSDL_tsGui* pGui,int16_t* pnX,int16_t* pnY)
 
 // Translate a rectangle's coordinates from local to global according
 // to the viewport region and origin.
-void microSDL_ViewRemapRect(microSDL_tsGui* pGui,microSDL_Rect* prRect)
+void gslc_ViewRemapRect(gslc_tsGui* pGui,gslc_Rect* prRect)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: ViewRemapRect() called with NULL ptr\n");
@@ -1632,8 +1632,8 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,microSDL_Rect* prRect)
   nY0 = prRect->y;
   nX1 = prRect->x + prRect->w - 1;
   nY1 = prRect->y + prRect->h - 1;
-  microSDL_ViewRemapPt(pGui,&nX0,&nY0);
-  microSDL_ViewRemapPt(pGui,&nX1,&nY1);
+  gslc_ViewRemapPt(pGui,&nX0,&nY0);
+  gslc_ViewRemapPt(pGui,&nX1,&nY1);
   prRect->x = nX0;
   prRect->y = nY0;
   prRect->w = nX1-nX0+1;
@@ -1643,8 +1643,8 @@ void microSDL_ViewRemapRect(microSDL_tsGui* pGui,microSDL_Rect* prRect)
 
 // Notifies an element of a touch event by invoking its touch callback
 // function (if enabled) and passing in relative coordinates.
-bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_tsElem* pElem,
-        microSDL_teTouch eTouch,int nX,int nY)
+bool gslc_NotifyElemTouch(gslc_tsGui* pGui,gslc_tsElem* pElem,
+        gslc_teTouch eTouch,int nX,int nY)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: NotifyElemTouch() called with NULL ptr\n");
@@ -1652,7 +1652,7 @@ bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_tsElem* pElem,
   }    
   
   // Fetch the extended element callback (if enabled)
-  MSDL_CB_TOUCH pfuncXTouch = pElem->pfuncXTouch;
+  GSLC_CB_TOUCH pfuncXTouch = pElem->pfuncXTouch;
   if (pfuncXTouch != NULL) {
     // Pass in the relative position from corner of element region
     int nElemPosX = pElem->rElem.x;
@@ -1665,17 +1665,17 @@ bool microSDL_NotifyElemTouch(microSDL_tsGui* pGui,microSDL_tsElem* pElem,
 
 
 // Initialize the element struct to all zeros
-void microSDL_ResetElem(microSDL_tsElem* pElem)
+void gslc_ResetElem(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ResetElem() called with NULL ptr\n");
     return;
   }  
   pElem->bValid           = false;
-  pElem->nId              = MSDL_ID_NONE;
-  pElem->nType            = MSDL_TYPE_BOX;
-  pElem->nGroup           = MSDL_GROUP_ID_NONE;
-  pElem->rElem            = (microSDL_Rect){0,0,0,0};
+  pElem->nId              = GSLC_ID_NONE;
+  pElem->nType            = GSLC_TYPE_BOX;
+  pElem->nGroup           = GSLC_GROUP_ID_NONE;
+  pElem->rElem            = (gslc_Rect){0,0,0,0};
   pElem->bGlowEn          = false;
   pElem->bGlowing         = false;
   pElem->pvSurfNorm       = NULL;
@@ -1684,13 +1684,13 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
   pElem->bFrameEn         = false;
   pElem->bFillEn          = false;
   pElem->bNeedRedraw      = true;
-  pElem->colElemFrame     = MSDL_COL_WHITE;
-  pElem->colElemFill      = MSDL_COL_WHITE;
-  pElem->colElemGlow      = MSDL_COL_WHITE;
+  pElem->colElemFrame     = GSLC_COL_WHITE;
+  pElem->colElemFill      = GSLC_COL_WHITE;
+  pElem->colElemGlow      = GSLC_COL_WHITE;
 
   pElem->acStr[0]         = '\0';
-  pElem->colElemText      = MSDL_COL_WHITE;
-  pElem->eTxtAlign        = MSDL_ALIGN_MID_MID;
+  pElem->colElemText      = GSLC_COL_WHITE;
+  pElem->eTxtAlign        = GSLC_ALIGN_MID_MID;
   pElem->nTxtMargin       = 0;
   pElem->pvTxtFont        = NULL;
   
@@ -1704,43 +1704,43 @@ void microSDL_ResetElem(microSDL_tsElem* pElem)
 }
 
 // Initialize the font struct to all zeros
-void microSDL_ResetFont(microSDL_tsFont* pFont)
+void gslc_ResetFont(gslc_tsFont* pFont)
 {
   if (pFont == NULL) {
     fprintf(stderr,"ERROR: ResetFont() called with NULL ptr\n");
     return;
   }    
-  pFont->nId = MSDL_FONT_NONE;
+  pFont->nId = GSLC_FONT_NONE;
   pFont->pvFont = NULL;
 }
 
 // Initialize the view struct to all zeros
-void microSDL_ResetView(microSDL_tsView* pView)
+void gslc_ResetView(gslc_tsView* pView)
 {
   if (pView == NULL) {
     fprintf(stderr,"ERROR: ResetView() called with NULL ptr\n");
     return;
   }    
-  pView->nId = MSDL_VIEW_ID_NONE;
-  pView->rView = (microSDL_Rect){0,0,0,0};
+  pView->nId = GSLC_VIEW_ID_NONE;
+  pView->rView = (gslc_Rect){0,0,0,0};
   pView->nOriginX = 0;
   pView->nOriginY = 0;
 }
 
 
 // Close down an element
-void microSDL_ElemDestruct(microSDL_tsElem* pElem)
+void gslc_ElemDestruct(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemDestruct() called with NULL ptr\n");
     return;
   }    
   if (pElem->pvSurfNorm != NULL) {
-    microSDL_DrvSurfaceDestruct(pElem->pvSurfNorm);
+    gslc_DrvSurfaceDestruct(pElem->pvSurfNorm);
     pElem->pvSurfNorm = NULL;
   }
   if (pElem->pvSurfGlow != NULL) {
-    microSDL_DrvSurfaceDestruct(pElem->pvSurfGlow);
+    gslc_DrvSurfaceDestruct(pElem->pvSurfGlow);
     pElem->pvSurfGlow = NULL;
   }
   
@@ -1752,35 +1752,35 @@ void microSDL_ElemDestruct(microSDL_tsElem* pElem)
 
 
 // Close down a collection
-void microSDL_CollectDestruct(microSDL_tsCollect* pCollect)
+void gslc_CollectDestruct(gslc_tsCollect* pCollect)
 {
   if (pCollect == NULL) {
     fprintf(stderr,"ERROR: CollectDestruct() called with NULL ptr\n");
     return;
   }
   unsigned          nElemInd;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
 
   for (nElemInd=0;nElemInd<pCollect->nElemCnt;nElemInd++) {
     pElem = &pCollect->asElem[nElemInd];
-    microSDL_ElemDestruct(pElem);
+    gslc_ElemDestruct(pElem);
   }
     
 }
 
 // Close down all in page
-void microSDL_PageDestruct(microSDL_tsPage* pPage)
+void gslc_PageDestruct(gslc_tsPage* pPage)
 {
   if (pPage == NULL) {
     fprintf(stderr,"ERROR: PageDestruct() called with NULL ptr\n");
     return;
   }      
-  microSDL_tsCollect* pCollect = &pPage->sCollect;
-  microSDL_CollectDestruct(pCollect);
+  gslc_tsCollect* pCollect = &pPage->sCollect;
+  gslc_CollectDestruct(pCollect);
 }
 
 // Close down all GUI members, including pages and fonts
-void microSDL_GuiDestruct(microSDL_tsGui* pGui)
+void gslc_GuiDestruct(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: GuiDestruct() called with NULL ptr\n");
@@ -1788,20 +1788,20 @@ void microSDL_GuiDestruct(microSDL_tsGui* pGui)
   }    
   // Loop through all pages in GUI
   int nPageInd;
-  microSDL_tsPage*  pPage = NULL;
+  gslc_tsPage*  pPage = NULL;
   for (nPageInd=0;nPageInd<pGui->nPageCnt;nPageInd++) {
     pPage = &pGui->asPage[nPageInd];
-    microSDL_PageDestruct(pPage);
+    gslc_PageDestruct(pPage);
   }
   
   // TODO: Consider moving into main element array
   if (pGui->pvSurfBkgnd != NULL) {
-    microSDL_DrvSurfaceDestruct(pGui->pvSurfBkgnd);
+    gslc_DrvSurfaceDestruct(pGui->pvSurfBkgnd);
     pGui->pvSurfBkgnd = NULL;
   }
   
   // Close all fonts
-  microSDL_DrvFontsDestruct(pGui);
+  gslc_DrvFontsDestruct(pGui);
 
 }
 
@@ -1809,7 +1809,7 @@ void microSDL_GuiDestruct(microSDL_tsGui* pGui)
 // ================================
 // Private: Element Collection
 
-void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,unsigned nElemMax)
+void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,unsigned nElemMax)
 {
   if (pCollect == NULL) {
     fprintf(stderr,"ERROR: CollectReset() called with NULL ptr\n");
@@ -1818,9 +1818,9 @@ void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,
   pCollect->pElemParent       = NULL;
   
   pCollect->nElemMax          = nElemMax;
-  pCollect->nElemCnt          = MSDL_IND_FIRST;
+  pCollect->nElemCnt          = GSLC_IND_FIRST;
   
-  pCollect->nElemAutoIdNext   = MSDL_ID_AUTO_BASE;
+  pCollect->nElemAutoIdNext   = GSLC_ID_AUTO_BASE;
   
   pCollect->pElemTracked      = NULL;
   
@@ -1829,25 +1829,25 @@ void microSDL_CollectReset(microSDL_tsCollect* pCollect,microSDL_tsElem* asElem,
   
   int nInd;
   for (nInd=0;nInd<nElemMax;nInd++) {
-    microSDL_ResetElem(&(pCollect->asElem[nInd]));
+    gslc_ResetElem(&(pCollect->asElem[nInd]));
   }
 }
 
 
-microSDL_tsElem* microSDL_CollectFindElemById(microSDL_tsCollect* pCollect,int nElemId)
+gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int nElemId)
 {
   if (pCollect == NULL) {
     fprintf(stderr,"ERROR: CollectFindElemById() called with NULL ptr\n");
     return NULL;
   }  
-  microSDL_tsElem*  pFoundElem = NULL;
+  gslc_tsElem*  pFoundElem = NULL;
   unsigned          nInd;
-  if (nElemId == MSDL_ID_TEMP) {
+  if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
     fprintf(stderr,"ERROR: CollectFindElemById() searching for temp ID\n");    
     return NULL;
   }
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
     if (pCollect->asElem[nInd].nId == nElemId) {
       pFoundElem = &(pCollect->asElem[nInd]);
       break;
@@ -1856,19 +1856,19 @@ microSDL_tsElem* microSDL_CollectFindElemById(microSDL_tsCollect* pCollect,int n
   return pFoundElem;
 }
 
-int microSDL_CollectGetNextId(microSDL_tsCollect* pCollect)
+int gslc_CollectGetNextId(gslc_tsCollect* pCollect)
 {
   int nElemId = pCollect->nElemAutoIdNext;
   pCollect->nElemAutoIdNext++;
   return nElemId;
 }
 
-microSDL_tsElem* microSDL_CollectGetElemTracked(microSDL_tsCollect* pCollect)
+gslc_tsElem* gslc_CollectGetElemTracked(gslc_tsCollect* pCollect)
 {
   return pCollect->pElemTracked;
 }
 
-void microSDL_CollectSetElemTracked(microSDL_tsCollect* pCollect,microSDL_tsElem* pElem)
+void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
 {
   pCollect->pElemTracked = pElem;
 }
@@ -1877,27 +1877,27 @@ void microSDL_CollectSetElemTracked(microSDL_tsCollect* pCollect,microSDL_tsElem
 // Redraw the element collection
 // - Only the elements that have been marked as needing redraw
 //   are rendered.
-void microSDL_CollectRedraw(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect,bool bRedrawAll)
+void gslc_CollectRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bRedrawAll)
 {
   unsigned          nInd;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
   // Draw elements (as needed)
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
     pElem = &(pCollect->asElem[nInd]);       
     if ((pElem->bNeedRedraw) || (bRedrawAll)) {      
       // Draw the element
       // - Note that this also clears the redraw flag
-      microSDL_ElemDrawByRef(pGui,pElem);        
+      gslc_ElemDrawByRef(pGui,pElem);        
     }
   }
 }
 
-void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect)
+void gslc_CollectTick(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
   unsigned          nInd;
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
   // Loop through elements in collection and issue tick callback
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
     pElem = &(pCollect->asElem[nInd]);
     if (pElem->pfuncXTick != NULL) {
       (*pElem->pfuncXTick)((void*)(pGui),(void*)(pElem));
@@ -1907,26 +1907,26 @@ void microSDL_CollectTick(microSDL_tsGui* pGui,microSDL_tsCollect* pCollect)
 
 
 // Find an element index in a collection from a coordinate
-microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,int nX, int nY)
+gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int nX, int nY)
 {
   unsigned  nInd;
   bool      bFound = false;
-  microSDL_tsElem*  pElem = NULL;
-  microSDL_tsElem*  pFoundElem = NULL;
+  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem*  pFoundElem = NULL;
 
   #ifdef DBG_TOUCH
   // Highlight current touch for coordinate debug
-  microSDL_Rect    rMark = microSDL_ExpandRect((microSDL_Rect){(int16_t)nX,(int16_t)nY,1,1},1,1);
-  microSDL_DrawFrameRect(pGui,rMark,MSDL_COL_YELLOW);
+  gslc_Rect    rMark = gslc_ExpandRect((gslc_Rect){(int16_t)nX,(int16_t)nY,1,1},1,1);
+  gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
   printf("    CollectFindElemFromCoord(%3d,%3d):\n",nX,nY);
   #endif
 
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
 
     pElem = &pCollect->asElem[nInd];
     
     // Are we within the rect?
-    if (microSDL_IsInRect(nX,nY,pElem->rElem)) {
+    if (gslc_IsInRect(nX,nY,pElem->rElem)) {
       #ifdef DBG_TOUCH
       printf("      [%3u]:In  ",nInd);
       #endif
@@ -1951,7 +1951,7 @@ microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,
           #endif
       }
 
-    } // microSDL_IsInRect()
+    } // gslc_IsInRect()
     else {
       #ifdef DBG_TOUCH
       printf("      [%3u]:Out\n",nInd);
@@ -1965,11 +1965,11 @@ microSDL_tsElem* microSDL_CollectFindElemFromCoord(microSDL_tsCollect* pCollect,
 
 // Go through all elements in a collection and set the parent
 // element pointer.
-void microSDL_CollectSetParent(microSDL_tsCollect* pCollect,microSDL_tsElem* pElemParent)
+void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent)
 {
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
   int               nInd;
-  for (nInd=MSDL_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
     pElem = &pCollect->asElem[nInd];
     pElem->pElemParent = pElemParent;
   }

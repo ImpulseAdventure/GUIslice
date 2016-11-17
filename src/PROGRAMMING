@@ -1,26 +1,26 @@
-Notes on microSDL code:
+Notes on GUIslice code:
 =======================
 
 General
 - The code is pure C but has been designed with object-oriented
   principles in mind.
-- The microSDL library simply includes a pair of source files
+- The GUIslice library simply includes a pair of source files
   so no installation is required.
 - The library does not use any dynamic memory allocation.
   Instead, all configurable storage data structures are allocated
-  in user code and are passed in to microSDL initialization routines.
+  in user code and are passed in to GUIslice initialization routines.
 - Callback functions are provided to support extending the
   base functionality.
 
 Initialization
-- Call microSDL_Init() to associate the pages and element collections
+- Call gslc_Init() to associate the pages and element collections
   in user space with the GUI code.
-- Create one or more pages with microSDL_PageAdd()
-- Create elements with microSDL_ElemCreate*() which adds them to
+- Create one or more pages with gslc_PageAdd()
+- Create elements with gslc_ElemCreate*() which adds them to
   the specified page.
 
 Main loop
-- Periodically, the user should call microSDL_Update() to refresh
+- Periodically, the user should call gslc_Update() to refresh
   any graphic elements and handle any touch events.
 
 Page Drawing
@@ -30,7 +30,7 @@ Page Drawing
   must then be taken to define the sequence of element creation.
 - To keep the library simple, clipping is not implemented at
   this time (except within Viewport)
-- The current page is redrawn with periodic calls to microSDL_Update().
+- The current page is redrawn with periodic calls to gslc_Update().
   This automatically redraws any elements that have been
   marked as changed. It then follows this up with a page flip.
 
@@ -45,12 +45,17 @@ Element Defaults
   When a callback is specified, the default functionality is disabled.
 
 Memory Allocation
-- microSDL is intended to be an extremely simple library framework and
+- GUIslice is intended to be an extremely simple library framework and
   thus avoids any dynamic memory allocation. The caller allocates storage
   for these elements and then passes pointers for the storage arrays
-  to microSDL.
+  to GUIslice.
 
-
+Rendering Driver
+- The GUIslice core is platform-independent in that it can theoretically
+  be extended to support a number of different graphics drivers.
+- Currently, the default driver is for SDL1.2.
+- The user must include a single GUIslice_drv_* file to select the
+  rendering driver to use.
 
 
 ARCHITECTURE
@@ -74,7 +79,7 @@ Element Collection
 - An element collection contains one or more elements
 
 Element
-- An element is a graphic item of type MSDL_TYPE_* that can
+- An element is a graphic item of type GSLC_TYPE_* that can
   be one of the core primitives (button, text, box, image, etc.)
   or one of the extended elements (checkbox, slider, etc.)
 - An element can contain extended / custom data structures

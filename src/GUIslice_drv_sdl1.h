@@ -1,12 +1,12 @@
-#ifndef _MICROSDL_DRV_H_
-#define _MICROSDL_DRV_H_
+#ifndef _GUISLICE_DRV_H_
+#define _GUISLICE_DRV_H_
 
 // =======================================================================
-// microSDL library (driver layer for SDL1.2)
+// GUIslice library (driver layer for SDL1.2)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.5.1    (2016/11/16)
+// - Version 0.6    (2016/11/16)
 // =======================================================================
 
 // =======================================================================
@@ -17,7 +17,7 @@
 extern "C" {
 #endif // __cplusplus
 
-#include "microsdl.h"
+#include "GUIslice.h"
 
 #include <stdio.h>
 
@@ -30,24 +30,24 @@ extern "C" {
 // API support definitions
 // - These defines indicate whether the driver includes optimized
 //   support for various APIs. If a define is set to 0, then the
-//   microSDL core emulation will be used instead.
+//   GUIslice core emulation will be used instead.
 // - At the very minimum, the pixel set routine must always be available
-//   (microSDL_DrvDrawSetPixelRaw).
+//   (gslc_DrvDrawSetPixelRaw).
 // =======================================================================
   
-#define DRV_HAS_DRAW_LINE           0 ///< Support microSDL_DrvDrawLine()
-#define DRV_HAS_DRAW_RECT_FRAME     0 ///< Support microSDL_DrvDrawFrameRect()
-#define DRV_HAS_DRAW_RECT_FILL      1 ///< Support microSDL_DrvDrawFillRect()
-#define DRV_HAS_DRAW_CIRCLE_FRAME   0 ///< Support microSDL_DrvDrawFrameCircle()
-#define DRV_HAS_DRAW_CIRCLE_FILL    0 ///< Support microSDL_DrvDrawFillCircle()
-#define DRV_HAS_DRAW_TEXT           1 ///< Support microSDL_DrvDrawTxt()
+#define DRV_HAS_DRAW_LINE           0 ///< Support gslc_DrvDrawLine()
+#define DRV_HAS_DRAW_RECT_FRAME     0 ///< Support gslc_DrvDrawFrameRect()
+#define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
+#define DRV_HAS_DRAW_CIRCLE_FRAME   0 ///< Support gslc_DrvDrawFrameCircle()
+#define DRV_HAS_DRAW_CIRCLE_FILL    0 ///< Support gslc_DrvDrawFillCircle()
+#define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
   
   
 // =======================================================================
-// Public APIs to microSDL core library
+// Public APIs to GUIslice core library
 // - These functions define the renderer / driver-dependent
 //   implementations for the core drawing operations within
-//   microSDL.
+//   GUIslice.
 // =======================================================================
 
 
@@ -63,7 +63,7 @@ extern "C" {
 ///
 /// PRE:
 /// - The environment variables should be configured before
-///   calling microSDL_DrvInit(). This can be done with microSDL_DrvInitEnv()
+///   calling gslc_DrvInit(). This can be done with gslc_DrvInitEnv()
 ///   or manually in user function.
 ///
 ///
@@ -71,11 +71,11 @@ extern "C" {
 ///
 /// \return true if success, false if fail
 ///
-bool microSDL_DrvInit(microSDL_tsGui* pGui);
+bool gslc_DrvInit(gslc_tsGui* pGui);
 
 ///
 /// Configure environment variables suitable for
-/// default microSDL operation with PiTFT on
+/// default GUIslice operation with PiTFT on
 /// Raspberry Pi.
 ///
 /// - NOTE: Users with other hardware may need to
@@ -86,7 +86,7 @@ bool microSDL_DrvInit(microSDL_tsGui* pGui);
 ///
 /// \return None
 ///
-void microSDL_DrvInitEnv(microSDL_tsGui* pGui);  
+void gslc_DrvInitEnv(gslc_tsGui* pGui);  
 
 
 
@@ -107,7 +107,7 @@ void microSDL_DrvInitEnv(microSDL_tsGui* pGui);
 ///
 /// \return true if success, false otherwise
 ///
-bool microSDL_DrvScreenLock(microSDL_tsGui* pGui);
+bool gslc_DrvScreenLock(gslc_tsGui* pGui);
 
 
 ///
@@ -122,7 +122,7 @@ bool microSDL_DrvScreenLock(microSDL_tsGui* pGui);
 ///
 /// \return none
 ///
-void microSDL_DrvScreenUnlock(microSDL_tsGui* pGui);
+void gslc_DrvScreenUnlock(gslc_tsGui* pGui);
 
 ///
 /// Load a bitmap (*.bmp) from a file and create
@@ -134,7 +134,7 @@ void microSDL_DrvScreenUnlock(microSDL_tsGui* pGui);
 ///
 /// \return SDL surface pointer or NULL if error
 ///
-SDL_Surface* microSDL_DrvLoadBmp(microSDL_tsGui* pGui,char* pStrFname);
+SDL_Surface* gslc_DrvLoadBmp(gslc_tsGui* pGui,char* pStrFname);
 
 
 ///
@@ -146,7 +146,7 @@ SDL_Surface* microSDL_DrvLoadBmp(microSDL_tsGui* pGui,char* pStrFname);
 ///
 /// \return true if success, false if fail
 ///
-bool microSDL_DrvSetBkgndImage(microSDL_tsGui* pGui,char* pStrFname);
+bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,char* pStrFname);
 
 
 ///
@@ -158,7 +158,7 @@ bool microSDL_DrvSetBkgndImage(microSDL_tsGui* pGui,char* pStrFname);
 ///
 /// \return true if success, false if fail
 ///
-bool microSDL_DrvSetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol);
+bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol);
 
 ///
 /// Set an element's normal-state image
@@ -169,7 +169,7 @@ bool microSDL_DrvSetBkgndColor(microSDL_tsGui* pGui,microSDL_Color nCol);
 ///
 /// \return none
 ///
-void microSDL_DrvSetElemImageNorm(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage);
+void gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage);
 
 ///
 /// Set an element's glow-state image
@@ -180,7 +180,7 @@ void microSDL_DrvSetElemImageNorm(microSDL_tsGui* pGui,microSDL_tsElem* pElem,co
 ///
 /// \return none
 ///  
-void microSDL_DrvSetElemImageGlow(microSDL_tsGui* pGui,microSDL_tsElem* pElem,const char* acImage);
+void gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage);
 
 
 ///
@@ -195,7 +195,7 @@ void microSDL_DrvSetElemImageGlow(microSDL_tsGui* pGui,microSDL_tsElem* pElem,co
 ///
 /// \return none
 ///
-void microSDL_DrvPasteSurface(microSDL_tsGui* pGui,int nX, int nY, void* pvSrc, void* pvDest);
+void gslc_DrvPasteSurface(gslc_tsGui* pGui,int nX, int nY, void* pvSrc, void* pvDest);
 
 
 /// 
@@ -205,7 +205,7 @@ void microSDL_DrvPasteSurface(microSDL_tsGui* pGui,int nX, int nY, void* pvSrc, 
 /// 
 /// \return none
 ///
-void microSDL_DrvSurfaceDestruct(void* pvSurf);  
+void gslc_DrvSurfaceDestruct(void* pvSurf);  
 
 
 /// 
@@ -216,7 +216,7 @@ void microSDL_DrvSurfaceDestruct(void* pvSurf);
 /// 
 /// \return none
 ///
-void microSDL_DrvSetClipRect(microSDL_tsGui* pGui,microSDL_Rect* pRect);
+void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
 
 
 // -----------------------------------------------------------------------
@@ -230,7 +230,7 @@ void microSDL_DrvSetClipRect(microSDL_tsGui* pGui,microSDL_Rect* pRect);
 /// 
 /// \return none
 ///
-void microSDL_DrvFontsDestruct(microSDL_tsGui* pGui);
+void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 
 
 ///
@@ -241,7 +241,7 @@ void microSDL_DrvFontsDestruct(microSDL_tsGui* pGui);
 ///
 /// \return true if success, false if failure
 ///  
-bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,gslc_tsElem* pElem);
 
 
 // -----------------------------------------------------------------------
@@ -256,7 +256,7 @@ bool microSDL_DrvDrawTxt(microSDL_tsGui* pGui,microSDL_tsElem* pElem);
 ///
 /// \return none
 /// 
-void microSDL_DrvPageFlipNow(microSDL_tsGui* pGui);
+void gslc_DrvPageFlipNow(gslc_tsGui* pGui);
 
 
 // -----------------------------------------------------------------------
@@ -274,7 +274,7 @@ void microSDL_DrvPageFlipNow(microSDL_tsGui* pGui);
 ///
 /// \return A pixel value for the current screen format
 ///
-uint32_t microSDL_DrvAdaptColorRaw(microSDL_tsGui* pGui,microSDL_Color nCol);
+uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_Color nCol);
 
 
 ///
@@ -289,7 +289,7 @@ uint32_t microSDL_DrvAdaptColorRaw(microSDL_tsGui* pGui,microSDL_Color nCol);
 ///
 /// \return Pixel color value from the coordinate or 0 if error
 ///
-uint32_t microSDL_DrvDrawGetPixelRaw(microSDL_tsGui* pGui,int nX,int nY);
+uint32_t gslc_DrvDrawGetPixelRaw(gslc_tsGui* pGui,int nX,int nY);
 
 
 ///
@@ -305,7 +305,7 @@ uint32_t microSDL_DrvDrawGetPixelRaw(microSDL_tsGui* pGui,int nX,int nY);
 ///
 /// \return none
 ///
-void microSDL_DrvDrawSetPixelRaw(microSDL_tsGui* pGui,int nX,int nY,uint32_t nPixelCol);
+void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int nX,int nY,uint32_t nPixelCol);
 
 
 ///
@@ -317,7 +317,7 @@ void microSDL_DrvDrawSetPixelRaw(microSDL_tsGui* pGui,int nX,int nY,uint32_t nPi
 ///
 /// \return none
 ///
-void microSDL_DrvDrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_Color nCol);
+void gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
 
 
 
@@ -336,14 +336,14 @@ void microSDL_DrvDrawFillRect(microSDL_tsGui* pGui,microSDL_Rect rRect,microSDL_
 ///
 /// \return true if an event was detected or false otherwise
 ///
-bool microSDL_DrvGetTouch(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 
 
 
 // =======================================================================
 // Private Functions
 // - These functions are not included in the scope of APIs used by
-//   the core microSDL library. Instead, these functions are used
+//   the core GUIslice library. Instead, these functions are used
 //   to support the operations within this driver layer.
 // =======================================================================
 
@@ -360,7 +360,7 @@ bool microSDL_DrvGetTouch(microSDL_tsGui* pGui,int* pnX, int* pnY, unsigned* pnP
 ///
 /// \return true if success
 ///
-bool microSDL_DrvCleanStart(const char* sTTY);
+bool gslc_DrvCleanStart(const char* sTTY);
 
 
 // -----------------------------------------------------------------------
@@ -368,22 +368,22 @@ bool microSDL_DrvCleanStart(const char* sTTY);
 // -----------------------------------------------------------------------
 
 ///
-/// Translate a microSDL_Rect into an SDL_Rect
+/// Translate a gslc_Rect into an SDL_Rect
 ///
-/// \param[in]  rRect:    microSDL_Rect
+/// \param[in]  rRect:    gslc_Rect
 ///
 /// \return Converted SDL_Rect
 ///
-SDL_Rect  microSDL_DrvAdaptRect(microSDL_Rect rRect);
+SDL_Rect  gslc_DrvAdaptRect(gslc_Rect rRect);
 
 ///
-/// Translate a microSDL_Color into an SDL_Color
+/// Translate a gslc_Color into an SDL_Color
 ///
-/// \param[in]  sCol:    microSDL_Color
+/// \param[in]  sCol:    gslc_Color
 ///
 /// \return Converted SDL_Color
 ///
-SDL_Color  microSDL_DrvAdaptColor(microSDL_Color sCol);
+SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol);
 
 
 

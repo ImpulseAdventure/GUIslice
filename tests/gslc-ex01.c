@@ -1,11 +1,11 @@
 //
-// microSDL GUI Library Examples
+// GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 01: Display a box
 //
 
-#include "microsdl.h"
+#include "GUIslice.h"
 
 #include <unistd.h>      // For sleep()
 
@@ -14,42 +14,42 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX};
 
 // Instantiate the GUI
-microSDL_tsGui  m_gui;
+gslc_tsGui  m_gui;
 
 #define MAX_PAGE            1
 #define MAX_ELEM_PG_MAIN    30
-microSDL_tsPage             m_asPage[MAX_PAGE];
-microSDL_tsElem             m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 
 int main( int argc, char* args[] )
 {
-  microSDL_tsElem*  pElem = NULL;
+  gslc_tsElem*  pElem = NULL;
 
   // Initialize
-  microSDL_InitEnv(&m_gui);
-  if (!microSDL_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
+  gslc_InitEnv(&m_gui);
+  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
 
-  microSDL_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
-  microSDL_SetBkgndColor(&m_gui,MSDL_COL_GRAY_DK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK);
 
   // Create page elements
-  pElem = microSDL_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(microSDL_Rect){10,50,300,150});
-  microSDL_ElemSetCol(pElem,MSDL_COL_WHITE,MSDL_COL_BLACK,MSDL_COL_BLACK);
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});
+  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Start up display on main page
-  microSDL_SetPageCur(&m_gui,E_PG_MAIN);
+  gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // Periodically call microSDL update function    
-  microSDL_Update(&m_gui);
+  // Periodically call GUIslice update function    
+  gslc_Update(&m_gui);
   
   // Main code here...
   sleep(2);
   
   // Close down display
-  microSDL_Quit(&m_gui);
+  gslc_Quit(&m_gui);
 
   return 0;
 }
