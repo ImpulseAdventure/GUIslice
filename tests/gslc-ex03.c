@@ -48,7 +48,7 @@ bool InitOverlays(char *strPath)
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});

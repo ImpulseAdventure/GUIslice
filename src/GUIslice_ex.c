@@ -3,11 +3,36 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6    (2016/11/16)
+// - Version 0.6.1    (2016/11/18)
+// =======================================================================
+//
+// The MIT License
+//
+// Copyright 2016 Calvin Hass
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 // =======================================================================
 
 
-// MicroSDL library
+
+// GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv_sdl1.h"
@@ -20,16 +45,16 @@
 //
 // - This file extends the core GUIslice functionality with
 //   additional widget types
-// - After adding any widgets to microsdl_ex, a unique
-//   enumeration (GSLC_TYPEX_*) should be added to "microsdl.h"
+// - After adding any widgets to GUIslice_ex, a unique
+//   enumeration (GSLC_TYPEX_*) should be added to "GUIslice.h"
 //
 //   TODO: Consider whether we should remove the need to update
-//         these enumerations in "microsdl.h"; we could instead
-//         define a single "GSLC_TYPEX" in microsdl.h but then
-//         allow "microsdl_ex.h" to create a new set of unique
+//         these enumerations in "GUIslice.h"; we could instead
+//         define a single "GSLC_TYPEX" in GUIslice.h but then
+//         allow "GUIslice_ex.h" to create a new set of unique
 //         enumerations. This way extended elements could be created
-//         in microsdl_ex and no changes at all would be required
-//         in microsdl.
+//         in GUIslice_ex and no changes at all would be required
+//         in GUIslice.
 
 // ----------------------------------------------------------------------------
 
@@ -54,20 +79,22 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_GAUGE,rElem,NULL,GSLC_FONT_NONE);
-  sElem.bFrameEn        = true;
-  sElem.bFillEn         = true;
-  sElem.bClickEn        = false;          // Element is not "clickable"
-  sElem.nGroup          = GSLC_GROUP_ID_NONE;  
-  pXData->nGaugeMin     = nMin;
-  pXData->nGaugeMax     = nMax;
-  pXData->nGaugeVal     = nVal;
-  pXData->bGaugeVert    = bVert;
-  pXData->colGauge      = colGauge;
-  sElem.pXData          = (void*)(pXData);
-  sElem.pfuncXDraw      = &gslc_ElemXGaugeDraw;
-  sElem.pfuncXTouch     = NULL;           // No need to track touches
-  sElem.colElemFrame    = GSLC_COL_GRAY;
-  sElem.colElemFill     = GSLC_COL_BLACK;
+  sElem.bFrameEn          = true;
+  sElem.bFillEn           = true;
+  sElem.bClickEn          = false;          // Element is not "clickable"
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;  
+  pXData->nGaugeMin       = nMin;
+  pXData->nGaugeMax       = nMax;
+  pXData->nGaugeVal       = nVal;
+  pXData->bGaugeVert      = bVert;
+  pXData->colGauge        = colGauge;
+  sElem.pXData            = (void*)(pXData);
+  sElem.pfuncXDraw        = &gslc_ElemXGaugeDraw;
+  sElem.pfuncXTouch       = NULL;           // No need to track touches
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_GRAY;  
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
@@ -292,10 +319,11 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   // Specify the custom touch tracking callback
   // - NOTE: This is optional (and can be set to NULL).
   //   See the discussion under gslc_ElemXCheckboxTouch()
-  sElem.pfuncXTouch     = &gslc_ElemXCheckboxTouch;
-  sElem.colElemFrame    = GSLC_COL_GRAY;
-  sElem.colElemFill     = GSLC_COL_BLACK;
-  sElem.colElemGlow     = GSLC_COL_WHITE;  
+  sElem.pfuncXTouch       = &gslc_ElemXCheckboxTouch;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_WHITE;   
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
@@ -463,12 +491,12 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  bool                      bChecked  = pCheckbox->bChecked;
-  gslc_teXCheckboxStyle nStyle    = pCheckbox->nStyle;
-  bool                      bGlowing  = pElem->bGlowing;
+  bool                    bChecked  = pCheckbox->bChecked;
+  gslc_teXCheckboxStyle   nStyle    = pCheckbox->nStyle;
+  bool                    bGlow     = pElem->bGlowEn && pElem->bGlowing; 
   
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Generic coordinate calcs
   int nX0,nY0,nX1,nY1,nMidX,nMidY;
@@ -489,11 +517,8 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
       // we don't need to do anything more in the unchecked case
     }
     // Draw a frame around the checkbox
-    if (bGlowing) {
-      gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
-    } else {
-      gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
-    }    
+    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);  
+    
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_X) {
     // Draw an X through center if checked
     if (bChecked) {
@@ -501,23 +526,16 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
       gslc_DrawLine(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
     }
     // Draw a frame around the checkbox
-    if (bGlowing) {
-      gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemGlow);  
-    } else {
-      gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
-    }        
+    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame); 
+    
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
     if (bChecked) {
       // TODO: A FillCircle() may look better here
       gslc_DrawFrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
     }
-    // Draw a frame around the checkbox
-    if (bGlowing) {
-      gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemGlow);  
-    } else {
-      gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),pElem->colElemFrame);  
-    }        
+    // Draw a frame around the checkbox     
+    gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame); 
     
   }
   
@@ -623,28 +641,31 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SLIDER,rElem,NULL,GSLC_FONT_NONE);
-  sElem.bFrameEn        = false;
-  sElem.bFillEn         = true;
-  sElem.bClickEn        = true;
-  sElem.bGlowEn         = true;  
-  sElem.bGlowing        = false;
-  sElem.nGroup          = GSLC_GROUP_ID_NONE;  
-  pXData->nPosMin       = nPosMin;
-  pXData->nPosMax       = nPosMax;
-  pXData->nPos          = nPos;
-  pXData->nThumbSz      = nThumbSz;
-  pXData->bVert         = bVert;
-  pXData->bTrim         = false;
-  pXData->colTrim       = GSLC_COL_BLACK;
-  pXData->nTickDiv      = 0;
-  sElem.pXData          = (void*)(pXData);
+  sElem.bFrameEn          = false;
+  sElem.bFillEn           = true;
+  sElem.bClickEn          = true;
+  sElem.bGlowEn           = true;  
+  sElem.bGlowing          = false;
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;  
+  pXData->nPosMin         = nPosMin;
+  pXData->nPosMax         = nPosMax;
+  pXData->nPos            = nPos;
+  pXData->nThumbSz        = nThumbSz;
+  pXData->bVert           = bVert;
+  pXData->bTrim           = false;
+  pXData->colTrim         = GSLC_COL_BLACK;
+  pXData->nTickDiv        = 0;
+  sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
-  sElem.pfuncXDraw      = &gslc_ElemXSliderDraw;
+  sElem.pfuncXDraw        = &gslc_ElemXSliderDraw;
   // Specify the custom touch tracking callback
-  sElem.pfuncXTouch     = &gslc_ElemXSliderTouch;
-  sElem.colElemFrame    = GSLC_COL_GRAY;
-  sElem.colElemFill     = GSLC_COL_BLACK;
-  sElem.colElemGlow     = GSLC_COL_WHITE;
+  sElem.pfuncXTouch       = &gslc_ElemXSliderTouch;
+  
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_WHITE;   
+  
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
@@ -731,18 +752,17 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  bool            bGlowEn   = pElem->bGlowEn; 
-  bool            bGlowing  = pElem->bGlowing; 
+  bool            bGlow     = pElem->bGlowEn && pElem->bGlowing; 
   int             nPos      = pSlider->nPos;
   int             nPosMin   = pSlider->nPosMin;
   int             nPosMax   = pSlider->nPosMax;
   bool            bVert     = pSlider->bVert;
   int             nThumbSz  = pSlider->nThumbSz;
   bool            bTrim     = pSlider->bTrim;
-  gslc_Color  colTrim   = pSlider->colTrim;
+  gslc_Color      colTrim   = pSlider->colTrim;
   unsigned        nTickDiv  = pSlider->nTickDiv;
   int             nTickLen  = pSlider->nTickLen;
-  gslc_Color  colTick   = pSlider->colTick;
+  gslc_Color      colTick   = pSlider->colTick;
   
   if (bVert) {
     fprintf(stderr,"ERROR: ElemXSliderDraw() bVert=true not supported yet\n");
@@ -768,7 +788,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   
   
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Draw any ticks
   if (nTickDiv>0) {
@@ -784,7 +804,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   if (!bVert) {
     // Make the track highlight during glow
     gslc_DrawLine(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
-            (bGlowEn && bGlowing)? pElem->colElemGlow : pElem->colElemFrame);
+            bGlow? pElem->colElemFrameGlow : pElem->colElemFrame);
     // Optionally draw a trim line
     if (bTrim) {
       gslc_DrawLine(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
@@ -796,7 +816,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   
 
   int       nCtrlX0,nCtrlY0;
-  gslc_Rect  rThumb;
+  gslc_Rect rThumb;
   nCtrlX0   = nX0+nCtrlPos-nThumbSz;
   nCtrlY0   = nYMid-nThumbSz;
   rThumb.x  = nCtrlX0;
@@ -805,12 +825,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   rThumb.h  = 2*nThumbSz;
   
   // Draw the thumb control
-  gslc_DrawFillRect(pGui,rThumb,pElem->colElemFill);
-  if (bGlowing) {
-    gslc_DrawFrameRect(pGui,rThumb,pElem->colElemGlow);
-  } else {
-    gslc_DrawFrameRect(pGui,rThumb,pElem->colElemFrame);    
-  }
+  gslc_DrawFillRect(pGui,rThumb,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+  gslc_DrawFrameRect(pGui,rThumb,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
   if (bTrim) {
     gslc_Rect  rThumbTrim;
     rThumbTrim = gslc_ExpandRect(rThumb,-1,-1);
@@ -936,7 +952,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
-  sElem.bGlowEn         = true;
+  sElem.bGlowEn         = false;  // Don't need to glow the outer element
   sElem.bGlowing        = false;
   sElem.nGroup          = GSLC_GROUP_ID_NONE;  
 
@@ -958,9 +974,11 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   sElem.pfuncXDraw      = &gslc_ElemXSelNumDraw;
   // Specify the custom touch tracking callback
   sElem.pfuncXTouch     = &gslc_ElemXSelNumTouch;
-  sElem.colElemFrame    = GSLC_COL_GRAY;
-  sElem.colElemFill     = GSLC_COL_BLACK;
-  sElem.colElemGlow     = GSLC_COL_WHITE; 
+
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_WHITE;    
 
  
   // Now create the sub elements
@@ -1030,6 +1048,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
+  bool          bGlow = pElem->bGlowEn && pElem->bGlowing; 
   
   // Fetch the element's extended data structure
   gslc_tsXSelNum* pSelNum;
@@ -1040,7 +1059,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   }
   
   // Draw the compound element fill (background)
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
   
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
@@ -1051,7 +1070,8 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   // - This could instead be done by creating a sub-element
   //   of type box.
   // - We don't need to show any glowing of the compound element
-  gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  
+  gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
   
   // Clear the redraw flag
   gslc_ElemSetRedraw(pElem,false);

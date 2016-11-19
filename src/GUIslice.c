@@ -3,10 +3,35 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6    (2016/11/16)
+// - Version 0.6.1    (2016/11/18)
+// =======================================================================
+//
+// The MIT License
+//
+// Copyright 2016 Calvin Hass
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 // =======================================================================
 
-// MicroSDL library
+
+// GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 
@@ -15,18 +40,14 @@
 
 #include <stdio.h>
 
-
-
 // Includes for tslib
 #ifdef INC_TS
 #include "tslib.h"
 #endif
 
 
-
-
 // Version definition
-#define GUISLICE_VER "0.6"
+#define GUISLICE_VER "0.6.1"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -707,12 +728,14 @@ gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_TXT,rElem,pStr,nFontId);
-  sElem.colElemFill     = GSLC_COL_BLACK;
-  sElem.colElemFrame    = GSLC_COL_BLACK;
-  sElem.colElemGlow     = GSLC_COL_BLACK;
-  sElem.colElemText     = GSLC_COL_YELLOW;
-  sElem.bFillEn         = true;
-  sElem.eTxtAlign       = GSLC_ALIGN_MID_LEFT;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_BLACK;
+  sElem.colElemFrameGlow  = GSLC_COL_BLACK;
+  sElem.colElemText       = GSLC_COL_YELLOW;
+  sElem.colElemTextGlow   = GSLC_COL_YELLOW;
+  sElem.bFillEn           = true;
+  sElem.eTxtAlign         = GSLC_ALIGN_MID_LEFT;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
@@ -737,15 +760,17 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
   }
 
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,acStr,nFontId);
-  sElem.colElemFill     = GSLC_COL_BLUE_LT;
-  sElem.colElemFrame    = GSLC_COL_BLUE_DK;
-  sElem.colElemGlow     = GSLC_COL_GREEN_LT;
-  sElem.colElemText     = GSLC_COL_BLACK;
-  sElem.bFrameEn        = true;
-  sElem.bFillEn         = true;
-  sElem.bClickEn        = true;
-  sElem.bGlowEn         = true;
-  sElem.pfuncXTouch     = cbTouch;
+  sElem.colElemFill       = GSLC_COL_BLUE_DK4;
+  sElem.colElemFillGlow   = GSLC_COL_BLUE_DK1;
+  sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
+  sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
+  sElem.colElemText       = GSLC_COL_WHITE;
+  sElem.colElemTextGlow   = GSLC_COL_WHITE;
+  sElem.bFrameEn          = true;
+  sElem.bFillEn           = true;
+  sElem.bClickEn          = true;
+  sElem.bGlowEn           = true;
+  sElem.pfuncXTouch       = cbTouch;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
     return pElem;
@@ -762,10 +787,10 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,"",GSLC_FONT_NONE);
-  sElem.colElemFill     = GSLC_COL_BLUE_LT;
-  sElem.colElemFrame    = GSLC_COL_BLUE_DK;
-  sElem.colElemGlow     = GSLC_COL_GREEN_LT;
-  sElem.colElemText     = GSLC_COL_BLACK;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
+  sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
   sElem.bFrameEn        = false;
   sElem.bFillEn         = false;
   sElem.bClickEn        = true;
@@ -788,10 +813,12 @@ gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,GSLC_FONT_NONE);
-  sElem.colElemFill     = GSLC_COL_BLACK;
-  sElem.colElemFrame    = GSLC_COL_GRAY;
-  sElem.bFillEn         = true;
-  sElem.bFrameEn        = true;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_GRAY;
+  sElem.bFillEn           = true;
+  sElem.bFrameEn          = true;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);  
     return pElem;
@@ -884,7 +911,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   // - This also changes the fill color if selected and glow state is enabled
   if (pElem->bFillEn) {
     if (bGlowEn && bGlowing) {
-      gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemGlow);
+      gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFillGlow);
     } else {
       gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
     }
@@ -959,7 +986,19 @@ void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
   gslc_ElemSetRedraw(pElem,true); 
 }
 
-void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colGlow)
+
+void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
+{
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemSetFrameEn() called with NULL ptr\n");
+    return;
+  }
+  pElem->bFrameEn         = bFrameEn;  
+  gslc_ElemSetRedraw(pElem,true); 
+}
+
+
+void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colFillGlow)
 {
   if (pElem == NULL) {
     fprintf(stderr,"ERROR: ElemSetCol() called with NULL ptr\n");
@@ -967,7 +1006,19 @@ void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,g
   }  
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
-  pElem->colElemGlow      = colGlow;
+  pElem->colElemFillGlow      = colFillGlow;
+  gslc_ElemSetRedraw(pElem,true); 
+}
+
+void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_Color colFrameGlow,gslc_Color colFillGlow,gslc_Color colTxtGlow)
+{
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemSetColGlow() called with NULL ptr\n");
+    return;
+  }  
+  pElem->colElemFrameGlow   = colFrameGlow;
+  pElem->colElemFillGlow    = colFillGlow;
+  pElem->colElemTextGlow    = colTxtGlow;
   gslc_ElemSetRedraw(pElem,true); 
 }
 
@@ -1019,6 +1070,7 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_Color colVal)
     return;
   }    
   pElem->colElemText      = colVal;
+  pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
   gslc_ElemSetRedraw(pElem,true); 
 }
 
@@ -1084,6 +1136,53 @@ bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
   }    
   return pElem->bGlowEn;
 }
+
+void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
+{
+  if ((pElemSrc == NULL) || (pElemDest == NULL)) {
+    fprintf(stderr,"ERROR: ElemSetStyleFrom() called with NULL ptr\n");
+    return;
+  }
+
+  // nId
+  // nType
+  // rElem
+  pElemDest->nGroup           = pElemSrc->nGroup;
+  // bValid
+  pElemDest->bGlowEn          = pElemSrc->bGlowEn;
+  pElemDest->bGlowing         = pElemSrc->bGlowing;
+  pElemDest->pvSurfNorm       = pElemSrc->pvSurfNorm;
+  pElemDest->pvSurfGlow       = pElemSrc->pvSurfGlow;
+  
+  pElemDest->bClickEn         = pElemSrc->bClickEn;
+  pElemDest->bFrameEn         = pElemSrc->bFrameEn;
+  pElemDest->bFillEn          = pElemSrc->bFillEn;
+  
+  pElemDest->colElemFill      = pElemSrc->colElemFill;
+  pElemDest->colElemFillGlow  = pElemSrc->colElemFillGlow;
+  pElemDest->colElemFrame     = pElemSrc->colElemFrame;
+  pElemDest->colElemFrameGlow = pElemSrc->colElemFrameGlow;
+
+  // bNeedRedraw
+
+  pElemDest->pElemParent      = pElemSrc->pElemParent;
+  
+  // acStr[GSLC_ELEM_STRLEN_MAX]
+  pElemDest->colElemText      = pElemSrc->colElemText;
+  pElemDest->colElemTextGlow  = pElemSrc->colElemTextGlow; 
+  pElemDest->eTxtAlign        = pElemSrc->eTxtAlign;
+  pElemDest->nTxtMargin       = pElemSrc->nTxtMargin;
+  pElemDest->pvTxtFont        = pElemSrc->pvTxtFont;
+
+  // pXData
+  
+  pElemDest->pfuncXDraw     = pElemSrc->pfuncXDraw;
+  pElemDest->pfuncXTouch    = pElemSrc->pfuncXTouch;
+  pElemDest->pfuncXTick     = pElemSrc->pfuncXTick;
+   
+  gslc_ElemSetRedraw(pElemDest,true); 
+}
+
 
 void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
 {
@@ -1245,10 +1344,10 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
       } else {
         // Notify original tracked element for optional custom handling
         gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_UP_IN,nX,nY);
-
-        // Clear glow state
-        gslc_ElemSetGlow(pTrackedOld,false);
       }
+
+      // Clear glow state
+      gslc_ElemSetGlow(pTrackedOld,false);      
 
     }
 
@@ -1296,21 +1395,28 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int nX,int nY,uns
     fprintf(stderr,"ERROR: TrackTouch() called with NULL ptr\n");
     return;
   }    
-  #ifdef DBG_TOUCH
-  printf(" TS : (%3d,%3d) Pressure=%3u\n",nX,nY,nPress);
-  #endif
 
   bool  bTouchDown  = false;
   bool  bTouchUp    = false;
   bool  bTouchMove  = false;
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
     bTouchDown = true;
+    #ifdef DBG_TOUCH    
+    fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchDown\n",nX,nY,nPress);
+    #endif
   } else if ((pGui->nTouchLastPress > 0) && (nPress == 0)) {
     bTouchUp = true;
+    #ifdef DBG_TOUCH    
+    fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchUp\n",nX,nY,nPress);
+    #endif
+    
   } else if ((pGui->nTouchLastX != nX) || (pGui->nTouchLastY != nY)) {
     // We only track movement if touch is "down"
     if (nPress > 0) {
       bTouchMove = true;
+      #ifdef DBG_TOUCH    
+      fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchMove\n",nX,nY,nPress);
+      #endif
     }
   }
   
@@ -1686,10 +1792,12 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->bNeedRedraw      = true;
   pElem->colElemFrame     = GSLC_COL_WHITE;
   pElem->colElemFill      = GSLC_COL_WHITE;
-  pElem->colElemGlow      = GSLC_COL_WHITE;
-
+  pElem->colElemFrameGlow = GSLC_COL_WHITE;  
+  pElem->colElemFillGlow  = GSLC_COL_WHITE;
+  
   pElem->acStr[0]         = '\0';
   pElem->colElemText      = GSLC_COL_WHITE;
+  pElem->colElemTextGlow  = GSLC_COL_WHITE;  
   pElem->eTxtAlign        = GSLC_ALIGN_MID_MID;
   pElem->nTxtMargin       = 0;
   pElem->pvTxtFont        = NULL;

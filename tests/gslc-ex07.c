@@ -51,7 +51,7 @@ bool InitOverlays()
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){2,2,320,50},
@@ -71,10 +71,10 @@ bool InitOverlays()
   
   // Create dividers
   pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,100,280,1});
-  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK,GSLC_COL_BLACK,GSLC_COL_BLACK);  
+  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);  
   
   pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){235,60,1,35});
-  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK,GSLC_COL_BLACK,GSLC_COL_BLACK);  
+  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);  
   
   
   // Create color box
@@ -84,17 +84,17 @@ bool InitOverlays()
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_Rect){250,60,50,30},"SAVE",E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,(gslc_Color){0,0,192},(gslc_Color){0,0,128},(gslc_Color){0,0,224});    
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
   // Create dummy selector
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,65,100,20},
     "Selected Room:",E_FONT_HEAD);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
     (gslc_Rect){140,65,80,20},"Kitchen...",E_FONT_BTN,NULL);
-  gslc_ElemSetCol(pElem,(gslc_Color){64,64,64},(gslc_Color){32,32,32},(gslc_Color){0,0,224});    
+  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
   // Create sliders
@@ -115,32 +115,29 @@ bool InitOverlays()
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Red:",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);  
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
           (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,255,5,false);
-  gslc_ElemSetCol(pElem,(gslc_Color){255,0,0},GSLC_COL_BLACK,GSLC_COL_WHITE);          
-  gslc_ElemXSliderSetStyle(pElem,true,(gslc_Color){128,0,0},10,
-          5,(gslc_Color){64,64,64});
+  gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);          
+  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
   nCtrlY += nCtrlGap;
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Green:",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);  
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
           (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,128,5,false);
-  gslc_ElemSetCol(pElem,(gslc_Color){0,255,0},GSLC_COL_BLACK,GSLC_COL_WHITE);
-  gslc_ElemXSliderSetStyle(pElem,true,(gslc_Color){0,128,0},10,
-          5,(gslc_Color){64,64,64});
+  gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
   nCtrlY += nCtrlGap;
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Blue:",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);  
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
           (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,0,5,false);
-  gslc_ElemSetCol(pElem,(gslc_Color){0,0,255},GSLC_COL_BLACK,GSLC_COL_WHITE);          
-  gslc_ElemXSliderSetStyle(pElem,true,(gslc_Color){0,0,128},10,
-          5,(gslc_Color){64,64,64});
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);          
+  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
   nCtrlY += nCtrlGap;
 
   

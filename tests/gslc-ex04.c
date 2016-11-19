@@ -58,7 +58,7 @@ bool InitOverlays()
 
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
   
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});
@@ -79,13 +79,13 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
-    (gslc_Rect){80,80,50,10},0,100,0,GSLC_COL_GREEN_DK,false);
+    (gslc_Rect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   
   // Create checkbox 1
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,100,20,20},
     "Check1:",E_FONT_TXT);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_Rect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT,false);
+    (gslc_Rect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,135,20,20},

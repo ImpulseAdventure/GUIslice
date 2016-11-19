@@ -112,7 +112,7 @@ bool InitOverlays(char *strPath)
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,80,50,10},
     "Progress:",E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_Rect){100,80,50,10},
-    0,100,0,GSLC_COL_GREEN_DK,false);
+    0,100,0,GSLC_COL_GREEN,false);
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],

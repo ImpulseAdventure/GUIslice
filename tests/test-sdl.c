@@ -2,7 +2,7 @@
 #include "SDL/SDL_getenv.h"
 
 //
-// microSDL sample SDL test
+// GUIslice sample SDL test
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/
 //

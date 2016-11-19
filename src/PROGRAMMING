@@ -66,7 +66,7 @@ Element ID
 - User functions generally reference an Element by
   its Element ID
 - If no further reference is required to an element after
-  creation, an auto-generated ID can be provided (MSDL_ID_AUTO)
+  creation, an auto-generated ID can be provided (GSLC_ID_AUTO)
 
 GUI
 - Contains the core library state

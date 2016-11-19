@@ -75,17 +75,17 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   gslc_ViewSet(&m_gui,E_VIEW);
 
   // Perform the drawing of example graphic primitives
-  gslc_DrawLine(&m_gui,0,-200,0,+200,GSLC_COL_GRAY_DK);
-  gslc_DrawLine(&m_gui,-200,0,+200,0,GSLC_COL_GRAY_DK);
+  gslc_DrawLine(&m_gui,0,-200,0,+200,GSLC_COL_GRAY_DK2);
+  gslc_DrawLine(&m_gui,-200,0,+200,0,GSLC_COL_GRAY_DK2);
 
-  gslc_DrawFrameRect(&m_gui,(gslc_Rect){-30,-20,60,40},GSLC_COL_BLUE_DK);
+  gslc_DrawFrameRect(&m_gui,(gslc_Rect){-30,-20,60,40},GSLC_COL_BLUE_DK2);
   for (nInd=-5;nInd<=5;nInd++) {
     gslc_DrawLine(&m_gui,0,0,0+nInd*20,100,GSLC_COL_PURPLE);
   }
 
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,1,10,10},GSLC_COL_RED_DK);
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,-10,10,10},GSLC_COL_GREEN_DK);
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){-10,1,10,10},GSLC_COL_BLUE_DK);
+  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,1,10,10},GSLC_COL_RED_DK2);
+  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,-10,10,10},GSLC_COL_GREEN_DK2);
+  gslc_DrawFillRect(&m_gui,(gslc_Rect){-10,1,10,10},GSLC_COL_BLUE_DK2);
   gslc_DrawFillRect(&m_gui,(gslc_Rect){-10,-10,10,10},GSLC_COL_YELLOW);
 
   // Restore the drawing coordinate space to the screen
@@ -131,20 +131,20 @@ bool InitOverlays(char *strPath)
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_Rect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit);
+    (gslc_Rect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit); 
 
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,60,50,10},
     "Searches:",E_FONT_TXT);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_Rect){80,60,50,10},
     "",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   // Create progress bar
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,80,50,10},
     "Progress:",E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_Rect){80,80,50,10},
-    0,100,0,GSLC_COL_GREEN_DK,false);
+    0,100,0,GSLC_COL_GREEN,false);
 
   
   // Create other labels
@@ -153,39 +153,39 @@ bool InitOverlays(char *strPath)
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_Rect){100,100,50,10},
     "",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,120,50,10},
     "Coord Y:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_Rect){100,120,50,10},
     "",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,140,50,10},
     "Coord Z:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_Rect){100,140,50,10},
     "",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){120,210,170,20},
     "Example of GUIslice C library",E_FONT_BTN);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_LEFT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
 
   // --------------------------------------------------------------------------
   // Create scanner with viewport
   pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){190,75-11,100,10},
     "SCANNER",E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_DK);
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_DK2);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_Rect){190-1,75-1,100+2,100+2});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(pElem,&CbDrawScanner);
   
@@ -262,7 +262,7 @@ int main( int argc, char* args[] )
     gslc_ElemSetTxtStr(pElemDataY,acTxt);
     snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordZ);
     gslc_ElemSetTxtStr(pElemDataZ,acTxt);
-    gslc_ElemSetTxtCol(pElemDataZ,(m_fCoordY>50)?GSLC_COL_GREEN_LT:GSLC_COL_RED_DK);
+    gslc_ElemSetTxtCol(pElemDataZ,(m_fCoordY>50)?GSLC_COL_GREEN_LT2:GSLC_COL_RED_DK2);
 
     gslc_ElemXGaugeUpdate(pElemProgress,50+50*sin(m_nCount/500.0));
 

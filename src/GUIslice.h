@@ -6,8 +6,33 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6    (2016/11/16)
+// - Version 0.6.1    (2016/11/18)
 // =======================================================================
+//
+// The MIT License
+//
+// Copyright 2016 Calvin Hass
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+// =======================================================================
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,25 +182,53 @@ typedef enum {
 
 
 // Basic color definition
-#define GSLC_COL_BLUE_DK    (gslc_Color) {0,0,255}       ///< Blue (dark)
-#define GSLC_COL_BLUE_LT    (gslc_Color) {128,128,255}   ///< Blue (light)
-#define GSLC_COL_RED_DK     (gslc_Color) {255,0,0}       ///< Red (dark)
-#define GSLC_COL_RED_LT     (gslc_Color) {255,128,128}   ///< Red (light)
-#define GSLC_COL_GREEN_DK   (gslc_Color) {0,255,0}       ///< Green (dark)
-#define GSLC_COL_GREEN_LT   (gslc_Color) {128,255,128}   ///< Green (light)
+#define GSLC_COL_RED_DK4    (gslc_Color) {128,  0,  0}   ///< Red (dark4)
+#define GSLC_COL_RED_DK3    (gslc_Color) {160,  0,  0}   ///< Red (dark3)
+#define GSLC_COL_RED_DK2    (gslc_Color) {192,  0,  0}   ///< Red (dark2)
+#define GSLC_COL_RED_DK1    (gslc_Color) {224,  0,  0}   ///< Red (dark1)
+#define GSLC_COL_RED        (gslc_Color) {255,  0,  0}   ///< Red
+#define GSLC_COL_RED_LT1    (gslc_Color) {255, 32, 32}   ///< Red (light1)
+#define GSLC_COL_RED_LT2    (gslc_Color) {255, 64, 64}   ///< Red (light2)
+#define GSLC_COL_RED_LT3    (gslc_Color) {255, 96, 96}   ///< Red (light3)
+#define GSLC_COL_RED_LT4    (gslc_Color) {255,128,128}   ///< Red (light4)
+#define GSLC_COL_GREEN_DK4  (gslc_Color) {  0,128,  0}   ///< Green (dark4)
+#define GSLC_COL_GREEN_DK3  (gslc_Color) {  0,160,  0}   ///< Green (dark3)
+#define GSLC_COL_GREEN_DK2  (gslc_Color) {  0,192,  0}   ///< Green (dark2)
+#define GSLC_COL_GREEN_DK1  (gslc_Color) {  0,224,  0}   ///< Green (dark1)
+#define GSLC_COL_GREEN      (gslc_Color) {  0,255,  0}   ///< Green
+#define GSLC_COL_GREEN_LT1  (gslc_Color) { 32,255, 32}   ///< Green (light1)
+#define GSLC_COL_GREEN_LT2  (gslc_Color) { 64,255, 64}   ///< Green (light2)
+#define GSLC_COL_GREEN_LT3  (gslc_Color) { 96,255, 96}   ///< Green (light3)
+#define GSLC_COL_GREEN_LT4  (gslc_Color) {128,255,128}   ///< Green (light4)
+#define GSLC_COL_BLUE_DK4   (gslc_Color) {  0,  0,128}   ///< Blue (dark4)
+#define GSLC_COL_BLUE_DK3   (gslc_Color) {  0,  0,160}   ///< Blue (dark3)
+#define GSLC_COL_BLUE_DK2   (gslc_Color) {  0,  0,192}   ///< Blue (dark2)
+#define GSLC_COL_BLUE_DK1   (gslc_Color) {  0,  0,224}   ///< Blue (dark1)
+#define GSLC_COL_BLUE       (gslc_Color) {  0,  0,255}   ///< Blue
+#define GSLC_COL_BLUE_LT1   (gslc_Color) { 32, 32,255}   ///< Blue (light1)
+#define GSLC_COL_BLUE_LT2   (gslc_Color) { 64, 64,255}   ///< Blue (light2)
+#define GSLC_COL_BLUE_LT3   (gslc_Color) { 96, 96,255}   ///< Blue (light3)
+#define GSLC_COL_BLUE_LT4   (gslc_Color) {128,128,255}   ///< Blue (light4)
+#define GSLC_COL_BLACK      (gslc_Color) {  0,  0,  0}   ///< Black
+#define GSLC_COL_GRAY_DK3   (gslc_Color) { 32, 32, 32}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK2   (gslc_Color) { 64, 64, 64}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK1   (gslc_Color) { 96, 96, 96}   ///< Gray (dark)
+#define GSLC_COL_GRAY       (gslc_Color) {128,128,128}   ///< Gray
+#define GSLC_COL_GRAY_LT1   (gslc_Color) {160,160,160}   ///< Gray (light1)
+#define GSLC_COL_GRAY_LT2   (gslc_Color) {192,192,192}   ///< Gray (light2)
+#define GSLC_COL_GRAY_LT3   (gslc_Color) {224,224,224}   ///< Gray (light3)
+#define GSLC_COL_WHITE      (gslc_Color) {255,255,255}   ///< White
+
 #define GSLC_COL_YELLOW     (gslc_Color) {255,255,0}     ///< Yellow
 #define GSLC_COL_YELLOW_DK  (gslc_Color) {64,64,0}       ///< Yellow (dark)
-#define GSLC_COL_BLACK      (gslc_Color) {0,0,0}         ///< Black
-#define GSLC_COL_GRAY_DK    (gslc_Color) {64,64,64}      ///< Gray (dark)
-#define GSLC_COL_GRAY       (gslc_Color) {128,128,128}   ///< Gray
-#define GSLC_COL_GRAY_LT    (gslc_Color) {192,192,192}   ///< Gray (light)
-#define GSLC_COL_WHITE      (gslc_Color) {255,255,255}   ///< White
 #define GSLC_COL_PURPLE     (gslc_Color) {128,0,128}     ///< Purple
 #define GSLC_COL_CYAN       (gslc_Color) {0,255,255}     ///< Cyan
 #define GSLC_COL_MAGENTA    (gslc_Color) {255,0,255}     ///< Magenta
 #define GSLC_COL_TEAL       (gslc_Color) {0,128,128}     ///< Teal
 #define GSLC_COL_ORANGE     (gslc_Color) {255,165,0}     ///< Orange
 #define GSLC_COL_BROWN      (gslc_Color) {165,42,42}     ///< Brown
+
+
 
 /// Touch event type for element touch tracking
 typedef enum  {
@@ -238,30 +291,31 @@ typedef struct gslc_tsElem gslc_tsElem;
 ///
 typedef struct gslc_tsElem {
 
-  int                 nId;            ///< Element ID specified by user
-  gslc_teType         nType;          ///< Element type enumeration
-  gslc_Rect           rElem;          ///< Rect region containing element
-  int                 nGroup;         ///< Group ID that the element belongs to  
-  bool                bValid;         ///< Element was created properly
+  int                 nId;              ///< Element ID specified by user
+  gslc_teType         nType;            ///< Element type enumeration
+  gslc_Rect           rElem;            ///< Rect region containing element
+  int                 nGroup;           ///< Group ID that the element belongs to  
+  bool                bValid;           ///< Element was created properly
   
-  bool                bGlowEn;        ///< Enable glowing visual state
-  bool                bGlowing;       ///< Element is currently glowing
+  bool                bGlowEn;          ///< Enable glowing visual state
+  bool                bGlowing;         ///< Element is currently glowing
   
-  void*               pvSurfNorm;     ///< Surface ptr to draw (normal)
-  void*               pvSurfGlow;     ///< Surface ptr to draw (glowing)
+  void*               pvSurfNorm;       ///< Surface ptr to draw (normal)
+  void*               pvSurfGlow;       ///< Surface ptr to draw (glowing)
 
-  bool                bClickEn;       ///< Element accepts touch events
-  bool                bFrameEn;       ///< Element is drawn with frame
-  bool                bFillEn;        ///< Element is drawn with inner fill.
-                                      ///< This is also used during redraw to determine
-                                      ///< if elements underneath are visible and must
-                                      ///< be redrawn as well.
+  bool                bClickEn;         ///< Element accepts touch events
+  bool                bFrameEn;         ///< Element is drawn with frame
+  bool                bFillEn;          ///< Element is drawn with inner fill.
+                                        ///< This is also used during redraw to determine
+                                        ///< if elements underneath are visible and must
+                                        ///< be redrawn as well.
 
-  gslc_Color          colElemFrame;   ///< Color for frame
-  gslc_Color          colElemFill;    ///< Color for background fill
-  gslc_Color          colElemGlow;    ///< Color to use when touch cause glowing
+  gslc_Color          colElemFrame;     ///< Color for frame
+  gslc_Color          colElemFill;      ///< Color for background fill
+  gslc_Color          colElemFrameGlow; ///< Color to use for frame when glowing  
+  gslc_Color          colElemFillGlow;  ///< Color to use for fill when glowing
 
-  bool                bNeedRedraw;    ///< Element needs to be redrawn
+  bool                bNeedRedraw;      ///< Element needs to be redrawn
 
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
@@ -270,16 +324,17 @@ typedef struct gslc_tsElem {
   gslc_tsElem*        pElemParent;  
   
   char                acStr[GSLC_ELEM_STRLEN_MAX];  ///< Text string to overlay
-  gslc_Color          colElemText;    ///< Color of overlay text
-  unsigned            eTxtAlign;      ///< Alignment of overlay text
-  unsigned            nTxtMargin;     ///< Margin of overlay text within rect region
-  void*               pvTxtFont;      ///< Void ptr to Font for overlay text
+  gslc_Color          colElemText;      ///< Color of overlay text
+  gslc_Color          colElemTextGlow;  ///< Color of overlay text when glowing
+  unsigned            eTxtAlign;        ///< Alignment of overlay text
+  unsigned            nTxtMargin;       ///< Margin of overlay text within rect region
+  void*               pvTxtFont;        ///< Void ptr to Font for overlay text
 
-  void*               pXData;         ///< Ptr to extended data structure
+  void*               pXData;           ///< Ptr to extended data structure
   
-  GSLC_CB_DRAW        pfuncXDraw;     ///< Callback func ptr for drawing
-  GSLC_CB_TOUCH       pfuncXTouch;    ///< Callback func ptr for touch
-  GSLC_CB_TICK        pfuncXTick;     ///< Callback func ptr for timer/main loop tick
+  GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for drawing
+  GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
+  GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
   
 } gslc_tsElem;
 
@@ -893,16 +948,39 @@ int gslc_ElemGetId(gslc_tsElem* pElem);
 void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn);
 
 ///
+/// Set the frame state for an Element
+///
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  bFrameEn:    True if framed, false otherwise
+///
+/// \return none
+///
+void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn);
+
+///
 /// Update the common color selection for an Element
 ///
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  colFrame:    Color for the frame
 /// \param[in]  colFill:     Color for the fill
-/// \param[in]  colGlow:     Color when glowing
+/// \param[in]  colFillGlow: Color for the fill when glowing
 ///
 /// \return none
 ///
-void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colGlow);
+void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colFillGlow);
+
+///
+/// Update the common color selection for glowing state of an Element
+///
+/// \param[in]  pElem:        Pointer to Element
+/// \param[in]  colFrameGlow: Color for the frame when glowing
+/// \param[in]  colFillGlow:  Color for the fill when glowing
+/// \param[in]  colTxtGlow    Color for the text when glowing
+///
+/// \return none
+///
+void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_Color colFrameGlow,gslc_Color colFillGlow,gslc_Color colTxtGlow);
+
 
 ///
 /// Set the group ID for an element
@@ -996,6 +1074,15 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw);
 ///
 void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn);
 
+///
+/// Copy style settings from one element to another
+///
+/// \param[in]  pElemSrc:   Pointer to source Element
+/// \param[in]  pElemDest:  Pointer to destination Element
+///
+/// \return none
+///
+void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest);
 
 ///
 /// Get the glowing enable for an element
@@ -1314,7 +1401,7 @@ int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 // ------------------------------------------------------------------------
 // Private Functions
 // - The following functions are generally not required for
-//   typical users of microSdl. However, for advanced usage
+//   typical users of GUIslice. However, for advanced usage
 //   more direct access may be required.
 // ------------------------------------------------------------------------
 
