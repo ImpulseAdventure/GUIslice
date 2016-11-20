@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.1    (2016/11/18)
+// - Version 0.6.2    (2016/11/19)
 // =======================================================================
 //
 // The MIT License
@@ -292,30 +292,31 @@ typedef struct gslc_tsElem gslc_tsElem;
 typedef struct gslc_tsElem {
 
   int                 nId;              ///< Element ID specified by user
+  bool                bValid;           ///< Element was created properly
+
   gslc_teType         nType;            ///< Element type enumeration
   gslc_Rect           rElem;            ///< Rect region containing element
   int                 nGroup;           ///< Group ID that the element belongs to  
-  bool                bValid;           ///< Element was created properly
   
+  // Behavior settings
   bool                bGlowEn;          ///< Enable glowing visual state
-  bool                bGlowing;         ///< Element is currently glowing
-  
-  void*               pvSurfNorm;       ///< Surface ptr to draw (normal)
-  void*               pvSurfGlow;       ///< Surface ptr to draw (glowing)
-
   bool                bClickEn;         ///< Element accepts touch events
+ 
+
+  // Style
   bool                bFrameEn;         ///< Element is drawn with frame
   bool                bFillEn;          ///< Element is drawn with inner fill.
                                         ///< This is also used during redraw to determine
                                         ///< if elements underneath are visible and must
                                         ///< be redrawn as well.
-
+  
   gslc_Color          colElemFrame;     ///< Color for frame
   gslc_Color          colElemFill;      ///< Color for background fill
   gslc_Color          colElemFrameGlow; ///< Color to use for frame when glowing  
   gslc_Color          colElemFillGlow;  ///< Color to use for fill when glowing
-
-  bool                bNeedRedraw;      ///< Element needs to be redrawn
+  
+  void*               pvSurfNorm;       ///< Surface ptr to draw (normal)
+  void*               pvSurfGlow;       ///< Surface ptr to draw (glowing)
 
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
@@ -323,6 +324,7 @@ typedef struct gslc_tsElem {
   /// elements.
   gslc_tsElem*        pElemParent;  
   
+  // Text handling
   char                acStr[GSLC_ELEM_STRLEN_MAX];  ///< Text string to overlay
   gslc_Color          colElemText;      ///< Color of overlay text
   gslc_Color          colElemTextGlow;  ///< Color of overlay text when glowing
@@ -330,11 +332,18 @@ typedef struct gslc_tsElem {
   unsigned            nTxtMargin;       ///< Margin of overlay text within rect region
   void*               pvTxtFont;        ///< Void ptr to Font for overlay text
 
+  // Extended data elements
   void*               pXData;           ///< Ptr to extended data structure
   
+  // Callback functions
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
+  
+  // Current status
+  bool                bNeedRedraw;      ///< Element needs to be redrawn
+  bool                bGlowing;         ///< Element is currently glowing
+
   
 } gslc_tsElem;
 
@@ -436,6 +445,13 @@ typedef struct {
 // ------------------------------------------------------------------------
 
 ///
+/// Get the GUIslice version number
+///
+/// \return String containing version number
+///
+char* gslc_GetVer(gslc_tsGui* pGui);
+
+///
 /// Configure environment variables suitable for
 /// default driver operations.
 ///
@@ -443,24 +459,22 @@ typedef struct {
 ///   supply their own initialization routine
 ///   as these defaults may not be suitable.
 ///
-/// \param[in]  pGui:    Pointer to GUI
+/// \param[in]  acDevFb:    Path to framebuffer device (NULL if none)
+/// \param[in]  acDevTouch: Path to touchscreen device (NULL if none)
 ///
 /// \return None
 ///
-void gslc_InitEnv(gslc_tsGui* pGui);
+void gslc_InitEnv(char* acDevFb,char* acDevTouch);
 
 ///
 /// Initialize the GUIslice library
-/// - Configures the primary screen surface
+/// - Configures the primary screen surface(s)
 /// - Initializes font support
 ///
 /// PRE:
 /// - The environment variables should be configured before
 ///   calling gslc_Init(). This can be done with gslc_InitEnv()
 ///   or manually in user function.
-///
-/// POST:
-/// - gslc_m_surfScreen is initialized
 ///
 /// \param[in]  pGui:      Pointer to GUI
 /// \param[in]  asPage:    Pointer to Page array
@@ -1022,6 +1036,14 @@ int gslc_ElemGetGroup(gslc_tsElem* pElem);
 ///
 void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign);
 
+/// Set the margin around of a textual element
+///
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  nMargin:     Number of pixels gap to leave surrounding text
+///
+/// \return none
+///
+void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin);
 
 ///
 /// Update the text string associated with an Element ID

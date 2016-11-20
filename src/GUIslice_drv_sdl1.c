@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.1    (2016/11/18)
+// - Version 0.6.2    (2016/11/19)
 // =======================================================================
 //
 // The MIT License
@@ -116,37 +116,40 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
   return true;
 }
-  
+
+#define TMP_INIT
 
 // Need to configure a number of SDL and TS environment
 // variables. The following demonstrates a way to do this
 // programmatically, but it can also be done via export
 // commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void gslc_DrvInitEnv(gslc_tsGui* pGui)
+void gslc_DrvInitEnv(char* acDevFb,char* acDevTouch)
 {
+  
   // This line already appears to be set in env
-  putenv((char*)"FRAMEBUFFER=/dev/fb1");
+  setenv((char*)"FRAMEBUFFER",acDevFb,1);
   // The following is the only required entra line
-  putenv((char*)"SDL_FBDEV=/dev/fb1");
+  setenv((char*)"SDL_FBDEV",acDevFb,1);
 
   // The following lines don't appear to be required
-  putenv((char*)"SDL_VIDEODRIVER=fbcon");
-  putenv((char*)"SDL_FBDEV=/dev/fb1");
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+  setenv((char*)"SDL_FBDEV",acDevFb,1);   
+
 
   // Disable these lines as it appears to cause
   // conflict in the SDL mouse coordinate reporting
   // (perhaps b/c it is mixing real mouse and touch?)
-  //putenv((char*)"SDL_MOUSEDRV=TSLIB");
-  //putenv((char*)"SDL_MOUSEDEV=/dev/input/touchscreen");
+  //setenv((char*)"SDL_MOUSEDRV",(char*)"TSLIB",1);
+  //setenv((char*)"SDL_MOUSEDEV",acDevTouch,1);    
+  
 
   #ifdef INC_TS
-  putenv((char*)"TSLIB_FBDEVICE=/dev/fb1");
-  putenv((char*)"TSLIB_TSDEVICE=/dev/input/touchscreen");
-
-  putenv((char*)"TSLIB_CALIBFILE=/etc/pointercal");
-  putenv((char*)"TSLIB_CONFFILE=/etc/ts.conf");
-  putenv((char*)"TSLIB_PLUGINDIR=/usr/local/lib/ts");
+  setenv((char*)"TSLIB_FBDEVICE",acDevFb,1);
+  setenv((char*)"TSLIB_TSDEVICE",acDevTouch,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
   #endif
 
 }

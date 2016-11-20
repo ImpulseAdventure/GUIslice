@@ -8,6 +8,10 @@
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 
+// Define default device paths for SDL framebuffer & touchscreen
+#define GSLC_SDL_DEV_FB     "/dev/fb1"
+#define GSLC_SDL_DEV_TOUCH  "/dev/input/touchscreen"
+
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
 
@@ -158,11 +162,11 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Initialize
 
-  gslc_InitEnv(&m_gui);
+  gslc_InitEnv(GSLC_SDL_DEV_FB,GSLC_SDL_DEV_TOUCH);
 
   if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }  
 
-  gslc_InitTs(&m_gui,"/dev/input/touchscreen");
+  gslc_InitTs(&m_gui,GSLC_SDL_DEV_TOUCH);
 
   // Load Fonts
   // - Normally we would select a number of different fonts

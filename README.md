@@ -15,3 +15,4 @@ Screenshots
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
+![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)

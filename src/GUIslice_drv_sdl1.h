@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.1    (2016/11/18)
+// - Version 0.6.2    (2016/11/19)
 // =======================================================================
 //
 // The MIT License
@@ -107,12 +107,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui);
 ///   supply their own initialization routine
 ///   as these defaults may not be suitable.
 ///
-/// \param[in]  pGui:    Pointer to GUI
+/// \param[in]  acDevFb:    Path to framebuffer device (NULL if none)
+/// \param[in]  acDevTouch: Path to touchscreen device (NULL if none)
 ///
 /// \return None
 ///
-void gslc_DrvInitEnv(gslc_tsGui* pGui);  
-
+void gslc_DrvInitEnv(char* acDevFb,char* acDevTouch);
 
 
 // -----------------------------------------------------------------------

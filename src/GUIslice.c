@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.1    (2016/11/18)
+// - Version 0.6.2    (2016/11/19)
 // =======================================================================
 //
 // The MIT License
@@ -47,7 +47,7 @@
 
 
 // Version definition
-#define GUISLICE_VER "0.6.1"
+#define GUISLICE_VER "0.6.2"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -61,13 +61,18 @@
 // General Functions
 // ------------------------------------------------------------------------
 
+char* gslc_GetVer(gslc_tsGui* pGui)
+{
+  return (char*)GUISLICE_VER;
+}
+
 // May need to configure some environment variables
 // depending on the driver being used. It can also
 // be done via export commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void gslc_InitEnv(gslc_tsGui* pGui)
+void gslc_InitEnv(char* acDevFb,char* acDevTouch)
 {
-  gslc_DrvInitEnv(pGui);
+  gslc_DrvInitEnv(acDevFb,acDevTouch);
 }
 
 
@@ -791,11 +796,11 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
   sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
   sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
-  sElem.bFrameEn        = false;
-  sElem.bFillEn         = false;
-  sElem.bClickEn        = true;
-  sElem.bGlowEn         = true;  
-  sElem.pfuncXTouch     = cbTouch;  
+  sElem.bFrameEn          = false;
+  sElem.bFillEn           = false;
+  sElem.bClickEn          = true;
+  sElem.bGlowEn           = true;  
+  sElem.pfuncXTouch       = cbTouch;  
   gslc_ElemSetImage(pGui,&sElem,acImg,acImgSel);
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem);
@@ -895,8 +900,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   // Init for default drawing
   // --------------------------------------------------------------------------
   
-  bool              bGlowEn,bGlowing;
-  int               nElemX,nElemY;
+  bool      bGlowEn,bGlowing;
+  int       nElemX,nElemY;
   
   nElemX    = pElem->rElem.x;
   nElemY    = pElem->rElem.y;
@@ -1051,6 +1056,15 @@ void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
   gslc_ElemSetRedraw(pElem,true);  
 }
 
+void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
+{
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemSetTxtMargin() called with NULL ptr\n");
+    return;
+  }    
+  pElem->nTxtMargin        = nMargin;
+  gslc_ElemSetRedraw(pElem,true);  
+}
 
 void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 {

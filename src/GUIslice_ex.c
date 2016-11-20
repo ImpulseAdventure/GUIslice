@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.1    (2016/11/18)
+// - Version 0.6.2    (2016/11/19)
 // =======================================================================
 //
 // The MIT License
@@ -296,26 +296,26 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_CHECKBOX,rElem,NULL,GSLC_FONT_NONE);
-  sElem.bFrameEn        = false;
-  sElem.bFillEn         = true;
-  sElem.bClickEn        = true;
-  sElem.bGlowEn         = true;
-  sElem.bGlowing        = false;
+  sElem.bFrameEn          = false;
+  sElem.bFillEn           = true;
+  sElem.bClickEn          = true;
+  sElem.bGlowEn           = true;
+  sElem.bGlowing          = false;
   // Default group assignment. Can override later with ElemSetGroup()
-  sElem.nGroup          = GSLC_GROUP_ID_NONE;
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;
   // Save a pointer to the GUI in the extended element data
   // - We do this so that we can later perform actions on
   //   other elements (ie. when clicking radio button, others
   //   are deselected).
-  pXData->pGui          = pGui;
+  pXData->pGui            = pGui;
   // Define other extended data
-  pXData->bRadio        = bRadio;
-  pXData->bChecked      = bChecked;
-  pXData->colCheck      = colCheck;
-  pXData->nStyle        = nStyle;
-  sElem.pXData          = (void*)(pXData);
+  pXData->bRadio          = bRadio;
+  pXData->bChecked        = bChecked;
+  pXData->colCheck        = colCheck;
+  pXData->nStyle          = nStyle;
+  sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
-  sElem.pfuncXDraw      = &gslc_ElemXCheckboxDraw;
+  sElem.pfuncXDraw        = &gslc_ElemXCheckboxDraw;
   // Specify the custom touch tracking callback
   // - NOTE: This is optional (and can be set to NULL).
   //   See the discussion under gslc_ElemXCheckboxTouch()
@@ -344,11 +344,11 @@ bool gslc_ElemXCheckboxGetState(gslc_tsElem* pElem)
 // Determine which checkbox in the group has been "checked"
 gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int nGroupId)
 {
-  int                     nCurInd;
+  int                 nCurInd;
   gslc_tsElem*        pCurElem = NULL;
   gslc_teType         nCurType;
-  int                     nCurGroup;
-  bool                    bCurChecked;
+  int                 nCurGroup;
+  bool                bCurChecked;
   gslc_tsElem*        pFoundElem = NULL;
 
   if (pGui == NULL) {
@@ -392,9 +392,9 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   }   
   gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
   gslc_tsGui*         pGui      = pCheckbox->pGui;
-  bool                    bRadio    = pCheckbox->bRadio;
-  int                     nGroup    = pElem->nGroup;
-  int                     nElemId   = pElem->nId;
+  bool                bRadio    = pCheckbox->bRadio;
+  int                 nGroup    = pElem->nGroup;
+  int                 nElemId   = pElem->nId;
   
   
   // If radio-button style and we are selecting an element
@@ -402,11 +402,11 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   // Note that SetState calls itself to deselect other items so it
   // is important to qualify this logic with bChecked=true
   if (bRadio && bChecked) {
-    int                   nCurInd;
-    int                   nCurId;
+    int               nCurInd;
+    int               nCurId;
     gslc_tsElem*      pCurElem = NULL;
     gslc_teType       nCurType;
-    int                   nCurGroup;
+    int               nCurGroup;
     
     // We use the GUI pointer for access to other elements   
     for (nCurInd=GSLC_IND_FIRST;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
@@ -715,7 +715,7 @@ void gslc_ElemXSliderSetPos(gslc_tsElem* pElem,int nPos)
     return;
   }       
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
-  int                   nPosOld;
+  int               nPosOld;
   // Clip position
   if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
   if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
@@ -969,11 +969,11 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   gslc_CollectReset(&pXData->sCollect,pXData->asElem,nSubElemMax);
 
   
-  sElem.pXData          = (void*)(pXData);
+  sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
-  sElem.pfuncXDraw      = &gslc_ElemXSelNumDraw;
+  sElem.pfuncXDraw        = &gslc_ElemXSelNumDraw;
   // Specify the custom touch tracking callback
-  sElem.pfuncXTouch     = &gslc_ElemXSelNumTouch;
+  sElem.pfuncXTouch       = &gslc_ElemXSelNumTouch;
 
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
@@ -992,8 +992,8 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   // - The element IDs assigned to the sub-elements are
   //   arbitrary (with local scope in the compound element),
   //   so they don't need to be unique globally across the GUI.
-  gslc_tsElem*    pElemTmp = NULL;
-  gslc_tsElem*    pElem = NULL;
+  gslc_tsElem*    pElemTmp  = NULL;
+  gslc_tsElem*    pElem     = NULL;
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.

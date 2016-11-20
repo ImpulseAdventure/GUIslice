@@ -3,11 +3,15 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 01: Display a box
+//   No touchscreen enabled
 //
 
 #include "GUIslice.h"
 
 #include <unistd.h>      // For sleep()
+
+// Define default device paths for SDL framebuffer
+#define GSLC_SDL_DEV_FB     "/dev/fb1"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -27,7 +31,7 @@ int main( int argc, char* args[] )
   gslc_tsElem*  pElem = NULL;
 
   // Initialize
-  gslc_InitEnv(&m_gui);
+  gslc_InitEnv(GSLC_SDL_DEV_FB,NULL);
   if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
