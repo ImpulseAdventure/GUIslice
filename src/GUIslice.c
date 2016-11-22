@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7    (2016/11/21)
+// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -47,7 +47,7 @@
 
 
 // Version definition
-#define GUISLICE_VER "0.7"
+#define GUISLICE_VER "0.7.1"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -1692,7 +1692,7 @@ int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
 //       auto-generated IDs since we don't know which IDs will
 //       be taken when we finally create the compound element.
 gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,
-  gslc_teType nType,gslc_Rect rElem,const char* pStr,int nFontId)
+  int nType,gslc_Rect rElem,const char* pStr,int nFontId)
 {
   gslc_tsElem sElem;
   // Assign defaults to the element record

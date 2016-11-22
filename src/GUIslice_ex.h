@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7    (2016/11/21)
+// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -42,7 +42,19 @@
 extern "C" {
 #endif // __cplusplus
 
-
+// Extended element enumerations
+  
+/// Extended Element types
+typedef enum {
+    // Extended elements:
+    GSLC_TYPEX_GAUGE        ///< Guage / progressbar extended element
+            = GSLC_TYPE_BASE_EXTEND,  // Continue from gslc_teTypeBase enum range
+    GSLC_TYPEX_CHECKBOX,    ///< Checkbox extended element
+    GSLC_TYPEX_SLIDER,      ///< Slider extended element
+    GSLC_TYPEX_SELNUM,      ///< SelNum extended element
+} gslc_teTypeExtend;
+  
+  
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer

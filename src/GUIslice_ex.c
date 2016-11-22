@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7    (2016/11/21)
+// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -347,7 +347,7 @@ gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int nGroupId)
 {
   int                 nCurInd;
   gslc_tsElem*        pCurElem = NULL;
-  gslc_teType         nCurType;
+  int                 nCurType;
   int                 nCurGroup;
   bool                bCurChecked;
   gslc_tsElem*        pFoundElem = NULL;
@@ -406,7 +406,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
     int               nCurInd;
     int               nCurId;
     gslc_tsElem*      pCurElem = NULL;
-    gslc_teType       nCurType;
+    int               nCurType;
     int               nCurGroup;
     
     // We use the GUI pointer for access to other elements   
@@ -1120,12 +1120,14 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount)
 
 
 // Handle the compound element main functionality
-// - This routine is called by gslc_ElemXSelNumTouch() to handle
+// - This routine is called by gslc_ElemEvent() to handle
 //   any click events that resulted from the touch tracking process.
 // - The code here will generally represent the core
 //   functionality of the compound element and any communication
 //   between sub-elements.
-// - pvElem is a void pointer to the parent/compound element
+// - pvElem is a void pointer to the element being tracked. From
+//   the pElemParent member we can get the parent/compound element
+//   data structures.
 bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
@@ -1219,25 +1221,13 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
   // rather than the compound element. gslc_CollectTouch()
   // is responsible for determining in/out status at the
   // next level down in the element hierarchy.
-  // TODO: Consider creating a separate variable for the down/up/move
-  //       status and the in/out status.
-  if (eTouch == GSLC_TOUCH_DOWN_IN) {
-    eTouch = GSLC_TOUCH_DOWN;
-  } else if ((eTouch == GSLC_TOUCH_UP_IN) || (eTouch == GSLC_TOUCH_UP_OUT)) {
-    eTouch = GSLC_TOUCH_UP;
-  } else if ((eTouch == GSLC_TOUCH_MOVE_IN) || (eTouch == GSLC_TOUCH_MOVE_OUT)) {
-    eTouch = GSLC_TOUCH_MOVE;
-  }
-  
-  // Get absolute coordinate
-  int nAbsX = pElem->rElem.x + nRelX;
-  int nAbsY = pElem->rElem.y + nRelY;
+  eTouch &= ~GSLC_TOUCH_INOUT_MASK;
   
   // Cascade the touch event to the sub-element collection
   // - Note that we use absolute coordinates
   gslc_tsEventTouch sEventTouch;
-  sEventTouch.nX      = nAbsX;
-  sEventTouch.nY      = nAbsY;
+  sEventTouch.nX      = pElem->rElem.x + nRelX;
+  sEventTouch.nY      = pElem->rElem.y + nRelY;
   sEventTouch.eTouch  = eTouch;
   gslc_CollectTouch(pGui,pCollect,&sEventTouch);   
   

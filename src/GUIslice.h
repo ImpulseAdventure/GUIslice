@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7    (2016/11/21)
+// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -156,12 +156,10 @@ typedef enum {
     GSLC_TYPE_TXT,          ///< Text label element type
     GSLC_TYPE_BOX,          ///< Box / frame element type
     GSLC_TYPE_LINE,         ///< Line element type
-    // Extended elements:
-    GSLC_TYPEX_GAUGE,       ///< Guage / progressbar extended element
-    GSLC_TYPEX_CHECKBOX,    ///< Checkbox extended element
-    GSLC_TYPEX_SLIDER,      ///< Slider extended element
-    GSLC_TYPEX_SELNUM,      ///< SelNum extended element
-} gslc_teType;
+    
+    /// Base value for extended type enumerations
+    GSLC_TYPE_BASE_EXTEND = 0x1000
+} gslc_teTypeCore;
 
 // Element text alignment
 #define GSLC_ALIGNV_TOP       0x10                                ///< Vertical align to top
@@ -229,20 +227,28 @@ typedef enum {
 #define GSLC_COL_BROWN      (gslc_Color) {165,42,42}     ///< Brown
 
 
-
 /// Touch event type for element touch tracking
-typedef enum  {
-  GSLC_TOUCH_NONE,
-  GSLC_TOUCH_DOWN,      ///< Touch event (down) before associating with an element
-  GSLC_TOUCH_MOVE,      ///< Touch event (move) before associating with an element
-  GSLC_TOUCH_UP,        ///< Touch event (up) before associating with an element
-  
-  GSLC_TOUCH_DOWN_IN,   ///< Touch event (down) inside element, start tracking
-  GSLC_TOUCH_MOVE_IN,   ///< Touch event (move/drag) inside tracked element
-  GSLC_TOUCH_MOVE_OUT,  ///< Touch event (move/drag) outside tracked element
-  GSLC_TOUCH_UP_IN,     ///< Touch event (up) inside tracked element
-  GSLC_TOUCH_UP_OUT,    ///< Touch event (up) outside tracked element
+typedef enum {
+  GSLC_TOUCH_NONE       = 0,                                ///< No touch event active
+          
+  // Touch state
+  GSLC_TOUCH_DOWN       = (1<<4),                           ///< Touch event (down)
+  GSLC_TOUCH_MOVE       = (1<<5),                           ///< Touch event (move)
+  GSLC_TOUCH_UP         = (1<<6),                           ///< Touch event (up)
+
+  // Touch positioning
+  GSLC_TOUCH_IN         = (1<<0),                           ///< Touch event inside element
+  GSLC_TOUCH_OUT        = (1<<1),                           ///< Touch event outside element
+  GSLC_TOUCH_INOUT_MASK = GSLC_TOUCH_IN | GSLC_TOUCH_OUT,   ///< Mask for in/out state
+
+  // Combined touch state and positioning
+  GSLC_TOUCH_DOWN_IN    = GSLC_TOUCH_DOWN | GSLC_TOUCH_IN,  ///< Touch down inside element (start tracking)
+  GSLC_TOUCH_MOVE_IN    = GSLC_TOUCH_MOVE | GSLC_TOUCH_IN,  ///< Touch move inside tracked element
+  GSLC_TOUCH_MOVE_OUT   = GSLC_TOUCH_MOVE | GSLC_TOUCH_OUT, ///< Touch move outside tracked element
+  GSLC_TOUCH_UP_IN      = GSLC_TOUCH_UP   | GSLC_TOUCH_IN,  ///< Touch up inside tracked element
+  GSLC_TOUCH_UP_OUT     = GSLC_TOUCH_UP   | GSLC_TOUCH_OUT, ///< Touch up outside tracked element
 } gslc_teTouch;
+
 
 /// Event types
 typedef enum {
@@ -340,7 +346,7 @@ typedef struct gslc_tsElem {
   int                 nId;              ///< Element ID specified by user
   bool                bValid;           ///< Element was created properly
 
-  gslc_teType         nType;            ///< Element type enumeration
+  int                 nType;            ///< Element type enumeration
   gslc_Rect           rElem;            ///< Rect region containing element
   int                 nGroup;           ///< Group ID that the element belongs to  
   
@@ -1572,7 +1578,7 @@ int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
 ///
 /// \return Initialized structure
 ///
-gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,gslc_teType nType,
+gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,int nType,
   gslc_Rect rElem,const char* pStr,int nFontId);
 
 
