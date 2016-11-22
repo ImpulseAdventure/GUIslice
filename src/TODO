@@ -2,10 +2,13 @@ FEATURES
 ========
 * Polygon drawing primitive
 * Keypress handler
+* Add graphics driver for SDL2
+* Add graphics driver for Adafruit-GFX
 
 IMPROVEMENTS
 ============
 * Move the background into its own element
+* Enhance compound element (tsXSelNum) usage of common event passing system
 
 BUGS
 ====

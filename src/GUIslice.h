@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.2    (2016/11/19)
+// - Version 0.7    (2016/11/21)
 // =======================================================================
 //
 // The MIT License
@@ -232,18 +232,48 @@ typedef enum {
 
 /// Touch event type for element touch tracking
 typedef enum  {
-    GSLC_TOUCH_DOWN_IN,    /// Touch event (down) inside element, start tracking
-    GSLC_TOUCH_MOVE_IN,    /// Touch event (move/drag) inside tracked element
-    GSLC_TOUCH_MOVE_OUT,   /// Touch event (move/drag) outside tracked element
-    GSLC_TOUCH_UP_IN,      /// Touch event (up) inside tracked element
-    GSLC_TOUCH_UP_OUT,     /// Touch event (up) outside tracked element
+  GSLC_TOUCH_NONE,
+  GSLC_TOUCH_DOWN,      ///< Touch event (down) before associating with an element
+  GSLC_TOUCH_MOVE,      ///< Touch event (move) before associating with an element
+  GSLC_TOUCH_UP,        ///< Touch event (up) before associating with an element
+  
+  GSLC_TOUCH_DOWN_IN,   ///< Touch event (down) inside element, start tracking
+  GSLC_TOUCH_MOVE_IN,   ///< Touch event (move/drag) inside tracked element
+  GSLC_TOUCH_MOVE_OUT,  ///< Touch event (move/drag) outside tracked element
+  GSLC_TOUCH_UP_IN,     ///< Touch event (up) inside tracked element
+  GSLC_TOUCH_UP_OUT,    ///< Touch event (up) outside tracked element
 } gslc_teTouch;
 
+/// Event types
+typedef enum {
+  GSLC_EVT_NONE,          ///< No event; ignore
+  GSLC_EVT_DRAW,          ///< Perform redraw
+  GSLC_EVT_TOUCH,         ///< Track touch event
+  GSLC_EVT_TICK,          ///< Perform background tick handling
+  GSLV_EVT_CUSTOM         ///< Custom event
+} gslc_teEventType;
+
+typedef enum {
+  GSLC_EVTSUB_NONE,
+  GSLC_EVTSUB_DRAW_NEEDED,
+  GSLC_EVTSUB_DRAW_FORCE        
+} gslc_teEventSubType;
+
+// -----------------------------------------------------------------------
+// Forward declarations
+// -----------------------------------------------------------------------
+
+typedef struct gslc_tsElem  gslc_tsElem;
+typedef struct gslc_tsEvent gslc_tsEvent;
 
 // -----------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------
 
+
+/// Callback function for element drawing
+typedef bool (*GSLC_CB_EVENT)(void* pvGui,gslc_tsEvent sEvent);
+        
 /// Callback function for element drawing
 typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElem);
 
@@ -275,9 +305,25 @@ typedef struct gslc_Color {
   uint8_t unused; ///< Unused value to pad structure
 } gslc_Color;
 
+/// Event structure
+typedef struct gslc_tsEvent {
+  gslc_teEventType  eType;    ///< Event type
+  uint32_t          nSubType; ///< Event sub-type
+  void*             pvScope;  ///< Event target scope (eg. Page,Collection,Event)
+  void*             pvData;   ///< Generic data pointer for event. This member is
+                              ///< used to either pass a pointer to a simple data
+                              ///< datatype (such as Element or Collection) or
+                              ///< to a another structure that contains multiple fields.
+} gslc_tsEvent;
 
-// Forward declaration so we can have element reference in element
-typedef struct gslc_tsElem gslc_tsElem;
+/// Structure used to pass touch data through event
+typedef struct gslc_tsEventTouch {
+  gslc_teTouch      eTouch;           ///< Touch state
+  int16_t           nX;               ///< Touch X coordinate (absolute)
+  int16_t           nY;               ///< Touch Y coordinate (absolute)
+} gslc_tsEventTouch;
+
+
 
 ///
 /// Element Struct
@@ -336,6 +382,7 @@ typedef struct gslc_tsElem {
   void*               pXData;           ///< Ptr to extended data structure
   
   // Callback functions
+  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
@@ -344,7 +391,6 @@ typedef struct gslc_tsElem {
   bool                bNeedRedraw;      ///< Element needs to be redrawn
   bool                bGlowing;         ///< Element is currently glowing
 
-  
 } gslc_tsElem;
 
 
@@ -353,14 +399,16 @@ typedef struct gslc_tsElem {
 ///   touch tracking status.
 /// - Pages and Compound Elements both instantiate a Collection
 typedef struct {
-  gslc_tsElem*          pElemParent;      ///< Pointer to parent element (or NULL if none))
-
   gslc_tsElem*          asElem;           ///< Array of elements
   unsigned              nElemMax;         ///< Maximum number of elements to allocate
   unsigned              nElemCnt;         ///< Number of elements allocated
   unsigned              nElemAutoIdNext;  ///< Next Element ID for auto-assignment
   
   gslc_tsElem*          pElemTracked;     ///< Element currently being touch-tracked (NULL for none)
+  
+  // Callback functions
+  GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events  
+  
 } gslc_tsCollect;
 
 
@@ -395,6 +443,10 @@ typedef struct {
   // Redraw
   bool                bPageNeedRedraw;      ///< Page require a redraw
   bool                bPageNeedFlip;        ///< Screen requires a page flip
+  
+  // Callback functions
+  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events   
+  
 } gslc_tsPage;
 
 
@@ -435,6 +487,9 @@ typedef struct {
   
   gslc_tsPage*        pCurPage;         ///< Currently active page
   gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
+  
+  // Callback functions
+  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events 
   
 } gslc_tsGui;
 
@@ -513,6 +568,21 @@ void gslc_Quit(gslc_tsGui* pGui);
 /// \return None
 ///
 void gslc_Update(gslc_tsGui* pGui);
+
+
+///
+/// Create an event structure
+///
+/// \param[in]  eType:      Event type (draw, touch, tick, etc.)
+/// \param[in]  nSubType:   Refinement of event type (or 0 if unused)
+/// \param[in]  pvScope:    Void ptr to object receiving event so that
+///                         the event handler will have the context
+/// \param[in]  pvData:     Void ptr to additional data associated with
+///                         the event (eg. coordinates for touch events)
+///
+/// \return None
+///
+gslc_tsEvent gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvScope,void* pvData);
 
 
 // ------------------------------------------------------------------------
@@ -710,6 +780,26 @@ void* gslc_FontGet(gslc_tsGui* pGui,int nFontId);
 // ------------------------------------------------------------------------
 // Page Functions
 // ------------------------------------------------------------------------
+
+///
+/// Common event handler function for a page
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+/// 
+bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
+
+///
+/// Assign the event callback function for a page
+///
+/// \param[in]  pPage:       Pointer to page
+/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
+///
+/// \return none
+///
+void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb);
 
 ///
 /// Fetch the current page ID
@@ -937,6 +1027,7 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect
   const char* acImg);
 
 
+
 // ------------------------------------------------------------------------
 // Element Update Functions
 // ------------------------------------------------------------------------
@@ -1136,6 +1227,16 @@ void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing);
 ///
 bool gslc_ElemGetGlow(gslc_tsElem* pElem);
 
+///
+/// Assign the event callback function for a element
+///
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
+///
+/// \return none
+/// 
+void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb);
+
 
 ///
 /// Assign the drawing callback function for an element
@@ -1161,6 +1262,35 @@ void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb);
 ///
 void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb);
 
+
+///
+/// Determine if a coordinate is inside of an element
+/// - This routine is useful in determining if a touch
+///   coordinate is inside of a button.
+///
+/// \param[in]  nSelX:        X coordinate to test
+/// \param[in]  nSelY:        Y coordinate to test
+/// \param[in]  bOnlyClickEn: Only output true if element was also marked
+///                           as "clickable" (eg. bClickEn=true)
+///
+/// \return true if inside element, false otherwise
+///
+bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int nX,int nY,bool bOnlyClickEn);
+
+
+// ------------------------------------------------------------------------
+// Element Event Handling Functions
+// ------------------------------------------------------------------------
+
+///
+/// Common event handler function for an element
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+/// 
+bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent);
 
 
 // ------------------------------------------------------------------------
@@ -1323,42 +1453,40 @@ void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem);
 void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent);
 
 
+// ------------------------------------------------------------------------
+// Collect Event Handlers
+// ------------------------------------------------------------------------
+
+///
+/// Assign the event callback function for an element collection
+///
+/// \param[in]  pCollect:    Pointer to collection
+/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
+///
+/// \return none
+/// 
+void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
+
+///
+/// Common event handler function for an element collection
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+/// 
+bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
+
+
 /// Handle touch events within the element collection
 ///
 /// \param[in]  pGui:         Pointer to the GUI
 /// \param[in]  pCollect:     Ptr to the element collection
-/// \param[in]  bTouchDown:   Touch event was a pressure applied (down)
-/// \param[in]  bTouchUp:     Touch event was a pressure release (up)
-/// \param[in]  bTouchMove:   Touch event was a movement with pressure
-/// \param[in]  nX:           X coordinate of touch event
-/// \param[in]  nY:           Y coordinate of touch event
+/// \param[in]  pEventTouch:  Ptr to the touch event structure
 ///
 /// \return none
 ///
-void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY);
-
-
-/// Handle redraw requests to the element collection
-///
-/// \param[in]  pGui:         Pointer to the GUI
-/// \param[in]  pCollect:     Ptr to the element collection
-/// \param[in]  bRedrawAll:   Force all element collection to be redrawn
-///
-/// \return none
-///
-void gslc_CollectRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bRedrawAll);
-
-
-/// Handle tick events to the element collection
-/// - This is callled from the GUI's gslc_Update() call
-///   and can be used to trigger background element activity
-///
-/// \param[in]  pGui:         Pointer to the GUI
-/// \param[in]  pCollect:     Ptr to the element collection
-///
-/// \return none
-///
-void gslc_CollectTick(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
+void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
 
 
 // ------------------------------------------------------------------------
@@ -1372,14 +1500,14 @@ void gslc_CollectTick(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
 /// on the press state.
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pCollect:    Pointer to Element collection
+/// \param[in]  pPage:       Pointer to current page
 /// \param[in]  nX:          X coordinate of touch event
 /// \param[in]  nY:          Y coordinate of touch event
 /// \param[in]  nPress:      Pressure level of touch event (0 for none, else touch)
 ///
 /// \return none
 ///
-void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int nX,int nY,unsigned nPress);
+void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned nPress);
 
 
 
@@ -1603,18 +1731,18 @@ void gslc_ViewRemapRect(gslc_tsGui* pGui,gslc_Rect* prRect);
 
 
 ///
-/// Notify an element of a touch event. This is an optional
+/// Trigger an element's touch event. This is an optional
 /// behavior useful in some extended element types.
 ///
-/// \param[in]  pGui:       Pointer to GUI
-/// \param[in]  pElem:      Pointer to Element
-/// \param[in]  eTouch:     Touch event type
-/// \param[in]  nX:         X coordinate of event (absolute coordinate)
-/// \param[in]  nY:         Y coordinate of event (absolute coordinate)
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemTracked: Pointer to tracked Element (or NULL for none))
+/// \param[in]  eTouch:       Touch event type
+/// \param[in]  nX:           X coordinate of event (absolute coordinate)
+/// \param[in]  nY:           Y coordinate of event (absolute coordinate)
 ///
 /// \return true if success, false if error
 ///
-bool gslc_NotifyElemTouch(gslc_tsGui* pGui,gslc_tsElem* pElem,
+bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElem* pElemTracked,
         gslc_teTouch eTouch,int nX,int nY);
 
 

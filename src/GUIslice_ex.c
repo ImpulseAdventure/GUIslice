@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.2    (2016/11/19)
+// - Version 0.7    (2016/11/21)
 // =======================================================================
 //
 // The MIT License
@@ -307,6 +307,7 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   // - We do this so that we can later perform actions on
   //   other elements (ie. when clicking radio button, others
   //   are deselected).
+  // TODO: Replace this by using reference to pCollect
   pXData->pGui            = pGui;
   // Define other extended data
   pXData->bRadio          = bRadio;
@@ -452,6 +453,11 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
 }
 
 // Toggle the checkbox control's state
+// TODO: Consider adding pGui to param so that we can
+//       pass global context down to ElemXCheckboxSetState()
+//       which would enable cross-element access (via group).
+//       Current code is saving pGui in pXData for checkbox
+//       which is undesirable.
 void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
 {  
   if (pElem == NULL) {
@@ -548,7 +554,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   return true;
 }
 
-// This callback function is called by gslc_NotifyElemTouch()
+// This callback function is called by gslc_ElemSendEventTouch()
 // after any touch event
 // - NOTE: Adding this touch callback is optional. Without it, we
 //   can still have a functional checkbox, but doing the touch
@@ -844,7 +850,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
 }
 
 
-// This callback function is called by gslc_NotifyElemTouch()
+// This callback function is called by gslc_ElemSendEventTouch()
 // after any touch event
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY)
 {
@@ -1064,7 +1070,9 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
   gslc_tsCollect* pCollect = &pSelNum->sCollect;
-  gslc_CollectRedraw(pGui,pCollect,true);
+  
+  gslc_tsEvent  sEvent = gslc_EventCreate(GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)(pCollect),NULL);
+  gslc_CollectEvent(pGui,sEvent);
 
   // Optionally, draw a frame around the compound element
   // - This could instead be done by creating a sub-element
@@ -1205,24 +1213,34 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
   
   // Get Collection
   gslc_tsCollect* pCollect = &pSelNum->sCollect;
-  bool  bTouchDown = false;
-  bool  bTouchUp = false;
-  bool  bTouchMove = false;
+
+  // Now reset the in/out status of the touch event since
+  // we are now looking for coordinates of a sub-element
+  // rather than the compound element. gslc_CollectTouch()
+  // is responsible for determining in/out status at the
+  // next level down in the element hierarchy.
+  // TODO: Consider creating a separate variable for the down/up/move
+  //       status and the in/out status.
   if (eTouch == GSLC_TOUCH_DOWN_IN) {
-    bTouchDown = true;
+    eTouch = GSLC_TOUCH_DOWN;
   } else if ((eTouch == GSLC_TOUCH_UP_IN) || (eTouch == GSLC_TOUCH_UP_OUT)) {
-    bTouchUp = true;
+    eTouch = GSLC_TOUCH_UP;
   } else if ((eTouch == GSLC_TOUCH_MOVE_IN) || (eTouch == GSLC_TOUCH_MOVE_OUT)) {
-    bTouchMove = true;
+    eTouch = GSLC_TOUCH_MOVE;
   }
   
   // Get absolute coordinate
   int nAbsX = pElem->rElem.x + nRelX;
   int nAbsY = pElem->rElem.y + nRelY;
+  
   // Cascade the touch event to the sub-element collection
   // - Note that we use absolute coordinates
-  gslc_CollectTouch(pGui,pCollect,bTouchDown,bTouchUp,bTouchMove,nAbsX,nAbsY);
-
+  gslc_tsEventTouch sEventTouch;
+  sEventTouch.nX      = nAbsX;
+  sEventTouch.nY      = nAbsY;
+  sEventTouch.eTouch  = eTouch;
+  gslc_CollectTouch(pGui,pCollect,&sEventTouch);   
+  
   // To keep it simple, always redraw
   gslc_ElemSetRedraw(pElem,true);
   

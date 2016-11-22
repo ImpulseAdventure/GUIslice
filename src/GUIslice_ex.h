@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.2    (2016/11/19)
+// - Version 0.7    (2016/11/21)
 // =======================================================================
 //
 // The MIT License
@@ -203,7 +203,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem);
 
 ///
 /// Handle touch events to Checkbox element
-/// - Called from gslc_NotifyElemTouch()
+/// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
@@ -310,7 +310,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem);
 
 ///
 /// Handle touch events to Slider element
-/// - Called from gslc_NotifyElemTouch()
+/// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
@@ -411,7 +411,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,i
 
 ///
 /// Handle touch (up,down,move) events to SelNum element
-/// - Called from gslc_NotifyElemTouch()
+/// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)

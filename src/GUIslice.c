@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.6.2    (2016/11/19)
+// - Version 0.7    (2016/11/21)
 // =======================================================================
 //
 // The MIT License
@@ -47,7 +47,7 @@
 
 
 // Version definition
-#define GUISLICE_VER "0.6.2"
+#define GUISLICE_VER "0.7"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -119,6 +119,8 @@ bool gslc_Init(gslc_tsGui* pGui,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFon
   pGui->ts = NULL;
   #endif
 
+  pGui->pfuncXEvent = NULL;
+  
   // Initialize the rendering driver
   return gslc_DrvInit(pGui);
 }
@@ -151,7 +153,7 @@ void gslc_Update(gslc_tsGui* pGui)
   if (bTouchEvent) {
     // Track and handle the touch events
     // - Handle the events on the current page
-    gslc_TrackTouch(pGui,pGui->pCurPageCollect,nTouchX,nTouchY,nTouchPress);
+    gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
   }
   
   // Issue a timer tick to all pages
@@ -159,12 +161,25 @@ void gslc_Update(gslc_tsGui* pGui)
   gslc_tsCollect* pCollect = NULL;
   for (nPage=0;nPage<pGui->nPageCnt;nPage++) {
     pCollect = &pGui->asPage[nPage].sCollect;
-    gslc_CollectTick(pGui,pCollect);
+    gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TICK,0,(void*)pCollect,NULL);
+    gslc_CollectEvent(pGui,sEvent);
   }
   
   // Perform any redraw required for current page
   gslc_PageRedrawGo(pGui);
 }
+
+gslc_tsEvent  gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvScope,void* pvData)
+{
+  gslc_tsEvent    sEvent;
+  sEvent.eType    = eType;
+  sEvent.nSubType = nSubType;
+  sEvent.pvScope  = pvScope;
+  sEvent.pvData   = pvData;
+  return sEvent;
+}
+
+
 
 // ------------------------------------------------------------------------
 // Graphics General Functions
@@ -504,11 +519,51 @@ void* gslc_FontGet(gslc_tsGui* pGui,int nFontId)
 // Page Functions
 // ------------------------------------------------------------------------
 
+// Common event handler
+bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
+{
+  if (pvGui == NULL) {
+    fprintf(stderr,"ERROR: PageEvent() called with NULL ptr\n");
+    return false;
+  }
+  //gslc_tsGui*       pGui        = (gslc_tsGui*)(pvGui);
+  //void*             pvData      = sEvent.pvData;
+  gslc_tsPage*        pPage       = (gslc_tsPage*)(sEvent.pvScope);
+  gslc_tsCollect*     pCollect    = NULL;
+    
+  // Handle any page-level events first
+  // ...
+  
+  // A Page only contains one Element Collection, so propagate
+  
+  // Handle the event types
+  switch(sEvent.eType) {
+    case GSLC_EVT_DRAW:
+    case GSLC_EVT_TICK:    
+    case GSLC_EVT_TOUCH:      
+      pCollect  = &pPage->sCollect;
+      // Update scope reference & propagate
+      sEvent.pvScope = (void*)(pCollect);
+      gslc_CollectEvent(pvGui,sEvent);
+      break;
+
+    default:
+      break;
+  } // sEvent.eType
+  
+  return true;
+}
 
 void gslc_PageAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* psElem,unsigned nMaxElem)
 {
   gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
 
+  // TODO: Create proper PageReset()
+  pPage->bPageNeedRedraw  = true;
+  pPage->bPageNeedFlip    = false;
+  pPage->pfuncXEvent      = NULL;
+  
+  // Initialize pPage->sCollect
   gslc_CollectReset(&pPage->sCollect,psElem,nMaxElem);
   
   // Assign the requested Page ID
@@ -634,9 +689,13 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
     gslc_DrvPasteSurface(pGui,0,0,pGui->pvSurfBkgnd,pGui->pvSurfScreen);
   }
     
-  // Draw other elements (as needed)
-  gslc_CollectRedraw(pGui,pGui->pCurPageCollect,bPageRedraw);
-
+  // Draw other elements (as needed, unless forced page redraw)
+  uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
+  void* pvData = (void*)(pGui->pCurPage);
+  gslc_tsEvent  sEvent = gslc_EventCreate(GSLC_EVT_DRAW,nSubType,pvData,NULL);
+  gslc_PageEvent(pGui,sEvent);
+  
+ 
   // Clear the page redraw flag
   gslc_PageRedrawSet(pGui,false);
   
@@ -710,6 +769,15 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int nPageId,int nElemId)
   return pElem;
 }
 
+
+void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
+{
+  if ((pPage == NULL) || (funcCb == NULL)) {
+    fprintf(stderr,"ERROR: PageSetEventFunc() called with NULL ptr\n");
+    return;
+  }    
+  pPage->pfuncXEvent       = funcCb;
+}
 
 // ------------------------------------------------------------------------
 // Element General Functions
@@ -856,6 +924,74 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,
 }
 
 
+// ------------------------------------------------------------------------
+// Element Event Handlers
+// ------------------------------------------------------------------------
+
+// Common event handler
+bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
+{
+  if (pvGui == NULL) {
+    fprintf(stderr,"ERROR: ElemEvent() called with NULL ptr\n");
+    return false;
+  }
+  gslc_tsGui*         pGui          = (gslc_tsGui*)(pvGui);
+  void*               pvData        = sEvent.pvData;
+  void*               pvScope       = sEvent.pvScope;  
+  gslc_tsElem*        pElem         = NULL;
+  gslc_tsElem*        pElemTracked  = NULL;
+  gslc_tsEventTouch*  pTouchRec     = NULL;
+  int                 nRelX,nRelY;
+  gslc_teTouch        eTouch;
+  GSLC_CB_TOUCH       pfuncXTouch   = NULL;
+  
+  switch(sEvent.eType) {
+    case GSLC_EVT_DRAW:
+      // Fetch the parameters      
+      pElem = (gslc_tsElem*)(pvScope);
+      // TODO: Should bNeedRedraw be moved into ElemDrawByRef()?
+      if ((sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) || (pElem->bNeedRedraw)) {
+        // Call the function that invokes the callback
+        return gslc_ElemDrawByRef(pGui,pElem);
+      } else {
+        return true;
+      }
+      break;
+      
+    case GSLC_EVT_TOUCH:
+      // Fetch the parameters
+      pTouchRec = (gslc_tsEventTouch*)(pvData);
+      pElemTracked = (gslc_tsElem*)(pvScope);
+      nRelX = pTouchRec->nX - pElemTracked->rElem.x;
+      nRelY = pTouchRec->nY - pElemTracked->rElem.y;
+      eTouch = pTouchRec->eTouch;
+      pfuncXTouch = pElemTracked->pfuncXTouch;
+      
+      // Invoke the callback function
+      if (pfuncXTouch != NULL) {
+        // Pass in the relative position from corner of element region
+        (*pfuncXTouch)(pvGui,(void*)pElemTracked,eTouch,nRelX,nRelY);
+      }
+   
+      break;
+      
+    case GSLC_EVT_TICK:
+      // Fetch the parameters
+      pElem = (gslc_tsElem*)(pvScope);
+      
+      // Invoke the callback function      
+      if (pElem->pfuncXTick != NULL) {
+        // TODO: Confirm that tick functions want pvScope
+        (*pElem->pfuncXTick)(pvGui,pvScope);
+        return true;
+      }
+      break;
+      
+    default:
+      break;
+  }
+  return true;
+}
 
 // ------------------------------------------------------------------------
 // Element Drawing Functions
@@ -869,7 +1005,8 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,
 void gslc_ElemDraw(gslc_tsGui* pGui,int nPageId,int nElemId)
 {
   gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
-  gslc_ElemDrawByRef(pGui,pElem);
+  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)pElem,NULL);
+  gslc_ElemEvent(pGui,sEvent);
 }
 
 // Draw an element to the active display
@@ -1190,11 +1327,21 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
 
   // pXData
   
+  pElemDest->pfuncXEvent    = pElemSrc->pfuncXEvent;
   pElemDest->pfuncXDraw     = pElemSrc->pfuncXDraw;
   pElemDest->pfuncXTouch    = pElemSrc->pfuncXTouch;
   pElemDest->pfuncXTick     = pElemSrc->pfuncXTick;
    
   gslc_ElemSetRedraw(pElemDest,true); 
+}
+
+void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb)
+{
+  if ((pElem == NULL) || (funcCb == NULL)) {
+    fprintf(stderr,"ERROR: ElemSetEventFunc() called with NULL ptr\n");
+    return;
+  }    
+  pElem->pfuncXEvent       = funcCb;
 }
 
 
@@ -1217,6 +1364,17 @@ void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
   pElem->pfuncXTick       = funcCb; 
 }
 
+bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int nX,int nY,bool bOnlyClickEn)
+{
+  if (pElem == NULL) {
+    fprintf(stderr,"ERROR: ElemOwnsCoord() called with NULL ptr");
+    return false;
+  }
+  if (bOnlyClickEn && !pElem->bClickEn) {
+    return false;
+  }
+  return gslc_IsInRect(nX,nY,pElem->rElem);
+}
 
 // ------------------------------------------------------------------------
 // Viewport Functions
@@ -1299,8 +1457,14 @@ void gslc_ViewSet(gslc_tsGui* pGui,int nViewId)
 // Tracking Functions
 // ------------------------------------------------------------------------
 
-void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown,bool bTouchUp,bool bTouchMove,int nX,int nY)
+
+void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
+  // Fetch the data members of the touch event
+  int           nX      = pEventTouch->nX;
+  int           nY      = pEventTouch->nY;
+  gslc_teTouch  eTouch  = pEventTouch->eTouch;
+  
   gslc_tsElem*  pTrackedOld = NULL;
   gslc_tsElem*  pTrackedNew = NULL;
   
@@ -1310,7 +1474,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
   // Reset the in-tracked flag
   bool  bInTracked = false;
   
-  if (bTouchDown) {
+  if (eTouch == GSLC_TOUCH_DOWN) {
     // ---------------------------------
     // Touch Down Event
     // ---------------------------------
@@ -1340,24 +1504,28 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
-      gslc_NotifyElemTouch(pGui,pTrackedNew,GSLC_TOUCH_DOWN_IN,nX,nY);
+      eTouch = GSLC_TOUCH_DOWN_IN;
+      gslc_ElemSendEventTouch(pGui,pTrackedNew,eTouch,nX,nY);
+ 
     }
    
-  } else if (bTouchUp) {
+  } else if (eTouch == GSLC_TOUCH_UP) {
     // ---------------------------------
     // Touch Up Event
     // ---------------------------------
 
     if (pTrackedOld != NULL) {
       // Are we still over tracked element?
-      bInTracked = gslc_IsInRect(nX,nY,pTrackedOld->rElem);
+      bInTracked = gslc_ElemOwnsCoord(pTrackedOld,nX,nY,true);
   
       if (!bInTracked) {
         // Released not over tracked element
-        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_UP_OUT,nX,nY);
+        eTouch = GSLC_TOUCH_UP_OUT;
+        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
       } else {
         // Notify original tracked element for optional custom handling
-        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_UP_IN,nX,nY);
+        eTouch = GSLC_TOUCH_UP_IN;        
+        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
       }
 
       // Clear glow state
@@ -1368,20 +1536,21 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
     // Clear the element tracking state
     gslc_CollectSetElemTracked(pCollect,NULL);
     
-  } else if (bTouchMove) {
+  } else if (eTouch == GSLC_TOUCH_MOVE) {
     // ---------------------------------
     // Touch Move Event
     // ---------------------------------
     
     // Determine if we are still over tracked element
     if (pTrackedOld != NULL) {
-      bInTracked = gslc_IsInRect(nX,nY,pTrackedOld->rElem);
+      bInTracked = gslc_ElemOwnsCoord(pTrackedOld,nX,nY,true);
 
       if (!bInTracked) {
 
         // Not currently over tracked element
         // - Notify tracked element that we moved out of it
-        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_MOVE_OUT,nX,nY);
+        eTouch = GSLC_TOUCH_MOVE_OUT;
+        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
 
         // Ensure the tracked element is no longer glowing
         if (pTrackedOld) {
@@ -1390,7 +1559,8 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
       } else {
         // We are still over tracked element
         // - Notify tracked element
-        gslc_NotifyElemTouch(pGui,pTrackedOld,GSLC_TOUCH_MOVE_IN,nX,nY);
+        eTouch = GSLC_TOUCH_MOVE_IN;
+        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
 
         // Ensure it is glowing
         gslc_ElemSetGlow(pTrackedOld,true);
@@ -1401,25 +1571,24 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bTouchDown
   }  
 }
 
+
 // This routine is responsible for the GUI-level touch event state machine
-// and dispatching to the touch even handler for the collection
-void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int nX,int nY,unsigned nPress)
+// and dispatching to the touch event handler for the page
+void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned nPress)
 {
-  if ((pGui == NULL) || (pCollect == NULL)) {
+  if ((pGui == NULL) || (pPage == NULL)) {
     fprintf(stderr,"ERROR: TrackTouch() called with NULL ptr\n");
     return;
   }    
 
-  bool  bTouchDown  = false;
-  bool  bTouchUp    = false;
-  bool  bTouchMove  = false;
+  gslc_teTouch  eTouch = GSLC_TOUCH_NONE;
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
-    bTouchDown = true;
+    eTouch = GSLC_TOUCH_DOWN;
     #ifdef DBG_TOUCH    
     fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchDown\n",nX,nY,nPress);
     #endif
   } else if ((pGui->nTouchLastPress > 0) && (nPress == 0)) {
-    bTouchUp = true;
+    eTouch = GSLC_TOUCH_UP;
     #ifdef DBG_TOUCH    
     fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchUp\n",nX,nY,nPress);
     #endif
@@ -1427,14 +1596,21 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int nX,int nY,uns
   } else if ((pGui->nTouchLastX != nX) || (pGui->nTouchLastY != nY)) {
     // We only track movement if touch is "down"
     if (nPress > 0) {
-      bTouchMove = true;
+      eTouch = GSLC_TOUCH_MOVE;
       #ifdef DBG_TOUCH    
       fprintf(stderr," TS : (%3d,%3d) Pressure=%3u : TouchMove\n",nX,nY,nPress);
       #endif
     }
   }
   
-  gslc_CollectTouch(pGui,pCollect,bTouchDown,bTouchUp,bTouchMove,nX,nY);
+  gslc_tsEventTouch sEventTouch;
+  sEventTouch.eTouch        = eTouch;
+  sEventTouch.nX            = nX;
+  sEventTouch.nY            = nY;
+  void* pvData = (void*)(&sEventTouch);
+  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+  gslc_PageEvent(pGui,sEvent);
+  
 
   // Save raw touch status so that we can detect transitions
   pGui->nTouchLastX      = nX;
@@ -1579,11 +1755,62 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,
     sElem.acStr[GSLC_ELEM_STRLEN_MAX-1] = '\0';  // Force termination    
   }  
   
+  // TODO:
+  // - Save pCollect in element?
+  //   - This would facilitate any group operations (eg. checkbox)
+  //   - Alternately, include pGui in parameters to gslc_ElemXCheckboxToggleState().
+  
   // If the element creation was successful, then set the valid flag
   sElem.bValid          = true;
 
   return sElem;
 }
+
+// ------------------------------------------------------------------------
+// Collect Event Handlers
+// ------------------------------------------------------------------------
+
+
+// Common event handler
+bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
+{
+  if (pvGui == NULL) {
+    fprintf(stderr,"ERROR: CollectEvent() called with NULL ptr\n");
+    return false;
+  }
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  void*           pvScope   = sEvent.pvScope;
+  void*           pvData    = sEvent.pvData;
+  gslc_tsCollect* pCollect  = (gslc_tsCollect*)(pvScope);
+
+  unsigned        nInd;
+  gslc_tsElem*    pElem = NULL;
+  
+  // Handle any collection-based events first
+  // ...
+  if (sEvent.eType == GSLC_EVT_TOUCH) {
+    // TOUCH is passed to CollectTouch which determines the element
+    // in the collection that should receive the event
+    gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
+    gslc_CollectTouch(pGui,pCollect,pEventTouch);    
+    return true;
+  
+  } else if ( (sEvent.eType == GSLC_EVT_DRAW) || (sEvent.eType == GSLC_EVT_TICK) ) {
+    // DRAW and TICK are propagated down to all elements in collection
+    for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+      pElem = &(pCollect->asElem[nInd]); 
+      // Copy event so we can modify it in the loop
+      gslc_tsEvent sEventNew = sEvent;
+      // Update event data reference & propagate
+      sEventNew.pvScope = (void*)(pElem);
+      gslc_ElemEvent(pvGui,sEventNew);      
+    } // nInd
+
+  } // eType
+
+  return true;
+}
+
 
 
 // Helper function for gslc_ElemAdd()
@@ -1761,25 +1988,16 @@ void gslc_ViewRemapRect(gslc_tsGui* pGui,gslc_Rect* prRect)
 }
 
 
-// Notifies an element of a touch event by invoking its touch callback
-// function (if enabled) and passing in relative coordinates.
-bool gslc_NotifyElemTouch(gslc_tsGui* pGui,gslc_tsElem* pElem,
+// Trigger a touch event on an element
+bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElem* pElemTracked,
         gslc_teTouch eTouch,int nX,int nY)
 {
-  if ((pGui == NULL) || (pElem == NULL)) {
-    fprintf(stderr,"ERROR: NotifyElemTouch() called with NULL ptr\n");
-    return false;
-  }    
-  
-  // Fetch the extended element callback (if enabled)
-  GSLC_CB_TOUCH pfuncXTouch = pElem->pfuncXTouch;
-  if (pfuncXTouch != NULL) {
-    // Pass in the relative position from corner of element region
-    int nElemPosX = pElem->rElem.x;
-    int nElemPosY = pElem->rElem.y;
-    (*pfuncXTouch)((void*)(pGui),(void*)(pElem),eTouch,nX-nElemPosX,nY-nElemPosY);
-  }
-  
+  gslc_tsEventTouch sEventTouch;
+  sEventTouch.eTouch        = eTouch;
+  sEventTouch.nX            = nX;
+  sEventTouch.nY            = nY;
+  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TOUCH,0,(void*)pElemTracked,&sEventTouch);
+  gslc_ElemEvent((void*)pGui,sEvent);  
   return true;
 }
 
@@ -1817,6 +2035,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pvTxtFont        = NULL;
   
   pElem->pXData           = NULL;
+  pElem->pfuncXEvent      = NULL;
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
@@ -1937,7 +2156,6 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,unsigned nEl
     fprintf(stderr,"ERROR: CollectReset() called with NULL ptr\n");
     return;
   }  
-  pCollect->pElemParent       = NULL;
   
   pCollect->nElemMax          = nElemMax;
   pCollect->nElemCnt          = GSLC_IND_FIRST;
@@ -1945,6 +2163,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,unsigned nEl
   pCollect->nElemAutoIdNext   = GSLC_ID_AUTO_BASE;
   
   pCollect->pElemTracked      = NULL;
+  pCollect->pfuncXEvent       = NULL;
   
   // Save the pointer to the element array
   pCollect->asElem = asElem;
@@ -1995,44 +2214,11 @@ void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
   pCollect->pElemTracked = pElem;
 }
 
-
-// Redraw the element collection
-// - Only the elements that have been marked as needing redraw
-//   are rendered.
-void gslc_CollectRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bRedrawAll)
-{
-  unsigned          nInd;
-  gslc_tsElem*  pElem = NULL;
-  // Draw elements (as needed)
-  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
-    pElem = &(pCollect->asElem[nInd]);       
-    if ((pElem->bNeedRedraw) || (bRedrawAll)) {      
-      // Draw the element
-      // - Note that this also clears the redraw flag
-      gslc_ElemDrawByRef(pGui,pElem);        
-    }
-  }
-}
-
-void gslc_CollectTick(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
-{
-  unsigned          nInd;
-  gslc_tsElem*  pElem = NULL;
-  // Loop through elements in collection and issue tick callback
-  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
-    pElem = &(pCollect->asElem[nInd]);
-    if (pElem->pfuncXTick != NULL) {
-      (*pElem->pfuncXTick)((void*)(pGui),(void*)(pElem));
-    }      
-  }  
-}
-
-
 // Find an element index in a collection from a coordinate
 gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int nX, int nY)
 {
-  unsigned  nInd;
-  bool      bFound = false;
+  unsigned      nInd;
+  bool          bFound = false;
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
 
@@ -2044,43 +2230,15 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int nX, int 
   #endif
 
   for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
-
     pElem = &pCollect->asElem[nInd];
-    
-    // Are we within the rect?
-    if (gslc_IsInRect(nX,nY,pElem->rElem)) {
-      #ifdef DBG_TOUCH
-      printf("      [%3u]:In  ",nInd);
-      #endif
-
-      // Only return element index if clickable
-      if (pElem->bClickEn) {
-          if (bFound) {
-              fprintf(stderr,"WARNING: Overlapping clickable regions detected\n");
-          }
-          bFound = true;
-          // NOTE: If multiple hits were found, the last one in the
-          // collection will be returned
-          pFoundElem = pElem;
-          #ifdef DBG_TOUCH
-          printf("En \n");
-          #endif
-          // No more search to do
-          break;
-      } else {
-          #ifdef DBG_TOUCH
-          printf("Dis\n");
-          #endif
-      }
-
-    } // gslc_IsInRect()
-    else {
-      #ifdef DBG_TOUCH
-      printf("      [%3u]:Out\n",nInd);
-      #endif
+    bFound = gslc_ElemOwnsCoord(pElem,nX,nY,true);
+    if (bFound) {
+      pFoundElem = pElem;
+      // Stop searching
+      break;
     }
   }
-
+  
   // Return pointer or NULL if none found
   return pFoundElem;
 }
@@ -2095,4 +2253,13 @@ void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent)
     pElem = &pCollect->asElem[nInd];
     pElem->pElemParent = pElemParent;
   }
+}
+
+void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
+{
+  if ((pCollect == NULL) || (funcCb == NULL)) {
+    fprintf(stderr,"ERROR: CollectSetEventFunc() called with NULL ptr\n");
+    return;
+  }    
+  pCollect->pfuncXEvent       = funcCb;
 }

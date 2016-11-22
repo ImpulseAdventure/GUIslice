@@ -6,7 +6,7 @@ A lightweight GUI framework suitable for embedded displays
 - Pure C library, no dynamic memory allocation
 - Platform-independent GUI core currently supports SDL1.2
 - Typical target: Raspberry Pi (Raspbian Jessie)
-- Typical displays: PiTFT, Waveshare
+- Typical displays: PiTFT, Waveshare, Pi Foundation 7" Display
 - Supports touchscreen control
 - SDL Dependencies: sdl1.2, sdl-image, sdl-ttf2.0, optional: tslib
 
