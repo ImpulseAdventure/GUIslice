@@ -2,7 +2,7 @@
 #define _GUISLICE_DRV_SDL_H_
 
 // =======================================================================
-// GUIslice library (driver layer for SDL2)
+// GUIslice library (driver layer for SDL 1.2 & 2.0)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // =======================================================================
@@ -33,7 +33,7 @@
 
 
 // =======================================================================
-// Driver Layer for SDL (1.2 and 2.0)
+// Driver Layer for SDL
 // =======================================================================
 
 #ifdef __cplusplus

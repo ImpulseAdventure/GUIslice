@@ -1,5 +1,5 @@
 // =======================================================================
-// GUIslice library (driver layer for SDL2)
+// GUIslice library (driver layer for SDL 1.2 & 2.0)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // =======================================================================
@@ -30,7 +30,7 @@
 
 
 // =======================================================================
-// Driver Layer for SDL2.0
+// Driver Layer for SDL
 // =======================================================================
 
 
@@ -51,77 +51,6 @@
 #define DRV_SDL_FIX_TTY      "/dev/tty0"
 #endif
 
-
-bool gslc_DrvDrawImage(gslc_tsGui* pGui,int nDstX,int nDstY,void* pImage)
-{
-  if ((pGui == NULL) || (pImage == NULL)) {
-    fprintf(stderr,"ERROR: DrvDrawImage() with NULL ptr\n");
-    return false;
-  }
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
-#ifdef DRV_TYPE_SDL1
-  gslc_DrvPasteSurface(pGui,nDstX,nDstY,pImage,pDriver->pSurfScreen);
-#endif
-
-#ifdef DRV_TYPE_SDL2  
-  SDL_Renderer* pRender = pDriver->pRender;
-  SDL_Texture*  pTex    = (SDL_Texture*)pImage;
-  
-  // Determine dest rect based on source texture dimensions and parameterized offset
-  SDL_Rect  rDest;
-  rDest.x = nDstX;
-  rDest.y = nDstY;
-  SDL_QueryTexture(pTex,NULL,NULL,&rDest.w,&rDest.h);
-  
-  // Default to copying all of source texture rect by specifying NULL
-  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
-#endif
-  
-  return true;
-}
-
-
-/// NOTE: Background image is stored in pGui->pvImgBkgnd
-void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
-{
-  if (pGui->pvImgBkgnd == NULL) {
-    return;
-  }
-
-  if ((pGui == NULL) || (pGui->pvImgBkgnd == NULL)) {
-    fprintf(stderr,"ERROR: DrvDrawBkgnd() with NULL ptr\n");
-    return;
-  }
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
-#ifdef DRV_TYPE_SDL1
-  gslc_DrvPasteSurface(pGui,0,0,pGui->pvImgBkgnd,pDriver->pSurfScreen);
-#endif
-
-#ifdef DRV_TYPE_SDL2  
-  SDL_Renderer* pRender = pDriver->pRender;
-  SDL_Texture*  pTex    = (SDL_Texture*)(pGui->pvImgBkgnd);
-  
-  // Determine destination rect
-  
-  // TODO: Support other background modes such as:
-  // - Single Corner Unscaled
-  // - Single Centered Unscaled
-  // - Single Centered Scaled
-  // - Tiled Corner Unscaled
-
-  // For "single centered scaled", we fetch entire viewport
-  SDL_Rect  rDest;
-  SDL_RenderGetViewport(pDriver->pRender,&rDest);
-  rDest.x = 0;
-  rDest.y = 0;  
-
-  // Default to copying all of source texture rect by specifying NULL
-  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
-#endif
-  
-}
 
 
 
@@ -766,6 +695,77 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
   SDL_RenderDrawLine(pRender,nX0,nY0,nX1,nY1);
   return true;
 #endif  
+}
+
+bool gslc_DrvDrawImage(gslc_tsGui* pGui,int nDstX,int nDstY,void* pImage)
+{
+  if ((pGui == NULL) || (pImage == NULL)) {
+    fprintf(stderr,"ERROR: DrvDrawImage() with NULL ptr\n");
+    return false;
+  }
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  
+#ifdef DRV_TYPE_SDL1
+  gslc_DrvPasteSurface(pGui,nDstX,nDstY,pImage,pDriver->pSurfScreen);
+#endif
+
+#ifdef DRV_TYPE_SDL2  
+  SDL_Renderer* pRender = pDriver->pRender;
+  SDL_Texture*  pTex    = (SDL_Texture*)pImage;
+  
+  // Determine dest rect based on source texture dimensions and parameterized offset
+  SDL_Rect  rDest;
+  rDest.x = nDstX;
+  rDest.y = nDstY;
+  SDL_QueryTexture(pTex,NULL,NULL,&rDest.w,&rDest.h);
+  
+  // Default to copying all of source texture rect by specifying NULL
+  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
+#endif
+  
+  return true;
+}
+
+
+/// NOTE: Background image is stored in pGui->pvImgBkgnd
+void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
+{
+  if (pGui->pvImgBkgnd == NULL) {
+    return;
+  }
+
+  if ((pGui == NULL) || (pGui->pvImgBkgnd == NULL)) {
+    fprintf(stderr,"ERROR: DrvDrawBkgnd() with NULL ptr\n");
+    return;
+  }
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  
+#ifdef DRV_TYPE_SDL1
+  gslc_DrvPasteSurface(pGui,0,0,pGui->pvImgBkgnd,pDriver->pSurfScreen);
+#endif
+
+#ifdef DRV_TYPE_SDL2  
+  SDL_Renderer* pRender = pDriver->pRender;
+  SDL_Texture*  pTex    = (SDL_Texture*)(pGui->pvImgBkgnd);
+  
+  // Determine destination rect
+  
+  // TODO: Support other background modes such as:
+  // - Single Corner Unscaled
+  // - Single Centered Unscaled
+  // - Single Centered Scaled
+  // - Tiled Corner Unscaled
+
+  // For "single centered scaled", we fetch entire viewport
+  SDL_Rect  rDest;
+  SDL_RenderGetViewport(pDriver->pRender,&rDest);
+  rDest.x = 0;
+  rDest.y = 0;  
+
+  // Default to copying all of source texture rect by specifying NULL
+  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
+#endif
+  
 }
 
 
