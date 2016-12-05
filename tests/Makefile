@@ -16,7 +16,7 @@ GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
 # Define compiler flags for GUIslice
 # - Select the graphics driver by uncommenting one of the following lines
 #
-# NOTE: One can override this from the command-line as follows:
+# NOTE: One can also override this from the command-line as follows:
 #       make gslc-ex04 GSLC_DRV=SDL2
 #
 GSLC_DRV := SDL1
