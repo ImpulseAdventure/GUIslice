@@ -2,16 +2,21 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 02: Accept touch input
+// - Example 03: Accept touch input, graphic button
 //
 
 #include "GUIslice.h"
+#include "GUIslice_drv.h"
 
 #include <libgen.h>       // For path parsing
 
-// Define default device paths for SDL framebuffer & touchscreen
-#define GSLC_SDL_DEV_FB     "/dev/fb1"
-#define GSLC_SDL_DEV_TOUCH  "/dev/input/touchscreen"
+// Define default device paths for framebuffer & touchscreen
+#ifdef DRV_TYPE_SDL1
+  #define GSLC_DEV_FB     "/dev/fb1"
+#elif DRV_TYPE_SDL2
+  #define GSLC_DEV_FB     "/dev/fb0"
+#endif
+#define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define IMG_BTN_QUIT      "/res/btn-exit32x32.bmp"
@@ -27,6 +32,7 @@ bool        m_bQuit = false;
 
 // Instantiate the GUI
 gslc_tsGui                  m_gui;
+gslc_tsDriver               m_drv;
 
 #define MAX_PAGE            1
 #define MAX_ELEM_PG_MAIN    30
@@ -79,12 +85,11 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Initialize
 
-  gslc_InitEnv(GSLC_SDL_DEV_FB,GSLC_SDL_DEV_TOUCH);
-  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
+  gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
 
-  gslc_InitTs(&m_gui,GSLC_SDL_DEV_TOUCH);
-
-
+  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
+  
   // -----------------------------------
   // Create the graphic elements
   InitOverlays(dirname(args[0])); // Pass executable path to find resource files

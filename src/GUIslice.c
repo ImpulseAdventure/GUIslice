@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.1    (2016/11/22)
+// - Version 0.7.2    (2016/12/04)
 // =======================================================================
 //
 // The MIT License
@@ -31,23 +31,18 @@
 // =======================================================================
 
 
+
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
-
-// Include rendering driver
-#include "GUIslice_drv_sdl1.h"
+#include "GUIslice_drv.h"
 
 #include <stdio.h>
-
-// Includes for tslib
-#ifdef INC_TS
-#include "tslib.h"
-#endif
+#include <time.h> // for FrameRate reporting
 
 
 // Version definition
-#define GUISLICE_VER "0.7.1"
+#define GUISLICE_VER "0.7.2"
 
 // Debug flags
 //#define DBG_LOG     // Enable debugging log output
@@ -77,11 +72,15 @@ void gslc_InitEnv(char* acDevFb,char* acDevTouch)
 
 
 
-bool gslc_Init(gslc_tsGui* pGui,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView)
+bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView)
 {
   unsigned  nInd;
   
   // Initialize state
+  pGui->nDispW          = 0;
+  pGui->nDispH          = 0;
+  pGui->nDispDepth      = 0;
+  
   pGui->nPageMax        = nMaxPage;
   pGui->nPageCnt        = 0;
   pGui->asPage          = asPage;
@@ -114,12 +113,22 @@ bool gslc_Init(gslc_tsGui* pGui,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFon
   pGui->nTouchLastY           = 0;
   pGui->nTouchLastPress       = 0;
 
-  // Touchscreen library interface
-  #ifdef INC_TS
-  pGui->ts = NULL;
-  #endif
-
   pGui->pfuncXEvent = NULL;
+  
+  pGui->pvImgBkgnd = NULL;
+    
+  // Save a link to the driver
+  pGui->pvDriver = pvDriver;
+  
+  // Default to no support for partial redraw
+  // - This may be overridden by the driver-specific init
+  pGui->bRedrawPartialEn = false;
+ 
+  
+  #ifdef DBG_FRAME_RATE
+  pGui->nFrameRateCnt = 0;
+  pGui->nFrameRateStart = time(NULL);
+  #endif
   
   // Initialize the rendering driver
   return gslc_DrvInit(pGui);
@@ -143,17 +152,18 @@ void gslc_Update(gslc_tsGui* pGui)
   bool      bTouchEvent;
   
   // Poll for touchscreen presses
-  // - Conditional compiling for tslib or selected driver mode
-  #ifdef INC_TS  
-  bTouchEvent = gslc_GetTsTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
-  #else
   bTouchEvent = gslc_DrvGetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
-  #endif
   
   if (bTouchEvent) {
     // Track and handle the touch events
     // - Handle the events on the current page
     gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
+    
+    #ifdef DBG_TOUCH
+    // Highlight current touch for coordinate debug
+    gslc_Rect    rMark = gslc_ExpandRect((gslc_Rect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
+    gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
+    #endif    
   }
   
   // Issue a timer tick to all pages
@@ -167,6 +177,19 @@ void gslc_Update(gslc_tsGui* pGui)
   
   // Perform any redraw required for current page
   gslc_PageRedrawGo(pGui);
+  
+  // Simple "frame" rate reporting
+  // - Note that the rate is based on the number of calls to gslc_Update()
+  //   per second, which may or may not redraw the frame
+  #ifdef DBG_FRAME_RATE
+  pGui->nFrameRateCnt++;
+  uint32_t  nElapsed = (time(NULL) - pGui->nFrameRateStart);
+  if (nElapsed > 0) {
+    fprintf(stderr,"Update rate: %6u / sec\n",pGui->nFrameRateCnt);
+    pGui->nFrameRateStart = time(NULL);
+    pGui->nFrameRateCnt = 0;
+  }
+  #endif  
 }
 
 gslc_tsEvent  gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvScope,void* pvData)
@@ -238,12 +261,14 @@ void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol,bo
       gslc_ViewRemapPt(pGui,&nX,&nY);
     }
   }
-
-  if (gslc_DrvScreenLock(pGui)) {
-    uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);    
-    gslc_DrvDrawSetPixelRaw(pGui,nX,nY,nColRaw);
-    gslc_DrvScreenUnlock(pGui);
-  }   // gslc_DrvScreenLock
+  
+#if (DRV_HAS_DRAW_POINT) 
+  // Call optimized driver point drawing
+  gslc_DrvDrawPoint(pGui,nX,nY,nCol);
+#else  
+  fprintf(stderr,"ERROR: Mandatory DrvDrawPoint() is not defined in driver\n");
+#endif
+  
   gslc_PageFlipSet(pGui,true);
 }
 
@@ -317,13 +342,10 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
   }
 
   uint16_t nOffset;
-  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
-  if (gslc_DrvScreenLock(pGui)) {
-    for (nOffset=0;nOffset<nW;nOffset++) {
-      gslc_DrvDrawSetPixelRaw(pGui,nX+nOffset,nY,nColRaw);    
-    }
-    gslc_DrvScreenUnlock(pGui);
-  }   // gslc_DrvScreenLock
+  for (nOffset=0;nOffset<nW;nOffset++) {
+    gslc_DrvDrawPoint(pGui,nX+nOffset,nY,nCol);    
+  }  
+  
   gslc_PageFlipSet(pGui,true);  
 }
 
@@ -334,13 +356,10 @@ void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Co
     gslc_ViewRemapPt(pGui,&nX,&nY);
   }
   uint16_t nOffset;
-  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
-  if (gslc_DrvScreenLock(pGui)) {
-    for (nOffset=0;nOffset<nH;nOffset++) {
-      gslc_DrvDrawSetPixelRaw(pGui,nX,nY+nOffset,nColRaw);    
-    }
-    gslc_DrvScreenUnlock(pGui);
-  }   // gslc_DrvScreenLock
+  for (nOffset=0;nOffset<nH;nOffset++) {
+    gslc_DrvDrawPoint(pGui,nX,nY+nOffset,nCol);    
+  }
+  
   gslc_PageFlipSet(pGui,true);
 }
 
@@ -393,7 +412,13 @@ void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
   // Call optimized driver implementation
   gslc_DrvDrawFillRect(pGui,rRect,nCol);
 #else
-  // TODO: Emulate it with individual line draws
+  // Emulate it with individual line draws
+  // TODO: This should be avoided as it will generally be very inefficient
+  int nRow;
+  for (nRow=0;nRow<rRect.h;nRow++) {
+    gslc_DrawLineH(pGui, rRect.x, rRect.y+nRow, rRect.w, nCol);
+  }
+
 #endif
   
   gslc_PageFlipSet(pGui,true);    
@@ -438,39 +463,71 @@ gslc_Rect gslc_ExpandRect(gslc_Rect rRect,int16_t nExpandW,int16_t nExpandH)
 void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   uint16_t nRadius,gslc_Color nCol)
 {
+  
   // Support viewport local coordinate remapping
   if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
     gslc_ViewRemapPt(pGui,&nMidX,&nMidY);
   }
-  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
-  
-  int nX    = nRadius;
-  int nY    = 0;
-  int nErr  = 0;
-  
-  if (gslc_DrvScreenLock(pGui)) {
-    while (nX >= nY)
-    {
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY + nY,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY + nX,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY + nX,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY + nY,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nX, nMidY - nY,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX - nY, nMidY - nX,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nY, nMidY - nX,nColRaw);
-      gslc_DrvDrawSetPixelRaw(pGui,nMidX + nX, nMidY - nY,nColRaw);
 
-      nY    += 1;
-      nErr  += 1 + 2*nY;
-      if (2*(nErr-nX) + 1 > 0)
+  #if (DRV_HAS_DRAW_CIRCLE_FRAME)
+    // Call optimized driver implementation
+    gslc_DrvDrawFrameCircle(pGui,nMidX,nMidY,nRadius,nCol);    
+  #else
+    // Emulate circle with point drawing
+    
+    int nX    = nRadius;
+    int nY    = 0;
+    int nErr  = 0;
+
+    #if (DRV_HAS_DRAW_POINTS)
+      gslc_Pt asPt[8];
+      while (nX >= nY)
       {
-          nX -= 1;
-          nErr += 1 - 2*nX;
-      }
-    } // while
+        asPt[0] = (gslc_Pt){nMidX + nX, nMidY + nY};
+        asPt[1] = (gslc_Pt){nMidX + nY, nMidY + nX};
+        asPt[2] = (gslc_Pt){nMidX - nY, nMidY + nX};
+        asPt[3] = (gslc_Pt){nMidX - nX, nMidY + nY};
+        asPt[4] = (gslc_Pt){nMidX - nX, nMidY - nY};
+        asPt[5] = (gslc_Pt){nMidX - nY, nMidY - nX};
+        asPt[6] = (gslc_Pt){nMidX + nY, nMidY - nX};
+        asPt[7] = (gslc_Pt){nMidX + nX, nMidY - nY};
+        gslc_DrvDrawPoints(pGui,asPt,8,nCol);
 
-    gslc_DrvScreenUnlock(pGui);
-  }   // gslc_DrvScreenLock
+        nY    += 1;
+        nErr  += 1 + 2*nY;
+        if (2*(nErr-nX) + 1 > 0)
+        {
+            nX -= 1;
+            nErr += 1 - 2*nX;
+        }
+      } // while
+    
+    #elif (DRV_HAS_DRAW_POINT)
+      while (nX >= nY)
+      {
+        gslc_DrvDrawPoint(pGui,nMidX + nX, nMidY + nY,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX + nY, nMidY + nX,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX - nY, nMidY + nX,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX - nX, nMidY + nY,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX - nX, nMidY - nY,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX - nY, nMidY - nX,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX + nY, nMidY - nX,nCol);
+        gslc_DrvDrawPoint(pGui,nMidX + nX, nMidY - nY,nCol);
+
+        nY    += 1;
+        nErr  += 1 + 2*nY;
+        if (2*(nErr-nX) + 1 > 0)
+        {
+            nX -= 1;
+            nErr += 1 - 2*nX;
+        }
+      } // while
+
+    #else
+      // ERROR
+    #endif
+
+  #endif
   
   gslc_PageFlipSet(pGui,true);
 }
@@ -646,13 +703,29 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   for (nInd=GSLC_IND_FIRST;nInd<pGui->pCurPageCollect->nElemCnt;nInd++) {
     pElem = &(pGui->pCurPageCollect->asElem[nInd]);
     if (pElem->bNeedRedraw) {
-      // Is the element transparent?
-      if (!pElem->bFillEn) {
-        // For now, mark the entire page as requiring redraw
+      
+      // Determine if entire page requires redraw
+      bool  bRedrawFullPage = false;
+      
+      // If partial redraw is supported, then we
+      // look out for transparent elements which may
+      // still warrant full page redraw.
+      if (pGui->bRedrawPartialEn) {
+        // Is the element transparent?
+        if (!pElem->bFillEn) {
+          bRedrawFullPage = true;
+        }
+      } else {
+        bRedrawFullPage = true;
+      }
+      
+      if (bRedrawFullPage) {
+        // Mark the entire page as requiring redraw
         gslc_PageRedrawSet(pGui,true);
-        // No need to check any more elements
+        // No need to check any more elements 
         break;
       }
+      
     }
   }
 }
@@ -686,7 +759,8 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   //         for bBkgndNeedRedraw or make the background just
   //         another element).
   if (bPageRedraw) {
-    gslc_DrvPasteSurface(pGui,0,0,pGui->pvSurfBkgnd,pGui->pvSurfScreen);
+    gslc_DrvDrawBkgnd(pGui);
+    gslc_PageFlipSet(pGui,true);
   }
     
   // Draw other elements (as needed, unless forced page redraw)
@@ -1082,11 +1156,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   // --------------------------------------------------------------------------
   
   // Draw any images associated with element
-  if (pElem->pvSurfNorm != NULL) {
-    if ((bGlowEn && bGlowing) && (pElem->pvSurfGlow != NULL)) {
-      gslc_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfGlow,pGui->pvSurfScreen);
+  if (pElem->pvImgNorm != NULL) {
+    if ((bGlowEn && bGlowing) && (pElem->pvImgGlow != NULL)) {    
+      gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->pvImgGlow);
     } else {
-      gslc_DrvPasteSurface(pGui,nElemX,nElemY,pElem->pvSurfNorm,pGui->pvSurfScreen);
+      gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->pvImgNorm);
     }
   }
 
@@ -1302,8 +1376,8 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   // bValid
   pElemDest->bGlowEn          = pElemSrc->bGlowEn;
   pElemDest->bGlowing         = pElemSrc->bGlowing;
-  pElemDest->pvSurfNorm       = pElemSrc->pvSurfNorm;
-  pElemDest->pvSurfGlow       = pElemSrc->pvSurfGlow;
+  pElemDest->pvImgNorm       = pElemSrc->pvImgNorm;
+  pElemDest->pvImgGlow       = pElemSrc->pvImgGlow;
   
   pElemDest->bClickEn         = pElemSrc->bClickEn;
   pElemDest->bFrameEn         = pElemSrc->bFrameEn;
@@ -1624,56 +1698,15 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
 // Touchscreen Functions
 // ------------------------------------------------------------------------
 
-#ifdef INC_TS
-
-// POST:
-// - pGui->ts mapped to touchscreen device
 bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev)
 {
   if (pGui == NULL) {
     fprintf(stderr,"ERROR: InitTs() called with NULL ptr\n");
     return false;
   }    
-  // TODO: Consider using env "TSLIB_TSDEVICE" instead
-  //char* pDevName = NULL;
-  //pDevName = getenv("TSLIB_TSDEVICE");
-  //pGui->ts = ts_open(pDevName,1);
-  
-  // Open in non-blocking mode
-  pGui->ts = ts_open(acDev,1);
-  if (!pGui->ts) {
-    fprintf(stderr,"ERROR: TsOpen\n");
-    return false;
-  }
-
-  if (ts_config(pGui->ts)) {
-    fprintf(stderr,"ERROR: TsConfig\n");
-    // Clear the tslib pointer so we don't try to call it again
-    pGui->ts = NULL;
-    return false;
-  }
-  return true;
+  // Call driver-specific touchscreen init
+  return gslc_DrvInitTs(pGui,acDev);
 }
-
-int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX,int* pnY,unsigned* pnPress)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: GetTsTouch() called with NULL ptr\n");
-    return 0;
-  }    
-  // In case tslib was not loaded, exit now
-  if (pGui->ts == NULL) {
-    return 0;
-  }
-  struct ts_sample   pSamp;
-  int nRet    = ts_read(pGui->ts,&pSamp,1);
-  (*pnX)      = pSamp.x;
-  (*pnY)      = pSamp.y;
-  (*pnPress)  = pSamp.pressure;
-  return nRet;
-}
-
-#endif // INC_TS
 
 
 
@@ -2016,8 +2049,8 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->rElem            = (gslc_Rect){0,0,0,0};
   pElem->bGlowEn          = false;
   pElem->bGlowing         = false;
-  pElem->pvSurfNorm       = NULL;
-  pElem->pvSurfGlow       = NULL;
+  pElem->pvImgNorm       = NULL;
+  pElem->pvImgGlow       = NULL;
   pElem->bClickEn         = false;
   pElem->bFrameEn         = false;
   pElem->bFillEn          = false;
@@ -2076,13 +2109,13 @@ void gslc_ElemDestruct(gslc_tsElem* pElem)
     fprintf(stderr,"ERROR: ElemDestruct() called with NULL ptr\n");
     return;
   }    
-  if (pElem->pvSurfNorm != NULL) {
-    gslc_DrvSurfaceDestruct(pElem->pvSurfNorm);
-    pElem->pvSurfNorm = NULL;
+  if (pElem->pvImgNorm != NULL) {
+    gslc_DrvImageDestruct(pElem->pvImgNorm);
+    pElem->pvImgNorm = NULL;
   }
-  if (pElem->pvSurfGlow != NULL) {
-    gslc_DrvSurfaceDestruct(pElem->pvSurfGlow);
-    pElem->pvSurfGlow = NULL;
+  if (pElem->pvImgGlow != NULL) {
+    gslc_DrvImageDestruct(pElem->pvImgGlow);
+    pElem->pvImgGlow = NULL;
   }
   
   // TODO: Add callback function so that
@@ -2136,13 +2169,16 @@ void gslc_GuiDestruct(gslc_tsGui* pGui)
   }
   
   // TODO: Consider moving into main element array
-  if (pGui->pvSurfBkgnd != NULL) {
-    gslc_DrvSurfaceDestruct(pGui->pvSurfBkgnd);
-    pGui->pvSurfBkgnd = NULL;
-  }
+  if (pGui->pvImgBkgnd != NULL) {
+    gslc_DrvImageDestruct(pGui->pvImgBkgnd);
+    pGui->pvImgBkgnd = NULL;
+  }  
   
   // Close all fonts
   gslc_DrvFontsDestruct(pGui);
+  
+  // Close any driver-specific data
+  gslc_DrvDestruct(pGui);  
 
 }
 
@@ -2222,12 +2258,6 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int nX, int 
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
 
-  #ifdef DBG_TOUCH
-  // Highlight current touch for coordinate debug
-  gslc_Rect    rMark = gslc_ExpandRect((gslc_Rect){(int16_t)nX,(int16_t)nY,1,1},1,1);
-  gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
-  printf("    CollectFindElemFromCoord(%3d,%3d):\n",nX,nY);
-  #endif
 
   for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
     pElem = &pCollect->asElem[nInd];

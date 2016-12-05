@@ -1,3 +1,11 @@
+#ifndef _GUISLICE_DRV_H_
+#define _GUISLICE_DRV_H_
+
+// =======================================================================
+// GUIslice library (generic driver layer include)
+// - Calvin Hass
+// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// =======================================================================
 //
 // The MIT License
 //
@@ -21,3 +29,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+// =======================================================================
+
+
+// =======================================================================
+// Generic Driver Layer
+// =======================================================================
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+
+#ifdef DRV_TYPE_SDL1
+  #include "GUIslice_drv_sdl.h"
+#elif DRV_TYPE_SDL2
+  #include "GUIslice_drv_sdl.h"
+#else
+  #error "Driver needs to be specified during compile (eg. -DDRV_TYPE_*)"
+#endif
+
+
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+#endif // _GUISLICE_DRV_H_
+

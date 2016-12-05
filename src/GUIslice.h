@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.1    (2016/11/22)
+// - Version 0.7.2    (2016/12/04)
 // =======================================================================
 //
 // The MIT License
@@ -49,12 +49,16 @@ extern "C" {
 // Configuration
 // -----------------------------------------------------------------------
 
+//#define DBG_FRAME_RATE    ///< Enable diagnostic frame rate reporting
+  
 #define GSLC_ELEM_STRLEN_MAX  120  // Max string length of text elements
 
 // Enable for bitmap transparency and definition of color to use
 #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
 #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
+
+  
 // -----------------------------------------------------------------------
 // Enumerations
 // -----------------------------------------------------------------------
@@ -297,11 +301,18 @@ typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElem);
 
 /// Rectangular region. Defines X,Y corner coordinates plus dimensions.
 typedef struct gslc_Rect {
-  int16_t   x;    ///< X coordinate of cornder
+  int16_t   x;    ///< X coordinate of corner
   int16_t   y;    ///< Y coordinate of corner
   uint16_t  w;    ///< Width of region
   uint16_t  h;    ///< Height of region
 } gslc_Rect;
+
+
+/// Define point coordinates
+typedef struct gslc_Pt {
+  int   x;    ///< X coordinate
+  int   y;    ///< Y coordinate
+} gslc_Pt;
 
 /// Color structure. Defines RGB triplet.
 typedef struct gslc_Color {
@@ -367,8 +378,8 @@ typedef struct gslc_tsElem {
   gslc_Color          colElemFrameGlow; ///< Color to use for frame when glowing  
   gslc_Color          colElemFillGlow;  ///< Color to use for fill when glowing
   
-  void*               pvSurfNorm;       ///< Surface ptr to draw (normal)
-  void*               pvSurfGlow;       ///< Surface ptr to draw (glowing)
+  void*               pvImgNorm;        ///< Image ptr to draw (normal)
+  void*               pvImgGlow;        ///< Image ptr to draw (glowing)
 
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
@@ -461,6 +472,10 @@ typedef struct {
 /// - Maintains list of one or more pages
 typedef struct {
 
+  unsigned            nDispW;           ///< Width of the display (pixels)
+  unsigned            nDispH;           ///< Height of the display (pixels)
+  unsigned            nDispDepth;       ///< Bit depth of display (bits per pixel)
+  
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
   unsigned            nFontMax;         ///< Maximum number of fonts to allocate
   unsigned            nFontCnt;         ///< Number of fonts allocated
@@ -476,15 +491,15 @@ typedef struct {
   int                 nTouchLastY;      ///< Last touch event Y coord
   unsigned            nTouchLastPress;  ///< Last touch event pressure (0=none))
 
-  // Touchscreen library interface
-  #ifdef INC_TS
-  struct tsdev*       ts;               ///< Ptr to touchscreen device
-  #endif
-
- 
+  void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
+  bool                bRedrawPartialEn; ///< Driver supports partial page redraw
+  
   // Primary surface definitions
-  void*               pvSurfScreen;     ///< Surface ptr for screen
-  void*               pvSurfBkgnd;      ///< Surface ptr for background
+  void*               pvImgBkgnd;       ///< Driver-specific image data for background
+  
+  uint32_t            nFrameRateCnt;    ///< Diagnostic frame rate count
+  uint32_t            nFrameRateStart;  ///< Diagnostic frame rate timestamp
+  
   
   // Pages
   gslc_tsPage*        asPage;           ///< Array of pages
@@ -495,7 +510,8 @@ typedef struct {
   gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
   
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events 
+  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events 
+  
   
 } gslc_tsGui;
 
@@ -538,6 +554,7 @@ void gslc_InitEnv(char* acDevFb,char* acDevTouch);
 ///   or manually in user function.
 ///
 /// \param[in]  pGui:      Pointer to GUI
+/// \param[in]  pvDriver:  Void pointer to Driver struct (gslc_tsDriver*)
 /// \param[in]  asPage:    Pointer to Page array
 /// \param[in]  nMaxPage:  Size of Page array
 /// \param[in]  asFont:    Pointer to Font array
@@ -547,15 +564,14 @@ void gslc_InitEnv(char* acDevFb,char* acDevTouch);
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_Init(gslc_tsGui* pGui,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView);
-
+bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView);
 
 
 
 ///
 /// Exit the GUIslice environment
-/// - Calls SDL Quit to clean up any initialized subsystems
-///   and also deletes any created elements or fonts
+/// - Calls lower-level destructors to clean up any initialized subsystems
+///   and deletes any created elements or fonts
 ///
 /// \param[in]  pGui:    Pointer to GUI
 ///
@@ -658,7 +674,7 @@ bool gslc_IsInWH(gslc_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t n
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nX:          Pixel X coordinate to set
 /// \param[in]  nY:          Pixel Y coordinate to set
-/// \param[in]  nPixelCol:   Color pixel value ot assign
+/// \param[in]  nCol:        Color pixel value to assign
 /// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
@@ -1166,6 +1182,7 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_Color colVal);
 ///
 /// Update the Font selected for an Element's text
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nFontId:     Font ID to select
 ///
@@ -1273,9 +1290,10 @@ void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb);
 /// Determine if a coordinate is inside of an element
 /// - This routine is useful in determining if a touch
 ///   coordinate is inside of a button.
-///
-/// \param[in]  nSelX:        X coordinate to test
-/// \param[in]  nSelY:        Y coordinate to test
+/// 
+/// \param[in]  pElem:        Element used for boundary test
+/// \param[in]  nX:           X coordinate to test
+/// \param[in]  nY:           Y coordinate to test
 /// \param[in]  bOnlyClickEn: Only output true if element was also marked
 ///                           as "clickable" (eg. bClickEn=true)
 ///
@@ -1522,35 +1540,18 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
 // Touchscreen Functions
 // ------------------------------------------------------------------------
 
-#ifdef INC_TS
 
 ///
-/// Initialize the touchscreen device
+/// Initialize the touchscreen device driver
+/// - This provides an optional handler
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  acDev:       Device path to touchscreen
-///                  eg. "/dev/input/touchscreen"
+///                          eg. "/dev/input/touchscreen"
 ///
 /// \return true if successful
 ///
 bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev);
-
-
-///
-/// Get the last touch event from the tslib handler
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[out] pnX:         Ptr to X coordinate of last touch event
-/// \param[out] pnY:         Ptr to Y coordinate of last touch event
-/// \param[out] pnPress:     Ptr to  Pressure level of last touch event (0 for none, >0 for touch)
-///
-/// \return non-zero if an event was detected or 0 otherwise
-///
-int gslc_GetTsTouch(gslc_tsGui* pGui,int* pnX, int* pnY, unsigned* pnPress);
-
-
-#endif // INC_TS
-
 
 
 
@@ -1714,7 +1715,6 @@ int gslc_ViewFindIndFromId(gslc_tsGui* pGui,int nViewId);
 /// replaced by the global coordinates.
 ///
 /// \param[in]    pGui:        Pointer to GUI
-/// \param[in]    nViewId:     ID of the viewport
 /// \param[inout] pnX:         Ptr to X coordinate
 /// \param[inout] pnY:         Ptr to Y coordinate
 ///
@@ -1728,7 +1728,6 @@ void gslc_ViewRemapPt(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY);
 /// replaced by the global coordinates.
 ///
 /// \param[in]    pGui:        Pointer to GUI
-/// \param[in]    nViewId:     ID of the viewport
 /// \param[inout] prRect:      Ptr to Rectangular coordinates to update
 ///
 /// \return none

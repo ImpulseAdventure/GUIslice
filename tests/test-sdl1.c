@@ -2,7 +2,7 @@
 #include "SDL/SDL_getenv.h"
 
 //
-// GUIslice sample SDL test
+// GUIslice sample SDL test for SDL1.2
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/
 //

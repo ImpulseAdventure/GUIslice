@@ -2,8 +2,6 @@
 // GUIslice library (extensions)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-//
-// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -35,7 +33,7 @@
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
-#include "GUIslice_drv_sdl1.h"
+
 
 #include <stdio.h>
 

@@ -7,18 +7,24 @@
 //
 
 #include "GUIslice.h"
+#include "GUIslice_drv.h"
 
 #include <unistd.h>      // For sleep()
 
-// Define default device paths for SDL framebuffer
-#define GSLC_SDL_DEV_FB     "/dev/fb1"
+// Define default device paths for framebuffer
+#ifdef DRV_TYPE_SDL1
+  #define GSLC_DEV_FB     "/dev/fb1"
+#elif DRV_TYPE_SDL2
+  #define GSLC_DEV_FB     "/dev/fb0"
+#endif
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX};
 
 // Instantiate the GUI
-gslc_tsGui  m_gui;
+gslc_tsGui      m_gui;
+gslc_tsDriver   m_drv;
 
 #define MAX_PAGE            1
 #define MAX_ELEM_PG_MAIN    30
@@ -31,8 +37,8 @@ int main( int argc, char* args[] )
   gslc_tsElem*  pElem = NULL;
 
   // Initialize
-  gslc_InitEnv(GSLC_SDL_DEV_FB,NULL);
-  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
+  gslc_InitEnv(GSLC_DEV_FB,NULL);
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   

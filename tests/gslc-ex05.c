@@ -8,6 +8,7 @@
 
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
+#include "GUIslice_drv.h"
 
 #include <libgen.h>       // For path parsing
 
@@ -34,6 +35,7 @@ unsigned  m_nCount = 0;
 // Instantiate the GUI
 #define MAX_FONT            10
 gslc_tsGui                  m_gui;
+gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsXGauge               m_sXGauge;
 gslc_tsXSelNum              m_sXSelNum[3];
@@ -163,7 +165,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   gslc_InitEnv(GSLC_SDL_DEV_FB,GSLC_SDL_DEV_TOUCH);
-  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
 
   gslc_InitTs(&m_gui,GSLC_SDL_DEV_TOUCH);
 

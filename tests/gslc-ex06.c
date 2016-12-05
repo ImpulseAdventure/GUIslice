@@ -7,13 +7,18 @@
 
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
+#include "GUIslice_drv.h"
 
 #include <math.h>
 #include <libgen.h>       // For path parsing
 
-// Define default device paths for SDL framebuffer & touchscreen
-#define GSLC_SDL_DEV_FB     "/dev/fb1"
-#define GSLC_SDL_DEV_TOUCH  "/dev/input/touchscreen"
+// Define default device paths for framebuffer & touchscreen
+#ifdef DRV_TYPE_SDL1
+  #define GSLC_DEV_FB     "/dev/fb1"
+#elif DRV_TYPE_SDL2
+  #define GSLC_DEV_FB     "/dev/fb0"
+#endif
+#define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -39,6 +44,7 @@ float     m_fCoordZ = 0;
 #define MAX_FONT            10
 #define MAX_VIEW            5
 gslc_tsGui                  m_gui;
+gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsView                 m_asView[MAX_VIEW];
 gslc_tsXGauge               m_sXGauge;
@@ -207,10 +213,10 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Initialize
 
-  gslc_InitEnv(GSLC_SDL_DEV_FB,GSLC_SDL_DEV_TOUCH);
-  if (!gslc_Init(&m_gui,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
+  gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
 
-  gslc_InitTs(&m_gui,GSLC_SDL_DEV_TOUCH);
+  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);

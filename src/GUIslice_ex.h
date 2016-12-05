@@ -5,8 +5,6 @@
 // GUIslice library (extensions)
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-//
-// - Version 0.7.1    (2016/11/22)
 // =======================================================================
 //
 // The MIT License
@@ -88,6 +86,7 @@ typedef struct {
 /// \param[in]  rElem:       Rectangle coordinates defining gauge size
 /// \param[in]  nMin:        Minimum value of gauge for nVal comparison
 /// \param[in]  nMax:        Maximum value of gauge for nVal comparison
+/// \param[in]  nVal:        Starting value of gauge
 /// \param[in]  colGauge:    Color to fill the gauge with
 /// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
 ///                          (true = vertical, false = horizontal)
@@ -389,7 +388,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem);
 /// Get the current counter associated with SelNum
 ///
 /// \param[in]  pGui:        Ptr to GUI
-/// \param[in]  pSelElem:    Ptr to Element
+/// \param[in]  pSelNum:     Ptr to Element
 ///
 /// \return Current counter value
 ///
@@ -399,7 +398,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum);
 ///
 /// Set the current counter associated with SelNum
 ///
-/// \param[in]  pSelElem:    Ptr to Element
+/// \param[in]  pSelNum:     Ptr to Element
 /// \param[in]  nCount:      New counter value
 ///
 /// \return none
