@@ -6,7 +6,7 @@ General
   principles in mind.
 - The GUIslice library simply includes a pair of source files
   so no installation is required.
-- The library does not use any dynamic memory allocation.
+- The core library does not use any dynamic memory allocation.
   Instead, all configurable storage data structures are allocated
   in user code and are passed in to GUIslice initialization routines.
 - Callback functions are provided to support extending the
@@ -53,7 +53,8 @@ Memory Allocation
 Rendering Driver
 - The GUIslice core is platform-independent in that it can theoretically
   be extended to support a number of different graphics drivers.
-- Currently, the default driver is for SDL1.2.
+- Currently, the default driver is for SDL1.2, but SDL2.0 is also
+  supported, with more targets to come later
 - The user must include a single GUIslice_drv_* file to select the
   rendering driver to use.
 

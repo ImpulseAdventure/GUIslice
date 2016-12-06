@@ -143,9 +143,8 @@ typedef struct {
 bool gslc_DrvInit(gslc_tsGui* pGui);
 
 ///
-/// Configure environment variables suitable for
-/// default GUIslice operation with PiTFT on
-/// Raspberry Pi.
+/// Example environment variable configuration suitable for
+/// GUIslice operation with PiTFT on Raspberry Pi.
 ///
 /// - NOTE: Users with other hardware may need to
 ///   supply their own initialization routine
@@ -156,7 +155,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui);
 ///
 /// \return None
 ///
-void gslc_DrvInitEnv(char* acDevFb,char* acDevTouch);
+void gslc_DrvInitEnv(const char* acDevFb,const char* acDevTouch);
 
 
 ///
@@ -269,6 +268,17 @@ void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
 // -----------------------------------------------------------------------
 // Font handling Functions
 // -----------------------------------------------------------------------
+
+///
+/// Load a font from a file and return pointer to it
+///
+/// \param[in]  acFontName:  Filename path to the font
+/// \param[in]  nFontSz:     Typeface size to use
+///
+/// \return Void ptr if load was successful, NULL otherwise
+///
+void* gslc_DrvFontAdd(const char* acFontName,unsigned nFontSz);
+
 
 /// 
 /// Release all fonts defined in the GUI

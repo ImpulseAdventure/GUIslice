@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.2    (2016/12/04)
+// - Version 0.7.2    (2016/12/06)
 // =======================================================================
 //
 // The MIT License
@@ -65,7 +65,7 @@ char* gslc_GetVer(gslc_tsGui* pGui)
 // depending on the driver being used. It can also
 // be done via export commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void gslc_InitEnv(char* acDevFb,char* acDevTouch)
+void gslc_InitEnv(const char* acDevFb,const char* acDevTouch)
 {
   gslc_DrvInitEnv(acDevFb,acDevTouch);
 }
@@ -139,9 +139,6 @@ void gslc_Quit(gslc_tsGui* pGui)
 {
   // Close all elements and fonts
   gslc_GuiDestruct(pGui);
-
-  // Close down SDL
-  SDL_Quit();
 }
 
 // Main polling loop for GUIslice
@@ -298,35 +295,39 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 
   // Check for degenerate cases
   // TODO: Need to test these optimizations
+  bool bDone = false;
   if (nDX == 0) {
     if (nDY == 0) {
       return;
     } else if (nDY >= 0) {
       gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol);
+      bDone = true;
     } else {
       gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
+      bDone = true;
     }
   } else if (nDY == 0) {
     if (nDX >= 0) {
       gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol);
+      bDone = true;      
     } else {
       gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
+      bDone = true;      
     }
   }
 
-  uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);   
-  if (gslc_DrvScreenLock(pGui)) {
+  if (!bDone) {
     for (;;) {
       // Set the pixel
-      gslc_DrvDrawSetPixelRaw(pGui,nX0,nY0,nColRaw);
-      
+      gslc_DrvDrawPoint(pGui,nX0,nY0,nCol);
+
       // Calculate next coordinates
       if ( (nX0 == nX1) && (nY0 == nY1) ) break;
       nE2 = nErr;
       if (nE2 > -nDX) { nErr -= nDY; nX0 += nSX; }
       if (nE2 <  nDY) { nErr += nDX; nY0 += nSY; }
     }
-  }   // gslc_DrvScreenLock  
+  }
 #endif
   
   gslc_PageFlipSet(pGui,true);  
@@ -543,14 +544,15 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId,const char* acFontName,unsigned n
   if (pGui->nFontCnt+1 >= (pGui->nFontMax)) {
     fprintf(stderr,"ERROR: FontAdd() added too many fonts\n");
     return false;
-  } else {
-    TTF_Font*   pFont;
-    pFont = TTF_OpenFont(acFontName,nFontSz);
-    if (pFont == NULL) {
-      fprintf(stderr,"ERROR: TTF_OpenFont(%s) failed\n",acFontName);
+  } else { 
+    // Fetch a font resource from the driver
+    void* pvFont = gslc_DrvFontAdd(acFontName,nFontSz);
+    if (pvFont == NULL) {
+      fprintf(stderr,"ERROR: FontAdd(%s) failed in DrvFontAdd()\n",acFontName);
       return false;
-    }
-    pGui->asFont[pGui->nFontCnt].pvFont = (void*)pFont;
+    }    
+    
+    pGui->asFont[pGui->nFontCnt].pvFont = pvFont;
     pGui->asFont[pGui->nFontCnt].nId = nFontId;
     pGui->nFontCnt++;  
     return true;

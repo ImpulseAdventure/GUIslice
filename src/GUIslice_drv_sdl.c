@@ -186,7 +186,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 // programmatically, but it can also be done via export
 // commands within the shell (or init script).
 // eg. export TSLIB_FBDEVICE=/dev/fb1
-void gslc_DrvInitEnv(char* acDevFb,char* acDevTouch)
+void gslc_DrvInitEnv(const char* acDevFb,const char* acDevTouch)
 {
 #ifdef DRV_TYPE_SDL1
   // This line already appears to be set in env
@@ -229,6 +229,9 @@ void gslc_DrvDestruct(gslc_tsGui* pGui)
     pDriver->pWind = NULL;
   }
 #endif  
+  
+  // Close down SDL
+  SDL_Quit();  
 }
 
 // -----------------------------------------------------------------------
@@ -461,6 +464,17 @@ void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
 // -----------------------------------------------------------------------
 // Font handling Functions
 // -----------------------------------------------------------------------
+
+void* gslc_DrvFontAdd(const char* acFontName,unsigned nFontSz)
+{
+  TTF_Font*   pFont;
+  pFont = TTF_OpenFont(acFontName,nFontSz);
+  if (pFont == NULL) {
+    fprintf(stderr,"ERROR: DrvFontAdd(%s) failed in TTF_OpenFont failed\n",acFontName);
+    return NULL;
+  } 
+  return (void*)pFont;
+}
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 {

@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.2    (2016/12/04)
+// - Version 0.7.2    (2016/12/06)
 // =======================================================================
 //
 // The MIT License
@@ -541,7 +541,7 @@ char* gslc_GetVer(gslc_tsGui* pGui);
 ///
 /// \return None
 ///
-void gslc_InitEnv(char* acDevFb,char* acDevTouch);
+void gslc_InitEnv(const char* acDevFb,const char* acDevTouch);
 
 ///
 /// Initialize the GUIslice library
