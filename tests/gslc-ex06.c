@@ -3,6 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 06: Example of viewport and image draw
+//               and tick callback function
 //
 
 #include "GUIslice.h"
@@ -107,6 +108,31 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   return true;
 }
 
+// Demonstrate tick callback for scanner window
+// - This is called whenever gslc_Update() is called
+// - In this example, it simply updates the relative
+//   origin of the viewport which will shift the display
+bool CbTickScanner(void* pvGui,void* pvScope)
+{
+  gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
+  gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);  
+  
+  m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
+  m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
+  m_fCoordZ = 13.02;
+
+  // Adjust the scanner's viewport origin for fun
+  int16_t nOriginX = (int16_t)m_fCoordX;
+  int16_t nOriginY = (int16_t)m_fCoordY;
+  gslc_ViewSetOrigin(pGui,E_VIEW,nOriginX,nOriginY);
+  
+  // Manually mark the scanner view as needing redraw
+  // since it depends on E_VIEW
+  gslc_ElemSetRedraw(pElem,true);  
+  
+  return true;
+}
+
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
@@ -198,6 +224,8 @@ bool InitOverlays(char *strPath)
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(pElem,&CbDrawScanner);
+  // Set the callback function to update content automatically
+  gslc_ElemSetTickFunc(pElem,&CbTickScanner);
   
   gslc_ViewCreate(&m_gui,E_VIEW,(gslc_Rect){190,75,100,100},50,50);
   // --------------------------------------------------------------------------
@@ -233,7 +261,6 @@ int main( int argc, char* args[] )
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
   // Save some element references for quick access
-  gslc_tsElem*  pElemScan       = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SCAN);
   gslc_tsElem*  pElemCount      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemDataX      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAX);
   gslc_tsElem*  pElemDataY      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAY);
@@ -248,17 +275,6 @@ int main( int argc, char* args[] )
     
     // Update the data display values
     m_nCount++;
-    m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
-    m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
-    m_fCoordZ = 13.02;
-
-    // Adjust the scanner's viewport origin for fun
-    int16_t nOriginX = (int16_t)m_fCoordX;
-    int16_t nOriginY = (int16_t)m_fCoordY;
-    gslc_ViewSetOrigin(&m_gui,E_VIEW,nOriginX,nOriginY);
-    // Manually mark the scanner view as needing redraw
-    // since it depends on E_VIEW
-    gslc_ElemSetRedraw(pElemScan,true);
 
     // -----------------------------------------------
 

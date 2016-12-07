@@ -165,11 +165,11 @@ void gslc_Update(gslc_tsGui* pGui)
   
   // Issue a timer tick to all pages
   int nPage;
-  gslc_tsCollect* pCollect = NULL;
+  gslc_tsPage* pPage = NULL;
   for (nPage=0;nPage<pGui->nPageCnt;nPage++) {
-    pCollect = &pGui->asPage[nPage].sCollect;
-    gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TICK,0,(void*)pCollect,NULL);
-    gslc_CollectEvent(pGui,sEvent);
+    pPage = &pGui->asPage[nPage];    
+    gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TICK,0,(void*)pPage,NULL);
+    gslc_PageEvent(pGui,sEvent);
   }
   
   // Perform any redraw required for current page
@@ -292,7 +292,7 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
   int16_t nSY = (nY0 < nY1)? 1 : -1;
   int16_t nErr = ( (nDX>nDY)? nDX : -nDY )/2;
   int16_t nE2;
-
+  
   // Check for degenerate cases
   // TODO: Need to test these optimizations
   bool bDone = false;
@@ -300,18 +300,18 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
     if (nDY == 0) {
       return;
     } else if (nDY >= 0) {
-      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol);
+      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol,false);
       bDone = true;
     } else {
-      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
+      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol,false);
       bDone = true;
     }
   } else if (nDY == 0) {
     if (nDX >= 0) {
-      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol);
+      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol,false);
       bDone = true;      
     } else {
-      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
+      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol,false);
       bDone = true;      
     }
   }
@@ -328,18 +328,19 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
       if (nE2 <  nDY) { nErr += nDX; nY0 += nSY; }
     }
   }
+  gslc_PageFlipSet(pGui,true);   
 #endif
-  
-  gslc_PageFlipSet(pGui,true);  
   
 }
 
 
-void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol)
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol,bool bMapEn)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapPt(pGui,&nX,&nY);
+  if (bMapEn) {
+    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+      gslc_ViewRemapPt(pGui,&nX,&nY);
+    }
   }
 
   uint16_t nOffset;
@@ -350,12 +351,15 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
   gslc_PageFlipSet(pGui,true);  
 }
 
-void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol)
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol,bool bMapEn)
 {
   // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapPt(pGui,&nX,&nY);
+  if (bMapEn) {
+    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
+      gslc_ViewRemapPt(pGui,&nX,&nY);
+    }
   }
+  
   uint16_t nOffset;
   for (nOffset=0;nOffset<nH;nOffset++) {
     gslc_DrvDrawPoint(pGui,nX,nY+nOffset,nCol);    
@@ -388,10 +392,10 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
   nY = rRect.y;
   nW = rRect.w;
   nH = rRect.h;
-  gslc_DrawLineH(pGui,nX,nY,nW-1,nCol);                 // Top
-  gslc_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol); // Bottom
-  gslc_DrawLineV(pGui,nX,nY,nH-1,nCol);                 // Left
-  gslc_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol); // Right
+  gslc_DrawLineH(pGui,nX,nY,nW-1,nCol,false);                 // Top
+  gslc_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol,false); // Bottom
+  gslc_DrawLineV(pGui,nX,nY,nH-1,nCol,false);                 // Left
+  gslc_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol,false); // Right
 #endif
   
   gslc_PageFlipSet(pGui,true);  
@@ -1025,7 +1029,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters      
       pElem = (gslc_tsElem*)(pvScope);
-      // TODO: Should bNeedRedraw be moved into ElemDrawByRef()?
       if ((sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) || (pElem->bNeedRedraw)) {
         // Call the function that invokes the callback
         return gslc_ElemDrawByRef(pGui,pElem);
@@ -1046,7 +1049,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       // Invoke the callback function
       if (pfuncXTouch != NULL) {
         // Pass in the relative position from corner of element region
-        (*pfuncXTouch)(pvGui,(void*)pElemTracked,eTouch,nRelX,nRelY);
+        (*pfuncXTouch)(pvGui,(void*)(pElemTracked),eTouch,nRelX,nRelY);
       }
    
       break;
@@ -1058,7 +1061,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       // Invoke the callback function      
       if (pElem->pfuncXTick != NULL) {
         // TODO: Confirm that tick functions want pvScope
-        (*pElem->pfuncXTick)(pvGui,pvScope);
+        (*pElem->pfuncXTick)(pvGui,(void*)(pElem));
         return true;
       }
       break;
@@ -1657,6 +1660,12 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
     return;
   }    
 
+  // Determine the transitions in the touch events based
+  // on the previous touch pressure state
+  // TODO: Provide hysteresis thresholds for the touch
+  //       pressure levels in case a display outputs a
+  //       variable range (eg. 15..200) that doesn't
+  //       go to zero when touch is removed.
   gslc_teTouch  eTouch = GSLC_TOUCH_NONE;
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
     eTouch = GSLC_TOUCH_DOWN;

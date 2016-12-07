@@ -399,8 +399,9 @@ typedef struct gslc_tsElem {
   void*               pXData;           ///< Ptr to extended data structure
   
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
-  GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for drawing
+  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for event tree (draw,touch,tick)
+  
+  GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for custom drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
   
@@ -706,10 +707,11 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 /// \param[in]  nY:          Y coordinate of line startpoint
 /// \param[in]  nW:          Width of line (in +X direction)
 /// \param[in]  nCol:        Color RGB value for the line
+/// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
 ///
-void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol);
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol,bool bMapEn);
 
 
 ///
@@ -721,10 +723,11 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
 /// \param[in]  nY:          Y coordinate of line startpoint
 /// \param[in]  nH:          Height of line (in +Y direction)
 /// \param[in]  nCol:        Color RGB value for the line
+/// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
 ///
-void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol);
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol,bool bMapEn);
 
 
 ///

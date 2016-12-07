@@ -29,7 +29,7 @@ ifeq (SDL1,${GSLC_DRV})
   $(info GUIslice driver mode: SDL1)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
   GSLC_FLAGS = -DDRV_TYPE_SDL1 -DDRV_INC_TS -DDRV_SDL_FIX_START
-  LDLIBS = -lSDL -lSDL_ttf -lts -lm
+  LDLIBS = -lSDL -lSDL_ttf -lts
 endif
 
 # === SDL2.0 ===
@@ -38,7 +38,7 @@ ifeq (SDL2,${GSLC_DRV})
   $(info GUIslice driver mode: SDL2)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
   GSLC_FLAGS = -DDRV_TYPE_SDL2 -DDRV_INC_TS
-  LDLIBS = -lSDL2 -lSDL2_ttf -lts -lm
+  LDLIBS = -lSDL2 -lSDL2_ttf -lts
 endif
 
 # === Adafruit-GFX ===
@@ -105,7 +105,7 @@ gslc-ex05: gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS)
 
 gslc-ex06: gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -lm -I . -I ../src
 
 gslc-ex07: gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]

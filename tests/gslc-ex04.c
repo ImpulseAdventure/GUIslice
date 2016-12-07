@@ -175,7 +175,9 @@ int main( int argc, char* args[] )
 
     gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/200)%100));
     
-    // TODO: Replace with Slider callback
+    // NOTE: A more efficient method is to move the following
+    //       code into the slider position callback function.
+    //       Please see example 07.
     int nPos = gslc_ElemXSliderGetPos(pElemSlider);  
     snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
     gslc_ElemSetTxtStr(pElemSliderTxt,acTxt);

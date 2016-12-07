@@ -659,6 +659,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   pXData->bTrim           = false;
   pXData->colTrim         = GSLC_COL_BLACK;
   pXData->nTickDiv        = 0;
+  pXData->pfuncXPos       = NULL;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw        = &gslc_ElemXSliderDraw;
@@ -712,9 +713,9 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem)
 }
 
 // Update the slider control's current state
-void gslc_ElemXSliderSetPos(gslc_tsElem* pElem,int nPos)
+void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int nPos)
 {
-  if (pElem == NULL) {
+  if ((pGui == NULL) || (pElem == NULL)) {
     fprintf(stderr,"ERROR: ElemXSliderSetPos() called with NULL ptr\n");
     return;
   }       
@@ -726,11 +727,37 @@ void gslc_ElemXSliderSetPos(gslc_tsElem* pElem,int nPos)
   // Update
   nPosOld = pSlider->nPos;
   pSlider->nPos = nPos;
+  
   // Only update if changed
   if (nPos != nPosOld) {
+    // If any position callback is defined, call it now
+    if (pSlider->pfuncXPos != NULL) {
+      (*pSlider->pfuncXPos)((void*)(pGui),(void*)(pElem),nPos);
+    }  
+    
+    // Mark for redraw
     gslc_ElemSetRedraw(pElem,true);
   }
   
+}
+
+
+///
+/// Assign the position callback function for a slider
+///
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
+///
+/// \return none
+///
+void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb)
+{
+  if ((pElem == NULL) || (funcCb == NULL)) {
+    fprintf(stderr,"ERROR: ElemXSliderSetPosFunc() called with NULL ptr\n");
+    return;
+  }
+  gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
+  pSlider->pfuncXPos = funcCb;
 }
 
 
@@ -856,12 +883,12 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
     fprintf(stderr,"ERROR: ElemXSliderTouch() called with NULL ptr\n");
     return false;
   }    
-  //gslc_tsGui*         pGui = NULL;
+  gslc_tsGui*           pGui = NULL;
   gslc_tsElem*          pElem = NULL;
   gslc_tsXSlider*       pSlider = NULL;
   
   // Typecast the parameters to match the GUI
-  //pGui    = (gslc_tsGui*)(pvGui);
+  pGui      = (gslc_tsGui*)(pvGui);
   pElem     = (gslc_tsElem*)(pvElem);
   pSlider   = (gslc_tsXSlider*)(pElem->pXData);  
 
@@ -881,7 +908,6 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
     case GSLC_TOUCH_MOVE_IN:
       pElem->bGlowing = true;
       bUpdatePos = true;
-      // TODO: Consider adding extra callback here?      
       break;
     case GSLC_TOUCH_MOVE_OUT:
       pElem->bGlowing = false;
@@ -891,7 +917,6 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
     case GSLC_TOUCH_UP_IN:
       // End glow
       pElem->bGlowing = false;
-      // TODO: Consider adding extra callback here?
       break;
     case GSLC_TOUCH_UP_OUT:
       // End glow
@@ -903,20 +928,17 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
       break;
   }
   
-  // Do we need to update the slider position?
+  // If we need to update the slider position, calculate the value
+  // and perform the update
   if (bUpdatePos) {
     // Calc new position
     nPosRng = pSlider->nPosMax - pSlider->nPosMin;
     nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
-    // Clip position
-    if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
-    if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
-    // Update
-    pSlider->nPos = nPos;
-    gslc_ElemSetRedraw(pElem,true);    
+    // Update the slider
+    gslc_ElemXSliderSetPos(pGui,pElem,nPos);
   }
   
-  // If the checkbox changed state, redraw
+  // If the slider changed state, redraw
   if (pElem->bGlowing != bGlowingOld) {
     gslc_ElemSetRedraw(pElem,true);
   }

@@ -3,6 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 07: Sliders with dynamic color control
+//               and position callback
 //
 
 #include "GUIslice.h"
@@ -44,12 +45,56 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 
-// Button callbacks
+// Current RGB value for color box
+// - Globals defined here for convenience so that callback
+//   can update R,G,B components independently
+int   m_nPosR = 255;
+int   m_nPosG = 128;
+int   m_nPosB = 0;
+
+
+// Quit button callback
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
   }
+  return true;
+}
+
+// Callback function for when a slider's position has been updated
+// - After a slider position has been changed, update the color box
+// - Note that all three sliders use the same callback for
+//   convenience. From the element's ID we can determine which
+//   slider was updated.
+bool CbSlidePos(void* pvGui,void* pvElem,int nPos)
+{
+  gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
+  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);  
+  //gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);  
+  
+  // Fetch the new RGB component from the slider
+  switch (pElem->nId) {
+    case E_SLIDER_R:
+      m_nPosR = gslc_ElemXSliderGetPos(pElem);
+      break;
+    case E_SLIDER_G:
+      m_nPosG = gslc_ElemXSliderGetPos(pElem);      
+      break;
+    case E_SLIDER_B:
+      m_nPosB = gslc_ElemXSliderGetPos(pElem);      
+      break;
+    default:
+      break;
+  }
+  
+  // Calculate the new RGB value
+  gslc_Color colRGB = (gslc_Color){m_nPosR,m_nPosG,m_nPosB};
+  
+  // Update the color box
+  gslc_tsElem* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
+  gslc_ElemSetCol(pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE); 
+  
   return true;
 }
 
@@ -89,7 +134,9 @@ bool InitOverlays()
   
   // Create color box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_Rect){20,90+30,130,100});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_Color colRGB = (gslc_Color){m_nPosR,m_nPosG,m_nPosB};
+  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE); 
+  
   
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
@@ -123,31 +170,38 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   nCtrlY += 25;
   
+  // Create three sliders (R,G,B) and assign callback function
+  // that is invoked upon change. The common callback will update
+  // the color box.
+  
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Red:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,255,5,false);
+          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);  
   nCtrlY += nCtrlGap;
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Green:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,128,5,false);
+          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Blue:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,0,5,false);
+          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
 
   
@@ -191,13 +245,7 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-
-  // Save some element references for quick access  
-  gslc_tsElem*  pElemSliderR  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_R);
-  gslc_tsElem*  pElemSliderG  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_G);
-  gslc_tsElem*  pElemSliderB  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_B);
-  gslc_tsElem*  pElemColor    = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_COLOR);
-  
+ 
   // -----------------------------------
   // Main event loop
 
@@ -207,23 +255,11 @@ int main( int argc, char* args[] )
     // General counter
     m_nCount++;
 
-    // -----------------------------------
-
-    // Update elements on active page
-    // - TODO: Replace with Slider callback
-    int nPosR = gslc_ElemXSliderGetPos(pElemSliderR);
-    int nPosG = gslc_ElemXSliderGetPos(pElemSliderG);
-    int nPosB = gslc_ElemXSliderGetPos(pElemSliderB);
-    gslc_Color colRGB = (gslc_Color){nPosR,nPosG,nPosB};
-    gslc_ElemSetCol(pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
-    
     // Periodically call GUIslice update function
     gslc_Update(&m_gui);
     
   } // bQuit
 
-  // Read slider state:
-  // int nPosR = gslc_ElemXSliderGetPos(pElemSliderR);
 
   // -----------------------------------
   // Close down display

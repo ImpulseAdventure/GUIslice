@@ -231,6 +231,9 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nR
 // Extended Element: Slider
 // ============================================================================
 
+/// Callback function for slider feedback
+typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int nPos);
+
 /// Extended data for Slider element
 typedef struct {
   // Config
@@ -246,6 +249,8 @@ typedef struct {
   gslc_Color      colTrim;        ///< Style: color of trim
   // State
   int             nPos;           ///< Current position value of the slider
+  // Callbacks
+  GSLC_CB_XSLIDER_POS pfuncXPos;  ///< Callback func ptr for position update
 } gslc_tsXSlider;
 
 
@@ -299,14 +304,24 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem);
 
 ///
 /// Set a Slider element's current position
-///
+/// 
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nPos:        New position value
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetPos(gslc_tsElem* pElem,int nPos);
+void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int nPos);
 
+///
+/// Assign the position callback function for a slider
+///
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
+///
+/// \return none
+///
+void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb);
 
 ///
 /// Draw a Slider element on the screen
