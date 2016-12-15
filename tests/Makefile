@@ -24,11 +24,11 @@ GSLC_DRV := SDL1
 
 # === SDL1.2 ===
 ifeq (SDL1,${GSLC_DRV})
-  # - DRV_INC_TS is optional (and -lts)
+  # - DRV_TOUCH_TSLIB is optional (with -lts)
   # - DRV_SDL_FIX_START is optional
   $(info GUIslice driver mode: SDL1)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  GSLC_FLAGS = -DDRV_TYPE_SDL1 -DDRV_INC_TS -DDRV_SDL_FIX_START
+  GSLC_FLAGS = -DDRV_DISP_SDL1 -DDRV_TOUCH_TSLIB -DDRV_SDL_FIX_START
   LDLIBS = -lSDL -lSDL_ttf -lts
 endif
 
@@ -37,7 +37,7 @@ ifeq (SDL2,${GSLC_DRV})
   # - DRV_INC_TS is optional
   $(info GUIslice driver mode: SDL2)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  GSLC_FLAGS = -DDRV_TYPE_SDL2 -DDRV_INC_TS
+  GSLC_FLAGS = -DDRV_DISP_SDL2 -DDRV_TOUCH_TSLIB
   LDLIBS = -lSDL2 -lSDL2_ttf -lts
 endif
 

@@ -11,9 +11,9 @@
 #include <libgen.h>       // For path parsing
 
 // Define default device paths for framebuffer & touchscreen
-#ifdef DRV_TYPE_SDL1
+#if defined(DRV_DISP_SDL1)
   #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_TYPE_SDL2
+#elif DRV_DISP_SDL2
   #define GSLC_DEV_FB     "/dev/fb0"
 #endif
 #define GSLC_DEV_TOUCH  "/dev/input/touchscreen"

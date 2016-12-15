@@ -44,18 +44,18 @@ extern "C" {
 
 #include <stdio.h>
   
-#ifdef DRV_TYPE_SDL1
+#if defined(DRV_DISP_SDL1)
   #include <SDL/SDL.h>
   #include <SDL/SDL_getenv.h>
   #include <SDL/SDL_ttf.h>
 #endif
-#ifdef DRV_TYPE_SDL2  
+#if defined(DRV_DISP_SDL2)  
   #include <SDL2/SDL.h>
   #include <SDL2/SDL_ttf.h>
 #endif
   
 // Includes for optional tslib touch handling
-#ifdef DRV_INC_TS
+#if defined(DRV_TOUCH_TSLIB)
   #include "tslib.h"
 #endif    
   
@@ -70,7 +70,7 @@ extern "C" {
   
 #define DRV_HAS_DRAW_POINT          1 ///< Support gslc_DrvDrawPoint()
   
-#ifdef DRV_TYPE_SDL1
+#if defined(DRV_DISP_SDL1)
   #define DRV_HAS_DRAW_POINTS         1 ///< Support gslc_DrvDrawPoints()  
   #define DRV_HAS_DRAW_LINE           0 ///< Support gslc_DrvDrawLine()
   #define DRV_HAS_DRAW_RECT_FRAME     0 ///< Support gslc_DrvDrawFrameRect()
@@ -80,7 +80,7 @@ extern "C" {
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
 #endif
   
-#ifdef DRV_TYPE_SDL2
+#if defined(DRV_DISP_SDL2)
   #define DRV_HAS_DRAW_POINTS         1 ///< Support gslc_DrvDrawPoints()
   #define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
   #define DRV_HAS_DRAW_RECT_FRAME     1 ///< Support gslc_DrvDrawFrameRect()
@@ -95,16 +95,16 @@ extern "C" {
 // =======================================================================
 typedef struct {
   
-  #ifdef DRV_TYPE_SDL1  
+  #if defined(DRV_DISP_SDL1)  
   SDL_Surface*        pSurfScreen;      ///< Surface ptr for screen
   #endif
 
-  #ifdef DRV_TYPE_SDL2
+  #if defined(DRV_DISP_SDL2)
   SDL_Window*         pWind;            ///< SDL2 Window
   SDL_Renderer*       pRender;          ///< SDL2 Rendering engine
   #endif
 
-  #ifdef DRV_INC_TS
+  #if defined(DRV_TOUCH_TSLIB)
   struct tsdev*       pTsDev;           ///< Ptr to touchscreen device
   #endif  
   
@@ -474,7 +474,7 @@ SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol);
 // Private Drawing Functions
 // -----------------------------------------------------------------------
 
-#ifdef DRV_TYPE_SDL1
+#if defined(DRV_DISP_SDL1)
 ///
 /// Lock an SDL surface so that direct pixel manipulation
 /// can be done safely. This function is called before any
@@ -562,14 +562,14 @@ void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int nX,int nY,uint32_t nPixelCol);
 /// 
 void gslc_DrvPasteSurface(gslc_tsGui* pGui,int nX, int nY, void* pvSrc, void* pvDest);
 
-#endif // DRV_TYPE_SDL1
+#endif // DRV_DISP_SDL1
 
 
 // -----------------------------------------------------------------------
 // Private Touchscreen Functions (if using tslib)
 // ----------------------------------------------------------------------- 
 
-#ifdef DRV_INC_TS
+#if defined(DRV_TOUCH_TSLIB)
 ///
 /// Get the last touch event from the tslib handler
 ///

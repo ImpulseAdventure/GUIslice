@@ -9,9 +9,9 @@
 #include "GUIslice_drv.h"
 
 // Define default device paths for framebuffer & touchscreen
-#ifdef DRV_TYPE_SDL1
+#if defined(DRV_DISP_SDL1)
   #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_TYPE_SDL2
+#elif DRV_DISP_SDL2
   #define GSLC_DEV_FB     "/dev/fb0"
 #endif
 #define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
@@ -57,7 +57,7 @@ int main( int argc, char* args[] )
   gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
-#ifdef DRV_INC_TS
+#if defined(DRV_TOUCH_TSLIB)
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 #endif
 
