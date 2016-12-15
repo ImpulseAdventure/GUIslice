@@ -49,6 +49,8 @@ extern "C" {
 // Configuration
 // -----------------------------------------------------------------------
 
+#define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
+  
 //#define DBG_FRAME_RATE    ///< Enable diagnostic frame rate reporting
   
 #define GSLC_ELEM_STRLEN_MAX  120  // Max string length of text elements
@@ -246,6 +248,7 @@ typedef enum {
   GSLC_EVTSUB_DRAW_NEEDED,
   GSLC_EVTSUB_DRAW_FORCE        
 } gslc_teEventSubType;
+
 
 // -----------------------------------------------------------------------
 // Forward declarations
@@ -478,6 +481,13 @@ typedef struct {
   
 } gslc_tsGui;
 
+
+// ------------------------------------------------------------------------
+// General purpose macros
+// ------------------------------------------------------------------------
+#define debug_print(fmt, ...) \
+        do { if (DEBUG_ERR) fprintf(stderr, ": " fmt, \
+                                __VA_ARGS__); } while (0)  
 
 
 // ------------------------------------------------------------------------
@@ -1515,6 +1525,16 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,int nType,
 gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem);
 
 
+///
+/// Set the clipping rectangle for further drawing
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pRect:       Pointer to Rect for clipping (or NULL for entire screen)
+///
+/// \return true if success, false if error
+///
+bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
+
 
 ///
 /// Set an element to use a bitmap image
@@ -1528,17 +1548,6 @@ gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem);
 ///
 void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
   const char* acImageSel);
-
-
-///
-/// Set the clipping rectangle for further drawing
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pRect:       Pointer to Rect for clipping (or NULL for entire screen)
-///
-/// \return true if success, false if error
-///
-bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
 
 
 ///

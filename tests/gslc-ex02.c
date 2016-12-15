@@ -48,7 +48,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 
 int main( int argc, char* args[] )
 {
-  bool              bOk = true;
+  bool          bOk = true;
   gslc_tsElem*  pElem = NULL;
 
   // -----------------------------------
