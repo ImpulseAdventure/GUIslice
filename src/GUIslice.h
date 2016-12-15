@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.2    (2016/12/06)
+// - Version 0.7.2    (2016/12/14)
 // =======================================================================
 //
 // The MIT License
@@ -97,20 +97,7 @@ extern "C" {
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
   } gslc_tePageId;
 
-  /// View ID enumerations
-  /// - The View ID is the primary means for user code to
-  ///   reference a specific viewport.
-  /// - Application code can assign arbitrary View ID values
-  ///   in the range of 0...32767
-  /// - Negative View ID values are reserved   
-  typedef enum {
-    // Public usage
-    GSLC_VIEW_ID_USER_BASE  = 0,      ///< Starting Page ID for user assignments
-    GSLC_VIEW_ID_SCREEN     = -3999,  ///< Default Viewport ID used for main screen
-    // Internal usage
-    GSLC_VIEW_ID_NONE,                ///< No Viewport ID has been assigned
-  } gslc_teViewId;
-
+  
   /// Group ID enumerations
   typedef enum {
     // Public usage
@@ -131,15 +118,6 @@ extern "C" {
     GSLC_FONT_NONE          = -4999,  ///< No Font ID has been assigned
   } gslc_teFontId;
   
-
-  /// View Index enumerations
-  /// - The View Index is used for internal purposes as an offset
-  //    into the GUI's array of views
-  typedef enum {
-    // Internal usage
-    GSLC_VIEW_IND_NONE      = -5999,  ///< No Viewport Index is available
-    GSLC_VIEW_IND_SCREEN,             ///< Default Viewport Index used for main screen
-  } gslc_teViewInd;
   
   /// Element Index enumerations
   /// - The Element Index is used for internal purposes as an offset
@@ -437,17 +415,6 @@ typedef struct {
 } gslc_tsFont;
 
 
-/// Viewport structure
-/// - Viewports allow drawing operations to be done within
-///   a local coordinate system and clipped to a region.
-typedef struct {
-  int               nId;        ///< View ID specified by user
-  gslc_Rect         rView;      ///< Rect defining the viewport
-  unsigned          nOriginX;   ///< Position within rView for local origin
-  unsigned          nOriginY;   ///< Position within rView for local origin
-} gslc_tsView;
-
-
 /// Page structure
 /// - A page contains a collection of elements
 /// - Many redraw functions operate at a page level
@@ -483,11 +450,6 @@ typedef struct {
 
   gslc_tsElem         sElemTmp;         ///< Temporary element
   
-  gslc_tsView*        asView;           ///< Collection of viewports
-  unsigned            nViewMax;         ///< Maximum number of viewports to allocate
-  unsigned            nViewCnt;         ///< Number of viewports allocated
-  int                 nViewIndCur;      ///< Currently-active viewport index
-
   int                 nTouchLastX;      ///< Last touch event X coord
   int                 nTouchLastY;      ///< Last touch event Y coord
   unsigned            nTouchLastPress;  ///< Last touch event pressure (0=none))
@@ -560,12 +522,10 @@ void gslc_InitEnv(const char* acDevFb,const char* acDevTouch);
 /// \param[in]  nMaxPage:  Size of Page array
 /// \param[in]  asFont:    Pointer to Font array
 /// \param[in]  nMaxFont:  Size of Font array
-/// \param[in]  asView:    Pointer to View array
-/// \param[in]  nMaxView:  Size of View array
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView);
+bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont);
 
 
 
@@ -676,11 +636,10 @@ bool gslc_IsInWH(gslc_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t n
 /// \param[in]  nX:          Pixel X coordinate to set
 /// \param[in]  nY:          Pixel Y coordinate to set
 /// \param[in]  nCol:        Color pixel value to assign
-/// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
 ///
-void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol,bool bMapEn);
+void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol);
 
 
 ///
@@ -707,11 +666,10 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 /// \param[in]  nY:          Y coordinate of line startpoint
 /// \param[in]  nW:          Width of line (in +X direction)
 /// \param[in]  nCol:        Color RGB value for the line
-/// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
 ///
-void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol,bool bMapEn);
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol);
 
 
 ///
@@ -723,11 +681,10 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
 /// \param[in]  nY:          Y coordinate of line startpoint
 /// \param[in]  nH:          Height of line (in +Y direction)
 /// \param[in]  nCol:        Color RGB value for the line
-/// \param[in]  bMapEn:      Support viewport remapping
 ///
 /// \return none
 ///
-void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol,bool bMapEn);
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol);
 
 
 ///
@@ -1339,50 +1296,6 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int nPageId,int nElemId);
 
 
 // ------------------------------------------------------------------------
-// Viewport Functions
-// ------------------------------------------------------------------------
-
-///
-/// Create a Viewport
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nViewId:     View ID to assign (0..32767)
-/// \param[in]  rView:       Rectangle coordinates defining viewport position
-/// \param[in]  nOriginX:    Relative X coordinates of origin
-/// \param[in]  nOriginY:    Relative Y coordinates of origin
-///
-/// \return The Viewport ID or GSLC_VIEW_ID_NONE if failure
-///
-int gslc_ViewCreate(gslc_tsGui* pGui,int nViewId,gslc_Rect rView,unsigned nOriginX,unsigned nOriginY);
-
-
-///
-/// Set the origin for a Viewport
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nViewId:     Viewport ID to update
-/// \param[in]  nOriginX:    Relative X coordinates of origin
-/// \param[in]  nOriginY:    Relative Y coordinates of origin
-///
-/// \return true if success, false if failure
-///
-bool gslc_ViewSetOrigin(gslc_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY);
-
-///
-/// Sets the currently active view
-/// - This function is used to swap between drawing within
-///   a viewport (using local coordinates and clipping) and
-///   the main view (the screen).
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nViewId:     Viewport ID to select or GSLC_VIEW_ID_SCREEN for main display
-///
-/// \return none
-///
-void gslc_ViewSet(gslc_tsGui* pGui,int nViewId);
-
-
-// ------------------------------------------------------------------------
 // Element Collection Functions
 // ------------------------------------------------------------------------
 
@@ -1616,6 +1529,18 @@ gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem);
 void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
   const char* acImageSel);
 
+
+///
+/// Set the clipping rectangle for further drawing
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pRect:       Pointer to Rect for clipping (or NULL for entire screen)
+///
+/// \return true if success, false if error
+///
+bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
+
+
 ///
 /// Configure the background to use a bitmap image
 /// - The background is used when redrawing the entire page
@@ -1691,52 +1616,6 @@ void gslc_CollectDestruct(gslc_tsCollect* pCollect);
 ///
 void gslc_ElemDestruct(gslc_tsElem* pElem);
 
-///
-/// Perform range check on Viewport Index
-/// - Range checking is done before View array access
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nViewInd:    Viewport index
-///
-/// \return true if index is in range, false otherwise
-///
-bool gslc_ViewIndValid(gslc_tsGui* pGui,int nViewInd);
-
-///
-/// Look up the Viewport Index from the Viewport ID
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nViewId:     ID of the viewport to find
-///
-/// \return Index of viewport or GSLC_VIEW_IND_NONE if not found
-///
-int gslc_ViewFindIndFromId(gslc_tsGui* pGui,int nViewId);
-
-///
-/// Remap a coordinate from local to global using the
-/// viewport settings. The input coordinates will be
-/// replaced by the global coordinates.
-///
-/// \param[in]    pGui:        Pointer to GUI
-/// \param[inout] pnX:         Ptr to X coordinate
-/// \param[inout] pnY:         Ptr to Y coordinate
-///
-/// \return none
-///
-void gslc_ViewRemapPt(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY);
-
-///
-/// Remap a rectangle from local to global using the
-/// viewport settings. The input rectangle coordinates will be
-/// replaced by the global coordinates.
-///
-/// \param[in]    pGui:        Pointer to GUI
-/// \param[inout] prRect:      Ptr to Rectangular coordinates to update
-///
-/// \return none
-///
-void gslc_ViewRemapRect(gslc_tsGui* pGui,gslc_Rect* prRect);
-
 
 ///
 /// Trigger an element's touch event. This is an optional
@@ -1771,16 +1650,6 @@ void gslc_ResetFont(gslc_tsFont* pFont);
 /// \return none
 ///
 void gslc_ResetElem(gslc_tsElem* pElem);
-
-///
-/// Initialize a View struct
-///
-/// \param[in]  pView:       Pointer to Viewport
-///
-/// \return none
-///
-void gslc_ResetView(gslc_tsView* pView);
-
 
 
 

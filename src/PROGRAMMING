@@ -28,8 +28,7 @@ Page Drawing
   within the current page.
 - It is possible for elements to overlap, but note that care
   must then be taken to define the sequence of element creation.
-- To keep the library simple, clipping is not implemented at
-  this time (except within Viewport)
+- Clipping is only enabled following call to gslc_SetClipRect()
 - The current page is redrawn with periodic calls to gslc_Update().
   This automatically redraws any elements that have been
   marked as changed. It then follows this up with a page flip.

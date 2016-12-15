@@ -2,7 +2,7 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 06: Example of viewport and image draw
+// - Example 06: Example of clipping plus draw
 //               and tick callback function
 //
 
@@ -30,7 +30,6 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
       E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_SCAN};
 enum {E_FONT_BTN,E_FONT_TXT};
-enum {E_VIEW};
 
 bool      m_bQuit = false;
 
@@ -43,11 +42,9 @@ float     m_fCoordZ = 0;
 
 // Instantiate the GUI
 #define MAX_FONT            10
-#define MAX_VIEW            5
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
-gslc_tsView                 m_asView[MAX_VIEW];
 gslc_tsXGauge               m_sXGauge;
 
 #define MAX_PAGE            1
@@ -57,13 +54,16 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 #define MAX_STR             100
 
+// Define an origin for the scanner
+int16_t   m_nOriginX = 0;
+int16_t   m_nOriginY = 0;
+
 
 // Scanner drawing callback function
 // - This is called when E_ELEM_SCAN is being rendered
 // - The scanner implements a custom element that replaces
 //   the Box element type with a custom rendering function.
-// - It uses a viewport (E_VIEW) to allow for a local
-//   coordinate system and clipping.
+// - Clipping region is updated temporarily during this draw
 bool CbDrawScanner(void* pvGui,void* pvElem)
 {
   int nInd;
@@ -72,35 +72,35 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
   
+  // Create shorthand variables for the origin
+  uint16_t  nX = pElem->rElem.x + m_nOriginX;
+  uint16_t  nY = pElem->rElem.y + m_nOriginY;
+  
   // Draw the background
   gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
   
-  // Draw the frame
-  gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  // Enable localized clipping
+  gslc_SetClipRect(pGui,&(pElem->rElem));
   
-
-  // Switch to drawing coordinate space within the viewport
-  // - Until the next ViewSet() command, all drawing
-  //   will be done with local coordinates that
-  //   are remapped and clipped to match the viewport.
-  gslc_ViewSet(&m_gui,E_VIEW);
-
   // Perform the drawing of example graphic primitives
-  gslc_DrawLine(&m_gui,0,-200,0,+200,GSLC_COL_GRAY_DK2);
-  gslc_DrawLine(&m_gui,-200,0,+200,0,GSLC_COL_GRAY_DK2);
+  gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);
+  gslc_DrawLine(pGui,nX-200,nY,nX+200,nY,GSLC_COL_GRAY_DK2);
 
-  gslc_DrawFrameRect(&m_gui,(gslc_Rect){-30,-20,60,40},GSLC_COL_BLUE_DK2);
+  gslc_DrawFrameRect(pGui,(gslc_Rect){nX-30,nY-20,60,40},GSLC_COL_BLUE_DK2);
   for (nInd=-5;nInd<=5;nInd++) {
-    gslc_DrawLine(&m_gui,0,0,0+nInd*20,100,GSLC_COL_PURPLE);
+    gslc_DrawLine(pGui,nX,nY,nX+nInd*20,nY+100,GSLC_COL_PURPLE);
   }
 
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,1,10,10},GSLC_COL_RED_DK2);
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){1,-10,10,10},GSLC_COL_GREEN_DK2);
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){-10,1,10,10},GSLC_COL_BLUE_DK2);
-  gslc_DrawFillRect(&m_gui,(gslc_Rect){-10,-10,10,10},GSLC_COL_YELLOW);
+  gslc_DrawFillRect(pGui,(gslc_Rect){nX+1,nY+1,10,10},GSLC_COL_RED_DK2);
+  gslc_DrawFillRect(pGui,(gslc_Rect){nX+1,nY-10,10,10},GSLC_COL_GREEN_DK2);
+  gslc_DrawFillRect(pGui,(gslc_Rect){nX-10,nY+1,10,10},GSLC_COL_BLUE_DK2);
+  gslc_DrawFillRect(pGui,(gslc_Rect){nX-10,nY-10,10,10},GSLC_COL_YELLOW);
 
-  // Restore the drawing coordinate space to the screen
-  gslc_ViewSet(&m_gui,GSLC_VIEW_ID_SCREEN);
+  // Disable clipping region
+  gslc_SetClipRect(pGui,NULL);
+  
+  // Draw the frame
+  gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
   // Clear the redraw flag
   gslc_ElemSetRedraw(pElem,false);
@@ -111,23 +111,22 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
 // Demonstrate tick callback for scanner window
 // - This is called whenever gslc_Update() is called
 // - In this example, it simply updates the relative
-//   origin of the viewport which will shift the display
+//   origin of the view which will shift the display
 bool CbTickScanner(void* pvGui,void* pvScope)
 {
-  gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
+  //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);  
   
   m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
   m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
   m_fCoordZ = 13.02;
 
-  // Adjust the scanner's viewport origin for fun
-  int16_t nOriginX = (int16_t)m_fCoordX;
-  int16_t nOriginY = (int16_t)m_fCoordY;
-  gslc_ViewSetOrigin(pGui,E_VIEW,nOriginX,nOriginY);
+  // Adjust the scanner's origin for fun
+  m_nOriginX = (int16_t)m_fCoordX;
+  m_nOriginY = (int16_t)m_fCoordY;
   
-  // Manually mark the scanner view as needing redraw
-  // since it depends on E_VIEW
+  // Manually mark the scanner element as needing redraw
+  // since we have shifted its relative coordinates (via origin)
   gslc_ElemSetRedraw(pElem,true);  
   
   return true;
@@ -211,7 +210,7 @@ bool InitOverlays(char *strPath)
   gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
 
   // --------------------------------------------------------------------------
-  // Create scanner with viewport
+  // Create scanner
   pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
@@ -227,7 +226,6 @@ bool InitOverlays(char *strPath)
   // Set the callback function to update content automatically
   gslc_ElemSetTickFunc(pElem,&CbTickScanner);
   
-  gslc_ViewCreate(&m_gui,E_VIEW,(gslc_Rect){190,75,100,100},50,50);
   // --------------------------------------------------------------------------
 
   return true;
@@ -242,7 +240,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,m_asView,MAX_VIEW)) { exit(1); }
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 

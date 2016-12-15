@@ -38,7 +38,7 @@ int main( int argc, char* args[] )
 
   // Initialize
   gslc_InitEnv(GSLC_DEV_FB,NULL);
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0,NULL,0)) { exit(1); }  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
   

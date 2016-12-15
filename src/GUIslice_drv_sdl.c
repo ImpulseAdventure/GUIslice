@@ -434,7 +434,7 @@ void gslc_DrvImageDestruct(void* pvImg)
   #endif  
 }
 
-void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
+bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
 {
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 #ifdef DRV_TYPE_SDL1
@@ -445,6 +445,7 @@ void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
     SDL_Rect  rSRect = gslc_DrvAdaptRect(*pRect);
     SDL_SetClipRect(pScreen,&rSRect);
   }
+  return true;
 #endif
   
 #ifdef DRV_TYPE_SDL2
@@ -455,6 +456,7 @@ void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
     SDL_Rect  rSRect = gslc_DrvAdaptRect(*pRect);
     SDL_RenderSetClipRect(pRender,&rSRect);
   }
+  return true;
 #endif  
   
 }

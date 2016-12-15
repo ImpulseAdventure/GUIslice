@@ -260,9 +260,9 @@ void gslc_DrvImageDestruct(void* pvImg);
 /// \param[in]  pGui:          Pointer to GUI  
 /// \param[in]  pRect:         Rectangular region to constrain edits
 /// 
-/// \return none
+/// \return true if success, false if error
 ///
-void gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
+bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
 
 
 // -----------------------------------------------------------------------

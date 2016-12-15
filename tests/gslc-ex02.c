@@ -55,7 +55,7 @@ int main( int argc, char* args[] )
   // Initialize
 
   gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT,NULL,0)) { exit(1); }
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
 #ifdef DRV_INC_TS
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);

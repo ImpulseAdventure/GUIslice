@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.2    (2016/12/06)
+// - Version 0.7.2    (2016/12/14)
 // =======================================================================
 //
 // The MIT License
@@ -72,7 +72,7 @@ void gslc_InitEnv(const char* acDevFb,const char* acDevTouch)
 
 
 
-bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont,gslc_tsView* asView,unsigned nMaxView)
+bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont)
 {
   unsigned  nInd;
   
@@ -99,14 +99,6 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMax
   // Initialize temporary element
   gslc_ResetElem(&(pGui->sElemTmp));
 
-  // Initialize collection of views with user-supplied pointer
-  pGui->asView      = asView;
-  pGui->nViewMax    = nMaxView;
-  pGui->nViewCnt    = 0;
-  pGui->nViewIndCur = GSLC_VIEW_IND_SCREEN;
-  for (nInd=0;nInd<(pGui->nViewMax);nInd++) {
-    gslc_ResetView(&(pGui->asView[nInd]));
-  }
   
   // Last touch event
   pGui->nTouchLastX           = 0;
@@ -247,18 +239,8 @@ void gslc_OrderCoord(int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1)
 // Graphics Primitive Functions
 // ------------------------------------------------------------------------
 
-// bMapEn specifies whether viewport remapping is enabled or not
-// - This should be disabled if the caller has already performed the
-//   the coordinate remapping.
-void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol,bool bMapEn)
+void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol)
 {
-  // Support viewport local coordinate remapping
-  if (bMapEn) {
-    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-      gslc_ViewRemapPt(pGui,&nX,&nY);
-    }
-  }
-  
 #if (DRV_HAS_DRAW_POINT) 
   // Call optimized driver point drawing
   gslc_DrvDrawPoint(pGui,nX,nY,nCol);
@@ -273,12 +255,6 @@ void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol,bo
 // - Algorithm reference: https://rosettacode.org/wiki/Bitmap/Bresenham's_line_algorithm#C
 void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_Color nCol)
 {
-  // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapPt(pGui,&nX0,&nY0);
-    gslc_ViewRemapPt(pGui,&nX1,&nY1);
-  }
-
 #if (DRV_HAS_DRAW_LINE) 
   // Call optimized driver line drawing
   gslc_DrvDrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
@@ -300,18 +276,18 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
     if (nDY == 0) {
       return;
     } else if (nDY >= 0) {
-      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol,false);
+      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol);
       bDone = true;
     } else {
-      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol,false);
+      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
       bDone = true;
     }
   } else if (nDY == 0) {
     if (nDX >= 0) {
-      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol,false);
+      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol);
       bDone = true;      
     } else {
-      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol,false);
+      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
       bDone = true;      
     }
   }
@@ -334,15 +310,8 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 }
 
 
-void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol,bool bMapEn)
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol)
 {
-  // Support viewport local coordinate remapping
-  if (bMapEn) {
-    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-      gslc_ViewRemapPt(pGui,&nX,&nY);
-    }
-  }
-
   uint16_t nOffset;
   for (nOffset=0;nOffset<nW;nOffset++) {
     gslc_DrvDrawPoint(pGui,nX+nOffset,nY,nCol);    
@@ -351,15 +320,8 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
   gslc_PageFlipSet(pGui,true);  
 }
 
-void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol,bool bMapEn)
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol)
 {
-  // Support viewport local coordinate remapping
-  if (bMapEn) {
-    if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-      gslc_ViewRemapPt(pGui,&nX,&nY);
-    }
-  }
-  
   uint16_t nOffset;
   for (nOffset=0;nOffset<nH;nOffset++) {
     gslc_DrvDrawPoint(pGui,nX,nY+nOffset,nCol);    
@@ -376,11 +338,6 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
     return;
   }
 
-  // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapRect(pGui,&rRect);
-  }
-
 #if (DRV_HAS_DRAW_RECT_FRAME)
   // Call optimized driver implementation
   gslc_DrvDrawFrameRect(pGui,rRect,nCol);
@@ -392,10 +349,10 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
   nY = rRect.y;
   nW = rRect.w;
   nH = rRect.h;
-  gslc_DrawLineH(pGui,nX,nY,nW-1,nCol,false);                 // Top
-  gslc_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol,false); // Bottom
-  gslc_DrawLineV(pGui,nX,nY,nH-1,nCol,false);                 // Left
-  gslc_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol,false); // Right
+  gslc_DrawLineH(pGui,nX,nY,nW-1,nCol);                 // Top
+  gslc_DrawLineH(pGui,nX,(int16_t)(nY+nH-1),nW-1,nCol); // Bottom
+  gslc_DrawLineV(pGui,nX,nY,nH-1,nCol);                 // Left
+  gslc_DrawLineV(pGui,(int16_t)(nX+nW-1),nY,nH-1,nCol); // Right
 #endif
   
   gslc_PageFlipSet(pGui,true);  
@@ -406,11 +363,6 @@ void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
   // Ensure dimensions are valid
   if ((rRect.w == 0) || (rRect.h == 0)) {
     return;
-  }
-
-  // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapRect(pGui,&rRect);
   }
 
 #if (DRV_HAS_DRAW_RECT_FILL)
@@ -468,12 +420,6 @@ gslc_Rect gslc_ExpandRect(gslc_Rect rRect,int16_t nExpandW,int16_t nExpandH)
 void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   uint16_t nRadius,gslc_Color nCol)
 {
-  
-  // Support viewport local coordinate remapping
-  if (pGui->nViewIndCur != GSLC_VIEW_IND_SCREEN) {
-    gslc_ViewRemapPt(pGui,&nMidX,&nMidY);
-  }
-
   #if (DRV_HAS_DRAW_CIRCLE_FRAME)
     // Call optimized driver implementation
     gslc_DrvDrawFrameCircle(pGui,nMidX,nMidY,nRadius,nCol);    
@@ -1455,82 +1401,6 @@ bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int nX,int nY,bool bOnlyClickEn)
   return gslc_IsInRect(nX,nY,pElem->rElem);
 }
 
-// ------------------------------------------------------------------------
-// Viewport Functions
-// ------------------------------------------------------------------------
-
-// TODO: Consider changing return value to tsView*?
-int gslc_ViewCreate(gslc_tsGui* pGui,int nViewId,gslc_Rect rView,unsigned nOriginX,unsigned nOriginY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewCreate() called with NULL ptr\n");
-    return GSLC_VIEW_ID_NONE;
-  }      
-  if (pGui->nViewCnt+1 >= (pGui->nViewMax)) {
-    fprintf(stderr,"ERROR: ViewCreate() too many views\n");
-    return GSLC_VIEW_ID_NONE;
-  }
-  // Add the element to the internal array
-  gslc_tsView   sView;
-  sView.nId         = nViewId;
-  sView.rView       = rView;
-  sView.nOriginX    = nOriginX;
-  sView.nOriginY    = nOriginY;
-  pGui->asView[pGui->nViewCnt] = sView;
-  pGui->nViewCnt++;
-
-  return nViewId;
-}
-
-bool gslc_ViewSetOrigin(gslc_tsGui* pGui,int nViewId,unsigned nOriginX,unsigned nOriginY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewSetOrigin() called with NULL ptr\n");
-    return false;
-  }      
-  // Find View
-  int nViewInd = gslc_ViewFindIndFromId(pGui,nViewId);
-  // If GSLC_VIEW_ID_SCREEN is passed, then it will be ignored here
-  if (nViewInd == GSLC_VIEW_IND_NONE) {
-    return false;
-  }
-  pGui->asView[nViewInd].nOriginX = nOriginX;
-  pGui->asView[nViewInd].nOriginY = nOriginY;
-  return true;
-}
-
-void gslc_ViewSet(gslc_tsGui* pGui,int nViewId)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewSet() called with NULL ptr\n");
-    return;
-  }      
-  // Ensure that the view ID is valid
-  int nViewInd = GSLC_VIEW_IND_NONE;
-  if (nViewId == GSLC_VIEW_ID_SCREEN) {
-    nViewInd = GSLC_VIEW_IND_SCREEN;
-  } else {
-    nViewInd = gslc_ViewFindIndFromId(pGui,nViewId); 
-  }
-
-  if (nViewInd == GSLC_VIEW_IND_NONE) {
-    fprintf(stderr,"ERROR: ViewSet() invalid ID=%d\n",nViewId);
-  }
-
-  // Update the clipping rect temporarily
-  if (nViewInd == GSLC_VIEW_IND_SCREEN) {
-    // Set to full size of screen
-    gslc_DrvSetClipRect(pGui,NULL);
-  } else if (gslc_ViewIndValid(pGui,nViewInd)) {
-    // Set to user-specified region    
-    gslc_DrvSetClipRect(pGui,&(pGui->asView[nViewInd]).rView);
-  } else {
-    // INVALID
-  }
-  // Assign the view
-  pGui->nViewIndCur = nViewInd;
-}
-
 
 // ------------------------------------------------------------------------
 // Tracking Functions
@@ -1929,6 +1799,19 @@ void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
 
 }
 
+bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
+{
+  // Update the drawing clip rectangle
+  if (pRect == NULL) {
+    // Set to full size of screen
+    return gslc_DrvSetClipRect(pGui,NULL);
+  } else {
+    // Set to user-specified region    
+    return gslc_DrvSetClipRect(pGui,pRect);
+  }
+}
+
+
 bool gslc_SetBkgndImage(gslc_tsGui* pGui,char* pStrFname)
 {
   if (!gslc_DrvSetBkgndImage(pGui,pStrFname)) {
@@ -1945,90 +1828,6 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol)
   }
   gslc_PageFlipSet(pGui,true);
   return true;  
-}
-
-
-
-bool gslc_ViewIndValid(gslc_tsGui* pGui,int nViewInd)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewIndValid() called with NULL ptr\n");
-    return false;
-  }    
-  if ((nViewInd >= 0) && (nViewInd < (int)(pGui->nViewCnt))) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// Search through the viewport array for a matching ID
-int gslc_ViewFindIndFromId(gslc_tsGui* pGui,int nViewId)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewFindIndFromId() called with NULL ptr\n");
-    return GSLC_IND_NONE;
-  }    
-  unsigned  nInd;
-  int nFound = GSLC_IND_NONE;
-  for (nInd=0;nInd<pGui->nViewCnt;nInd++) {
-    if (pGui->asView[nInd].nId == nViewId) {
-      nFound = nInd;
-    }
-  }
-  return nFound;
-}
-
-// Translate a coordinate from local to global according
-// to the viewport region and origin.
-void gslc_ViewRemapPt(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewRemapPt() called with NULL ptr\n");
-    return;
-  }    
-  int nViewInd = pGui->nViewIndCur;
-  if (nViewInd == GSLC_VIEW_IND_SCREEN) {
-    return;
-  }
-  if (!gslc_ViewIndValid(pGui,nViewInd)) {
-    return;
-  }
-  int   nFinalX,nFinalY;
-  int   nFrameX,nFrameY;
-  int   nOriginX,nOriginY;
-  nFrameX   = pGui->asView[nViewInd].rView.x;
-  nFrameY   = pGui->asView[nViewInd].rView.y;
-  nOriginX  = pGui->asView[nViewInd].nOriginX;
-  nOriginY  = pGui->asView[nViewInd].nOriginY;
-
-  nFinalX   = nFrameX + nOriginX + (*pnX);
-  nFinalY   = nFrameY + nOriginY + (*pnY);
-
-  *pnX = nFinalX;
-  *pnY = nFinalY;
-}
-
-// Translate a rectangle's coordinates from local to global according
-// to the viewport region and origin.
-void gslc_ViewRemapRect(gslc_tsGui* pGui,gslc_Rect* prRect)
-{
-  if (pGui == NULL) {
-    fprintf(stderr,"ERROR: ViewRemapRect() called with NULL ptr\n");
-    return;
-  }    
-  // TODO: Check corrections +/- 1
-  int16_t nX0,nY0,nX1,nY1;
-  nX0 = prRect->x;
-  nY0 = prRect->y;
-  nX1 = prRect->x + prRect->w - 1;
-  nY1 = prRect->y + prRect->h - 1;
-  gslc_ViewRemapPt(pGui,&nX0,&nY0);
-  gslc_ViewRemapPt(pGui,&nX1,&nY1);
-  prRect->x = nX0;
-  prRect->y = nY0;
-  prRect->w = nX1-nX0+1;
-  prRect->h = nY1-nY0+1;
 }
 
 
@@ -2097,19 +1896,6 @@ void gslc_ResetFont(gslc_tsFont* pFont)
   }    
   pFont->nId = GSLC_FONT_NONE;
   pFont->pvFont = NULL;
-}
-
-// Initialize the view struct to all zeros
-void gslc_ResetView(gslc_tsView* pView)
-{
-  if (pView == NULL) {
-    fprintf(stderr,"ERROR: ResetView() called with NULL ptr\n");
-    return;
-  }    
-  pView->nId = GSLC_VIEW_ID_NONE;
-  pView->rView = (gslc_Rect){0,0,0,0};
-  pView->nOriginX = 0;
-  pView->nOriginY = 0;
 }
 
 
