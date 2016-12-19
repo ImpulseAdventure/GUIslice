@@ -11,12 +11,6 @@
 
 #include <unistd.h>      // For sleep()
 
-// Define default device paths for framebuffer
-#if defined(DRV_DISP_SDL1)
-  #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_DISP_SDL2
-  #define GSLC_DEV_FB     "/dev/fb0"
-#endif
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -31,13 +25,37 @@ gslc_tsDriver   m_drv;
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
+// Configure environment variables suitable for display
+// - These may need modification to match your system
+//   environment and display type
+// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
+// - Note that the environment variable settings can
+//   also be set directly within the shell via export
+//   (or init script).
+//   - eg. export TSLIB_FBDEVICE=/dev/fb1
+void UserInitEnv()
+{
+#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
+  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+#endif  
+  
+#if defined(DRV_TOUCH_TSLIB)
+  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+#endif
+}
 
 int main( int argc, char* args[] )
 {
   gslc_tsElem*  pElem = NULL;
 
   // Initialize
-  gslc_InitEnv(GSLC_DEV_FB,NULL);
+  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
@@ -46,7 +64,7 @@ int main( int argc, char* args[] )
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create page elements
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Start up display on main page

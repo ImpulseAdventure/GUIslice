@@ -13,13 +13,6 @@
 #include <math.h>
 #include <libgen.h>       // For path parsing
 
-// Define default device paths for framebuffer & touchscreen
-#if defined(DRV_DISP_SDL1)
-  #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_DISP_SDL2
-  #define GSLC_DEV_FB     "/dev/fb0"
-#endif
-#define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -58,6 +51,30 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 int16_t   m_nOriginX = 0;
 int16_t   m_nOriginY = 0;
 
+// Configure environment variables suitable for display
+// - These may need modification to match your system
+//   environment and display type
+// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
+// - Note that the environment variable settings can
+//   also be set directly within the shell via export
+//   (or init script).
+//   - eg. export TSLIB_FBDEVICE=/dev/fb1
+void UserInitEnv()
+{
+#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
+  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+#endif  
+  
+#if defined(DRV_TOUCH_TSLIB)
+  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+#endif
+}
 
 // Scanner drawing callback function
 // - This is called when E_ELEM_SCAN is being rendered
@@ -86,15 +103,15 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);
   gslc_DrawLine(pGui,nX-200,nY,nX+200,nY,GSLC_COL_GRAY_DK2);
 
-  gslc_DrawFrameRect(pGui,(gslc_Rect){nX-30,nY-20,60,40},GSLC_COL_BLUE_DK2);
+  gslc_DrawFrameRect(pGui,(gslc_tsRect){nX-30,nY-20,60,40},GSLC_COL_BLUE_DK2);
   for (nInd=-5;nInd<=5;nInd++) {
     gslc_DrawLine(pGui,nX,nY,nX+nInd*20,nY+100,GSLC_COL_PURPLE);
   }
 
-  gslc_DrawFillRect(pGui,(gslc_Rect){nX+1,nY+1,10,10},GSLC_COL_RED_DK2);
-  gslc_DrawFillRect(pGui,(gslc_Rect){nX+1,nY-10,10,10},GSLC_COL_GREEN_DK2);
-  gslc_DrawFillRect(pGui,(gslc_Rect){nX-10,nY+1,10,10},GSLC_COL_BLUE_DK2);
-  gslc_DrawFillRect(pGui,(gslc_Rect){nX-10,nY-10,10,10},GSLC_COL_YELLOW);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){nX+1,nY+1,10,10},GSLC_COL_RED_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){nX+1,nY-10,10,10},GSLC_COL_GREEN_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){nX-10,nY+1,10,10},GSLC_COL_BLUE_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){nX-10,nY-10,10,10},GSLC_COL_YELLOW);
 
   // Disable clipping region
   gslc_SetClipRect(pGui,NULL);
@@ -157,69 +174,69 @@ bool InitOverlays(char *strPath)
   char* strImgLogoPath = (char*)malloc(strlen(strPath)+strlen(IMG_LOGO)+1);
   strcpy(strImgLogoPath, strPath);
   strcat(strImgLogoPath, IMG_LOGO);  
-  pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){160-100,5,200,40},
+  pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
     strImgLogoPath);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){10,50,300,150});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_Rect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit); 
+    (gslc_tsRect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit); 
 
   // Create counter
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     "Searches:",E_FONT_TXT);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_Rect){80,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   // Create progress bar
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,80,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",E_FONT_TXT);
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_Rect){80,80,50,10},
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
   
   // Create other labels
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,100,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
     "Coord X:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_Rect){100,100,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,120,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
     "Coord Y:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_Rect){100,120,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,140,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
     "Coord Z:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_Rect){100,140,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){120,210,170,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){120,210,170,20},
     "Example of GUIslice C library",E_FONT_BTN);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_LEFT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
 
   // --------------------------------------------------------------------------
   // Create scanner
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){190-1-2,75-1-12,100+2+4,100+2+10+4});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190-1-2,75-1-12,100+2+4,100+2+10+4});
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){190,75-11,100,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,75-11,100,10},
     "SCANNER",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_DK2);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_Rect){190-1,75-1,100+2,100+2});
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_tsRect){190-1,75-1,100+2,100+2});
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(pElem,&CbDrawScanner);
@@ -238,10 +255,8 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-
-  gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
+  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts

@@ -15,6 +15,10 @@ GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
 # ---------------------------------------------------------------------------
 # Define compiler flags for GUIslice
 # - Select the graphics driver by uncommenting one of the following lines
+#   and edit GUIslice_config.h to set the appropriate #define DRV_DISP_*
+#   Example for SDL1:
+#     Makefile:            GSLC_DRV := SDL1
+#     GUIslice_config.h:   #define DRV_DISP_SDL1
 #
 # NOTE: One can also override this from the command-line as follows:
 #       make gslc-ex04 GSLC_DRV=SDL2
@@ -22,22 +26,20 @@ GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
 GSLC_DRV := SDL1
 #GSLC_DRV := SDL2
 
+
 # === SDL1.2 ===
 ifeq (SDL1,${GSLC_DRV})
-  # - DRV_TOUCH_TSLIB is optional (with -lts)
-  # - DRV_SDL_FIX_START is optional
   $(info GUIslice driver mode: SDL1)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  GSLC_FLAGS = -DDRV_DISP_SDL1 -DDRV_TOUCH_TSLIB -DDRV_SDL_FIX_START
+  # - Add "-lts" if GUIslice_config.h: #define DRV_TOUCH_TSLIB
   LDLIBS = -lSDL -lSDL_ttf -lts
 endif
 
 # === SDL2.0 ===
 ifeq (SDL2,${GSLC_DRV})
-  # - DRV_INC_TS is optional
   $(info GUIslice driver mode: SDL2)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  GSLC_FLAGS = -DDRV_DISP_SDL2 -DDRV_TOUCH_TSLIB
+  # - Add "-lts" if GUIslice_config.h: #define DRV_TOUCH_TSLIB
   LDLIBS = -lSDL2 -lSDL2_ttf -lts
 endif
 
@@ -85,29 +87,29 @@ test-sdl2: test-sdl2.c
 	
 gslc-ex01: gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 gslc-ex02: gslc-ex02.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex02.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex02.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 gslc-ex03: gslc-ex03.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex03.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex03.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 gslc-ex04: gslc-ex04.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex04.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex04.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 gslc-ex05: gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
 gslc-ex06: gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -lm -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -lm -I . -I ../src
 
 gslc-ex07: gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS) $(GSLC_FLAGS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 

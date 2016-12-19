@@ -68,7 +68,7 @@ typedef struct {
   int             nGaugeMin;    ///< Minimum control value
   int             nGaugeMax;    ///< Maximum control value
   int             nGaugeVal;    ///< Current control value
-  gslc_Color      colGauge;     ///< Color of gauge fill bar
+  gslc_tsColor    colGauge;     ///< Color of gauge fill bar
   bool            bGaugeVert;   ///< Vertical if true, else Horizontal
 } gslc_tsXGauge;
 
@@ -94,7 +94,7 @@ typedef struct {
 /// \return Pointer to Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXGauge* pXData,gslc_Rect rElem,int nMin,int nMax,int nVal,gslc_Color colGauge,bool bVert);
+  gslc_tsXGauge* pXData,gslc_tsRect rElem,int nMin,int nMax,int nVal,gslc_tsColor colGauge,bool bVert);
 
 ///
 /// Update a Gauge element's current value
@@ -137,7 +137,7 @@ typedef struct {
   bool                        bRadio;       ///< Radio-button operation if true
   gslc_teXCheckboxStyle       nStyle;       ///< Drawing style for element
   bool                        bChecked;     ///< Indicates if it is selected (checked)
-  gslc_Color                  colCheck;     ///< Color of checked inner fill
+  gslc_tsColor                colCheck;     ///< Color of checked inner fill
 } gslc_tsXCheckbox;
 
 
@@ -157,8 +157,8 @@ typedef struct {
 /// \return Element pointer or NULL if failure
 ///
 gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXCheckbox* pXData,gslc_Rect rElem,bool bRadio,
-  gslc_teXCheckboxStyle nStyle,gslc_Color colCheck,bool bChecked);
+  gslc_tsXCheckbox* pXData,gslc_tsRect rElem,bool bRadio,
+  gslc_teXCheckboxStyle nStyle,gslc_tsColor colCheck,bool bChecked);
 
 
 ///
@@ -244,9 +244,9 @@ typedef struct {
   // Style config
   unsigned        nTickDiv;       ///< Style: number of tickmark divisions (0 for none)
   int             nTickLen;       ///< Style: length of tickmarks
-  gslc_Color      colTick;        ///< Style: color of ticks
+  gslc_tsColor    colTick;        ///< Style: color of ticks
   bool            bTrim;          ///< Style: show a trim color
-  gslc_Color      colTrim;        ///< Style: color of trim
+  gslc_tsColor    colTrim;        ///< Style: color of trim
   // State
   int             nPos;           ///< Current position value of the slider
   // Callbacks
@@ -271,7 +271,7 @@ typedef struct {
 /// \return Element pointer or NULL if failure
 ///
 gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSlider* pXData,gslc_Rect rElem,int nPosMin,int nPosMax,int nPos,
+  gslc_tsXSlider* pXData,gslc_tsRect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert);
 
 
@@ -288,8 +288,8 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 /// \return none
 ///
 void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
-        bool bTrim,gslc_Color colTrim,unsigned nTickDiv,
-        int nTickLen,gslc_Color colTick);
+        bool bTrim,gslc_tsColor colTrim,unsigned nTickDiv,
+        int nTickLen,gslc_tsColor colTick);
 
 
 ///
@@ -384,7 +384,7 @@ typedef struct {
 /// \return Pointer to Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSelNum* pXData,gslc_Rect rElem,int nFontId);
+  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int nFontId);
 
 
 ///

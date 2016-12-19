@@ -132,8 +132,7 @@ typedef struct {
 ///
 /// PRE:
 /// - The environment variables should be configured before
-///   calling gslc_DrvInit(). This can be done with gslc_DrvInitEnv()
-///   or manually in user function.
+///   calling gslc_DrvInit().
 ///
 ///
 /// \param[in]  pGui:      Pointer to GUI
@@ -141,21 +140,6 @@ typedef struct {
 /// \return true if success, false if fail
 ///
 bool gslc_DrvInit(gslc_tsGui* pGui);
-
-///
-/// Example environment variable configuration suitable for
-/// GUIslice operation with PiTFT on Raspberry Pi.
-///
-/// - NOTE: Users with other hardware may need to
-///   supply their own initialization routine
-///   as these defaults may not be suitable.
-///
-/// \param[in]  acDevFb:    Path to framebuffer device (NULL if none)
-/// \param[in]  acDevTouch: Path to touchscreen device (NULL if none)
-///
-/// \return None
-///
-void gslc_DrvInitEnv(const char* acDevFb,const char* acDevTouch);
 
 
 ///
@@ -219,7 +203,7 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,char* pStrFname);
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol);
+bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
 ///
 /// Set an element's normal-state image
@@ -262,7 +246,7 @@ void gslc_DrvImageDestruct(void* pvImg);
 /// 
 /// \return true if success, false if error
 ///
-bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
+bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
 
 // -----------------------------------------------------------------------
@@ -275,7 +259,7 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
 /// \param[in]  acFontName:  Filename path to the font
 /// \param[in]  nFontSz:     Typeface size to use
 ///
-/// \return Void ptr if load was successful, NULL otherwise
+/// \return Void ptr to driver-specific font if load was successful, NULL otherwise
 ///
 void* gslc_DrvFontAdd(const char* acFontName,unsigned nFontSz);
 
@@ -291,14 +275,33 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 
 
 ///
-/// Draw the text string associated with an element
+/// Get the extent (width and height) of a text string
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElem:       Pointer to Element to update
+/// \param[in]  pFont:       Ptr to Font structure
+/// \param[in]  pStr:        String to display
+/// \param[out] pnTxtSzW:    Ptr to width of text
+/// \param[out] pnTxtSzH:    Ptr to height of text
 ///
 /// \return true if success, false if failure
 ///  
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,gslc_tsElem* pElem);
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
+
+
+///
+/// Draw a text string at the given coordinate
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nTxtX:       X coordinate of top-left text string
+/// \param[in]  nTxtY:       Y coordinate of top-left text string
+/// \param[in]  pFont:       Ptr to Font
+/// \param[in]  pStr:        String to display
+/// \param[in]  colTxt:      Color to draw text
+///
+/// \return true if success, false if failure
+///  
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_tsColor colTxt);
+
 
 
 // -----------------------------------------------------------------------
@@ -330,7 +333,7 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui);
 ///
 /// \return true if success, false if error
 ///
-bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_Color nCol);
+bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_tsColor nCol);
 
 ///
 /// Draw a point
@@ -342,7 +345,7 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_Color nCol);
 ///
 /// \return true if success, false if error
 ///
-bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_Pt* asPt,unsigned nNumPt,gslc_Color nCol);
+bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,unsigned nNumPt,gslc_tsColor nCol);
 
 ///
 /// Draw a framed rectangle
@@ -353,7 +356,7 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_Pt* asPt,unsigned nNumPt,gslc_Colo
 ///
 /// \return true if success, false if error
 ///
-bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
+bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 
 
 ///
@@ -365,7 +368,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
 ///
 /// \return true if success, false if error
 ///
-bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
+bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 
 
 ///
@@ -380,7 +383,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
 ///
 /// \return true if success, false if error
 ///
-bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_Color nCol);
+bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol);
 
 
 ///
@@ -452,22 +455,22 @@ bool gslc_DrvCleanStart(const char* sTTY);
 // -----------------------------------------------------------------------
 
 ///
-/// Translate a gslc_Rect into an SDL_Rect
+/// Translate a gslc_tsRect into an SDL_Rect
 ///
-/// \param[in]  rRect:    gslc_Rect
+/// \param[in]  rRect:    gslc_tsRect
 ///
 /// \return Converted SDL_Rect
 ///
-SDL_Rect  gslc_DrvAdaptRect(gslc_Rect rRect);
+SDL_Rect  gslc_DrvAdaptRect(gslc_tsRect rRect);
 
 ///
-/// Translate a gslc_Color into an SDL_Color
+/// Translate a gslc_tsColor into an SDL_Color
 ///
-/// \param[in]  sCol:    gslc_Color
+/// \param[in]  sCol:    gslc_tsColor
 ///
 /// \return Converted SDL_Color
 ///
-SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol);
+SDL_Color  gslc_DrvAdaptColor(gslc_tsColor sCol);
 
 
 // -----------------------------------------------------------------------
@@ -515,7 +518,7 @@ void gslc_DrvScreenUnlock(gslc_tsGui* pGui);
 ///
 /// \return A pixel value for the current screen format
 ///
-uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_Color nCol);
+uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_tsColor nCol);
 
 
 ///
@@ -555,8 +558,8 @@ void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int nX,int nY,uint32_t nPixelCol);
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  nX:            Destination X coordinate of copy
 /// \param[in]  nY:            Destination Y coordinate of copy
-/// \param[in]  pSrc:          Ptr to source surface (eg. a loaded image)
-/// \param[in]  pDest:         Ptr to destination surface (typically the screen)
+/// \param[in]  pvSrc:         Void Ptr to source surface (eg. a loaded image)
+/// \param[in]  pvDest:        Void Ptr to destination surface (typically the screen)
 ///
 /// \return none
 /// 

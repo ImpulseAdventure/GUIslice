@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.2    (2016/12/14)
+// - Version 0.7.3    (2016/12/18)
 // =======================================================================
 //
 // The MIT License
@@ -48,17 +48,7 @@ extern "C" {
 // -----------------------------------------------------------------------
 // Configuration
 // -----------------------------------------------------------------------
-
-#define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
-  
-//#define DBG_FRAME_RATE    ///< Enable diagnostic frame rate reporting
-  
-#define GSLC_ELEM_STRLEN_MAX  120  // Max string length of text elements
-
-// Enable for bitmap transparency and definition of color to use
-#define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-#define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
-
+#include "GUIslice_config.h"  // Import user configuration
 
   
 // -----------------------------------------------------------------------
@@ -69,7 +59,7 @@ extern "C" {
   /// - The Element ID is the primary means for user code to
   ///   reference a graphic element.
   /// - Application code can assign arbitrary Element ID values
-  ///   in the range of 0...32767
+  ///   in the range of 0...16383
   /// - Specifying GSLC_ID_AUTO to ElemCreate() requests that
   ///   GUIslice auto-assign an ID value for the Element. These
   ///   auto-assigned values will begin at GSLC_ID_AUTO_BASE.
@@ -81,7 +71,7 @@ extern "C" {
     GSLC_ID_AUTO,                     ///< Auto-assigned Element ID requested
     GSLC_ID_TEMP,                     ///< ID for Temporary Element
     // Internal usage
-    GSLC_ID_AUTO_BASE       = 32768,  ///< Starting Element ID to start auto-assignment
+    GSLC_ID_AUTO_BASE       = 16384,  ///< Starting Element ID to start auto-assignment
                                       ///< (when GSLC_ID_AUTO is specified)            
   } gslc_teElemId;
 
@@ -90,7 +80,7 @@ extern "C" {
   /// - The Page ID is the primary means for user code to
   ///   reference a specific page of elements.
   /// - Application code can assign arbitrary Page ID values
-  ///   in the range of 0...32767
+  ///   in the range of 0...16383
   /// - Negative Page ID values are reserved   
   typedef enum {
     // Public usage
@@ -112,7 +102,7 @@ extern "C" {
   /// - The Font ID is the primary means for user code to
   ///   reference a specific font.
   /// - Application code can assign arbitrary Font ID values
-  ///   in the range of 0...32767
+  ///   in the range of 0...16383
   /// - Negative Font ID values are reserved    
   typedef enum {
     // Public usage
@@ -164,51 +154,51 @@ typedef enum {
 
 
 // Basic color definition
-#define GSLC_COL_RED_DK4    (gslc_Color) {128,  0,  0}   ///< Red (dark4)
-#define GSLC_COL_RED_DK3    (gslc_Color) {160,  0,  0}   ///< Red (dark3)
-#define GSLC_COL_RED_DK2    (gslc_Color) {192,  0,  0}   ///< Red (dark2)
-#define GSLC_COL_RED_DK1    (gslc_Color) {224,  0,  0}   ///< Red (dark1)
-#define GSLC_COL_RED        (gslc_Color) {255,  0,  0}   ///< Red
-#define GSLC_COL_RED_LT1    (gslc_Color) {255, 32, 32}   ///< Red (light1)
-#define GSLC_COL_RED_LT2    (gslc_Color) {255, 64, 64}   ///< Red (light2)
-#define GSLC_COL_RED_LT3    (gslc_Color) {255, 96, 96}   ///< Red (light3)
-#define GSLC_COL_RED_LT4    (gslc_Color) {255,128,128}   ///< Red (light4)
-#define GSLC_COL_GREEN_DK4  (gslc_Color) {  0,128,  0}   ///< Green (dark4)
-#define GSLC_COL_GREEN_DK3  (gslc_Color) {  0,160,  0}   ///< Green (dark3)
-#define GSLC_COL_GREEN_DK2  (gslc_Color) {  0,192,  0}   ///< Green (dark2)
-#define GSLC_COL_GREEN_DK1  (gslc_Color) {  0,224,  0}   ///< Green (dark1)
-#define GSLC_COL_GREEN      (gslc_Color) {  0,255,  0}   ///< Green
-#define GSLC_COL_GREEN_LT1  (gslc_Color) { 32,255, 32}   ///< Green (light1)
-#define GSLC_COL_GREEN_LT2  (gslc_Color) { 64,255, 64}   ///< Green (light2)
-#define GSLC_COL_GREEN_LT3  (gslc_Color) { 96,255, 96}   ///< Green (light3)
-#define GSLC_COL_GREEN_LT4  (gslc_Color) {128,255,128}   ///< Green (light4)
-#define GSLC_COL_BLUE_DK4   (gslc_Color) {  0,  0,128}   ///< Blue (dark4)
-#define GSLC_COL_BLUE_DK3   (gslc_Color) {  0,  0,160}   ///< Blue (dark3)
-#define GSLC_COL_BLUE_DK2   (gslc_Color) {  0,  0,192}   ///< Blue (dark2)
-#define GSLC_COL_BLUE_DK1   (gslc_Color) {  0,  0,224}   ///< Blue (dark1)
-#define GSLC_COL_BLUE       (gslc_Color) {  0,  0,255}   ///< Blue
-#define GSLC_COL_BLUE_LT1   (gslc_Color) { 32, 32,255}   ///< Blue (light1)
-#define GSLC_COL_BLUE_LT2   (gslc_Color) { 64, 64,255}   ///< Blue (light2)
-#define GSLC_COL_BLUE_LT3   (gslc_Color) { 96, 96,255}   ///< Blue (light3)
-#define GSLC_COL_BLUE_LT4   (gslc_Color) {128,128,255}   ///< Blue (light4)
-#define GSLC_COL_BLACK      (gslc_Color) {  0,  0,  0}   ///< Black
-#define GSLC_COL_GRAY_DK3   (gslc_Color) { 32, 32, 32}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK2   (gslc_Color) { 64, 64, 64}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK1   (gslc_Color) { 96, 96, 96}   ///< Gray (dark)
-#define GSLC_COL_GRAY       (gslc_Color) {128,128,128}   ///< Gray
-#define GSLC_COL_GRAY_LT1   (gslc_Color) {160,160,160}   ///< Gray (light1)
-#define GSLC_COL_GRAY_LT2   (gslc_Color) {192,192,192}   ///< Gray (light2)
-#define GSLC_COL_GRAY_LT3   (gslc_Color) {224,224,224}   ///< Gray (light3)
-#define GSLC_COL_WHITE      (gslc_Color) {255,255,255}   ///< White
+#define GSLC_COL_RED_DK4    (gslc_tsColor) {128,  0,  0}   ///< Red (dark4)
+#define GSLC_COL_RED_DK3    (gslc_tsColor) {160,  0,  0}   ///< Red (dark3)
+#define GSLC_COL_RED_DK2    (gslc_tsColor) {192,  0,  0}   ///< Red (dark2)
+#define GSLC_COL_RED_DK1    (gslc_tsColor) {224,  0,  0}   ///< Red (dark1)
+#define GSLC_COL_RED        (gslc_tsColor) {255,  0,  0}   ///< Red
+#define GSLC_COL_RED_LT1    (gslc_tsColor) {255, 32, 32}   ///< Red (light1)
+#define GSLC_COL_RED_LT2    (gslc_tsColor) {255, 64, 64}   ///< Red (light2)
+#define GSLC_COL_RED_LT3    (gslc_tsColor) {255, 96, 96}   ///< Red (light3)
+#define GSLC_COL_RED_LT4    (gslc_tsColor) {255,128,128}   ///< Red (light4)
+#define GSLC_COL_GREEN_DK4  (gslc_tsColor) {  0,128,  0}   ///< Green (dark4)
+#define GSLC_COL_GREEN_DK3  (gslc_tsColor) {  0,160,  0}   ///< Green (dark3)
+#define GSLC_COL_GREEN_DK2  (gslc_tsColor) {  0,192,  0}   ///< Green (dark2)
+#define GSLC_COL_GREEN_DK1  (gslc_tsColor) {  0,224,  0}   ///< Green (dark1)
+#define GSLC_COL_GREEN      (gslc_tsColor) {  0,255,  0}   ///< Green
+#define GSLC_COL_GREEN_LT1  (gslc_tsColor) { 32,255, 32}   ///< Green (light1)
+#define GSLC_COL_GREEN_LT2  (gslc_tsColor) { 64,255, 64}   ///< Green (light2)
+#define GSLC_COL_GREEN_LT3  (gslc_tsColor) { 96,255, 96}   ///< Green (light3)
+#define GSLC_COL_GREEN_LT4  (gslc_tsColor) {128,255,128}   ///< Green (light4)
+#define GSLC_COL_BLUE_DK4   (gslc_tsColor) {  0,  0,128}   ///< Blue (dark4)
+#define GSLC_COL_BLUE_DK3   (gslc_tsColor) {  0,  0,160}   ///< Blue (dark3)
+#define GSLC_COL_BLUE_DK2   (gslc_tsColor) {  0,  0,192}   ///< Blue (dark2)
+#define GSLC_COL_BLUE_DK1   (gslc_tsColor) {  0,  0,224}   ///< Blue (dark1)
+#define GSLC_COL_BLUE       (gslc_tsColor) {  0,  0,255}   ///< Blue
+#define GSLC_COL_BLUE_LT1   (gslc_tsColor) { 32, 32,255}   ///< Blue (light1)
+#define GSLC_COL_BLUE_LT2   (gslc_tsColor) { 64, 64,255}   ///< Blue (light2)
+#define GSLC_COL_BLUE_LT3   (gslc_tsColor) { 96, 96,255}   ///< Blue (light3)
+#define GSLC_COL_BLUE_LT4   (gslc_tsColor) {128,128,255}   ///< Blue (light4)
+#define GSLC_COL_BLACK      (gslc_tsColor) {  0,  0,  0}   ///< Black
+#define GSLC_COL_GRAY_DK3   (gslc_tsColor) { 32, 32, 32}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK2   (gslc_tsColor) { 64, 64, 64}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK1   (gslc_tsColor) { 96, 96, 96}   ///< Gray (dark)
+#define GSLC_COL_GRAY       (gslc_tsColor) {128,128,128}   ///< Gray
+#define GSLC_COL_GRAY_LT1   (gslc_tsColor) {160,160,160}   ///< Gray (light1)
+#define GSLC_COL_GRAY_LT2   (gslc_tsColor) {192,192,192}   ///< Gray (light2)
+#define GSLC_COL_GRAY_LT3   (gslc_tsColor) {224,224,224}   ///< Gray (light3)
+#define GSLC_COL_WHITE      (gslc_tsColor) {255,255,255}   ///< White
 
-#define GSLC_COL_YELLOW     (gslc_Color) {255,255,0}     ///< Yellow
-#define GSLC_COL_YELLOW_DK  (gslc_Color) {64,64,0}       ///< Yellow (dark)
-#define GSLC_COL_PURPLE     (gslc_Color) {128,0,128}     ///< Purple
-#define GSLC_COL_CYAN       (gslc_Color) {0,255,255}     ///< Cyan
-#define GSLC_COL_MAGENTA    (gslc_Color) {255,0,255}     ///< Magenta
-#define GSLC_COL_TEAL       (gslc_Color) {0,128,128}     ///< Teal
-#define GSLC_COL_ORANGE     (gslc_Color) {255,165,0}     ///< Orange
-#define GSLC_COL_BROWN      (gslc_Color) {165,42,42}     ///< Brown
+#define GSLC_COL_YELLOW     (gslc_tsColor) {255,255,0}     ///< Yellow
+#define GSLC_COL_YELLOW_DK  (gslc_tsColor) {64,64,0}       ///< Yellow (dark)
+#define GSLC_COL_PURPLE     (gslc_tsColor) {128,0,128}     ///< Purple
+#define GSLC_COL_CYAN       (gslc_tsColor) {0,255,255}     ///< Cyan
+#define GSLC_COL_MAGENTA    (gslc_tsColor) {255,0,255}     ///< Magenta
+#define GSLC_COL_TEAL       (gslc_tsColor) {0,128,128}     ///< Teal
+#define GSLC_COL_ORANGE     (gslc_tsColor) {255,165,0}     ///< Orange
+#define GSLC_COL_BROWN      (gslc_tsColor) {165,42,42}     ///< Brown
 
 
 /// Touch event type for element touch tracking
@@ -281,27 +271,27 @@ typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElem);
 
 
 /// Rectangular region. Defines X,Y corner coordinates plus dimensions.
-typedef struct gslc_Rect {
+typedef struct gslc_tsRect {
   int16_t   x;    ///< X coordinate of corner
   int16_t   y;    ///< Y coordinate of corner
   uint16_t  w;    ///< Width of region
   uint16_t  h;    ///< Height of region
-} gslc_Rect;
+} gslc_tsRect;
 
 
 /// Define point coordinates
-typedef struct gslc_Pt {
-  int   x;    ///< X coordinate
-  int   y;    ///< Y coordinate
-} gslc_Pt;
+typedef struct gslc_tsPt {
+  int   x;        ///< X coordinate
+  int   y;        ///< Y coordinate
+} gslc_tsPt;
 
 /// Color structure. Defines RGB triplet.
-typedef struct gslc_Color {
+typedef struct gslc_tsColor {
   uint8_t r;      ///< RGB red value
   uint8_t g;      ///< RGB green value
   uint8_t b;      ///< RGB blue value
   uint8_t unused; ///< Unused value to pad structure
-} gslc_Color;
+} gslc_tsColor;
 
 /// Event structure
 typedef struct gslc_tsEvent {
@@ -321,6 +311,12 @@ typedef struct gslc_tsEventTouch {
   int16_t           nY;               ///< Touch Y coordinate (absolute)
 } gslc_tsEventTouch;
 
+/// Font reference structure
+typedef struct {
+  int       nId;      ///< Font ID specified by user
+  void*     pvFont;   ///< Void ptr to the Font (type defined by driver)
+  uint16_t  nSize;    ///< Font size
+} gslc_tsFont;
 
 
 ///
@@ -339,7 +335,7 @@ typedef struct gslc_tsElem {
   bool                bValid;           ///< Element was created properly
 
   int                 nType;            ///< Element type enumeration
-  gslc_Rect           rElem;            ///< Rect region containing element
+  gslc_tsRect         rElem;            ///< Rect region containing element
   int                 nGroup;           ///< Group ID that the element belongs to  
   
   // Behavior settings
@@ -354,10 +350,10 @@ typedef struct gslc_tsElem {
                                         ///< if elements underneath are visible and must
                                         ///< be redrawn as well.
   
-  gslc_Color          colElemFrame;     ///< Color for frame
-  gslc_Color          colElemFill;      ///< Color for background fill
-  gslc_Color          colElemFrameGlow; ///< Color to use for frame when glowing  
-  gslc_Color          colElemFillGlow;  ///< Color to use for fill when glowing
+  gslc_tsColor        colElemFrame;     ///< Color for frame
+  gslc_tsColor        colElemFill;      ///< Color for background fill
+  gslc_tsColor        colElemFrameGlow; ///< Color to use for frame when glowing  
+  gslc_tsColor        colElemFillGlow;  ///< Color to use for fill when glowing
   
   void*               pvImgNorm;        ///< Image ptr to draw (normal)
   void*               pvImgGlow;        ///< Image ptr to draw (glowing)
@@ -370,11 +366,11 @@ typedef struct gslc_tsElem {
   
   // Text handling
   char                acStr[GSLC_ELEM_STRLEN_MAX];  ///< Text string to overlay
-  gslc_Color          colElemText;      ///< Color of overlay text
-  gslc_Color          colElemTextGlow;  ///< Color of overlay text when glowing
+  gslc_tsColor        colElemText;      ///< Color of overlay text
+  gslc_tsColor        colElemTextGlow;  ///< Color of overlay text when glowing
   unsigned            eTxtAlign;        ///< Alignment of overlay text
   unsigned            nTxtMargin;       ///< Margin of overlay text within rect region
-  void*               pvTxtFont;        ///< Void ptr to Font for overlay text
+  gslc_tsFont*        pTxtFont;         ///< Ptr to Font for overlay text
 
   // Extended data elements
   void*               pXData;           ///< Ptr to extended data structure
@@ -411,11 +407,6 @@ typedef struct {
 } gslc_tsCollect;
 
 
-/// Font reference structure
-typedef struct {
-  int     nId;      ///< Font ID specified by user
-  void*   pvFont;   ///< Void ptr to the Font (type defined by driver)
-} gslc_tsFont;
 
 
 /// Page structure
@@ -458,7 +449,12 @@ typedef struct {
   unsigned            nTouchLastPress;  ///< Last touch event pressure (0=none))
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
-  bool                bRedrawPartialEn; ///< Driver supports partial page redraw
+  bool                bRedrawPartialEn; ///< Driver supports partial page redraw.
+                                        ///< If true, only changed elements are redrawn
+                                        ///< during next page redraw command.
+                                        ///< If false, entire page is redrawn when any
+                                        ///< element has been updated prior to next
+                                        ///< page redraw command.
   
   // Primary surface definitions
   void*               pvImgBkgnd;       ///< Driver-specific image data for background
@@ -485,6 +481,8 @@ typedef struct {
 // ------------------------------------------------------------------------
 // General purpose macros
 // ------------------------------------------------------------------------
+
+// TODO: Consider supporting Serial.println() for Arduino target
 #define debug_print(fmt, ...) \
         do { if (DEBUG_ERR) fprintf(stderr, ": " fmt, \
                                 __VA_ARGS__); } while (0)  
@@ -501,20 +499,6 @@ typedef struct {
 ///
 char* gslc_GetVer(gslc_tsGui* pGui);
 
-///
-/// Configure environment variables suitable for
-/// default driver operations.
-///
-/// - NOTE: Users with other hardware may need to
-///   supply their own initialization routine
-///   as these defaults may not be suitable.
-///
-/// \param[in]  acDevFb:    Path to framebuffer device (NULL if none)
-/// \param[in]  acDevTouch: Path to touchscreen device (NULL if none)
-///
-/// \return None
-///
-void gslc_InitEnv(const char* acDevFb,const char* acDevTouch);
 
 ///
 /// Initialize the GUIslice library
@@ -523,8 +507,7 @@ void gslc_InitEnv(const char* acDevFb,const char* acDevTouch);
 ///
 /// PRE:
 /// - The environment variables should be configured before
-///   calling gslc_Init(). This can be done with gslc_InitEnv()
-///   or manually in user function.
+///   calling gslc_Init().
 ///
 /// \param[in]  pGui:      Pointer to GUI
 /// \param[in]  pvDriver:  Void pointer to Driver struct (gslc_tsDriver*)
@@ -594,7 +577,7 @@ gslc_tsEvent gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvS
 ///
 /// \return true if inside region, false otherwise
 ///
-bool gslc_IsInRect(int nSelX,int nSelY,gslc_Rect rRect);
+bool gslc_IsInRect(int nSelX,int nSelY,gslc_tsRect rRect);
 
 
 ///
@@ -607,9 +590,9 @@ bool gslc_IsInRect(int nSelX,int nSelY,gslc_Rect rRect);
 /// \param[in]  nExpandH:    Number of pixels to expand the height (if positive)
 ///                          of contract the height (if negative)
 ///
-/// \return gslc_Rect() with resized dimensions
+/// \return gslc_tsRect() with resized dimensions
 ///
-gslc_Rect gslc_ExpandRect(gslc_Rect rRect,int16_t nExpandW,int16_t nExpandH);
+gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH);
 
 
 ///
@@ -649,7 +632,7 @@ bool gslc_IsInWH(gslc_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t n
 ///
 /// \return none
 ///
-void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol);
+void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol);
 
 
 ///
@@ -664,7 +647,7 @@ void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_Color nCol);
 ///
 /// \return none
 ///
-void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_Color nCol);
+void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol);
 
 
 ///
@@ -679,7 +662,7 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 ///
 /// \return none
 ///
-void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Color nCol);
+void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_tsColor nCol);
 
 
 ///
@@ -694,7 +677,7 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_Co
 ///
 /// \return none
 ///
-void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Color nCol);
+void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_tsColor nCol);
 
 
 ///
@@ -706,7 +689,7 @@ void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_Co
 ///
 /// \return none
 ///
-void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
+void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 
 
 ///
@@ -718,7 +701,7 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
 ///
 /// \return none
 ///
-void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
+void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 
 ///
 /// Draw a framed circle
@@ -732,7 +715,7 @@ void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol);
 /// \return none
 ///
 void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
-  uint16_t nRadius,gslc_Color nCol);
+  uint16_t nRadius,gslc_tsColor nCol);
 
 
 
@@ -745,13 +728,13 @@ void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
 /// font ID (nFontId).
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nFontId:     ID to use when referncing this font
+/// \param[in]  nFontId:     ID to use when referencing this font
 /// \param[in]  acFontName:  Filename path to the font
 /// \param[in]  nFontSz:     Typeface size to use
 ///
 /// \return true if load was successful, false otherwise
 ///
-bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId, const char* acFontName, unsigned nFontSz);
+bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId, const char* acFontName, uint16_t nFontSz);
 
 
 ///
@@ -761,10 +744,9 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId, const char* acFontName, unsigned
 /// \param[in]  nFontId:     ID value used to reference the font (supplied
 ///                          originally to gslc_FontAdd()
 ///
-/// \return A void pointer to the font data or NULL if error
-///         The type is defined by the driver.
+/// \return A pointer to the font structure or NULL if error
 ///
-void* gslc_FontGet(gslc_tsGui* pGui,int nFontId);
+gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int nFontId);
 
 
 
@@ -949,7 +931,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui);
 /// \return Pointer to the Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_Rect rElem,const char* pStr,int nFontId);
+  gslc_tsRect rElem,const char* pStr,int nFontId);
 
 
 ///
@@ -968,7 +950,7 @@ gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,
 /// \return Pointer to the Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_Rect rElem,const char* acStr,int nFontId,GSLC_CB_TOUCH cbTouch);
+  gslc_tsRect rElem,const char* acStr,int nFontId,GSLC_CB_TOUCH cbTouch);
 
 ///
 /// Create a graphical Button Element
@@ -987,7 +969,7 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
 /// \return Pointer to the Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_Rect rElem,const char* acImg,const char* acImgSel,GSLC_CB_TOUCH cbTouch);
+  gslc_tsRect rElem,const char* acImg,const char* acImgSel,GSLC_CB_TOUCH cbTouch);
 
 
 ///
@@ -1001,7 +983,7 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect rElem);
+gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_tsRect rElem);
 
 ///
 /// Create an image Element
@@ -1015,7 +997,7 @@ gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,gslc_Rect rElem,
+gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,gslc_tsRect rElem,
   const char* acImg);
 
 
@@ -1064,7 +1046,7 @@ void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn);
 ///
 /// \return none
 ///
-void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,gslc_Color colFillGlow);
+void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFill,gslc_tsColor colFillGlow);
 
 ///
 /// Update the common color selection for glowing state of an Element
@@ -1076,7 +1058,7 @@ void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_Color colFrame,gslc_Color colFill,g
 ///
 /// \return none
 ///
-void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_Color colFrameGlow,gslc_Color colFillGlow,gslc_Color colTxtGlow);
+void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow);
 
 
 ///
@@ -1146,7 +1128,7 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr);
 ///
 /// \return none
 ///
-void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_Color colVal);
+void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal);
 
 
 ///
@@ -1472,7 +1454,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
 /// - This provides an optional handler
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  acDev:       Device path to touchscreen
+/// \param[in]  acDev:       Device path to touchscreen (or "" if not applicable))
 ///                          eg. "/dev/input/touchscreen"
 ///
 /// \return true if successful
@@ -1506,7 +1488,7 @@ bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev);
 /// \return Initialized structure
 ///
 gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,int nType,
-  gslc_Rect rElem,const char* pStr,int nFontId);
+  gslc_tsRect rElem,const char* pStr,int nFontId);
 
 
 ///
@@ -1533,7 +1515,7 @@ gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem);
 ///
 /// \return true if success, false if error
 ///
-bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect);
+bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
 
 ///
@@ -1571,7 +1553,7 @@ bool gslc_SetBkgndImage(gslc_tsGui* pGui,char* pStrFname);
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol);
+bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
 /// Draw an element to the active display
 /// - Element is referenced by an element pointer

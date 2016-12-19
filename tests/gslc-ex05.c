@@ -12,9 +12,6 @@
 
 #include <libgen.h>       // For path parsing
 
-// Define default device paths for SDL framebuffer & touchscreen
-#define GSLC_SDL_DEV_FB     "/dev/fb1"
-#define GSLC_SDL_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -48,6 +45,31 @@ gslc_tsElem                 m_asElemMain[MAX_ELEM_PG_MAIN];
 gslc_tsElem                 m_asElemExtra[MAX_ELEM_PG_EXTRA];
 
 #define MAX_STR             100
+
+// Configure environment variables suitable for display
+// - These may need modification to match your system
+//   environment and display type
+// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
+// - Note that the environment variable settings can
+//   also be set directly within the shell via export
+//   (or init script).
+//   - eg. export TSLIB_FBDEVICE=/dev/fb1
+void UserInitEnv()
+{
+#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
+  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+#endif  
+  
+#if defined(DRV_TOUCH_TSLIB)
+  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+#endif
+}
 
 // Button callbacks
 // - Show example of common callback function
@@ -89,11 +111,11 @@ bool InitOverlays(char *strPath)
   // PAGE: MAIN
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,50,280,150});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,50,280,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create title
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){10,10,310,40},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,10,310,40},
     "GUIslice Demo",E_FONT_TITLE);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
@@ -101,56 +123,56 @@ bool InitOverlays(char *strPath)
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_Rect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
 
   // Create Extra button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (gslc_Rect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
 
   // Create counter
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,60,50,10},
     "Count:",E_FONT_TXT);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_Rect){100,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
 
   // Create progress bar
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){40,80,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,80,50,10},
     "Progress:",E_FONT_TXT);
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_Rect){100,80,50,10},
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
-    (gslc_Rect){160,60,120,50},E_FONT_BTN);  
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);  
   
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_Rect){40,40,240,160});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){40,40,240,160});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Back button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_Rect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
 
   // Create a few labels
   int16_t    nPosY = 50;
   int16_t    nSpaceY = 20;
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_Rect){60,nPosY,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
     "Data 1",E_FONT_TXT); nPosY += nSpaceY;
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_Rect){60,nPosY,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
     "Data 2",E_FONT_TXT); nPosY += nSpaceY;
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_Rect){60,nPosY,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
     "Data 3",E_FONT_TXT); nPosY += nSpaceY;
   
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
-    (gslc_Rect){130,60,120,50},E_FONT_BTN);
+    (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
-    (gslc_Rect){130,120,120,50},E_FONT_BTN);    
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);    
     
   return true;
 }
@@ -163,11 +185,9 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-
-  gslc_InitEnv(GSLC_SDL_DEV_FB,GSLC_SDL_DEV_TOUCH);
+  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-
-  gslc_InitTs(&m_gui,GSLC_SDL_DEV_TOUCH);
+  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
   // - In this example, we are loading the same font but at

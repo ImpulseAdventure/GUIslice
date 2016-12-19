@@ -5,18 +5,10 @@
 // - Example 07: Sliders with dynamic color control
 //               and position callback
 //
-
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
-// Define default device paths for framebuffer & touchscreen
-#if defined(DRV_DISP_SDL1)
-  #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_DISP_SDL2
-  #define GSLC_DEV_FB     "/dev/fb0"
-#endif
-#define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -52,6 +44,30 @@ int   m_nPosR = 255;
 int   m_nPosG = 128;
 int   m_nPosB = 0;
 
+// Configure environment variables suitable for display
+// - These may need modification to match your system
+//   environment and display type
+// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
+// - Note that the environment variable settings can
+//   also be set directly within the shell via export
+//   (or init script).
+//   - eg. export TSLIB_FBDEVICE=/dev/fb1
+void UserInitEnv()
+{
+#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
+  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+#endif  
+  
+#if defined(DRV_TOUCH_TSLIB)
+  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+#endif
+}
 
 // Quit button callback
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
@@ -89,7 +105,7 @@ bool CbSlidePos(void* pvGui,void* pvElem,int nPos)
   }
   
   // Calculate the new RGB value
-  gslc_Color colRGB = (gslc_Color){m_nPosR,m_nPosG,m_nPosB};
+  gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
   
   // Update the color box
   gslc_tsElem* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
@@ -109,48 +125,48 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){2,2,320,50},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
     "Home Automation",E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_Color){32,32,60});
+  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){0,0,320,50},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
     "Home Automation",E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_Color){128,128,240});
+  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){128,128,240});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
   
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,180});
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   // Create dividers
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,100,280,1});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,280,1});
   gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);  
   
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){235,60,1,35});
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){235,60,1,35});
   gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);  
   
   
   // Create color box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_Rect){20,90+30,130,100});
-  gslc_Color colRGB = (gslc_Color){m_nPosR,m_nPosG,m_nPosB};
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
+  gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE); 
   
   
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_Rect){250,60,50,30},"SAVE",E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){250,60,50,30},"SAVE",E_FONT_BTN,&CbBtnQuit);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
   // Create dummy selector
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,65,100,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,65,100,20},
     "Selected Room:",E_FONT_HEAD);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
-    (gslc_Rect){140,65,80,20},"Kitchen...",E_FONT_BTN,NULL);
+    (gslc_tsRect){140,65,80,20},"Kitchen...",E_FONT_BTN,NULL);
   gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
@@ -165,7 +181,7 @@ bool InitOverlays()
   int nLabelH   = 20;
   int nSlideX   = nLabelX + nLabelW + 20;
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,120,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,120,20},
     "Set LED RGB:",E_FONT_HEAD);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   nCtrlY += 25;
@@ -174,38 +190,38 @@ bool InitOverlays()
   // that is invoked upon change. The common callback will update
   // the color box.
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Red:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
+          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);  
   nCtrlY += nCtrlGap;
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Green:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
+          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Blue:",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
-          (gslc_Rect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
+          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
 
   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){250,230,60,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){250,230,60,10},
     "GUIslice Example",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_BLACK); 
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_RIGHT); 
@@ -221,11 +237,8 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-
-  gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
-
+  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }  
-
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
@@ -268,4 +281,3 @@ int main( int argc, char* args[] )
 
   return 0;
 }
-

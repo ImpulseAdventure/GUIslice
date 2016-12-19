@@ -10,13 +10,6 @@
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
-// Define default device paths for framebuffer & touchscreen
-#if defined(DRV_DISP_SDL1)
-  #define GSLC_DEV_FB     "/dev/fb1"
-#elif DRV_DISP_SDL2
-  #define GSLC_DEV_FB     "/dev/fb0"
-#endif
-#define GSLC_DEV_TOUCH  "/dev/input/touchscreen"
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -49,6 +42,31 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 #define MAX_STR             100
 
+// Configure environment variables suitable for display
+// - These may need modification to match your system
+//   environment and display type
+// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
+// - Note that the environment variable settings can
+//   also be set directly within the shell via export
+//   (or init script).
+//   - eg. export TSLIB_FBDEVICE=/dev/fb1
+void UserInitEnv()
+{
+#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
+  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
+  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+#endif  
+  
+#if defined(DRV_TOUCH_TSLIB)
+  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
+  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+#endif
+}
+
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
@@ -71,52 +89,52 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
   
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_Rect){10,50,300,150});
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_Rect){160,80,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){160,80,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     "Count:",E_FONT_TXT);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_Rect){80,60,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     "",E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
 
   // Create progress bar
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,80,50,10},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
-    (gslc_Rect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
+    (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   
   // Create checkbox 1
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,100,20,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
     "Check1:",E_FONT_TXT);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_Rect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+    (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,135,20,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
     "Radio1:",E_FONT_TXT);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
-    (gslc_Rect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
+    (gslc_tsRect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
 
   // Create radio 2
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_Rect){20,160,20,20},
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
     "Radio2:",E_FONT_TXT);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
-    (gslc_Rect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
+    (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
     
   // Create slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
-    (gslc_Rect){160,140,100,20},0,100,60,5,false);
-  gslc_ElemXSliderSetStyle(pElem,true,(gslc_Color){0,0,128},10,
-          5,(gslc_Color){64,64,64});
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_Rect){160,160,60,20},
+    (gslc_tsRect){160,140,100,20},0,100,60,5,false);
+  gslc_ElemXSliderSetStyle(pElem,true,(gslc_tsColor){0,0,128},10,
+          5,(gslc_tsColor){64,64,64});
+  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,60,20},
     "Slider: ???",E_FONT_TXT);
 
   return true;
@@ -130,12 +148,8 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-
-  gslc_InitEnv(GSLC_DEV_FB,GSLC_DEV_TOUCH);
-
-  // Initialize the collection
+  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-  
   gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts

@@ -5,10 +5,12 @@ A lightweight GUI framework suitable for embedded displays
 
 - Pure C library, no dynamic memory allocation
 - Platform-independent GUI core currently supports SDL1.2 and SDL2.0
-- Typical target: Raspberry Pi (Raspbian Jessie)
+- Typical target: Raspberry Pi (Raspbian Jessie). Coming soon: Arduino!
 - Typical displays: PiTFT, Waveshare, Pi Foundation 7" Display
 - Supports touchscreen control
+- No installation required -- just add include files and go!
 - SDL Dependencies: sdl, sdl-ttf, optional: tslib
+
 
 Screenshots
 

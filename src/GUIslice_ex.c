@@ -67,8 +67,8 @@
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
 gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXGauge* pXData,gslc_Rect rElem,
-  int nMin,int nMax,int nVal,gslc_Color colGauge,bool bVert)
+  gslc_tsXGauge* pXData,gslc_tsRect rElem,
+  int nMin,int nMax,int nVal,gslc_tsColor colGauge,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXGaugeCreate(%s) called with NULL ptr\n","");
@@ -138,9 +138,9 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
   
-  gslc_Rect   rGauge;
-  int             nElemX,nElemY;
-  unsigned        nElemW,nElemH;
+  gslc_tsRect   rGauge;
+  int16_t       nElemX,nElemY;
+  uint16_t      nElemW,nElemH;
 
   nElemX = pElem->rElem.x;
   nElemY = pElem->rElem.y;
@@ -246,7 +246,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   gslc_DrawFillRect(pGui,rGauge,pGauge->colGauge);
 
   // Draw the midpoint line
-  gslc_Rect   rMidLine;
+  gslc_tsRect   rMidLine;
   if (bVert) {
     rMidLine.x = nElemX;
     rMidLine.y = nElemY+nGaugeMid;
@@ -284,8 +284,8 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
 gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXCheckbox* pXData,gslc_Rect rElem,bool bRadio,gslc_teXCheckboxStyle nStyle,
-  gslc_Color colCheck,bool bChecked)
+  gslc_tsXCheckbox* pXData,gslc_tsRect rElem,bool bRadio,gslc_teXCheckboxStyle nStyle,
+  gslc_tsColor colCheck,bool bChecked)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXCheckboxCreate(%s) called with NULL ptr\n","");
@@ -485,7 +485,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
   
-  gslc_Rect    rInner;
+  gslc_tsRect   rInner;
   
   // Fetch the element's extended data structure
   gslc_tsXCheckbox* pCheckbox;
@@ -635,7 +635,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nR
 // - Defines default styling for the element
 // - Defines callback for redraw and touch
 gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSlider* pXData,gslc_Rect rElem,int nPosMin,int nPosMax,int nPos,
+  gslc_tsXSlider* pXData,gslc_tsRect rElem,int nPosMin,int nPosMax,int nPos,
   unsigned nThumbSz,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
@@ -682,8 +682,8 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 }
 
 void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
-        bool bTrim,gslc_Color colTrim,unsigned nTickDiv,
-        int nTickLen,gslc_Color colTick)
+        bool bTrim,gslc_tsColor colTrim,unsigned nTickDiv,
+        int nTickLen,gslc_tsColor colTick)
 {
   if (pElem == NULL) {
     debug_print("ERROR: ElemXSliderSetStyle(%s) called with NULL ptr\n","");
@@ -790,10 +790,10 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   bool            bVert     = pSlider->bVert;
   int             nThumbSz  = pSlider->nThumbSz;
   bool            bTrim     = pSlider->bTrim;
-  gslc_Color      colTrim   = pSlider->colTrim;
+  gslc_tsColor    colTrim   = pSlider->colTrim;
   unsigned        nTickDiv  = pSlider->nTickDiv;
   int             nTickLen  = pSlider->nTickLen;
-  gslc_Color      colTick   = pSlider->colTick;
+  gslc_tsColor    colTick   = pSlider->colTick;
   
   if (bVert) {
     debug_print("ERROR: ElemXSliderDraw(%s) bVert=true not supported yet\n","");
@@ -846,8 +846,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   }
   
 
-  int       nCtrlX0,nCtrlY0;
-  gslc_Rect rThumb;
+  int           nCtrlX0,nCtrlY0;
+  gslc_tsRect   rThumb;
   nCtrlX0   = nX0+nCtrlPos-nThumbSz;
   nCtrlY0   = nYMid-nThumbSz;
   rThumb.x  = nCtrlX0;
@@ -859,7 +859,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   gslc_DrawFillRect(pGui,rThumb,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
   gslc_DrawFrameRect(pGui,rThumb,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
   if (bTrim) {
-    gslc_Rect  rThumbTrim;
+    gslc_tsRect  rThumbTrim;
     rThumbTrim = gslc_ExpandRect(rThumb,-1,-1);
     gslc_DrawFrameRect(pGui,rThumbTrim,pSlider->colTrim);
   }
@@ -963,7 +963,7 @@ static const int  SELNUM_ID_TXT     = 102;
 // Create a compound element
 // - For now just two buttons and a text area
 gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSelNum* pXData,gslc_Rect rElem,int nFontId)
+  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int nFontId)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
@@ -1027,21 +1027,21 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   int   nOffsetY = rElem.y;  
   
   pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    (gslc_Rect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&gslc_ElemXSelNumClick);
-  gslc_ElemSetCol(pElemTmp,(gslc_Color){0,0,192},(gslc_Color){0,0,128},(gslc_Color){0,0,224}); 
+    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&gslc_ElemXSelNumClick);
+  gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
   
   pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    (gslc_Rect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&gslc_ElemXSelNumClick);
-  gslc_ElemSetCol(pElemTmp,(gslc_Color){0,0,192},(gslc_Color){0,0,128},(gslc_Color){0,0,224}); 
+    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&gslc_ElemXSelNumClick);
+  gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);  
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
   
   pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    (gslc_Rect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
+    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
 

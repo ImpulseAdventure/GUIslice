@@ -181,40 +181,6 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   return true;
 }
 
-// Need to configure a number of SDL and TS environment
-// variables. The following demonstrates a way to do this
-// programmatically, but it can also be done via export
-// commands within the shell (or init script).
-// eg. export TSLIB_FBDEVICE=/dev/fb1
-void gslc_DrvInitEnv(const char* acDevFb,const char* acDevTouch)
-{
-#if defined(DRV_DISP_SDL1)
-  // This line already appears to be set in env
-  setenv((char*)"FRAMEBUFFER",acDevFb,1);
-  // The following is the only required entra line
-  setenv((char*)"SDL_FBDEV",acDevFb,1);
-
-  // The following lines don't appear to be required
-  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
-  setenv((char*)"SDL_FBDEV",acDevFb,1);   
-
-
-  // Disable these lines as it appears to cause
-  // conflict in the SDL mouse coordinate reporting
-  // (perhaps b/c it is mixing real mouse and touch?)
-  //setenv((char*)"SDL_MOUSEDRV",(char*)"TSLIB",1);
-  //setenv((char*)"SDL_MOUSEDEV",acDevTouch,1);    
-#endif  
-
-  #if defined(DRV_TOUCH_TSLIB)
-  setenv((char*)"TSLIB_FBDEVICE",acDevFb,1);
-  setenv((char*)"TSLIB_TSDEVICE",acDevTouch,1); 
-  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
-  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
-  #endif
-
-}
 
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
@@ -336,7 +302,7 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,char* pStrFname)
   return true;
 }
 
-bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_Color nCol)
+bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 {
   
   // Dispose of any previous background  
@@ -434,7 +400,7 @@ void gslc_DrvImageDestruct(void* pvImg)
   #endif  
 }
 
-bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_Rect* pRect)
+bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 {
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 #if defined(DRV_DISP_SDL1)
@@ -493,67 +459,44 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   TTF_Quit();  
 }
 
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,gslc_tsElem* pElem)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  if ((pGui == NULL) || (pElem == NULL)) {
+  int nTxtSzW,nTxtSzH;
+  TTF_Font* pDrvFont = (TTF_Font*)(pFont->pvFont);
+  TTF_SizeText(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
+  *pnTxtSzW = (uint16_t)nTxtSzW;
+  *pnTxtSzH = (uint16_t)nTxtSzH;
+  return true;
+}
+
+
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_tsColor colTxt)
+{
+  if ((pGui == NULL) || (pFont == NULL)) {
     debug_print("ERROR: DrvDrawTxt(%s) with NULL ptr\n",""); 
     return false;
   }
-  TTF_Font*   pFont = (TTF_Font*)(pElem->pvTxtFont);  
-  if (pFont == NULL) {
-    debug_print("ERROR: DrvDrawTxt(%s) with NULL font\n",""); 
+  if ((pStr == NULL) || (pStr[0] == '\0')) {
+    return true;
+  }
+
+  gslc_tsDriver*  pDriver   = (gslc_tsDriver*)(pGui->pvDriver);
+  SDL_Surface*    pSurfTxt  = NULL;
+  TTF_Font*       pDrvFont  = (TTF_Font*)(pFont->pvFont);
+  pSurfTxt = TTF_RenderText_Solid(pDrvFont,pStr,gslc_DrvAdaptColor(colTxt));
+  if (pSurfTxt == NULL) {
+    debug_print("ERROR: DrvDrawTxt() failed in TTF_RenderText_Solid() (%s)\n",pStr);
     return false;
   }
 
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
-  SDL_Surface*      surfTxt = NULL;
-  int               nElemX,nElemY;
-  unsigned          nElemW,nElemH;
-  bool              bGlow;
-  
-  nElemX    = pElem->rElem.x;
-  nElemY    = pElem->rElem.y;
-  nElemW    = pElem->rElem.w;
-  nElemH    = pElem->rElem.h;
-  bGlow     = (pElem->bGlowEn && pElem->bGlowing);
-  
-  // Define margined element bounds
-  int         nTxtX = nElemX;
-  int         nTxtY = nElemY;
-  unsigned    nMargin = pElem->nTxtMargin;
-
-
-  // Fetch the size of the text to allow for justification
-  int nTxtSzW,nTxtSzH;
-  TTF_SizeText(pFont,pElem->acStr,&nTxtSzW,&nTxtSzH);
-
-  surfTxt = TTF_RenderText_Solid(pFont,pElem->acStr,
-          gslc_DrvAdaptColor((bGlow)?pElem->colElemTextGlow:pElem->colElemText));
-  if (surfTxt == NULL) {
-    debug_print("ERROR: DrvDrawTxt() failed in TTF_RenderText_Solid() (%s)\n",pElem->acStr);
-    return false;
-  }
-
-  // Handle text alignments
-
-  // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
-  if      (pElem->eTxtAlign & GSLC_ALIGNH_LEFT)     { nTxtX = nElemX+nMargin; }
-  else if (pElem->eTxtAlign & GSLC_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
-  else                                              { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
-
-  // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
-  if      (pElem->eTxtAlign & GSLC_ALIGNV_TOP)      { nTxtY = nElemY+nMargin; }
-  else if (pElem->eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
-  else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
 
 #if defined(DRV_DISP_SDL1)
-  gslc_DrvPasteSurface(pGui,nTxtX,nTxtY,surfTxt,pDriver->pSurfScreen);
+  gslc_DrvPasteSurface(pGui,nTxtX,nTxtY,pSurfTxt,pDriver->pSurfScreen);
 #endif
 #if defined(DRV_DISP_SDL2)
-  SDL_Rect rRect = (SDL_Rect){nTxtX,nTxtY,nTxtSzW,nTxtSzH};
+  SDL_Rect rRect = (SDL_Rect){nTxtX,nTxtY,pSurfTxt->w,pSurfTxt->h};
   SDL_Renderer* pRender = pDriver->pRender;
-  SDL_Texture* pTex = SDL_CreateTextureFromSurface(pRender,surfTxt);
+  SDL_Texture* pTex = SDL_CreateTextureFromSurface(pRender,pSurfTxt);
   if (pTex == NULL) {
     debug_print("ERROR: DrvDrawTxt() error in SDL_CreateTextureFromSurface(): %s\n",SDL_GetError());
     return false;
@@ -568,9 +511,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,gslc_tsElem* pElem)
 #endif
 
   // Dispose of temporary surface
-  if (surfTxt != NULL) {
-    SDL_FreeSurface(surfTxt);
-    surfTxt = NULL;
+  if (pSurfTxt != NULL) {
+    SDL_FreeSurface(pSurfTxt);
+    pSurfTxt = NULL;
   }  
   
   return true;
@@ -606,7 +549,7 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 // -----------------------------------------------------------------------  
 
 
-bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_Color nCol)
+bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_tsColor nCol)
 {
 #if defined(DRV_DISP_SDL1)
   if (gslc_DrvScreenLock(pGui)) {
@@ -627,7 +570,7 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int nX,int nY,gslc_Color nCol)
 }
 
 
-bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_Pt* asPt,unsigned nNumPt,gslc_Color nCol)
+bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,unsigned nNumPt,gslc_tsColor nCol)
 {
 #if defined(DRV_DISP_SDL1)
   unsigned nIndPt;
@@ -642,7 +585,7 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_Pt* asPt,unsigned nNumPt,gslc_Colo
 #if defined(DRV_DISP_SDL2)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Renderer* pRender = pDriver->pRender;     
-  // NOTE: gslc_pt is defined to have the same layout as SDL_Point
+  // NOTE: gslc_tsPt is defined to have the same layout as SDL_Point
   //       so we simply typecast it here. This saves us from having
   //       to perform any malloc() and type conversion.
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
@@ -653,7 +596,7 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_Pt* asPt,unsigned nNumPt,gslc_Colo
   return true;
 }
 
-bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
+bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 #if defined(DRV_DISP_SDL1)
@@ -677,7 +620,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
   return true;
 }
 
-bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
+bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
 #if defined(DRV_DISP_SDL1)
   return false;
@@ -696,7 +639,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_Rect rRect,gslc_Color nCol)
 }
 
 
-bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_Color nCol)
+bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol)
 {
 #if defined(DRV_DISP_SDL1)
   // ERROR
@@ -975,7 +918,7 @@ bool gslc_DrvCleanStart(const char* sTTY)
 // -----------------------------------------------------------------------
 
 // Simple typecasting for abstraction layer
-SDL_Rect  gslc_DrvAdaptRect(gslc_Rect rRect)
+SDL_Rect  gslc_DrvAdaptRect(gslc_tsRect rRect)
 {
   SDL_Rect  rSRect;
   rSRect.x = rRect.x;
@@ -986,7 +929,7 @@ SDL_Rect  gslc_DrvAdaptRect(gslc_Rect rRect)
 }
 
 // Simple typecasting for abstraction layer
-SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol)
+SDL_Color  gslc_DrvAdaptColor(gslc_tsColor sCol)
 {
   SDL_Color  sSCol;
   sSCol.r = sCol.r;
@@ -1008,7 +951,7 @@ SDL_Color  gslc_DrvAdaptColor(gslc_Color sCol)
 
 
 #if defined(DRV_DISP_SDL1)
-uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_Color nCol)
+uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_tsColor nCol)
 {
   if (pGui == NULL) {
     debug_print("ERROR: DrvAdaptColorRaw(%s) called with NULL ptr\n","");
