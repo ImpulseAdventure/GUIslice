@@ -4,9 +4,10 @@ A lightweight GUI framework suitable for embedded displays
 - Web Page: http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 
 - Pure C library, no dynamic memory allocation
-- Platform-independent GUI core currently supports SDL1.2 and SDL2.0
-- Typical target: Raspberry Pi (Raspbian Jessie). Coming soon: Arduino!
-- Typical displays: PiTFT, Waveshare, Pi Foundation 7" Display
+- Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX
+- Typical target: Raspberry Pi, Arduino, LINUX
+- Typical displays: PiTFT, Waveshare, Adafruit TFT 2.2" / 2.8"
 - Supports touchscreen control
-- No installation required -- just add include files and go!
-- SDL Dependencies: sdl, sdl-ttf, optional: tslib
+- No GUIslice installation -- just add include files and go!
+- LINUX Dependencies: sdl, sdl-ttf, optional: tslib
+- Arduino Dependencies: Adafruit-GFX plus display / touch driver library

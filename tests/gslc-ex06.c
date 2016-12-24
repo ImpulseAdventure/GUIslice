@@ -2,8 +2,8 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 06: Example of clipping plus draw
-//               and tick callback function
+// - Example 06 (LINUX):
+//     Example of clipping plus draw and tick callback function
 //
 
 #include "GUIslice.h"
@@ -15,8 +15,10 @@
 
 
 // Defines for resources
+#define MAX_PATH  255
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
 #define IMG_LOGO        "/res/logo1-200x40.bmp"
+char m_strImgLogo[MAX_PATH];
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -34,14 +36,14 @@ float     m_fCoordY = 0;
 float     m_fCoordZ = 0;
 
 // Instantiate the GUI
-#define MAX_FONT            10
+#define MAX_FONT            5
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsXGauge               m_sXGauge;
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    30
+#define MAX_ELEM_PG_MAIN    20
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
@@ -150,7 +152,7 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
+bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -171,11 +173,11 @@ bool InitOverlays(char *strPath)
 
   // Graphic logo
   // - Extra code to demonstrate path generation based on location of executable  
-  char* strImgLogoPath = (char*)malloc(strlen(strPath)+strlen(IMG_LOGO)+1);
-  strcpy(strImgLogoPath, strPath);
-  strcat(strImgLogoPath, IMG_LOGO);  
+  strncpy(m_strImgLogo,strPath,MAX_PATH);
+  strncat(m_strImgLogo,IMG_LOGO,MAX_PATH);
   pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
-    strImgLogoPath);
+    gslc_GetImageFromFile(m_strImgLogo,GSLC_IMGREF_FMT_BMP16));
+  
 
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
@@ -183,46 +185,46 @@ bool InitOverlays(char *strPath)
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){40,210,50,20},"QUIT",E_FONT_BTN,&CbBtnQuit); 
+    (gslc_tsRect){40,210,50,20},"QUIT",0,E_FONT_BTN,&CbBtnQuit); 
 
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
-    "Searches:",E_FONT_TXT);
+    "Searches:",0,E_FONT_TXT);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
-    "",E_FONT_TXT);
+    "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   // Create progress bar
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
-    "Progress:",E_FONT_TXT);
+    "Progress:",0,E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
   
   // Create other labels
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
-    "Coord X:",E_FONT_TXT);
+    "Coord X:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
-    "",E_FONT_TXT);
+    "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
-    "Coord Y:",E_FONT_TXT);
+    "Coord Y:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
-    "",E_FONT_TXT);
+    "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
-    "Coord Z:",E_FONT_TXT);
+    "Coord Z:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
-    "",E_FONT_TXT);
+    "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){120,210,170,20},
-    "Example of GUIslice C library",E_FONT_BTN);
+    "Example of GUIslice C library",0,E_FONT_BTN);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_LEFT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
 
@@ -232,7 +234,7 @@ bool InitOverlays(char *strPath)
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,75-11,100,10},
-    "SCANNER",E_FONT_TXT);
+    "SCANNER",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_DK2);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   
@@ -257,7 +259,6 @@ int main( int argc, char* args[] )
   // Initialize
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);

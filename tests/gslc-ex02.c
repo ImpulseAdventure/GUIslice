@@ -20,13 +20,13 @@ enum {E_FONT_BTN};
 bool    m_bQuit = false;
 
 // Instantiate the GUI
-#define MAX_FONT            10
+#define MAX_FONT            1
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    30
+#define MAX_ELEM_PG_MAIN    5
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
@@ -56,7 +56,7 @@ void UserInitEnv()
 }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
+bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -73,7 +73,6 @@ int main( int argc, char* args[] )
   // Initialize
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
@@ -93,7 +92,7 @@ int main( int argc, char* args[] )
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){120,100,80,40},"Quit",E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){120,100,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------
   // Start display

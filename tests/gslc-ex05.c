@@ -2,8 +2,10 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 05: Multiple page handling
-//               Compound elements
+// - Example 05 (LINUX):
+//     Multiple page handling
+//     Background image
+//     Compound elements
 //
 
 #include "GUIslice.h"
@@ -14,8 +16,10 @@
 
 
 // Defines for resources
+#define MAX_PATH  255
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
 #define IMG_BKGND       "/res/bkgnd1_320x240.bmp"
+char  m_strImgBkgnd[MAX_PATH];
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN,E_PG_EXTRA};
@@ -30,7 +34,7 @@ bool      m_bQuit = false;
 unsigned  m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_FONT            10
+#define MAX_FONT            5
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
@@ -73,10 +77,10 @@ void UserInitEnv()
 
 // Button callbacks
 // - Show example of common callback function
-bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
+bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElem* pElem = (gslc_tsElem*)(pvElem);
-  int nElemId = pElem->nId;
+  int16_t nElemId = pElem->nId;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     if (nElemId == E_ELEM_BTN_QUIT) {
       m_bQuit = true;
@@ -101,11 +105,9 @@ bool InitOverlays(char *strPath)
   
   // -----------------------------------
   // Background
-  char* strImgBkgndPath = (char*)malloc(strlen(strPath)+strlen(IMG_BKGND)+1);
-  strcpy(strImgBkgndPath, strPath);
-  strcat(strImgBkgndPath, IMG_BKGND);
-  gslc_SetBkgndImage(&m_gui,strImgBkgndPath);
-  free(strImgBkgndPath);
+  strncpy(m_strImgBkgnd,strPath,MAX_PATH);
+  strncat(m_strImgBkgnd,IMG_BKGND,MAX_PATH);  
+  gslc_SetBkgndImage(&m_gui,gslc_GetImageFromFile(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP16));
   
   // -----------------------------------
   // PAGE: MAIN
@@ -116,29 +118,29 @@ bool InitOverlays(char *strPath)
 
   // Create title
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,10,310,40},
-    "GUIslice Demo",E_FONT_TITLE);
+    "GUIslice Demo",0,E_FONT_TITLE);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){100,140,50,20},"Quit",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){100,140,50,20},"Quit",0,E_FONT_BTN,&CbBtnCommon);
 
   // Create Extra button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (gslc_tsRect){170,140,50,20},"Extra",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){170,140,50,20},"Extra",0,E_FONT_BTN,&CbBtnCommon);
 
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,60,50,10},
-    "Count:",E_FONT_TXT);
+    "Count:",0,E_FONT_TXT);
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
-    "",E_FONT_TXT);
+    "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
 
   // Create progress bar
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,80,50,10},
-    "Progress:",E_FONT_TXT);
+    "Progress:",0,E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
@@ -155,17 +157,17 @@ bool InitOverlays(char *strPath)
 
   // Create Back button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_tsRect){50,170,50,20},"Back",E_FONT_BTN,&CbBtnCommon);
+    (gslc_tsRect){50,170,50,20},"Back",0,E_FONT_BTN,&CbBtnCommon);
 
   // Create a few labels
   int16_t    nPosY = 50;
   int16_t    nSpaceY = 20;
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    "Data 1",E_FONT_TXT); nPosY += nSpaceY;
+    "Data 1",0,E_FONT_TXT); nPosY += nSpaceY;
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    "Data 2",E_FONT_TXT); nPosY += nSpaceY;
+    "Data 2",0,E_FONT_TXT); nPosY += nSpaceY;
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    "Data 3",E_FONT_TXT); nPosY += nSpaceY;
+    "Data 3",0,E_FONT_TXT); nPosY += nSpaceY;
   
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
@@ -187,7 +189,6 @@ int main( int argc, char* args[] )
   // Initialize
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-  gslc_InitTs(&m_gui,GSLC_DEV_TOUCH);
 
   // Load Fonts
   // - In this example, we are loading the same font but at

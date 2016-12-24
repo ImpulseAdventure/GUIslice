@@ -65,9 +65,9 @@ typedef enum {
 
 /// Extended data for Gauge element
 typedef struct {
-  int             nGaugeMin;    ///< Minimum control value
-  int             nGaugeMax;    ///< Maximum control value
-  int             nGaugeVal;    ///< Current control value
+  int16_t         nGaugeMin;    ///< Minimum control value
+  int16_t         nGaugeMax;    ///< Maximum control value
+  int16_t         nGaugeVal;    ///< Current control value
   gslc_tsColor    colGauge;     ///< Color of gauge fill bar
   bool            bGaugeVert;   ///< Vertical if true, else Horizontal
 } gslc_tsXGauge;
@@ -80,7 +80,7 @@ typedef struct {
 ///   between nMin and nMax.
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining gauge size
@@ -93,8 +93,8 @@ typedef struct {
 ///
 /// \return Pointer to Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXGauge* pXData,gslc_tsRect rElem,int nMin,int nMax,int nVal,gslc_tsColor colGauge,bool bVert);
+gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXGauge* pXData,gslc_tsRect rElem,int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert);
 
 ///
 /// Update a Gauge element's current value
@@ -105,7 +105,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int nVal);
+void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
 
 ///
 /// Draw a gauge element on the screen
@@ -145,7 +145,7 @@ typedef struct {
 /// Create a Checkbox Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining checkbox size
@@ -156,7 +156,7 @@ typedef struct {
 ///
 /// \return Element pointer or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
+gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXCheckbox* pXData,gslc_tsRect rElem,bool bRadio,
   gslc_teXCheckboxStyle nStyle,gslc_tsColor colCheck,bool bChecked);
 
@@ -189,7 +189,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked);
 ///
 /// \return Element Ptr or NULL if none checked
 ///
-gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int nGroupId);
+gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId);
 
 ///
 /// Toggle a Checkbox element's current state
@@ -224,7 +224,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY);
+bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
 // ============================================================================
@@ -232,23 +232,23 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nR
 // ============================================================================
 
 /// Callback function for slider feedback
-typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int nPos);
+typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int16_t nPos);
 
 /// Extended data for Slider element
 typedef struct {
   // Config
   bool            bVert;          ///< Orientation: true if vertical, else horizontal
-  int             nThumbSz;       ///< Size of the thumb control
-  int             nPosMin;        ///< Minimum position value of the slider
-  int             nPosMax;        ///< Maximum position value of the slider
+  int16_t         nThumbSz;       ///< Size of the thumb control
+  int16_t         nPosMin;        ///< Minimum position value of the slider
+  int16_t         nPosMax;        ///< Maximum position value of the slider
   // Style config
-  unsigned        nTickDiv;       ///< Style: number of tickmark divisions (0 for none)
-  int             nTickLen;       ///< Style: length of tickmarks
+  uint16_t        nTickDiv;       ///< Style: number of tickmark divisions (0 for none)
+  int16_t         nTickLen;       ///< Style: length of tickmarks
   gslc_tsColor    colTick;        ///< Style: color of ticks
   bool            bTrim;          ///< Style: show a trim color
   gslc_tsColor    colTrim;        ///< Style: color of trim
   // State
-  int             nPos;           ///< Current position value of the slider
+  int16_t         nPos;           ///< Current position value of the slider
   // Callbacks
   GSLC_CB_XSLIDER_POS pfuncXPos;  ///< Callback func ptr for position update
 } gslc_tsXSlider;
@@ -258,7 +258,7 @@ typedef struct {
 /// Create a Slider Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining checkbox size
@@ -270,9 +270,9 @@ typedef struct {
 ///
 /// \return Element pointer or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSlider* pXData,gslc_tsRect rElem,int nPosMin,int nPosMax,int nPos,
-  unsigned nThumbSz,bool bVert);
+gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXSlider* pXData,gslc_tsRect rElem,int16_t nPosMin,int16_t nPosMax,int16_t nPos,
+  uint16_t nThumbSz,bool bVert);
 
 
 ///
@@ -288,8 +288,8 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 /// \return none
 ///
 void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
-        bool bTrim,gslc_tsColor colTrim,unsigned nTickDiv,
-        int nTickLen,gslc_tsColor colTick);
+        bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
+        int16_t nTickLen,gslc_tsColor colTick);
 
 
 ///
@@ -311,7 +311,7 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem);
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int nPos);
+void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos);
 
 ///
 /// Assign the position callback function for a slider
@@ -346,7 +346,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY);
+bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
 // ============================================================================
@@ -356,16 +356,23 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
 //   decrement button.
 // ============================================================================
 
+#define SELNUM_STR_LEN  6
 
 /// Extended data for SelNum element
 typedef struct {
 
   // Core functionality for SelNum
-  int                 nCounter;       ///< Counter for demo purposes
+  int16_t             nCounter;       ///< Counter for demo purposes
    
   // Internal sub-element members
   gslc_tsCollect      sCollect;       ///< Collection management for sub-elements
   gslc_tsElem         asElem[4];      ///< Storage for sub-elements
+
+  #if (GSLC_LOCAL_STR == 0)
+  // If each element doesn't provide its own string buffer, then
+  // we need to provide storage here in the compound element
+  char                acElemTxt[4][SELNUM_STR_LEN]; ///< Storage for strings
+  #endif
 } gslc_tsXSelNum;
 
 
@@ -375,7 +382,7 @@ typedef struct {
 /// Create a SelNum Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining element size
@@ -383,8 +390,8 @@ typedef struct {
 ///
 /// \return Pointer to Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int nFontId);
+gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId);
 
 
 ///
@@ -418,7 +425,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum);
 ///
 /// \return none
 ///
-void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount);
+void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount);
 
 
 ///
@@ -433,7 +440,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount);
 ///
 /// \return none
 ///
-bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY);
+bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY);
 
 ///
 /// Handle touch (up,down,move) events to SelNum element
@@ -447,7 +454,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,i
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY);
+bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
 // ============================================================================

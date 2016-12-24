@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.7.3    (2016/12/18)
+// - Version 0.8    (2016/12/24)
 // =======================================================================
 //
 // The MIT License
@@ -233,12 +233,31 @@ typedef enum {
   GSLV_EVT_CUSTOM         ///< Custom event
 } gslc_teEventType;
 
+/// Event sub-types
 typedef enum {
   GSLC_EVTSUB_NONE,
   GSLC_EVTSUB_DRAW_NEEDED,
   GSLC_EVTSUB_DRAW_FORCE        
 } gslc_teEventSubType;
 
+/// Image reference flags: Describes characteristics of an image reference
+typedef enum {
+  GSLC_IMGREF_NONE        = 0,        ///< No image defined
+  // Define image sources
+  GSLC_IMGREF_SRC_FILE    = (1<<0),   ///< Image is stored in file system
+  GSLC_IMGREF_SRC_SD      = (2<<0),   ///< Image is stored on SD card
+  GSLC_IMGREF_SRC_RAM     = (3<<0),   ///< Image is stored in RAM
+  GSLC_IMGREF_SRC_PROG    = (4<<0),   ///< Image is stored in program memory (PROGMEM)
+  // Define image types
+          
+  GSLC_IMGREF_FMT_BMP24   = (1<<4),   ///< Image format is BMP (24-bit)
+  GSLC_IMGREF_FMT_BMP16   = (2<<4),   ///< Image format is BMP (16-bit RGB565)
+  GSLC_IMGREF_FMT_RAW1    = (3<<4),   ///< Image format is raw monochrome (1-bit)
+          
+  // Mask values for bitfield comparisons
+  GSLC_IMGREF_SRC         = (7<<0),   ///< Mask for Source flags
+  GSLC_IMGREF_FMT         = (7<<4),   ///< Mask for Format flags
+} gslc_teImgRefFlags;
 
 // -----------------------------------------------------------------------
 // Forward declarations
@@ -259,7 +278,7 @@ typedef bool (*GSLC_CB_EVENT)(void* pvGui,gslc_tsEvent sEvent);
 typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElem);
 
 /// Callback function for element touch tracking
-typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nX,int nY);
+typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY);
 
 /// Callback function for element tick
 typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElem);
@@ -296,7 +315,7 @@ typedef struct gslc_tsColor {
 /// Event structure
 typedef struct gslc_tsEvent {
   gslc_teEventType  eType;    ///< Event type
-  uint32_t          nSubType; ///< Event sub-type
+  uint8_t           nSubType; ///< Event sub-type
   void*             pvScope;  ///< Event target scope (eg. Page,Collection,Event)
   void*             pvData;   ///< Generic data pointer for event. This member is
                               ///< used to either pass a pointer to a simple data
@@ -313,11 +332,19 @@ typedef struct gslc_tsEventTouch {
 
 /// Font reference structure
 typedef struct {
-  int       nId;      ///< Font ID specified by user
+  int16_t   nId;      ///< Font ID specified by user
   void*     pvFont;   ///< Void ptr to the Font (type defined by driver)
   uint16_t  nSize;    ///< Font size
 } gslc_tsFont;
 
+
+/// Image reference structure
+typedef struct {
+  const unsigned char*  pImgBuf;    ///< Pointer to input image buffer in memory [RAM,FLASH]
+  const char*           pFname;     ///< Pathname to input image file [FILE,SD]
+  gslc_teImgRefFlags    eImgFlags;  ///< Image reference flags
+  void*                 pvImgRaw;   ///< Ptr to raw output image data (for pre-loaded images)
+} gslc_tsImgRef;
 
 ///
 /// Element Struct
@@ -331,12 +358,12 @@ typedef struct {
 ///
 typedef struct gslc_tsElem {
 
-  int                 nId;              ///< Element ID specified by user
+  int16_t             nId;              ///< Element ID specified by user
   bool                bValid;           ///< Element was created properly
 
-  int                 nType;            ///< Element type enumeration
+  int16_t             nType;            ///< Element type enumeration
   gslc_tsRect         rElem;            ///< Rect region containing element
-  int                 nGroup;           ///< Group ID that the element belongs to  
+  int16_t             nGroup;           ///< Group ID that the element belongs to  
   
   // Behavior settings
   bool                bGlowEn;          ///< Enable glowing visual state
@@ -354,10 +381,10 @@ typedef struct gslc_tsElem {
   gslc_tsColor        colElemFill;      ///< Color for background fill
   gslc_tsColor        colElemFrameGlow; ///< Color to use for frame when glowing  
   gslc_tsColor        colElemFillGlow;  ///< Color to use for fill when glowing
-  
-  void*               pvImgNorm;        ///< Image ptr to draw (normal)
-  void*               pvImgGlow;        ///< Image ptr to draw (glowing)
 
+  gslc_tsImgRef       sImgRefNorm;      ///< Image reference to draw (normal)
+  gslc_tsImgRef       sImgRefGlow;      ///< Image reference to draw (glowing)
+  
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
   /// redraw as well. Primary usage is in compound
@@ -365,11 +392,18 @@ typedef struct gslc_tsElem {
   gslc_tsElem*        pElemParent;  
   
   // Text handling
-  char                acStr[GSLC_ELEM_STRLEN_MAX];  ///< Text string to overlay
+#if (GSLC_LOCAL_STR)
+  char                pStrBuf[GSLC_LOCAL_STR_LEN];  ///< Text string to overlay
+#else
+  char*               pStrBuf;          ///< Ptr to text string buffer to overlay
+#endif  
+  uint8_t             nStrBufMax;       ///< Size of string buffer
+
+  
   gslc_tsColor        colElemText;      ///< Color of overlay text
   gslc_tsColor        colElemTextGlow;  ///< Color of overlay text when glowing
-  unsigned            eTxtAlign;        ///< Alignment of overlay text
-  unsigned            nTxtMargin;       ///< Margin of overlay text within rect region
+  int8_t              eTxtAlign;        ///< Alignment of overlay text
+  uint8_t             nTxtMargin;       ///< Margin of overlay text within rect region
   gslc_tsFont*        pTxtFont;         ///< Ptr to Font for overlay text
 
   // Extended data elements
@@ -395,9 +429,9 @@ typedef struct gslc_tsElem {
 /// - Pages and Compound Elements both instantiate a Collection
 typedef struct {
   gslc_tsElem*          asElem;           ///< Array of elements
-  unsigned              nElemMax;         ///< Maximum number of elements to allocate
-  unsigned              nElemCnt;         ///< Number of elements allocated
-  unsigned              nElemAutoIdNext;  ///< Next Element ID for auto-assignment
+  uint16_t              nElemMax;         ///< Maximum number of elements to allocate
+  uint16_t              nElemCnt;         ///< Number of elements allocated
+  int16_t               nElemAutoIdNext;  ///< Next Element ID for auto-assignment
   
   gslc_tsElem*          pElemTracked;     ///< Element currently being touch-tracked (NULL for none)
   
@@ -417,7 +451,7 @@ typedef struct {
 
   gslc_tsCollect      sCollect;             ///< Collection of elements on page
   
-  int                 nPageId;              ///< Page identifier
+  int8_t              nPageId;              ///< Page identifier
   
   // Redraw
   bool                bPageNeedRedraw;      ///< Page require a redraw
@@ -434,19 +468,19 @@ typedef struct {
 /// - Maintains list of one or more pages
 typedef struct {
 
-  unsigned            nDispW;           ///< Width of the display (pixels)
-  unsigned            nDispH;           ///< Height of the display (pixels)
-  unsigned            nDispDepth;       ///< Bit depth of display (bits per pixel)
+  uint16_t            nDispW;           ///< Width of the display (pixels)
+  uint16_t            nDispH;           ///< Height of the display (pixels)
+  uint8_t             nDispDepth;       ///< Bit depth of display (bits per pixel)
   
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
-  unsigned            nFontMax;         ///< Maximum number of fonts to allocate
-  unsigned            nFontCnt;         ///< Number of fonts allocated
+  uint8_t             nFontMax;         ///< Maximum number of fonts to allocate
+  uint8_t             nFontCnt;         ///< Number of fonts allocated
 
   gslc_tsElem         sElemTmp;         ///< Temporary element
   
-  int                 nTouchLastX;      ///< Last touch event X coord
-  int                 nTouchLastY;      ///< Last touch event Y coord
-  unsigned            nTouchLastPress;  ///< Last touch event pressure (0=none))
+  int16_t             nTouchLastX;      ///< Last touch event X coord
+  int16_t             nTouchLastY;      ///< Last touch event Y coord
+  uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
   bool                bRedrawPartialEn; ///< Driver supports partial page redraw.
@@ -457,16 +491,16 @@ typedef struct {
                                         ///< page redraw command.
   
   // Primary surface definitions
-  void*               pvImgBkgnd;       ///< Driver-specific image data for background
+  gslc_tsImgRef       sImgRefBkgnd;     ///< Image reference for background
   
-  uint32_t            nFrameRateCnt;    ///< Diagnostic frame rate count
-  uint32_t            nFrameRateStart;  ///< Diagnostic frame rate timestamp
+  uint8_t             nFrameRateCnt;    ///< Diagnostic frame rate count
+  uint8_t             nFrameRateStart;  ///< Diagnostic frame rate timestamp
   
   
   // Pages
   gslc_tsPage*        asPage;           ///< Array of pages
-  unsigned            nPageMax;         ///< Maximum number of pages
-  unsigned            nPageCnt;         ///< Current page index
+  uint8_t             nPageMax;         ///< Maximum number of pages
+  uint8_t             nPageCnt;         ///< Current page index
   
   gslc_tsPage*        pCurPage;         ///< Currently active page
   gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
@@ -482,10 +516,29 @@ typedef struct {
 // General purpose macros
 // ------------------------------------------------------------------------
 
-// TODO: Consider supporting Serial.println() for Arduino target
+// Create debug macro to selectively include the output code
 #define debug_print(fmt, ...) \
-        do { if (DEBUG_ERR) fprintf(stderr, ": " fmt, \
-                                __VA_ARGS__); } while (0)  
+        do { if (DEBUG_ERR) \
+          fprintf(stderr, "" fmt, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
+        } while (0)  
+
+// TODO: Consider supporting Serial.println() for Arduino target
+//       Can only do this if GUIslice files are renamed *.cpp in Arduino environment
+//       otherwise Serial will be undefined.
+/*
+#define debug_print(fmt, ...) \
+        do { if (DEBUG_ERR) \
+          if (DEBUG_ERR_SERIAL) { \
+            Serial.print("ERROR: @"); \
+            Serial.println(__LINE__); \
+          } else { \
+            fprintf(stderr, "" fmt, __VA_ARGS__); \
+            fprintf(stderr, "\n"); \ 
+          } \
+        } while (0)  
+*/
+
 
 
 // ------------------------------------------------------------------------
@@ -518,7 +571,7 @@ char* gslc_GetVer(gslc_tsGui* pGui);
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,unsigned nMaxPage,gslc_tsFont* asFont,unsigned nMaxFont);
+bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont);
 
 
 
@@ -558,7 +611,9 @@ void gslc_Update(gslc_tsGui* pGui);
 ///
 /// \return None
 ///
-gslc_tsEvent gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvScope,void* pvData);
+gslc_tsEvent gslc_EventCreate(gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData);
+
+
 
 
 // ------------------------------------------------------------------------
@@ -577,7 +632,7 @@ gslc_tsEvent gslc_EventCreate(gslc_teEventType eType,uint32_t nSubType,void* pvS
 ///
 /// \return true if inside region, false otherwise
 ///
-bool gslc_IsInRect(int nSelX,int nSelY,gslc_tsRect rRect);
+bool gslc_IsInRect(int16_t nSelX,int16_t nSelY,gslc_tsRect rRect);
 
 
 ///
@@ -608,9 +663,59 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 ///
 /// \return true if inside region, false otherwise
 ///
-bool gslc_IsInWH(gslc_tsGui* pGui,int nSelX,int nSelY,uint16_t nWidth,uint16_t nHeight);
+bool gslc_IsInWH(gslc_tsGui* pGui,int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight);
 
 
+///
+/// Create a blank image reference structure
+///
+/// \return Image reference struct
+///
+gslc_tsImgRef gslc_ResetImage();
+
+
+///
+/// Create an image reference to a bitmap file in LINUX filesystem
+///
+/// \param[in]   pFname       Pointer to filename string of image in filesystem
+/// \param[in]   eFmt         Image format
+///
+/// \return Loaded image reference
+///
+gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt);
+
+
+///
+/// Create an image reference to a bitmap file in SD card
+///
+/// \param[in]   pFname       Pointer to filename string of image in SD card
+/// \param[in]   eFmt         Image format
+///
+/// \return Loaded image reference
+///
+gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt);
+
+
+///
+/// Create an image reference to a bitmap in SRAM
+///
+/// \param[in]   pImgBuf      Pointer to image buffer in memory
+/// \param[in]   eFmt         Image format
+///
+/// \return Loaded image reference
+///
+gslc_tsImgRef gslc_GetImageFromRam(unsigned char* pImgBuf,gslc_teImgRefFlags eFmt);
+
+
+///
+/// Create an image reference to a bitmap in program memory (PROGMEM)
+///
+/// \param[in]   pImgBuf      Pointer to image buffer in memory
+/// \param[in]   eFmt         Image format
+///
+/// \return Loaded image reference
+///
+gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFlags eFmt);
 
 
 // ------------------------------------------------------------------------
@@ -734,7 +839,7 @@ void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
 ///
 /// \return true if load was successful, false otherwise
 ///
-bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId, const char* acFontName, uint16_t nFontSz);
+bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId, const char* acFontName, uint16_t nFontSz);
 
 
 ///
@@ -746,7 +851,7 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int nFontId, const char* acFontName, uint16_t
 ///
 /// \return A pointer to the font structure or NULL if error
 ///
-gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int nFontId);
+gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 
 
 
@@ -794,7 +899,7 @@ int gslc_GetPageCur(gslc_tsGui* pGui);
 ///
 /// \return none
 ///
-void gslc_SetPageCur(gslc_tsGui* pGui,int nPageId);
+void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId);
 
 
 ///
@@ -878,7 +983,7 @@ void gslc_PageFlipGo(gslc_tsGui* pGui);
 ///
 /// \return none
 ///
-void gslc_PageAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* psElem,unsigned nMaxElem);
+void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t nMaxElem);
 
 /// Find a page in the GUI by its ID
 ///
@@ -887,7 +992,7 @@ void gslc_PageAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* psElem,unsigned nMax
 ///
 /// \return Ptr to a page or NULL if none found
 ///
-gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int nPageId);
+gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
 
 /// Find an element in the GUI by its Page ID and Element ID
 ///
@@ -897,7 +1002,7 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int nPageId);
 ///
 /// \return Ptr to an element or NULL if none found
 ///
-gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int nPageId,int nElemId);
+gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 
 /// Perform a redraw calculation on the page to determine if additional
 /// elements should also be redrawn. This routine checks to see if any
@@ -922,16 +1027,18 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui);
 /// - Draws a text string with filled background
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining text background size
-/// \param[in]  pStr:        String to copy into element
+/// \param[in]  pStrBuf:     String to copy into element
+/// \param[in]  nStrBufMax:  Maximum length of string buffer (pStrBuf). Only applicable
+///                          if GSLC_LOCAL_STR=0. Ignored if GSLC_LOCAL_STR=1.)
 /// \param[in]  nFontId:     Font ID to use for text display
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsRect rElem,const char* pStr,int nFontId);
+gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId);
 
 
 ///
@@ -940,17 +1047,21 @@ gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int nElemId,int nPage,
 ///   with frame and fill
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining text background size
-/// \param[in]  acStr:       String to copy into element
+/// \param[in]  pStrBuf:     String to copy into element
+/// \param[in]  nStrBufMax:  Maximum length of string buffer (pStrBuf). Only applicable
+///                          if GSLC_LOCAL_STR=0. Ignored if GSLC_LOCAL_STR=1.)
 /// \param[in]  nFontId:     Font ID to use for text display
 /// \param[in]  cbTouch:     Callback for touch events
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsRect rElem,const char* acStr,int nFontId,GSLC_CB_TOUCH cbTouch);
+gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,
+  int16_t nFontId,GSLC_CB_TOUCH cbTouch);
+
 
 ///
 /// Create a graphical Button Element
@@ -959,17 +1070,17 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int nElemId,int nPage,
 /// - Transparency is supported by bitmap color (0xFF00FF)
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining image size
-/// \param[in]  acImg:       Filename of BMP image to load (unselected state)
-/// \param[in]  acImgSel:    Filename of BMP image to load (selected state)
+/// \param[in]  sImgRef:     Image reference to load (unselected state)
+/// \param[in]  sImgRefSel:  Image reference to load (selected state)
 /// \param[in]  cbTouch:     Callback for touch events
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsRect rElem,const char* acImg,const char* acImgSel,GSLC_CB_TOUCH cbTouch);
+gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsRect rElem,gslc_tsImgRef sImgRef,gslc_tsImgRef sImgRefSel,GSLC_CB_TOUCH cbTouch);
 
 
 ///
@@ -977,29 +1088,28 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int nElemId,int nPage,
 /// - Draws a box with frame and fill
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining box size
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int nElemId,int nPage,gslc_tsRect rElem);
+gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem);
 
 ///
 /// Create an image Element
 /// - Draws an image
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..32767 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  rElem:       Rectangle coordinates defining box size
-/// \param[in]  acImg:       Filename of BMP image to load
+/// \param[in]  sImgRef:     Image reference to load
 ///
 /// \return Pointer to the Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int nElemId,int nPage,gslc_tsRect rElem,
-  const char* acImg);
-
+gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem,
+  gslc_tsImgRef sImgRef);
 
 
 // ------------------------------------------------------------------------
@@ -1251,7 +1361,7 @@ void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb);
 ///
 /// \return true if inside element, false otherwise
 ///
-bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int nX,int nY,bool bOnlyClickEn);
+bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int16_t nX,int16_t nY,bool bOnlyClickEn);
 
 
 // ------------------------------------------------------------------------
@@ -1283,7 +1393,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 /// \return none
 ///
-void gslc_ElemDraw(gslc_tsGui* pGui,int nPageId,int nElemId);
+void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 
 
 
@@ -1300,7 +1410,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int nPageId,int nElemId);
 ///
 /// \return none
 /// 
-void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,unsigned nElemMax);
+void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax);
 
 
 /// Add an element to a collection
@@ -1325,7 +1435,7 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem);
 /// \return Pointer to the element in the collection that was found
 ///         or NULL if no matches found
 /// 
-gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int nElemId);
+gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId);
 
 
 /// Find an element in a collection by a coordinate coordinate
@@ -1339,7 +1449,7 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int nElemId);
 /// \return Pointer to the element in the collection that was found
 ///         or NULL if no matches found
 /// 
-gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int nX, int nY);
+gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
 
 
 /// Allocate the next available Element ID in a collection
@@ -1439,7 +1549,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 ///
 /// \return none
 ///
-void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned nPress);
+void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress);
 
 
 
@@ -1451,7 +1561,6 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
 
 ///
 /// Initialize the touchscreen device driver
-/// - This provides an optional handler
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  acDev:       Device path to touchscreen (or "" if not applicable))
@@ -1459,7 +1568,20 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int nX,int nY,unsigned 
 ///
 /// \return true if successful
 ///
-bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev);
+bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
+
+
+///
+/// Initialize the touchscreen device driver
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[out] pnX:         Ptr to int to contain latest touch X coordinate
+/// \param[out] pnY:         Ptr to int to contain latest touch Y coordinate
+/// \param[out] pnPress:     Ptr to int to contain latest touch pressure value
+///
+/// \return true if touch event, false otherwise
+///
+bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress);
 
 
 
@@ -1482,13 +1604,15 @@ bool gslc_InitTs(gslc_tsGui* pGui,const char* acDev);
 ///                           that is requested for creation. The type adjusts
 ///                           the visual representation and default styling.
 /// \param[in]  rElem:        Rectangle region framing the element
-/// \param[in]  pStr:         Pointer to string for textual elements
+/// \param[in]  pStrBuf:      String to copy into element
+/// \param[in]  nStrBufMax:   Maximum length of string buffer (pStrBuf). Only applicable
+///                           if GSLC_LOCAL_STR=0. Ignored if GSLC_LOCAL_STR=1.)
 /// \param[in]  nFontId:      Font ID for textual elements
 ///
 /// \return Initialized structure
 ///
-gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,int nType,
-  gslc_tsRect rElem,const char* pStr,int nFontId);
+gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int16_t nType,
+  gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId);
 
 
 ///
@@ -1504,7 +1628,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int nElemId,int nPageId,int nType,
 ///
 /// \return Pointer to Element or NULL if fail
 ///
-gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int nPageId,gslc_tsElem* pElem);
+gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem);
 
 
 ///
@@ -1523,13 +1647,13 @@ bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element to update
-/// \param[in]  acImage:     String of filename for image
-/// \param[in]  acImageSel:  String of filename for image (selected)
+/// \param[in]  sImgRef:     Image reference (normal state)
+/// \param[in]  sImgRefSel:  Image reference (glowing state)
 ///
 /// \return none
 ///
-void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
-  const char* acImageSel);
+void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef,
+  gslc_tsImgRef sImgRefSel);
 
 
 ///
@@ -1537,12 +1661,11 @@ void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* acImage,
 /// - The background is used when redrawing the entire page
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pStrFname:   Filename to BMP file
+/// \param[in]  sImgRef:     Image reference
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_SetBkgndImage(gslc_tsGui* pGui,char* pStrFname);
-
+bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 
 ///
 /// Configure the background to use a solid color
@@ -1621,7 +1744,7 @@ void gslc_ElemDestruct(gslc_tsElem* pElem);
 /// \return true if success, false if error
 ///
 bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElem* pElemTracked,
-        gslc_teTouch eTouch,int nX,int nY);
+        gslc_teTouch eTouch,int16_t nX,int16_t nY);
 
 
 ///

@@ -2,16 +2,24 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 07 (LINUX):
+// - Example 07 (Arduino):
 //     Sliders with dynamic color control and position callback
 //
+// ARDUINO NOTES:
+// - GUIslice_config.h must be edited to match the pinout connections
+//   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
+// - To support a reasonable number of GUI elements, it is recommended to
+//   use a CPU that provides more than 2KB of SRAM, for example:
+//   - Arduino ATmega2560
+//   - Cortex M0 (eg. Adafruit Feather M0)
+//   - Cortex M3 (eg. STM32duino / STM32F103C8T6)
+
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
-
 // Defines for resources
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -32,45 +40,20 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsXSlider              m_sXSlider_R,m_sXSlider_G,m_sXSlider_B;
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    20
+#define MAX_ELEM_PG_MAIN    17
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
-
 
 // Current RGB value for color box
 // - Globals defined here for convenience so that callback
 //   can update R,G,B components independently
-uint16_t   m_nPosR = 255;
-uint16_t   m_nPosG = 128;
-uint16_t   m_nPosB = 0;
+uint8_t   m_nPosR = 255;
+uint8_t   m_nPosG = 128;
+uint8_t   m_nPosB = 0;
 
-// Configure environment variables suitable for display
-// - These may need modification to match your system
-//   environment and display type
-// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
-// - Note that the environment variable settings can
-//   also be set directly within the shell via export
-//   (or init script).
-//   - eg. export TSLIB_FBDEVICE=/dev/fb1
-void UserInitEnv()
-{
-#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
-  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
-#endif  
-  
-#if defined(DRV_TOUCH_TSLIB)
-  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
-  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
-  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
-#endif
-}
 
 // Quit button callback
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -83,7 +66,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // - Note that all three sliders use the same callback for
 //   convenience. From the element's ID we can determine which
 //   slider was updated.
-bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
+bool CbSlidePos(void* pvGui,void* pvElem,int nPos)
 {
   gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
   gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);  
@@ -114,6 +97,8 @@ bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
   return true;
 }
 
+
+
 // Create page elements
 bool InitOverlays()
 {
@@ -125,13 +110,15 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
+  static char mstr1[] = "Home Automation";
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
-    "Home Automation",0,E_FONT_TITLE);
+    mstr1,strlen(mstr1),E_FONT_TITLE);
   gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
+
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
-    "Home Automation",0,E_FONT_TITLE);
+    mstr1,strlen(mstr1),E_FONT_TITLE);
   gslc_ElemSetTxtCol(pElem,(gslc_tsColor){128,128,240});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
@@ -153,20 +140,22 @@ bool InitOverlays()
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE); 
   
-  
   // Create Quit button with text label
+  static char mstr2[] = "SAVE";  
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},"SAVE",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){250,60,50,30},mstr2,strlen(mstr2),E_FONT_BTN,&CbBtnQuit);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
   // Create dummy selector
+  static char mstr3[] = "Selected Room:";   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,65,100,20},
-    "Selected Room:",0,E_FONT_HEAD);
+    mstr3,strlen(mstr3),E_FONT_HEAD);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
+  static char mstr4[] = "Kitchen...";  
   pElem = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
-   (gslc_tsRect){140,65,80,20},"Kitchen...",0,E_FONT_BTN,NULL); 
+    (gslc_tsRect){140,65,80,20},mstr4,strlen(mstr4),E_FONT_BTN,NULL);
   gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
@@ -180,18 +169,20 @@ bool InitOverlays()
   uint16_t  nLabelW   = 30;
   uint16_t  nLabelH   = 20;
   int16_t   nSlideX   = nLabelX + nLabelW + 20;
-  
+
+  static char mstr5[] = "Set LED RGB:";   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,120,20},
-    "Set LED RGB:",0,E_FONT_HEAD);
+    mstr5,strlen(mstr5),E_FONT_HEAD);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   nCtrlY += 25;
   
   // Create three sliders (R,G,B) and assign callback function
   // that is invoked upon change. The common callback will update
   // the color box.
-  
+
+  static char mstr6[] = "Red:";  
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
-    "Red:",0,E_FONT_TXT);
+    mstr6,strlen(mstr6),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
@@ -200,9 +191,10 @@ bool InitOverlays()
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);  
   nCtrlY += nCtrlGap;
-  
+
+  static char mstr7[] = "Green:";    
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
-    "Green:",0,E_FONT_TXT);
+    mstr7,strlen(mstr7),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
@@ -212,9 +204,10 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
   
-  
+
+  static char mstr8[] = "Blue:";      
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
-    "Blue:",0,E_FONT_TXT);
+    mstr8,strlen(mstr8),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
   
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
@@ -224,35 +217,35 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
 
-  
+
+  static char mstr9[] = "GUIslice Example";  
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){250,230,60,10},
-    "GUIslice Example",0,E_FONT_TXT);
+    mstr9,strlen(mstr9),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_BLACK); 
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_RIGHT); 
   gslc_ElemSetFillEn(pElem,false); 
-  
+
   return true;
 }
 
 
-int main( int argc, char* args[] )
+void setup()
 {
   bool                bOk = true;
 
   // -----------------------------------
   // Initialize
-  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }  
 
   // Load Fonts
   // - Normally we would select a number of different fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,14);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,FONT_DROID_SANS,14);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,"",1);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,FONT_DROID_SANS,36);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
   // -----------------------------------
@@ -282,5 +275,7 @@ int main( int argc, char* args[] )
 
   gslc_Quit(&m_gui);
 
-  return 0;
 }
+
+void loop() { }
+

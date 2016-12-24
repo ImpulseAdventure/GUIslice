@@ -2,12 +2,13 @@ FEATURES
 ========
 * Polygon drawing primitive
 * Keypress handler
-* Add graphics driver for Adafruit-GFX
 
 IMPROVEMENTS
 ============
 * Move the background into its own element
 * Enhance compound element (tsXSelNum) usage of common event passing system
+* Support debug_print() in GUIslice.c for Arduino
+* Support 16b BMP load from SD in DrawBmp24FromSD() for Arduino
 
 BUGS
 ====

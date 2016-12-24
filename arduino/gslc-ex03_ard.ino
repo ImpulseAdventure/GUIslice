@@ -2,20 +2,32 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 03 (LINUX):
+// - Example 03 (Arduino):
 //     Accept touch input, graphic button
 //
+// ARDUINO NOTES:
+// - GUIslice_config.h must be edited to match the pinout connections
+//   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
+// - This example assumes that two image files have been created in the
+//   root of the SD card directory: "exit_n24.bmp" and "exit_g24.bmp"
+//   representing the quit button normal and glowing states. The file
+//   format is 24-bit BMP. These files have been included for reference in
+//   /arduino/res/
+// - To support a reasonable number of GUI elements, it is recommended to
+//   use a CPU that provides more than 2KB of SRAM, for example:
+//   - Arduino ATmega2560
+//   - Cortex M0 (eg. Adafruit Feather M0)
+//   - Cortex M3 (eg. STM32duino / STM32F103C8T6)
 
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include <libgen.h>       // For path parsing
 
 
 // Defines for resources
 #define MAX_PATH  255
-#define IMG_BTN_QUIT      "/res/btn-exit32x32.bmp"
-#define IMG_BTN_QUIT_SEL  "/res/btn-exit_sel32x32.bmp"
+#define IMG_BTN_QUIT      "exit_n24.bmp"
+#define IMG_BTN_QUIT_SEL  "exit_g24.bmp"
 char    m_strImgQuit[MAX_PATH];
 char    m_strImgQuitSel[MAX_PATH];
 
@@ -30,34 +42,10 @@ gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    5
+#define MAX_ELEM_PG_MAIN    6
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
-// Configure environment variables suitable for display
-// - These may need modification to match your system
-//   environment and display type
-// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
-// - Note that the environment variable settings can
-//   also be set directly within the shell via export
-//   (or init script).
-//   - eg. export TSLIB_FBDEVICE=/dev/fb1
-void UserInitEnv()
-{
-#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
-  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
-#endif  
-  
-#if defined(DRV_TOUCH_TSLIB)
-  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
-  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
-  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
-#endif
-}
 
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
@@ -68,8 +56,8 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
   return true;
 }
 
-// - strPath: Path to executable passed in to locate resource files
-bool InitOverlays(const char *strPath)
+
+bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
   
@@ -83,31 +71,25 @@ bool InitOverlays(const char *strPath)
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with image label
-  // - Extra code to demonstrate path generation based on location of executable
-  strncpy(m_strImgQuit,strPath,MAX_PATH);
-  strncat(m_strImgQuit,IMG_BTN_QUIT,MAX_PATH);
-  strncpy(m_strImgQuitSel,strPath,MAX_PATH);
-  strncat(m_strImgQuitSel,IMG_BTN_QUIT_SEL,MAX_PATH);
   pElem = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){258,70,32,32},
-          gslc_GetImageFromFile(m_strImgQuit,GSLC_IMGREF_FMT_BMP16),
-          gslc_GetImageFromFile(m_strImgQuitSel,GSLC_IMGREF_FMT_BMP16),
+          gslc_GetImageFromSD(IMG_BTN_QUIT,GSLC_IMGREF_FMT_BMP24),
+          gslc_GetImageFromSD(IMG_BTN_QUIT_SEL,GSLC_IMGREF_FMT_BMP24),
           &CbBtnQuit);
 
   return true;
 }
 
-int main( int argc, char* args[] )
+void setup()
 {
 
   // -----------------------------------
   // Initialize
-  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
-  
+
   // -----------------------------------
   // Create the graphic elements
-  InitOverlays(dirname(args[0])); // Pass executable path to find resource files
-
+  InitOverlays(); 
+  
   // -----------------------------------
   // Start display
 
@@ -131,6 +113,8 @@ int main( int argc, char* args[] )
 
   gslc_Quit(&m_gui);
 
-  return 0;
 }
+
+void loop() {}
+
 

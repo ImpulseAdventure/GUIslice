@@ -66,9 +66,9 @@
 // Create a gauge element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
-gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
+gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXGauge* pXData,gslc_tsRect rElem,
-  int nMin,int nMax,int nVal,gslc_tsColor colGauge,bool bVert)
+  int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXGaugeCreate(%s) called with NULL ptr\n","");
@@ -76,7 +76,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   }    
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_GAUGE,rElem,NULL,GSLC_FONT_NONE);
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_GAUGE,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.bFrameEn          = true;
   sElem.bFillEn           = true;
   sElem.bClickEn          = false;          // Element is not "clickable"
@@ -104,7 +104,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 }
 
 // Update the gauge control's current position
-void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int nVal)
+void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
 {
   if (pElem == NULL) {
     debug_print("ERROR: ElemXGaugeUpdate(%s) called with NULL ptr\n","");
@@ -113,7 +113,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int nVal)
   gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
   
   // Update the data element
-  int nValOld = pGauge->nGaugeVal;
+  int16_t nValOld = pGauge->nGaugeVal;
   pGauge->nGaugeVal = nVal;
   
   // Element needs redraw
@@ -137,8 +137,10 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
-  
-  gslc_tsRect   rGauge;
+
+  gslc_tsRect   rTmp;           // Temporary rect for drawing
+  gslc_tsRect   rGauge;         // Filled portion of gauge
+  gslc_tsRect   rEmpty;         // Empty portion of gauge
   int16_t       nElemX,nElemY;
   uint16_t      nElemW,nElemH;
 
@@ -147,9 +149,12 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   nElemW = pElem->rElem.w;
   nElemH = pElem->rElem.h;
 
+  // TODO: Inset the region by one pixel to ensure we only
+  //       redraw what is inside the framed region (to avoid flicker).
+  
   rGauge.x = nElemX;
   rGauge.y = nElemY;
-
+  
   // Fetch the element's extended data structure
   gslc_tsXGauge* pGauge;
   pGauge = (gslc_tsXGauge*)(pElem->pXData);
@@ -157,20 +162,17 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
     debug_print("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
     return false;
   }
-  
-  // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
-  
-  
-  bool  bVert = pGauge->bGaugeVert;
-  int   nMax = pGauge->nGaugeMax;
-  int   nMin = pGauge->nGaugeMin;
-  int   nRng = pGauge->nGaugeMax - pGauge->nGaugeMin;
+    
+  bool    bVert = pGauge->bGaugeVert;
+  int16_t nMax  = pGauge->nGaugeMax;
+  int16_t nMin  = pGauge->nGaugeMin;
+  int16_t nRng  = pGauge->nGaugeMax - pGauge->nGaugeMin;
 
   if (nRng == 0) {
     debug_print("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
+  // TODO: Change to fixed point
   float   fScl;
   if (bVert) {
     fScl = (float)nElemH/(float)nRng;
@@ -179,7 +181,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
 
   // Calculate the control midpoint (for display purposes)
-  int nGaugeMid;
+  int16_t nGaugeMid;
   if ((nMin == 0) && (nMax > 0)) {
     nGaugeMid = 0;
   } else if ((nMin < 0) && (nMax > 0)) {
@@ -192,7 +194,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
 
   // Calculate the length of the bar
-  int nLen = pGauge->nGaugeVal * fScl;
+  int16_t nLen = pGauge->nGaugeVal * fScl;
 
   // Define the gauge's fill rectangle region
   // depending on the orientation (bVert) and whether
@@ -224,10 +226,10 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 
   // Clip the region
   // TODO: Confirm that +/-1 adjustments are correct
-  int nRectClipX1 = rGauge.x;
-  int nRectClipX2 = rGauge.x+rGauge.w-1;
-  int nRectClipY1 = rGauge.y;
-  int nRectClipY2 = rGauge.y+rGauge.h-1;
+  int16_t nRectClipX1 = rGauge.x;
+  int16_t nRectClipX2 = rGauge.x+rGauge.w-1;
+  int16_t nRectClipY1 = rGauge.y;
+  int16_t nRectClipY2 = rGauge.y+rGauge.h-1;
   if (nRectClipX1 < nElemX)               { nRectClipX1 = nElemX;           }
   if (nRectClipX2 > nElemX+(int)nElemW-1) { nRectClipX2 = nElemX+nElemW-1;  }
   if (nRectClipY1 < nElemY)               { nRectClipY1 = nElemY;           }
@@ -242,8 +244,26 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
     nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
   #endif
 
+  // To avoid flicker, we only erase the portion of the gauge
+  // that isn't "filled". Determine the gauge empty region and erase it
+  if (bVert) {
+    rEmpty.y = (rGauge.y + rGauge.h);
+    rEmpty.x = nElemX;
+    rEmpty.h = (nElemH - rGauge.h);
+    rEmpty.w = nElemW;
+  } else {
+    rEmpty.x = (rGauge.x + rGauge.w);
+    rEmpty.y = nElemY;
+    rEmpty.w = (nElemW - rGauge.w);
+    rEmpty.h = nElemH;
+  }
+  rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
+  gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);  
+  
   // Draw the gauge fill region
-  gslc_DrawFillRect(pGui,rGauge,pGauge->colGauge);
+  rTmp = gslc_ExpandRect(rGauge,-1,-1);
+  gslc_DrawFillRect(pGui,rTmp,pGauge->colGauge);
+  
 
   // Draw the midpoint line
   gslc_tsRect   rMidLine;
@@ -283,7 +303,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 // Create a checkbox element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw but does not track touch/click
-gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
+gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXCheckbox* pXData,gslc_tsRect rElem,bool bRadio,gslc_teXCheckboxStyle nStyle,
   gslc_tsColor colCheck,bool bChecked)
 {
@@ -293,7 +313,7 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   }      
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_CHECKBOX,rElem,NULL,GSLC_FONT_NONE);
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_CHECKBOX,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.bFrameEn          = false;
   sElem.bFillEn           = true;
   sElem.bClickEn          = true;
@@ -341,12 +361,12 @@ bool gslc_ElemXCheckboxGetState(gslc_tsElem* pElem)
 
 
 // Determine which checkbox in the group has been "checked"
-gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int nGroupId)
+gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 {
-  int                 nCurInd;
+  int16_t             nCurInd;
   gslc_tsElem*        pCurElem = NULL;
-  int                 nCurType;
-  int                 nCurGroup;
+  int8_t              nCurType;
+  int16_t             nCurGroup;
   bool                bCurChecked;
   gslc_tsElem*        pFoundElem = NULL;
 
@@ -392,8 +412,8 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
   gslc_tsGui*         pGui      = pCheckbox->pGui;
   bool                bRadio    = pCheckbox->bRadio;
-  int                 nGroup    = pElem->nGroup;
-  int                 nElemId   = pElem->nId;
+  int16_t             nGroup    = pElem->nGroup;
+  int16_t             nElemId   = pElem->nId;
   
   
   // If radio-button style and we are selecting an element
@@ -401,11 +421,11 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   // Note that SetState calls itself to deselect other items so it
   // is important to qualify this logic with bChecked=true
   if (bRadio && bChecked) {
-    int               nCurInd;
-    int               nCurId;
+    int16_t           nCurInd;
+    int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
-    int               nCurType;
-    int               nCurGroup;
+    int16_t           nCurType;
+    int16_t           nCurGroup;
     
     // We use the GUI pointer for access to other elements   
     for (nCurInd=GSLC_IND_FIRST;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
@@ -503,7 +523,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Generic coordinate calcs
-  int nX0,nY0,nX1,nY1,nMidX,nMidY;
+  int16_t nX0,nY0,nX1,nY1,nMidX,nMidY;
   nX0 = pElem->rElem.x;
   nY0 = pElem->rElem.y;
   nX1 = pElem->rElem.x + pElem->rElem.w - 1;
@@ -560,13 +580,13 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 //   dynamically, as well as updating the checkbox state if the
 //   user releases over it (ie. a click event).
 //   
-bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY)
+bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     debug_print("ERROR: ElemXCheckboxTouch(%s) called with NULL ptr\n","");
     return false;
   }       
-  //gslc_tsGui*           pGui = NULL;
+  //gslc_tsGui*         pGui = NULL;
   gslc_tsElem*          pElem = NULL;
   gslc_tsXCheckbox*     pCheckbox = NULL;
   
@@ -634,9 +654,9 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nR
 // Create a slider element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw and touch
-gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSlider* pXData,gslc_tsRect rElem,int nPosMin,int nPosMax,int nPos,
-  unsigned nThumbSz,bool bVert)
+gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXSlider* pXData,gslc_tsRect rElem,int16_t nPosMin,int16_t nPosMax,int16_t nPos,
+  uint16_t nThumbSz,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXSliderCreate(%s) called with NULL ptr\n","");
@@ -644,7 +664,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   }     
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SLIDER,rElem,NULL,GSLC_FONT_NONE);
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SLIDER,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.bFrameEn          = false;
   sElem.bFillEn           = true;
   sElem.bClickEn          = true;
@@ -682,8 +702,8 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 }
 
 void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
-        bool bTrim,gslc_tsColor colTrim,unsigned nTickDiv,
-        int nTickLen,gslc_tsColor colTick)
+        bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
+        int16_t nTickLen,gslc_tsColor colTick)
 {
   if (pElem == NULL) {
     debug_print("ERROR: ElemXSliderSetStyle(%s) called with NULL ptr\n","");
@@ -713,14 +733,14 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem)
 }
 
 // Update the slider control's current state
-void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int nPos)
+void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     debug_print("ERROR: ElemXSliderSetPos(%s) called with NULL ptr\n","");
     return;
   }       
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
-  int               nPosOld;
+  int16_t           nPosOld;
   // Clip position
   if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
   if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }     
@@ -784,15 +804,15 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   }
   
   bool            bGlow     = pElem->bGlowEn && pElem->bGlowing; 
-  int             nPos      = pSlider->nPos;
-  int             nPosMin   = pSlider->nPosMin;
-  int             nPosMax   = pSlider->nPosMax;
+  int16_t         nPos      = pSlider->nPos;
+  int16_t         nPosMin   = pSlider->nPosMin;
+  int16_t         nPosMax   = pSlider->nPosMax;
   bool            bVert     = pSlider->bVert;
-  int             nThumbSz  = pSlider->nThumbSz;
+  int16_t         nThumbSz  = pSlider->nThumbSz;
   bool            bTrim     = pSlider->bTrim;
   gslc_tsColor    colTrim   = pSlider->colTrim;
-  unsigned        nTickDiv  = pSlider->nTickDiv;
-  int             nTickLen  = pSlider->nTickLen;
+  uint16_t        nTickDiv  = pSlider->nTickDiv;
+  int16_t         nTickLen  = pSlider->nTickLen;
   gslc_tsColor    colTick   = pSlider->colTick;
   
   if (bVert) {
@@ -800,7 +820,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
     return false;
   }
   
-  int   nX0,nY0,nX1,nY1,nYMid;
+  int16_t nX0,nY0,nX1,nY1,nYMid;
   nX0 = pElem->rElem.x;
   nY0 = pElem->rElem.y;
   nX1 = pElem->rElem.x + pElem->rElem.w - 1;
@@ -808,14 +828,14 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   nYMid = (nY0+nY1)/2;
   
   // Scale the current position
-  int nPosRng = nPosMax-nPosMin;
+  int16_t nPosRng = nPosMax-nPosMin;
   // TODO: Check for nPosRng=0, reversed min/max
-  int nPosOffset = nPos-nPosMin;
+  int16_t nPosOffset = nPos-nPosMin;
   
   // Provide some margin so thumb doesn't exceed control bounds
-  int nMargin   = nThumbSz;
-  int nCtrlRng  = (nX1-nMargin)-(nX0+nMargin);
-  int nCtrlPos  = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
+  int16_t nMargin   = nThumbSz;
+  int16_t nCtrlRng  = (nX1-nMargin)-(nX0+nMargin);
+  int16_t nCtrlPos  = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
   
   
   // Draw the background
@@ -823,8 +843,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
 
   // Draw any ticks
   if (nTickDiv>0) {
-    unsigned  nTickInd;
-    int       nTickGap = nCtrlRng/(nTickDiv-1);
+    uint16_t  nTickInd;
+    int16_t   nTickGap = nCtrlRng/(nTickDiv-1);
     for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
       gslc_DrawLine(pGui,nX0+nMargin+nTickInd*nTickGap,nYMid,
               nX0+nMargin+nTickInd*nTickGap,nYMid+nTickLen,colTick);
@@ -846,7 +866,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   }
   
 
-  int           nCtrlX0,nCtrlY0;
+  int16_t       nCtrlX0,nCtrlY0;
   gslc_tsRect   rThumb;
   nCtrlX0   = nX0+nCtrlPos-nThumbSz;
   nCtrlY0   = nYMid-nThumbSz;
@@ -877,7 +897,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
 
 // This callback function is called by gslc_ElemSendEventTouch()
 // after any touch event
-bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY)
+bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     debug_print("ERROR: ElemXSliderTouch(%s) called with NULL ptr\n","");
@@ -892,10 +912,10 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
   pElem     = (gslc_tsElem*)(pvElem);
   pSlider   = (gslc_tsXSlider*)(pElem->pXData);  
 
-  bool  bGlowingOld = pElem->bGlowing;  
-  int   nPosRng;
-  int   nPos;
-  bool  bUpdatePos = false;
+  bool    bGlowingOld = pElem->bGlowing;  
+  int16_t nPosRng;
+  int16_t nPos;
+  bool    bUpdatePos = false;
   
   switch(eTouch) {
     
@@ -956,14 +976,14 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRel
 // ============================================================================
 
 // Private sub Element ID definitions
-static const int  SELNUM_ID_BTN_INC = 100;
-static const int  SELNUM_ID_BTN_DEC = 101;
-static const int  SELNUM_ID_TXT     = 102;
+static const int16_t  SELNUM_ID_BTN_INC = 100;
+static const int16_t  SELNUM_ID_BTN_DEC = 101;
+static const int16_t  SELNUM_ID_TXT     = 102;
 
 // Create a compound element
 // - For now just two buttons and a text area
-gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
-  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int nFontId)
+gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     debug_print("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
@@ -971,10 +991,9 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   }   
   gslc_tsElem sElem;
   
-
   
   // Initialize composite element
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SELNUM,rElem,NULL,GSLC_FONT_NONE);
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SELNUM,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.bFrameEn        = true;
   sElem.bFillEn         = true;
   sElem.bClickEn        = true;
@@ -987,7 +1006,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
   // Determine the maximum number of elements that we can store
   // in the sub-element array. We do this at run-time with sizeof()
   // instead of using #define to avoid polluting the global namespace.
-  int nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
+  int16_t nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
   
   // NOTE: The last parameter in CollectReset() must match the size of
   //       the asElem[] array. It is used for bounds checking when we
@@ -1023,25 +1042,43 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int nElemId,int nPage,
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.
-  int   nOffsetX = rElem.x;
-  int   nOffsetY = rElem.y;  
-  
+  int16_t nOffsetX = rElem.x;
+  int16_t nOffsetY = rElem.y;  
+
+  #if (GSLC_LOCAL_STR)
   pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},"+",nFontId,&gslc_ElemXSelNumClick);
+    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},"+",0,nFontId,&gslc_ElemXSelNumClick);
+  #else
+  strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
+  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
+    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},pXData->acElemTxt[0],SELNUM_STR_LEN,
+    nFontId,&gslc_ElemXSelNumClick);
+  #endif
   gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
-  
+  #if (GSLC_LOCAL_STR)
   pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},"-",nFontId,&gslc_ElemXSelNumClick);
+    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},"-",0,nFontId,&gslc_ElemXSelNumClick);
+  #else
+  strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
+  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
+    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},pXData->acElemTxt[1],SELNUM_STR_LEN,
+    nFontId,&gslc_ElemXSelNumClick);
+  #endif
   gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);  
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
-  
+  #if (GSLC_LOCAL_STR)
   pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},"",nFontId);
+    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},"0",0,nFontId);
+  #else
+  strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
+  pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
+    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
+  #endif
   pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
 
 
@@ -1120,7 +1157,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
   return pSelNum->nCounter;
 }
 
-void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount)
+void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount)
 {
   if (pSelNum == NULL) {
     debug_print("ERROR: ElemXSelNumSetCounter(%s) called with NULL ptr\n","");
@@ -1129,8 +1166,9 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount)
   pSelNum->nCounter = nCount;
   
   // Determine new counter text
-  char  acStrNew[GSLC_ELEM_STRLEN_MAX];
-  snprintf(acStrNew,GSLC_ELEM_STRLEN_MAX,"%d",pSelNum->nCounter);
+  
+  char  acStrNew[GSLC_LOCAL_STR_LEN];
+  snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%d",pSelNum->nCounter);
   
   // Update the element
   gslc_tsElem* pElem = gslc_CollectFindElemById(&pSelNum->sCollect,SELNUM_ID_TXT);
@@ -1148,7 +1186,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int nCount)
 // - pvElem is a void pointer to the element being tracked. From
 //   the pElemParent member we can get the parent/compound element
 //   data structures.
-bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
+bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     debug_print("ERROR: ElemXSelNumClick(%s) called with NULL ptr\n","");
@@ -1200,7 +1238,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,i
   return true;
 }
 
-bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int nRelX,int nRelY)
+bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     debug_print("ERROR: ElemXSelNumTouch(%s) called with NULL ptr\n","");

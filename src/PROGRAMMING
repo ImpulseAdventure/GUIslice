@@ -4,8 +4,8 @@ Notes on GUIslice code:
 General
 - The code is pure C but has been designed with object-oriented
   principles in mind.
-- The GUIslice library simply includes a pair of source files
-  so no installation is required.
+- The GUIslice library doesn't require installation; just include
+  the relevant files in your project and go!
 - The core library does not use any dynamic memory allocation.
   Instead, all configurable storage data structures are allocated
   in user code and are passed in to GUIslice initialization routines.
@@ -52,10 +52,11 @@ Memory Allocation
 Rendering Driver
 - The GUIslice core is platform-independent in that it can theoretically
   be extended to support a number of different graphics drivers.
-- Currently, the default driver is for SDL1.2, but SDL2.0 is also
-  supported, with more targets to come later
-- The user must include a single GUIslice_drv_* file to select the
-  rendering driver to use.
+- Currently, the default driver is SDL1.2 for LINUX, but SDL2.0 (LINUX)
+  and Adafruit-GFX (Arduino) are also supported.
+- The user must select a display driver in the GUIslice_config.h file by
+  uncomment one of the #define GSLC_DRV_DISP_* lines and ensure the
+  associated include file (GUIslice_drv_*) is added to the project.
 
 
 ARCHITECTURE

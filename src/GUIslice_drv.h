@@ -39,14 +39,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
-
+ 
 #if defined(DRV_DISP_SDL1)
   #include "GUIslice_drv_sdl.h"
 #elif defined(DRV_DISP_SDL2)
   #include "GUIslice_drv_sdl.h"
+#elif defined(DRV_DISP_ADAGFX)
+  #include "GUIslice_drv_adagfx.h"  
 #else
-  #error "Driver needs to be specified during compile (eg. -DDRV_DISP_*)"
+  #error "Driver needs to be specified in GUIslice_config.h (DRV_DISP_*)"
 #endif
 
 

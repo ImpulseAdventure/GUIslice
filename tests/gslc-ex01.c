@@ -21,7 +21,7 @@ gslc_tsGui      m_gui;
 gslc_tsDriver   m_drv;
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    30
+#define MAX_ELEM_PG_MAIN    5
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
