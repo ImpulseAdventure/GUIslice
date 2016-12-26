@@ -2,6 +2,7 @@ GUIslice library
 
 A lightweight GUI framework suitable for embedded displays
 - Web Page: http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+- Wiki Page: https://github.com/ImpulseAdventure/GUIslice/wiki
 
 - Pure C library, no dynamic memory allocation
 - Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX
