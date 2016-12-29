@@ -120,6 +120,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     #if defined(DRV_DISP_ADAGFX_ILI9341)
       m_disp.begin();      
+      // Rotate display from native portrait orientation to landscape
+      // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
       m_disp.setRotation(1);
       pGui->nDispW = ILI9341_TFTHEIGHT;
       pGui->nDispH = ILI9341_TFTWIDTH;
@@ -249,29 +251,48 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  int16_t   nDummyX,nDummyY;
+  uint16_t  nTxtLen   = 0;  
   uint16_t  nTxtScale = pFont->nSize;
   m_disp.setTextSize(nTxtScale);
   
-  // TODO: FIXME: getTextBounds seems to return bad value.
-  // Workaround uses the dimensions of default default font in Adafruit-GFX library
+  //int16_t   nDummyX,nDummyY;
   //m_disp.getTextBounds((char*)pStr,0,0,&nDummyX,&nDummyY,pnTxtSzW,pnTxtSzH); 
-  *pnTxtSzW = (strlen(pStr)*6*nTxtScale);
-  *pnTxtSzH = 8;
+  // TODO: FIXME: getTextBounds seems to return bad value.
+  //       Would also need to handle pStr in PROGMEM
   
+  // Workaround uses the dimensions of default default font in Adafruit-GFX library
+  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
+    nTxtLen = strlen(pStr);
+  } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
+    nTxtLen = strlen_P(pStr);
+  }
+  *pnTxtSzW = (nTxtLen*6*nTxtScale);
+  *pnTxtSzH = 8;
   return true;
 }
 
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_tsColor colTxt)
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
   uint16_t nTxtScale = pFont->nSize;  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
-  m_disp.println(pStr);  
+
+  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
+    // String in SRAM; can access buffer directly
+    m_disp.println(pStr);
+  } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
+    // String in PROGMEM (flash); must access via pgm_* calls
+    char ch;
+    while ((ch = pgm_read_byte(pStr++))) {
+      m_disp.print(ch);
+    }
+    m_disp.println();
+  }
+  
   return true;  
 }
 
@@ -615,14 +636,27 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 }
 
 
-/// TODO: Re-use code from DrvDrawImage()
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {
-  //xxx NOTE: For now, we are just supporting flat color backgrounds
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-    uint16_t nColRaw = pDriver->nColRawBkgnd;
-    m_disp.fillScreen(nColRaw);
+    
+    // Check to see if an image has been assigned to the background
+    if (pGui->sImgRefBkgnd.eImgFlags == GSLC_IMGREF_NONE) {
+      // No image assigned, so assume flat color background
+      // TODO: Create a new eImgFlags enum to signal that the
+      //       background should be a flat color instead of
+      //       an image.
+      uint16_t nColRaw = pDriver->nColRawBkgnd;
+      m_disp.fillScreen(nColRaw);
+    } else {
+      // An image should be loaded
+      // TODO: For now, re-use the DrvDrawImage(). Later, consider
+      //       extending to support different background drawing
+      //       capabilities such as stretching and tiling of background
+      //       image.
+      gslc_DrvDrawImage(pGui,0,0,pGui->sImgRefBkgnd);
+    }
   }
 }
 
@@ -665,23 +699,81 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
 {
-  uint16_t  nX,nY;
-  uint16_t  nPress;
+  uint16_t  nRawX,nRawY;
+  uint8_t   nRawPress;
+
   #if defined(DRV_TOUCH_ADA_STMPE610)
+
+  // As the STMPE610 hardware driver doesn't appear to return
+  // an indication of "touch released" with a coordinate, we
+  // must detect the release transition here and send the last
+  // known coordinate but with pressure=0. To do this, we are
+  // allocating a static variable to maintain the last touch
+  // coordinate.
+  // TODO: This code can be reworked / simplified
+  static int16_t  m_nLastRawX     = 0;
+  static int16_t  m_nLastRawY     = 0;
+  static uint16_t m_nLastRawPress = 0;
+  static bool     m_bLastTouched  = false;
+  
+  bool bValid = false;  // Indicate a touch event to GUIslice core?
+  if (m_touch.touched()) {
+
     if (m_touch.bufferEmpty()) {
-      // No touch event
-      return false;
+      // Nothing to do
     } else {
-      // Touch event
-      m_touch.readData(&nX,&nY,&nPress);
-      *pnX      = nX;
-      *pnY      = nY;
-      *pnPress  = nPress;
-      // Reset interrupts
-      m_touch.writeRegister8(STMPE_INT_STA,0xFF);
-      return true;
+      while (!m_touch.bufferEmpty()) {
+        // Continued press; update next reading
+        // TODO: Is there a risk that the touch hardware could
+        //       maintain a non-empty state for an extended period of time?
+        m_touch.readData(&nRawX,&nRawY,&nRawPress);
+        m_nLastRawX = nRawX;
+        m_nLastRawY = nRawY;
+        m_nLastRawPress = nRawPress;
+        m_bLastTouched = true;
+        bValid = true;
+      }
+   
     }
+    // Clear interrupts
+    m_touch.writeRegister8(STMPE_INT_STA, 0xFF);
     
+  } else {
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;      
+    }
+    // Flush the FIFO
+    while (!m_touch.bufferEmpty()) {
+      m_touch.readData(&nRawX,&nRawY,&nRawPress);
+    }
+  }
+
+  // If an event was detected, signal it back to GUIslice
+  if (bValid) {
+    // Clip the input range
+    m_nLastRawX = constrain(m_nLastRawX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
+    m_nLastRawY = constrain(m_nLastRawY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
+    // Scale the range, swap and flip coords
+    // - The swap and flip is done to rotate a native 240x320 display
+    //   to a landscape orientation.
+    // - TODO: Provide configuration options to support different orientations
+    *pnX = map(m_nLastRawY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,(pGui->nDispW-1));
+    *pnY = (pGui->nDispH-1)-map(m_nLastRawX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,(pGui->nDispH-1));
+    *pnPress = m_nLastRawPress;
+    
+    // Return with indication of new value
+    return true;
+  } else {
+    // No new value
+    return false;
+  }
+  
   #endif // DRV_TOUCH_*
 
   return false;
@@ -721,4 +813,3 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-

@@ -484,8 +484,9 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   TTF_Quit();  
 }
 
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
+  // NOTE: Shouldn't need to process eTxtFlags
   int32_t nTxtSzW,nTxtSzH;
   TTF_Font* pDrvFont = (TTF_Font*)(pFont->pvFont);
   TTF_SizeText(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
@@ -495,7 +496,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uin
 }
 
 
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_tsColor colTxt)
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
   if ((pGui == NULL) || (pFont == NULL)) {
     debug_print("ERROR: DrvDrawTxt(%s) with NULL ptr\n",""); 
@@ -504,7 +505,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   if ((pStr == NULL) || (pStr[0] == '\0')) {
     return true;
   }
-
+  // NOTE: Shouldn't need to process eTxtFlags
   gslc_tsDriver*  pDriver   = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Surface*    pSurfTxt  = NULL;
   TTF_Font*       pDrvFont  = (TTF_Font*)(pFont->pvFont);
@@ -720,7 +721,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 }
 
 
-/// NOTE: Background image is stored in pGui->sImgpvImgBkgnd
+/// NOTE: Background image is stored in pGui->sImgRefBkgnd
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {

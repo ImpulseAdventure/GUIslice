@@ -948,6 +948,11 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
       break;
   }
   
+  // Perform additional range checking
+  nRelX = (nRelX < 0)? 0 : nRelX;
+  nRelY = (nRelY < 0)? 0 : nRelY;
+  
+  
   // If we need to update the slider position, calculate the value
   // and perform the update
   if (bUpdatePos) {
@@ -1289,8 +1294,12 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
   sEventTouch.eTouch  = eTouch;
   gslc_CollectTouch(pGui,pCollect,&sEventTouch);   
   
-  // To keep it simple, always redraw
-  gslc_ElemSetRedraw(pElem,true);
+  // Mark compound element as needing redraw if any
+  // sub-element needs redraw
+  if (gslc_CollectGetRedraw(pCollect)) {
+    gslc_ElemSetRedraw(pElem,true);
+  }
+  
   
   return true;
 

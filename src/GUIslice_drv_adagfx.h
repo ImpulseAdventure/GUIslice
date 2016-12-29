@@ -244,12 +244,13 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pFont:       Ptr to Font structure
 /// \param[in]  pStr:        String to display
+/// \param[in]  eTxtFlags:   Flags associated with text string
 /// \param[out] pnTxtSzW:    Ptr to width of text
 /// \param[out] pnTxtSzH:    Ptr to height of text
 ///
 /// \return true if success, false if failure
 ///  
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
 
 
 ///
@@ -260,11 +261,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,uin
 /// \param[in]  nTxtY:       Y coordinate of top-left text string
 /// \param[in]  pFont:       Ptr to Font
 /// \param[in]  pStr:        String to display
+/// \param[in]  eTxtFlags:   Flags associated with text string
 /// \param[in]  colTxt:      Color to draw text
 ///
 /// \return true if success, false if failure
 ///  
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_tsColor colTxt);
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt);
 
 
 // -----------------------------------------------------------------------
@@ -474,4 +476,3 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol);
 }
 #endif // __cplusplus
 #endif // _GUISLICE_DRV_ADAGFX_H_
-

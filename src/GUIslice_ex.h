@@ -370,7 +370,8 @@ typedef struct {
 
   #if (GSLC_LOCAL_STR == 0)
   // If each element doesn't provide its own string buffer, then
-  // we need to provide storage here in the compound element
+  // we need to provide storage here in the compound element. For
+  // now, we simply provide a fixed-length memory buffer.
   char                acElemTxt[4][SELNUM_STR_LEN]; ///< Storage for strings
   #endif
 } gslc_tsXSelNum;

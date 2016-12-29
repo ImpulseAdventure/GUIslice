@@ -44,9 +44,9 @@ extern "C" {
 
 // -----------------------------------------------------------------------------------------
   
-// Specify the display driver library
-// - Uncomment one of the following display drivers
-  #define DRV_DISP_SDL1              // LINUX: SDL 1.2 library
+// Specify the graphics driver library
+// - Uncomment one of the following graphics drivers
+#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
 //#define DRV_DISP_SDL2              // LINUX: SDL 2.0 library
 //#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
 
@@ -55,15 +55,15 @@ extern "C" {
 // - Uncomment one of the following touchscreen drivers
 //#define DRV_TOUCH_NONE          // No touchscreen support
 //#define DRV_TOUCH_SDL           // LINUX: Use SDL touch driver
-  #define DRV_TOUCH_TSLIB         // LINUX: Use tslib touch driver
-//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver   [Untested]
+#define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
+//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver     [TODO]
 
 
 
 // -----------------------------------------------------------------------------------------
 
-// Display Driver-specific additional configuration  
+// Graphics display driver-specific additional configuration  
 #if defined(DRV_DISP_SDL1)
   // Define default device paths for framebuffer & touchscreen  
   #define GSLC_DEV_FB    "/dev/fb1"
@@ -109,13 +109,14 @@ extern "C" {
 
   // For Adafruit-GFX drivers, define pin connections
   // Define general pins (modify these example pin assignments to match your board)
-  #define ADAGFX_PIN_CS    53 // ProMini: 10, ATmega2560: 53
-  #define ADAGFX_PIN_DC    47 // ProMini:  9, ATmega2560: 47
-  #define ADAGFX_PIN_RST   49 // ProMini:  8, ATmega2560: 49
+  #define ADAGFX_PIN_CS    10 // ProMini: 10, ATmega2560: 53, 2.8"AdaShield: 10
+  #define ADAGFX_PIN_DC     9 // ProMini:  9, ATmega2560: 47, 2.8"AdaShield: 9
+  #define ADAGFX_PIN_RST    0 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0
   #define ADAGFX_PIN_MOSI
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
-  #define ADAGFX_PIN_SDCS  48 //              ATmega2560: 48 (SD card chip select for GSLC_IMG_MEM_FLASH)
+  // SD card chip select
+  #define ADAGFX_PIN_SDCS   4 //              ATmega2560: 48, 2.8"AdaShield: 4
 
   // Use hardware SPI?
   #define ADAGFX_SPI_HW
@@ -143,11 +144,26 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by uncommenting one of the following
-  #define ADATOUCH_I2C_HW
-  //#define ADATOUCH_SPI_HW   // [TODO]
+  //#define ADATOUCH_I2C_HW
+  #define ADATOUCH_SPI_HW
   //#define ADATOUCH_SPI_SW   // [TODO]
 
+  // For ADATOUCH_I2C_HW
   #define ADATOUCH_I2C_ADDR   0x41  // I2C address of touch device
+
+  // For ADATOUCH_SPI_HW
+  #define ADATOUCH_PIN_CS     8 // From Adafruit 2.8" TFT touch shield
+
+  // Calibration values for touch display
+  // - These values may need to be updated to match your display
+  // - Typically used in resistive displays
+  // - These values can be determined from the Adafruit touchtest example sketch
+  //   (check for min and max values reported from program as you touch display corners)
+  // - Note that X & Y directions reference the display's natural orientation
+  #define ADATOUCH_X_MIN 230
+  #define ADATOUCH_Y_MIN 260
+  #define ADATOUCH_X_MAX 3800
+  #define ADATOUCH_Y_MAX 3700
 
 #endif // DRV_TOUCH_*
 
@@ -175,4 +191,5 @@ extern "C" {
 }
 #endif // __cplusplus
 #endif // _GUISLICE_CONFIG_H_
+
 

@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.8    (2016/12/24)
+// - Version 0.8.1    (2016/12/29)
 // =======================================================================
 //
 // The MIT License
@@ -259,6 +259,20 @@ typedef enum {
   GSLC_IMGREF_FMT         = (7<<4),   ///< Mask for Format flags
 } gslc_teImgRefFlags;
 
+typedef enum {
+  // Values
+  GSLC_TXT_MEM_RAM        = (0<<0),   ///< Text string is in SRAM    (read-write)
+  GSLC_TXT_MEM_PROG       = (1<<0),   ///< Text string is in PROGMEM (read-only)
+  GSLC_TXT_ALLOC_NONE     = (0<<2),   ///< No text string present
+  GSLC_TXT_ALLOC_INT      = (1<<2),   ///< Text string allocated in internal element memory (GSLC_STR_LOCAL=1)
+  GSLC_TXT_ALLOC_EXT      = (2<<2),   ///< Text string allocated in external memory (GSLC_STR_LOCAL=0), ie. user code
+  // Masks
+  GSLC_TXT_MEM            = (3<<0),   ///< Mask for updating text memory type
+  GSLC_TXT_ALLOC          = (3<<2),   ///< Mask for updating location of text string buffer allocation
+  // Defaults
+  GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE,
+} gslc_teTxtFlags;
+
 // -----------------------------------------------------------------------
 // Forward declarations
 // -----------------------------------------------------------------------
@@ -398,6 +412,7 @@ typedef struct gslc_tsElem {
   char*               pStrBuf;          ///< Ptr to text string buffer to overlay
 #endif  
   uint8_t             nStrBufMax;       ///< Size of string buffer
+  gslc_teTxtFlags     eTxtFlags;        ///< Flags associated with text buffer
 
   
   gslc_tsColor        colElemText;      ///< Color of overlay text
@@ -1242,6 +1257,17 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal);
 
 
 ///
+/// Update the text string location in memory
+///
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  eFlags:      Flags associated with text memory location (GSLC_TXT_MEM_*)
+///
+/// \return none
+///
+void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags);
+
+
+///
 /// Update the Font selected for an Element's text
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -1261,6 +1287,15 @@ void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId);
 /// \return none
 ///
 void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw);
+
+///
+/// Get the need-redraw status for an element
+///
+/// \param[in]  pElem:       Pointer to Element
+///
+/// \return True if redraw required, false otherwise
+///
+bool gslc_ElemGetRedraw(gslc_tsElem* pElem);
 
 ///
 /// Update the glowing enable for an element
@@ -1425,6 +1460,16 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 ///         or NULL if there was an error
 /// 
 gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem);
+
+
+///
+/// Determine if any elements in a collection need redraw
+///
+/// \param[in]  pCollect:     Pointer to Element collection
+///
+/// \return True if redraw required, false otherwise
+///
+bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect);
 
 
 /// Find an element in a collection by its Element ID

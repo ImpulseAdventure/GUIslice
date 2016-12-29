@@ -2,15 +2,15 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-// - Example 02: Accept touch input, text button
+// - Example 02 (Arduino):
+//     Accept touch input, text button
 //
 
 #include "GUIslice.h"
+#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
-
 // Defines for resources
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -20,40 +20,16 @@ enum {E_FONT_BTN};
 bool    m_bQuit = false;
 
 // Instantiate the GUI
-#define MAX_FONT            2
+#define MAX_FONT            1
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    5
+#define MAX_ELEM_PG_MAIN    2
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
-// Configure environment variables suitable for display
-// - These may need modification to match your system
-//   environment and display type
-// - Defaults for GSLC_DEV_FB and GSLC_DEV_TOUCH are in GUIslice_config.h
-// - Note that the environment variable settings can
-//   also be set directly within the shell via export
-//   (or init script).
-//   - eg. export TSLIB_FBDEVICE=/dev/fb1
-void UserInitEnv()
-{
-#if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
-  setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
-#endif  
-  
-#if defined(DRV_TOUCH_TSLIB)
-  setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
-  setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
-  setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
-#endif
-}
 
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
@@ -63,20 +39,21 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
   }
   return true;
 }
-
-int main( int argc, char* args[] )
+  
+void setup()
 {
   bool          bOk = true;
   gslc_tsElem*  pElem = NULL;
 
+Serial.begin(9600);
+Serial.println("GUIslice begin");
   // -----------------------------------
   // Initialize
-  UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   // Load Fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  if (!bOk) { printf("ERROR: gslc_FontAdd() failed\n"); exit(1); }
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1);
+  //if (!bOk) { printf("ERROR: gslc_FontAdd() failed\n"); exit(1); }
 
 
   // -----------------------------------
@@ -89,10 +66,13 @@ int main( int argc, char* args[] )
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-
+  
   // Create Quit button with text label
+  static const char mstr1[] PROGMEM = "Quit";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){120,100,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){120,100,80,40},(char*)&mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
+  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
+  
 
   // -----------------------------------
   // Start display
@@ -116,7 +96,8 @@ int main( int argc, char* args[] )
   // Close down display
 
   gslc_Quit(&m_gui);
-
-  return 0;
 }
+
+void loop() { }
+
 

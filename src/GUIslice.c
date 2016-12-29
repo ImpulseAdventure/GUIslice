@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 //
-// - Version 0.8    (2016/12/24)
+// - Version 0.8.1    (2016/12/29)
 // =======================================================================
 //
 // The MIT License
@@ -45,7 +45,7 @@
 
 
 // Version definition
-#define GUISLICE_VER "0.8"
+#define GUISLICE_VER "0.8.1"
 
 
 
@@ -1176,9 +1176,13 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   // --------------------------------------------------------------------------
  
   // Overlay the text
-  bool    bRenderTxt = true;
-  if ((bRenderTxt) && (pElem->pStrBuf == NULL))     { bRenderTxt = false; }
-  if ((bRenderTxt) && (pElem->pStrBuf[0] == '\0'))  { bRenderTxt = false; }  
+  bool bRenderTxt = true;
+  // Skip text render if buffer pointer not allocated
+  if ((bRenderTxt) && (pElem->pStrBuf == NULL)) { bRenderTxt = false; }
+  // Skip text render if string is not set
+  if ((bRenderTxt) && ((pElem->eTxtFlags & GSLC_TXT_ALLOC) == GSLC_TXT_ALLOC_NONE)) { bRenderTxt = false; }
+  
+  // Do we still want to render?
   if (bRenderTxt) {
 #if (DRV_HAS_DRAW_TEXT)    
     int16_t       nMargin   = pElem->nTxtMargin;
@@ -1188,7 +1192,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   
     // Fetch the size of the text to allow for justification
     uint16_t      nTxtSzW,nTxtSzH;
-    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,&nTxtSzW,&nTxtSzH);
+    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,&nTxtSzW,&nTxtSzH);
     
     // Calculate the text alignment
     int16_t       nTxtX,nTxtY;
@@ -1204,7 +1208,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
     else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }    
 
     // Call the driver text rendering routine
-    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,colTxt);
+    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt);
     
 #else
     // No text support in driver, so skip
@@ -1313,6 +1317,18 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
     debug_print("ERROR: ElemSetTxtStr(%s) called with NULL ptr\n","");
     return;
   }    
+  
+  // TODO: Check for read-only status if we add support
+  //       for strings located in PROGMEM (Flash) memory.
+  // eg.
+  // #if (GSLC_LOCAL_STR == 0)
+  //   // External string, use nStrBufMax
+  //   if (nStrBufMax == 0) {
+  //     // Exit as string was read-only
+  //     return;
+  //   }
+  // #endif
+  
   // To avoid unnecessary redraw / flicker, only a change in
   // the text content will drive a redraw
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
@@ -1331,6 +1347,25 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
   pElem->colElemText      = colVal;
   pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
   gslc_ElemSetRedraw(pElem,true); 
+}
+
+void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
+{
+  if (pElem == NULL) {
+    debug_print("ERROR: ElemSetTxtMem(%s) called with NULL ptr\n","");
+    return;
+  }
+  if (GSLC_LOCAL_STR) {
+    if ((eFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
+      // ERROR: Unsupported mode
+      // - We don't support internal buffer mode with initialization
+      //   from flash (PROGMEM)
+      debug_print("ERROR: ElemSetTxtMem(%s) GSLC_LOCAL_STR can't be used with GSLC_TXT_MEM_PROG\n","");      
+      return;
+    }
+  }
+  gslc_teTxtFlags eFlagsCur = pElem->eTxtFlags;  
+  pElem->eTxtFlags = (eFlagsCur & ~GSLC_TXT_MEM) | (eFlags & GSLC_TXT_MEM); 
 }
 
 void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
@@ -1358,14 +1393,27 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw)
   }
 }
 
+bool gslc_ElemGetRedraw(gslc_tsElem* pElem)
+{
+  if (pElem == NULL) {
+    debug_print("ERROR: ElemGetRedraw(%s) called with NULL ptr\n","");
+    return false;
+  }    
+  return pElem->bNeedRedraw;
+}
+
 void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
 {
   if (pElem == NULL) {
     debug_print("ERROR: ElemSetGlow(%s) called with NULL ptr\n","");
     return;
   }    
+  // TODO: Should also check for change in bGlowEn
+  bool  bGlowingOld = pElem->bGlowing;
   pElem->bGlowing         = bGlowing;
-  gslc_ElemSetRedraw(pElem,true);
+  if (bGlowing != bGlowingOld) {
+    gslc_ElemSetRedraw(pElem,true);
+  }
 }
 
 bool gslc_ElemGetGlow(gslc_tsElem* pElem)
@@ -1430,6 +1478,7 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   //  pStrBuf[GSLC_LOCAL_STR_LEN]
   //  pStr
   //  nStrMax
+  //  eTxtFlags
   
   pElemDest->colElemText      = pElemSrc->colElemText;
   pElemDest->colElemTextGlow  = pElemSrc->colElemTextGlow; 
@@ -1787,16 +1836,35 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   sElem.nType           = nType;
   gslc_ElemUpdateFont(pGui,&sElem,nFontId);
  
-  if (pStrBuf != NULL) {
+  // Initialize the local string buffer (if enabled via GSLC_LOCAL_STR)
+  // otherwise just save a copy of the external string buffer pointer
+  // and maximum buffer length from the parameters.
+  //
+  // NOTE: GSLC_LOCAL_STR=1 mode does not accept string pointers to
+  //       PROGMEM (Flash). This is because at time of ElemCreate()
+  //       the string location (SRAM vs PROGMEM) won't be known (as
+  //       ElemSetTxtMem() has not been called yet). Therefore, we
+  //       wouldn't know to perform a copy from PROGMEM. This should not
+  //       be a problem since it would be unlikely that a user would
+  //       want to use internal buffers but initialized by content in
+  //       flash.
+  if (pStrBuf == NULL) {
+    // No string enabled, so set the flag accordingly
+    sElem.nStrBufMax = 0;
+    sElem.eTxtFlags  = (sElem.eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_NONE;
+  } else {
     #if (GSLC_LOCAL_STR)
+      // NOTE: Assume the string buffer pointer is located in RAM and not PROGMEM
       strncpy(sElem.pStrBuf,pStrBuf,GSLC_LOCAL_STR_LEN-1);
       sElem.pStrBuf[GSLC_LOCAL_STR_LEN-1] = '\0';  // Force termination    
       sElem.nStrBufMax = GSLC_LOCAL_STR_LEN;
+      sElem.eTxtFlags  = (sElem.eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_INT;
     #else
       // No need to copy locally; instead, we are going to retain
       // the external string pointer (must be static)
-      sElem.pStrBuf         = pStrBuf;
-      sElem.nStrBufMax      = nStrBufMax;
+      sElem.pStrBuf    = pStrBuf;
+      sElem.nStrBufMax = nStrBufMax;
+      sElem.eTxtFlags  = (sElem.eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
     #endif
   }  
   
@@ -1868,7 +1936,7 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
     return NULL;
   }    
   
-  if (pCollect->nElemCnt+1 >= (pCollect->nElemMax)) {
+  if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
     debug_print("ERROR: CollectElemAdd(%s) too many elements\n","");
     return NULL;
   }
@@ -1887,6 +1955,28 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
   return &(pCollect->asElem[nElemInd]);    
 }
 
+
+bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
+{
+  if (pCollect == NULL) {
+    // ERROR
+    return false;
+  }
+  // Determine if any sub-element in collection needs redraw
+  // - This is generally used when deciding whether to redraw
+  //   a compound element
+  uint16_t      nInd;
+  gslc_tsElem*  pSubElem;
+  bool          bCollectRedraw = false;
+  for (nInd=GSLC_IND_FIRST;nInd<pCollect->nElemCnt;nInd++) {
+    pSubElem = &(pCollect->asElem[nInd]);
+    if (gslc_ElemGetRedraw(pSubElem)) {
+      bCollectRedraw = true;
+      break;
+    }
+  }  
+  return bCollectRedraw;
+}
 
 // Add an element to the collection associated with the page
 //
@@ -1994,12 +2084,13 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->colElemFill      = GSLC_COL_WHITE;
   pElem->colElemFrameGlow = GSLC_COL_WHITE;  
   pElem->colElemFillGlow  = GSLC_COL_WHITE;
+  pElem->eTxtFlags        = GSLC_TXT_DEFAULT;
   #if (GSLC_LOCAL_STR)
     pElem->pStrBuf[0]       = '\0';
-    pElem->nStrBufMax       = 0;    
+    pElem->nStrBufMax       = 0;
   #else
     pElem->pStrBuf          = NULL;
-    pElem->nStrBufMax       = 0;
+    pElem->nStrBufMax       = 0;  
   #endif
   pElem->colElemText      = GSLC_COL_WHITE;
   pElem->colElemTextGlow  = GSLC_COL_WHITE;  
