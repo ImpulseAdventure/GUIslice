@@ -680,6 +680,42 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 ///
 bool gslc_IsInWH(gslc_tsGui* pGui,int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight);
 
+///
+/// Perform basic clipping of a single point to a clipping region
+///
+/// \param[in]  pClipRect:   Pointer to clipping region
+/// \param[in]  nX:          X coordinate of point
+/// \param[in]  nY:          Y coordinate of point
+///
+/// \return true if point is visible, false if it should be discarded
+///
+bool gslc_ClipPt(gslc_tsRect* pClipRect,int16_t nX,int16_t nY);
+
+///
+/// Perform basic clipping of a line to a clipping region
+/// - Implements Cohen-Sutherland algorithm
+/// - Coordinates in parameter list are modified to fit the region
+///
+/// \param[in]    pClipRect:   Pointer to clipping region
+/// \param[inout] pnX0:        Ptr to X coordinate of line start
+/// \param[inout] pnY0:        Ptr to Y coordinate of line start
+/// \param[inout] pnX1:        Ptr to X coordinate of line end
+/// \param[inout] pnY1:        Ptr to Y coordinate of line end
+///
+/// \return true if line is visible, false if it should be discarded
+///
+bool gslc_ClipLine(gslc_tsRect* pClipRect,int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1);
+
+///
+/// Perform basic clipping of a rectangle to a clipping region
+/// - Coordinates in parameter rect are modified to fit the region
+///
+/// \param[in]    pClipRect:   Pointer to clipping region
+/// \param[inout] pRect:       Ptr to rectangle
+///
+/// \return true if rect is visible, false if it should be discarded
+///
+bool gslc_ClipRect(gslc_tsRect* pClipRect,gslc_tsRect* pRect);
 
 ///
 /// Create a blank image reference structure

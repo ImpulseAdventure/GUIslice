@@ -132,6 +132,10 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       pGui->nDispH = LCDHEIGHT;
     #endif
 
+    // Defaults for clipping region
+    gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+    gslc_DrvSetClipRect(pGui,&rClipRect);
+      
     // Initialize SD card usage
     #if (ADAGFX_SD_EN)
     if (!SD.begin(ADAGFX_PIN_SDCS)) {
@@ -228,7 +232,12 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
   // driver struct, but the drawing code does not currently
   // use it.
   gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  pDriver->rClipRect = *pRect;
+  if (pRect == NULL) {
+    // Default to entire display
+    pDriver->rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+  } else {
+    pDriver->rClipRect = *pRect;
+  }
 
   // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
   return false;
@@ -322,6 +331,12 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  // Perform clipping
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  if (!gslc_ClipPt(&pDriver->rClipRect,nX,nY)) { return true; }
+#endif
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawPixel(nX,nY,nColRaw);
   return true;
@@ -335,6 +350,12 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,uint16_t nNumPt,gslc_ts
 
 bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  // Perform clipping
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }  
+#endif
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
   m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   return true;
@@ -342,6 +363,12 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  // Perform clipping
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }    
+#endif  
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
   m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   return true;
@@ -350,6 +377,11 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  if (!gslc_ClipLine(&pDriver->rClipRect,&nX0,&nY0,&nX1,&nY1)) { return true; }      
+#endif
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
   return true;
@@ -357,6 +389,10 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
 
 bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  // TODO
+#endif
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
   m_disp.drawCircle(nMidX,nMidY,nRadius,nColRaw);
   return true;
@@ -364,6 +400,10 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
 
 bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
+#if (ADAGFX_CLIP)
+  // TODO
+#endif
+  
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillCircle(nMidX,nMidY,nRadius,nColRaw);
   return true;

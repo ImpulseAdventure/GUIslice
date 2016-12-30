@@ -70,8 +70,10 @@ extern "C" {
 // Driver-specific members
 // =======================================================================
 typedef struct {
-  uint16_t      nColRawBkgnd;
+  uint16_t      nColRawBkgnd;   ///< Background color (if not image-based)
+  
   gslc_tsRect   rClipRect;      ///< Clipping rectangle
+  
 } gslc_tsDriver;
   
 

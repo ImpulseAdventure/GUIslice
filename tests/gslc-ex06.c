@@ -96,10 +96,12 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   uint16_t  nY = pElem->rElem.y + m_nOriginY;
   
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_tsRect rInside = pElem->rElem;
+  rInside = gslc_ExpandRect(rInside,-1,-1);
+  gslc_DrawFillRect(pGui,rInside,pElem->colElemFill);
   
   // Enable localized clipping
-  gslc_SetClipRect(pGui,&(pElem->rElem));
+  gslc_SetClipRect(pGui,&rInside);
   
   // Perform the drawing of example graphic primitives
   gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);

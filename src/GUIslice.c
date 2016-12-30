@@ -227,6 +227,135 @@ void gslc_OrderCoord(int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1)
   }
 }
 
+
+bool gslc_ClipPt(gslc_tsRect* pClipRect,int16_t nX,int16_t nY)
+{
+  int16_t nCX0 = pClipRect->x;
+  int16_t nCY0 = pClipRect->y;
+  int16_t nCX1 = pClipRect->x + pClipRect->w - 1;
+  int16_t nCY1 = pClipRect->y + pClipRect->h - 1;
+  if ( (nX < nCX0) || (nX > nCX1) ) { return false; }
+  if ( (nY < nCY0) || (nX > nCY1) ) { return false; }
+  return true;
+}
+
+
+// This routine implements a basic Cohen-Sutherland line-clipping algorithm
+// TODO: Optimize the code further
+bool gslc_ClipLine(gslc_tsRect* pClipRect,int16_t* pnX0,int16_t* pnY0,int16_t* pnX1,int16_t* pnY1)
+{
+  int16_t nTmpX,nTmpY;
+  int16_t nCXMin,nCXMax,nCYMin,nCYMax;
+  uint8_t nRegion0,nRegion1,nRegionSel;
+  int16_t nLX0,nLY0,nLX1,nLY1;
+  
+  int16_t nCX0 = pClipRect->x;
+  int16_t nCY0 = pClipRect->y;
+  int16_t nCX1 = pClipRect->x + pClipRect->w - 1;
+  int16_t nCY1 = pClipRect->y + pClipRect->h - 1;
+  
+  if (nCX0 > nCX1) {
+    nCXMin = nCX1;
+    nCXMax = nCX0;
+  } else {
+    nCXMin = nCX0;
+    nCXMax = nCX1;
+  }
+  if (nCY0 > nCY1) {
+    nCYMin = nCY1;
+    nCYMax = nCY0;
+  } else {
+    nCYMin = nCY0;
+    nCYMax = nCY1;
+  }  
+  
+  nTmpX = 0;
+  nTmpY = 0;
+  while (1) {  
+    nLX0 = *pnX0;
+    nLY0 = *pnY0;
+    nLX1 = *pnX1;
+    nLY1 = *pnY1;
+
+    // Step 1: Assign a region code to each endpoint
+    nRegion0 = 0;
+    nRegion1 = 0;  
+    if      (nLX0 < nCX0) { nRegion0 |= 1; }
+    else if (nLX0 > nCX1) { nRegion0 |= 2; }
+    if      (nLY0 < nCY0) { nRegion0 |= 4; }
+    else if (nLY0 > nCY1) { nRegion0 |= 8; }
+    if      (nLX1 < nCX0) { nRegion1 |= 1; }
+    else if (nLX1 > nCX1) { nRegion1 |= 2; }
+    if      (nLY1 < nCY0) { nRegion1 |= 4; }
+    else if (nLY1 > nCY1) { nRegion1 |= 8; }
+
+    // Step 2: Check for complete inclusion
+    if ((nRegion0 == 0) && (nRegion1 == 0)) {
+      return true;
+    }
+
+    // Step 3: Check for complete exclusion
+    if ((nRegion0 & nRegion1) != 0) {
+      return false;
+    }
+  
+    // Step 4: Clipping
+    nRegionSel = nRegion0 ? nRegion0 : nRegion1;
+    if (nRegionSel & 8) {
+      nTmpX = nLX0 + (nLX1 - nLX0) * (nCYMax - nLY0) / (nLY1 - nLY0);
+      nTmpY = nCYMax;
+    } else if (nRegionSel & 4) {
+      nTmpX = nLX0 + (nLX1 - nLX0) * (nCYMin - nLY0) / (nLY1 - nLY0);
+      nTmpY = nCYMin;
+    } else if (nRegionSel & 2) {
+      nTmpY = nLY0 + (nLY1 - nLY0) * (nCXMax - nLX0) / (nLX1 - nLX0);
+      nTmpX = nCXMax;
+    } else if (nRegionSel & 1) {
+      nTmpY = nLY0 + (nLY1 - nLY0) * (nCXMin - nLX0) / (nLX1 - nLX0);
+      nTmpX = nCXMin;
+    }
+    
+    // Update endpoint
+    if (nRegionSel == nRegion0) {
+      *pnX0 = nTmpX;
+      *pnY0 = nTmpY;
+    } else {
+      *pnX1 = nTmpX;
+      *pnY1 = nTmpY;
+    }
+  } // while(1)
+  
+  return true;
+}
+
+
+bool gslc_ClipRect(gslc_tsRect* pClipRect,gslc_tsRect* pRect)
+{
+  int16_t nCX0 = pClipRect->x;
+  int16_t nCY0 = pClipRect->y;
+  int16_t nCX1 = pClipRect->x + pClipRect->w - 1;
+  int16_t nCY1 = pClipRect->y + pClipRect->h - 1;
+  int16_t nRX0 = pRect->x;
+  int16_t nRY0 = pRect->y;
+  int16_t nRX1 = pRect->x + pRect->w - 1;
+  int16_t nRY1 = pRect->y + pRect->h - 1;
+  // Check for completely out of clip view
+  if ( (nRX1 < nCX0) || (nRX0 > nCX1) ) { return false; }
+  if ( (nRY1 < nCY0) || (nRY0 > nCY1) ) { return false; }
+  // Reduce rect as required to fit view
+  nRX0 = (nRX0<nCX0)? nCX0 : nRX0;
+  nRY0 = (nRY0<nCY0)? nCY0 : nRY0;
+  nRX1 = (nRX1>nCX1)? nCX1 : nRX1;
+  nRY1 = (nRY1>nCY1)? nCY1 : nRY1;
+  pRect->x = nRX0;
+  pRect->y = nRY0;
+  pRect->w = nRX1-nRX0+1;
+  pRect->h = nRY1-nRY0+1;
+  return true;
+}
+
+
+
 gslc_tsImgRef gslc_ResetImage()
 {
   gslc_tsImgRef sImgRef;

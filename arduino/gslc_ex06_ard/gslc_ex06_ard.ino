@@ -4,11 +4,13 @@
 // - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
 // - Example 06 (Arduino):
 //     Example of clipping plus draw and tick callback function
-//     IMPORTANT NOTE: Clipping has not been implemented yet in ADAGFX driver
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
+//   - IMPORTANT: This sketch can demonstrate use of a logo located on an external SD card
+//     accessed via a SPI interface. To enable, the GUIslice_config.h needs to set
+//     #define ADAGFX_SD_EN 1
 // - To support a reasonable number of GUI elements, it is recommended to
 //   use an Arduino CPU that provides more than 2KB of SRAM.
 //
@@ -62,6 +64,9 @@ int16_t   m_nOriginY = 0;
 // - The scanner implements a custom element that replaces
 //   the Box element type with a custom rendering function.
 // - Clipping region is updated temporarily during this draw
+// - NOTE: For Arduino displays, we don't have enough RAM to
+//   support double-buffering, so some flicker will be inevitable
+//   if we allow a faster frame update rate.
 bool CbDrawScanner(void* pvGui,void* pvElem)
 {
   int nInd;
@@ -75,10 +80,12 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   int16_t  nY = pElem->rElem.y + m_nOriginY;
   
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_tsRect rInside = pElem->rElem;
+  rInside = gslc_ExpandRect(rInside,-1,-1);
+  gslc_DrawFillRect(pGui,rInside,pElem->colElemFill);
   
   // Enable localized clipping
-  gslc_SetClipRect(pGui,&(pElem->rElem));
+  gslc_SetClipRect(pGui,&rInside);
   
   // Perform the drawing of example graphic primitives
   gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);
@@ -115,8 +122,8 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);  
   
-  m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
-  m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
+  m_fCoordX = 50+25.0*(sin(m_nCount/2.5));
+  m_fCoordY = 50+15.0*(cos(m_nCount/1.75));
   m_fCoordZ = 13.02;
 
   // Adjust the scanner's origin for fun
@@ -301,12 +308,15 @@ void setup()
     gslc_ElemSetTxtStr(pElemDataZ,acTxt);
     gslc_ElemSetTxtCol(pElemDataZ,(m_fCoordY>50)?GSLC_COL_GREEN_LT2:GSLC_COL_RED_DK2);
 
-    gslc_ElemXGaugeUpdate(pElemProgress,50+50*sin(m_nCount/500.0));
+    gslc_ElemXGaugeUpdate(pElemProgress,50+50*sin(m_nCount/5.0));
 
     // -----------------------------------------------
     
     // Periodically call GUIslice update function   
     gslc_Update(&m_gui);
+
+    // Slow down display
+    delay(10);
 
   } // bQuit
 

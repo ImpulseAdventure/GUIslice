@@ -132,6 +132,9 @@ extern "C" {
   // - A larger buffer will be faster but at the cost of RAM
   #define ADAGFX_SD_BUFFPIXEL   20
 
+  // Enable support for clipping (DrvSetClipRect)
+  #define ADAGFX_CLIP 1  
+
 #endif // DRV_DISP_*
 
 
