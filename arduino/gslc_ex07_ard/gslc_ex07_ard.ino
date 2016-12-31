@@ -52,7 +52,7 @@ uint8_t   m_nPosB = 0;
 
 
 // Quit button callback
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
+bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -65,7 +65,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 // - Note that all three sliders use the same callback for
 //   convenience. From the element's ID we can determine which
 //   slider was updated.
-bool CbSlidePos(void* pvGui,void* pvElem,int nPos)
+bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
 {
   gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
   gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);  
@@ -116,6 +116,7 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
+  
   // Reuse the same read-only string
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
     (char*)mstr1,strlen_P(mstr1),E_FONT_TITLE);
@@ -185,12 +186,13 @@ bool InitOverlays()
   // that is invoked upon change. The common callback will update
   // the color box.
 
+  // Static text label
   static const char mstr6[] PROGMEM = "Red:";  
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     (char*)mstr6,strlen_P(mstr6),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);        
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
-  
+  // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);          
@@ -198,12 +200,13 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);  
   nCtrlY += nCtrlGap;
 
+  // Static text label
   static const char mstr7[] PROGMEM = "Green:";    
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     (char*)mstr7,strlen_P(mstr7),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);        
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
-  
+  // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
@@ -211,13 +214,13 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
   nCtrlY += nCtrlGap;
   
-
+  // Static text label
   static const char mstr8[] PROGMEM = "Blue:";      
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     (char*)mstr8,strlen_P(mstr8),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);        
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);  
-  
+  // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);          

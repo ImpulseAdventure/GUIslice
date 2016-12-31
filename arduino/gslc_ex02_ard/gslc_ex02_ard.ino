@@ -5,7 +5,6 @@
 // - Example 02 (Arduino):
 //     Accept touch input, text button
 //
-
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
@@ -39,18 +38,16 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
   }
   return true;
 }
-  
+
 void setup()
 {
   bool          bOk = true;
   gslc_tsElem*  pElem = NULL;
 
-Serial.begin(9600);
-Serial.println("GUIslice begin");
   // -----------------------------------
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-
+  
   // Load Fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1);
   //if (!bOk) { printf("ERROR: gslc_FontAdd() failed\n"); exit(1); }
@@ -73,7 +70,6 @@ Serial.println("GUIslice begin");
     (gslc_tsRect){120,100,80,40},(char*)&mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
   
-
   // -----------------------------------
   // Start display
 
@@ -98,6 +94,6 @@ Serial.println("GUIslice begin");
   gslc_Quit(&m_gui);
 }
 
-void loop() { }
+void loop() {}
 
 

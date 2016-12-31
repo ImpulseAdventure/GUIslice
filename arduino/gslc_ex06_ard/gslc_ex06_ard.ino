@@ -173,10 +173,12 @@ bool InitOverlays()
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
 
   // Create counter
+  // - Static label
   static const char mstr2[] PROGMEM = "Searches:";
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     (char*)mstr2,strlen_P(mstr2),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);     
+  // - Read-write value
   static char mstr3[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     mstr3,8,E_FONT_TXT);
@@ -192,31 +194,38 @@ bool InitOverlays()
 
   
   // Create other labels
+
+  // Static label
   static const char mstr5[] PROGMEM = "Coord X:";
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
     (char*)mstr5,strlen_P(mstr5),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  // Read/write value
   static char mstr6[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
     mstr6,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
+  // Static label
   static const char mstr7[] PROGMEM = "Coord Y:";
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
     (char*)mstr7,strlen_P(mstr7),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  // Read-write value
   static char mstr8[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
     mstr8,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
+  // Static label
   static const char mstr9[] PROGMEM = "Coord Z:";
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
     (char*)mstr9,strlen_P(mstr9),E_FONT_TXT);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  // Read-write value
   static char mstr10[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
     mstr10,8,E_FONT_TXT);

@@ -80,7 +80,7 @@ bool InitOverlays()
   
   // -----------------------------------
   // Background
-  // Disabled by default
+  // - Background image from SD card disabled, uncomment to enable
   //static const char m_strImgBkgnd[] = IMG_BKGND;
   //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24)); 
    
