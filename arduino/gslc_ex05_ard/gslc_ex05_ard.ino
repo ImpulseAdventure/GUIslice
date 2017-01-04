@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 05 (Arduino):
 //     Multiple page handling
 //     Background image
@@ -34,22 +34,29 @@ bool      m_bQuit = false;
 unsigned  m_nCount = 0;
 
 // Instantiate the GUI
+#define MAX_PAGE            2
 #define MAX_FONT            3
+#define MAX_ELEM_PG_MAIN    9  // Max # elements on main page
+#define MAX_ELEM_PG_EXTRA   7  // Max # elements on second page
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asMainElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asMainElemRef[MAX_ELEM_PG_MAIN];
+gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA];
+gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
+
 gslc_tsXGauge               m_sXGauge;
 gslc_tsXSelNum              m_sXSelNum[3];
 
-#define MAX_PAGE            2
-#define MAX_ELEM_PG_MAIN    9
-#define MAX_ELEM_PG_EXTRA   7
-gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asElemMain[MAX_ELEM_PG_MAIN];
-gslc_tsElem                 m_asElemExtra[MAX_ELEM_PG_EXTRA];
 
 #define MAX_STR             8
 
+  // Save some element pointers for quick access
+  gslc_tsElem*  m_pElemCnt = NULL;
+  gslc_tsElem*  m_pElemProgress = NULL;
 
 // Button callbacks
 // - Show example of common callback function
@@ -75,12 +82,13 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asElemMain,MAX_ELEM_PG_MAIN);
-  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asElemExtra,MAX_ELEM_PG_EXTRA);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN,m_asMainElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
   
   // -----------------------------------
   // Background
   // - Background image from SD card disabled, uncomment to enable
+  // - Ensure that ADAGFX_SD_EN is set to 1 in GUIslice_config.h
   //static const char m_strImgBkgnd[] = IMG_BKGND;
   //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24)); 
    
@@ -122,6 +130,7 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
     mstr5,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
+  m_pElemCnt = pElem; // Save for quick access
   
 
   // Create progress bar
@@ -131,6 +140,7 @@ bool InitOverlays()
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
+  m_pElemProgress = pElem; // Save for quick access    
     
 
   // Add compound element
@@ -188,9 +198,7 @@ bool InitOverlays()
 void setup()
 {
   bool              bOk = true;
-  char              acTxt[MAX_STR];
 
-  // -----------------------------------
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
@@ -205,58 +213,45 @@ void setup()
   bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
-
-  // -----------------------------------
   // Create page elements
-  // -----------------------------------
   InitOverlays();
-
-
-  // -----------------------------------
-  // Start display
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
-  // Save some element references for quick access
-  gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-  gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-  
-  // -----------------------------------
-  // Main event loop
-
   m_bQuit = false;
-  while (!m_bQuit) {
-
-    m_nCount++;
-
-    // -----------------------------------
-    // Perform drawing updates
-    // - Note: we can make the updates conditional on the active
-    //   page by checking gslc_GetPageCur() first.
-
-    snprintf(acTxt,MAX_STR,"%u",m_nCount);
-    gslc_ElemSetTxtStr(pElemCnt,acTxt);
-
-    gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
-
-    
-    // Periodically call GUIslice update function    
-    gslc_Update(&m_gui);
-
-    // Slow down updates
-    delay(100);
-    
-  } // bQuit
-
-
-  // -----------------------------------
-  // Close down display
-
-  gslc_Quit(&m_gui);
-
 }
 
-void loop() { }
+void loop()
+{
+  char              acTxt[MAX_STR];
+
+  // Save some element references for easy access
+  gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+    
+  m_nCount++;
+
+  // Perform drawing updates
+  // - Note: we can make the updates conditional on the active
+  //   page by checking gslc_GetPageCur() first.
+
+  snprintf(acTxt,MAX_STR,"%u",m_nCount);
+  gslc_ElemSetTxtStr(pElemCnt,acTxt);
+
+  gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
+    
+  // Periodically call GUIslice update function
+  gslc_Update(&m_gui);
+
+  // Slow down updates
+  delay(100);
+  
+  // Upon Quit, close down GUI and terminate loop
+  if (m_bQuit) {
+    gslc_Quit(&m_gui);
+    exit(1);  // In Arduino, this essentially starts infinite loop
+  }
+}
 
 

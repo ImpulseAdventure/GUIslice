@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 06 (LINUX):
 //     Example of clipping plus draw and tick callback function
 //
@@ -23,7 +23,8 @@ char m_strImgLogo[MAX_PATH];
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_SCAN};
+      E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_SCAN,
+      E_ELEM_CHECK1};
 enum {E_FONT_BTN,E_FONT_TXT};
 
 bool      m_bQuit = false;
@@ -36,16 +37,19 @@ float     m_fCoordY = 0;
 float     m_fCoordZ = 0;
 
 // Instantiate the GUI
+#define MAX_PAGE            1
 #define MAX_FONT            5
+#define MAX_ELEM_PG_MAIN    20
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
-gslc_tsXGauge               m_sXGauge;
-
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    20
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
+
+gslc_tsXGauge               m_sXGauge;
+gslc_tsXCheckbox            m_asXCheck[2];
 
 #define MAX_STR             100
 
@@ -168,10 +172,10 @@ bool InitOverlays(char *strPath)
 {
   gslc_tsElem*  pElem = NULL;
 
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK3);
 
   // Graphic logo
   // - Extra code to demonstrate path generation based on location of executable  
@@ -225,10 +229,22 @@ bool InitOverlays(char *strPath)
     "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
 
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,170,50,10},
+    "Control:",0,E_FONT_TXT);   
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_ORANGE);
+
+  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
+    (gslc_tsRect){80,170,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){110,170,50,10},
+    "Enable",0,E_FONT_TXT); 
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT1);  
+  
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){120,210,170,20},
     "Example of GUIslice C library",0,E_FONT_BTN);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_LEFT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
+  gslc_ElemSetFillEn(pElem,false);
 
   // --------------------------------------------------------------------------
   // Create scanner

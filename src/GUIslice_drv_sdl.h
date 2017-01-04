@@ -4,12 +4,12 @@
 // =======================================================================
 // GUIslice library (driver layer for SDL 1.2 & 2.0)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

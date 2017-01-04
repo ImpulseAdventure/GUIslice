@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 04 (Arduino): Dynamic content
 //     Demonstrates push buttons, checkboxes and slider controls
 //
@@ -32,23 +32,32 @@ bool        m_bQuit = false;
 // Free-running counter for display
 unsigned    m_nCount = 0;
 
+
 // Instantiate the GUI
-#define MAX_FONT            3
+#define MAX_PAGE            1
+#define MAX_FONT            2
+#define MAX_ELEM_PG_MAIN    20
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
+
 gslc_tsXGauge               m_sXGauge;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    15
-gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 #define MAX_STR             15
 
-
+  // Save some element references for quick access
+  gslc_tsElem*  m_pElemCnt        = NULL;
+  gslc_tsElem*  m_pElemProgress   = NULL;
+  gslc_tsElem*  m_pElemSlider     = NULL;
+  gslc_tsElem*  m_pElemSliderTxt  = NULL;
+  
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int nX,int nY)
 {
@@ -64,7 +73,7 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   
   // Background flat color
@@ -89,6 +98,7 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     mstr3,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
+  m_pElemCnt = pElem; // Save for quick access
 
   // Create progress bar
   static const char mstr4[] PROGMEM = "Progress:";
@@ -97,6 +107,7 @@ bool InitOverlays()
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
+  m_pElemProgress = pElem; // Save for quick access    
   
   // Create checkbox 1
   static const char mstr5[] PROGMEM = "Check1:";  
@@ -129,9 +140,11 @@ bool InitOverlays()
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
   gslc_ElemXSliderSetStyle(pElem,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
+  m_pElemSlider = pElem; // Save for quick access
   static char mstr8[15] = "Slider: ???"; // Provide space for counter value  
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
     mstr8,15,E_FONT_TXT);
+  m_pElemSliderTxt = pElem; // Save for quick access    
 
   return true;
 }
@@ -140,9 +153,7 @@ bool InitOverlays()
 void setup()
 {
   bool                bOk = true;
-  char                acTxt[MAX_STR];
 
-  // -----------------------------------
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
@@ -152,66 +163,53 @@ void setup()
   bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
-
-
-  // -----------------------------------
-  // Start display
+  // Create graphic elements
   InitOverlays();
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // Save some element references for quick access
-  gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-  gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-  gslc_tsElem*  pElemSlider     = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER);
-  gslc_tsElem*  pElemSliderTxt  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER);
-
-  // -----------------------------------
-  // Main event loop
-  
   m_bQuit = false;
-  while (!m_bQuit) {
-
-    // General counter
-    m_nCount++;
-
-    // -----------------------------------
-
-    // Update elements on active page
-    snprintf(acTxt,MAX_STR,"%u",m_nCount);
-    gslc_ElemSetTxtStr(pElemCnt,acTxt);
-
-    gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/1)%100));
-    
-    // NOTE: A more efficient method is to move the following
-    //       code into the slider position callback function.
-    //       Please see example 07.
-    int nPos = gslc_ElemXSliderGetPos(pElemSlider);  
-    snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-    gslc_ElemSetTxtStr(pElemSliderTxt,acTxt);
-    
-    // Periodically call GUIslice update function    
-    gslc_Update(&m_gui);
-
-    // Slow down updates
-    delay(100);
-
-  } // bQuit
-
-  // Read checkbox state
-  // - Either read individual checkboxes
-  //   bool bCheck = gslc_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
-  // - Or find one in the group that was checked (eg. for radio buttons)
-  //   gslc_tsElem* pElem = gslc_ElemXCheckboxFindChecked(&m_gui,GSLC_GROUP_ID_NONE);
-
-  // -----------------------------------
-  // Close down display
-
-  gslc_Quit(&m_gui);
-
 }
 
-void loop() { }
+void loop()
+{
+  char                acTxt[MAX_STR];
+  
+  // General counter
+  m_nCount++;
+
+  // Update elements on active page
+  snprintf(acTxt,MAX_STR,"%u",m_nCount);
+  gslc_ElemSetTxtStr(m_pElemCnt,acTxt);
+
+  gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
+  
+  // NOTE: A more efficient method is to move the following
+  //       code into the slider position callback function.
+  //       Please see example 07.
+  int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);  
+  snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
+  gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);  
+
+  // Periodically call GUIslice update function
+  gslc_Update(&m_gui);
+
+  // Slow down updates
+  delay(100);
+  
+  // Upon Quit, close down GUI and terminate loop
+  if (m_bQuit) {
+    
+    // Example: Read checkbox state
+    // - Either read individual checkboxes
+    //   bool bCheck = gslc_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
+    // - Or find one in the group that was checked (eg. for radio buttons)
+    //   gslc_tsElem* pElem = gslc_ElemXCheckboxFindChecked(&m_gui,GSLC_GROUP_ID_NONE);
+    
+    gslc_Quit(&m_gui);
+    exit(1);  // In Arduino, this essentially starts infinite loop
+  }
+}
 
 

@@ -4,14 +4,14 @@
 // =======================================================================
 // GUIslice library
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.1    (2016/12/29)
+// - Version 0.8.2    (2017/01/03)
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -240,6 +240,19 @@ typedef enum {
   GSLC_EVTSUB_DRAW_FORCE        
 } gslc_teEventSubType;
 
+/// Element reference flags: Describes characteristics of an element
+/// - Primarily used to support relocation of elements to Flash memory (PROGMEM)
+typedef enum {
+  GSLC_ELEMREF_NONE        = 0,        ///< No element defined
+  // Define element sources
+  GSLC_ELEMREF_SRC_RAM     = (1<<0),   ///< Element is stored in RAM (internal element array)
+  GSLC_ELEMREF_SRC_PROG    = (2<<0),   ///< Element is stored in program memory
+                                       ///< (PROGMEM, read-only, external to element array)
+  // Mask values for bitfield comparisons
+  GSLC_ELEMREF_SRC         = (7<<0),   ///< Mask for Source flags
+} gslc_teElemRefFlags;
+
+
 /// Image reference flags: Describes characteristics of an image reference
 typedef enum {
   GSLC_IMGREF_NONE        = 0,        ///< No image defined
@@ -259,6 +272,14 @@ typedef enum {
   GSLC_IMGREF_FMT         = (7<<4),   ///< Mask for Format flags
 } gslc_teImgRefFlags;
 
+/// Text reference flags: Describes the characteristics of a text string
+/// (ie. whether internal to element or external and RAM vs Flash).)
+///
+/// Supported flag combinations are:
+/// - ALLOC_NONE
+/// - ALLOC_INT | MEM_RAM
+/// - ALLOC_EXT | MEM_RAM
+/// - ALLOC_EXT | MEM_PROG
 typedef enum {
   // Values
   GSLC_TXT_MEM_RAM        = (0<<0),   ///< Text string is in SRAM    (read-write)
@@ -437,6 +458,12 @@ typedef struct gslc_tsElem {
 
 } gslc_tsElem;
 
+/// Element reference structure
+typedef struct {
+  gslc_tsElem*          pElem;      ///< Pointer to element in memory [RAM,FLASH]
+  gslc_teElemRefFlags   eElemFlags; ///< Element reference flags
+} gslc_tsElemRef;
+
 
 /// Element collection struct
 /// - Collections are used to maintain a list of elements and any
@@ -444,9 +471,13 @@ typedef struct gslc_tsElem {
 /// - Pages and Compound Elements both instantiate a Collection
 typedef struct {
   gslc_tsElem*          asElem;           ///< Array of elements
-  uint16_t              nElemMax;         ///< Maximum number of elements to allocate
+  uint16_t              nElemMax;         ///< Maximum number of elements to allocate (in RAM)
   uint16_t              nElemCnt;         ///< Number of elements allocated
   int16_t               nElemAutoIdNext;  ///< Next Element ID for auto-assignment
+  
+  gslc_tsElemRef*       asElemRef;        ///< Array of element references
+  uint16_t              nElemRefMax;      ///< Maximum number of element references to allocate
+  uint16_t              nElemRefCnt;      ///< Number of element references allocated
   
   gslc_tsElem*          pElemTracked;     ///< Element currently being touch-tracked (NULL for none)
   
@@ -1029,12 +1060,23 @@ void gslc_PageFlipGo(gslc_tsGui* pGui);
 ///
 /// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  nPageId:      Page ID to assign
-/// \param[in]  psElem:       Element array storage to associate with the page
-/// \param[in]  nMaxElem:     Maximum number of elements that can be added to page
+/// \param[in]  psElem:       Internal element array storage to associate with the page
+/// \param[in]  nMaxElem:     Maximum number of elements that can be added to the
+///                           internal element array (ie. RAM))
+/// \param[in]  psElemRef:    Internal element reference array storage to
+///                           associate with the page. All elements, whether they
+///                           are located in the internal element array or in
+///                           external Flash (PROGMEM) storage, require an entry
+///                           in the element reference array.
+/// \param[in]  nMaxElemRef:  Maximum number of elements in the reference array.
+///                           This is effectively the maximum number of elements
+///                           that can appear on a page, irrespective of whether
+///                           it is stored in RAM or Flash (PROGMEM).
 ///
 /// \return none
 ///
-void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t nMaxElem);
+void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t nMaxElem,
+        gslc_tsElemRef* psElemRef,uint16_t nMaxElemRef);
 
 /// Find a page in the GUI by its ID
 ///
@@ -1476,12 +1518,24 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 /// Reset the members of an element collection
 ///
 /// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  asElem:       Array of elements to associate with the collection
-/// \param[in]  nElemMax:     Maximum number of element in the element array
+/// \param[in]  asElem:       Internal element array storage to associate with the
+///                           collection
+/// \param[in]  nElemMax:     Maximum number of elements that can be added to the
+///                           internal element array (ie. RAM))
+/// \param[in]  asElemRef:    Internal element reference array storage to
+///                           associate with the collection. All elements, whether they
+///                           are located in the internal element array or in
+///                           external Flash (PROGMEM) storage, require an entry
+///                           in the element reference array.
+/// \param[in]  nElemRefMax:  Maximum number of elements in the reference array.
+///                           This is effectively the maximum number of elements
+///                           that can appear in the collection, irrespective of whether
+///                           it is stored in RAM or Flash (PROGMEM).
 ///
 /// \return none
 /// 
-void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax);
+void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax,
+        gslc_tsElemRef* asElemRef,uint16_t nElemRefMax);
 
 
 /// Add an element to a collection
@@ -1491,11 +1545,14 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 ///
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  pElem:        Ptr to the element to add
+/// \param[in]  eFlags:       Flags describing the element (eg. whether the
+///                           element should be stored in internal RAM array
+///                           or is located in Flash/PROGMEM).
 ///
 /// \return Pointer to the element in the collection that has been added
 ///         or NULL if there was an error
 /// 
-gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,gslc_tsElem* pElem);
+gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
 
 
 ///
@@ -1706,10 +1763,13 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int
 /// \param[in]  nPageId:     Page ID to add element to (GSLC_PAGE_NONE to skip in
 ///                          case of temporary creation for compound elements)
 /// \param[in]  pElem:       Pointer to Element to add
+/// \param[in]  eFlags:      Flags describing the element (eg. whether the
+///                          element should be stored in internal RAM array
+///                          or is located in Flash/PROGMEM).
 ///
 /// \return Pointer to Element or NULL if fail
-///
-gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem);
+/// 
+gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
 
 
 ///
@@ -1850,7 +1910,96 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 // =======================
 
+#if defined(__AVR__)
+// Macro initializers for Read-Only Elements in Flash/PROGMEM
+// - Generally useful in Arduino sketches targeting low-RAM CPUs (such as ATmega328)
+// - These macros perform initialization of a static tsElem variable (located
+//   in PROGMEM). If a string is required, then it too is allocated in
+//   PROGMEM space.
+// - The benefit of this macro is in providing significant RAM savings for
+//   programs that instantiate a number of read-only GUI elements. The net
+//   cost of each read-only GUI element is approximately 4B when using these
+//   methods.
+// - Unlike the normal ElemCreate*() functions, these ElemCreate*_P() macros
+//   don't return a tsElem pointer. Since the element definition is in
+//   Flash/PROGMEM, it is read-only and no updates should be attempted.
+// - These macros have to match the current definition and order of gslc_tsElem
+//   exactly, so any changes to the element defintion must be reflected here
+//   as well.
 
+#define gslc_ElemCreateTxt_P(xgui,xid,xpage,xr_x,xr_y,xr_w,xr_h,xtxt,xfont,xtxt_col,xframe_col,xfill_col,xalign,xframe_en,xfill_en) \
+  static const char  str##xid[] PROGMEM = xtxt; \
+  static const gslc_tsElem sElem##xid PROGMEM = {\
+      xid,\
+      true,\
+      GSLC_TYPE_TXT,\
+      (gslc_tsRect){xr_x,xr_y,xr_w,xr_h},\
+      GSLC_GROUP_ID_NONE,false,false,xframe_en,xfill_en,\
+\
+      xframe_col,xfill_col,GSLC_COL_BLACK,GSLC_COL_BLACK,\
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
+      NULL, \
+\
+      (char*)str##xid,\
+\
+      0,\
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),\
+\
+      xtxt_col,\
+      xtxt_col,\
+      xalign,\
+      0,\
+      &m_asFont[xfont],\
+\
+      NULL,\
+\
+      NULL,\
+      NULL,\
+      NULL,\
+      NULL,\
+      false,\
+      false,       \
+  }; \
+  gslc_ElemAdd(&xgui,xpage,(gslc_tsElem*)&sElem##xid,GSLC_ELEMREF_SRC_PROG);
+
+
+#define gslc_ElemCreateBox_P(xgui,xid,xpage,xr_x,xr_y,xr_w,xr_h,xframe_col,xfill_col,xframe_en,xfill_en) \
+  static const gslc_tsElem sElem##xid PROGMEM = {\
+      xid,\
+      true,\
+      GSLC_TYPE_BOX,\
+      (gslc_tsRect){xr_x,xr_y,xr_w,xr_h},\
+      GSLC_GROUP_ID_NONE,false,false,xframe_en,xfill_en,\
+\
+      xframe_col,xfill_col,GSLC_COL_BLACK,GSLC_COL_BLACK,\
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
+      NULL, \
+\
+      NULL,\
+\
+      0,\
+      GSLC_TXT_DEFAULT,\
+\
+      GSLC_COL_WHITE,\
+      GSLC_COL_WHITE,\
+      GSLC_ALIGN_MID_MID,\
+      0,\
+      NULL,\
+\
+      NULL,\
+\
+      NULL,\
+      NULL,\
+      NULL,\
+      NULL,\
+      false,\
+      false,       \
+  }; \
+  gslc_ElemAdd(&xgui,xpage,(gslc_tsElem*)&sElem##xid,GSLC_ELEMREF_SRC_PROG);
+
+#endif  // __AVR__
 
 
 #ifdef __cplusplus

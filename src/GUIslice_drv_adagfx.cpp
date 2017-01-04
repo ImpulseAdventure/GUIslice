@@ -1,12 +1,12 @@
 // =======================================================================
 // GUIslice library (driver layer for Adafruit-GFX)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -513,7 +513,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   uint32_t pos = 0, startTime = millis();
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
-
+ 
   Serial.println();
   Serial.print("Loading image '");
   Serial.print(filename);

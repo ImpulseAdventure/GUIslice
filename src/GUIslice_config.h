@@ -4,12 +4,12 @@
 // =======================================================================
 // GUIslice library (user-specified configuration)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -109,14 +109,14 @@ extern "C" {
 
   // For Adafruit-GFX drivers, define pin connections
   // Define general pins (modify these example pin assignments to match your board)
-  #define ADAGFX_PIN_CS    10 // ProMini: 10, ATmega2560: 53, 2.8"AdaShield: 10
-  #define ADAGFX_PIN_DC     9 // ProMini:  9, ATmega2560: 47, 2.8"AdaShield: 9
-  #define ADAGFX_PIN_RST    0 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0
+  #define ADAGFX_PIN_CS    10 // ProMini: 10, ATmega2560: 53, 2.8"AdaShield: 10, Feather: 10
+  #define ADAGFX_PIN_DC     9 // ProMini:  9, ATmega2560: 47, 2.8"AdaShield: 9,  Feather:  9
+  #define ADAGFX_PIN_RST    0 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0,  Feather: 11
   #define ADAGFX_PIN_MOSI
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
   // SD card chip select
-  #define ADAGFX_PIN_SDCS   4 //              ATmega2560: 48, 2.8"AdaShield: 4
+  #define ADAGFX_PIN_SDCS   4 //              ATmega2560: 48, 2.8"AdaShield: 4,  Feather:  4?
 
   // Use hardware SPI?
   #define ADAGFX_SPI_HW
@@ -133,7 +133,8 @@ extern "C" {
   #define ADAGFX_SD_BUFFPIXEL   20
 
   // Enable support for clipping (DrvSetClipRect)
-  #define ADAGFX_CLIP 1  
+  // - Note that this will impact performance of drawing graphics primitives
+  #define ADAGFX_CLIP 1
 
 #endif // DRV_DISP_*
 

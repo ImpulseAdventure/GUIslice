@@ -1,12 +1,12 @@
 // =======================================================================
 // GUIslice library (extensions)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_GRAY;  
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElem;
   } else {
     // Save as temporary element
@@ -344,7 +344,7 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;   
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElem;
   } else {
     // Save as temporary element
@@ -374,7 +374,7 @@ gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
     debug_print("ERROR: ElemXCheckboxFindChecked(%s) called with NULL ptr\n","");
     return NULL;
   }   
-  for (nCurInd=GSLC_IND_FIRST;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
+  for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
     // Fetch extended data
     pCurElem      = &pGui->pCurPageCollect->asElem[nCurInd];
     nCurType      = pCurElem->nType;
@@ -428,7 +428,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
     int16_t           nCurGroup;
     
     // We use the GUI pointer for access to other elements   
-    for (nCurInd=GSLC_IND_FIRST;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
+    for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
       // Fetch extended data
       pCurElem      = &pGui->pCurPageCollect->asElem[nCurInd];
       nCurId        = pCurElem->nId;
@@ -692,7 +692,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;   
   
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElem;
   } else {
     // Save as temporary element
@@ -839,6 +839,11 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   
   
   // Draw the background
+  // - TODO: To reduce flicker on unbuffered displays, one could consider
+  //         redrawing only the thumb (last drawn position) with fill and
+  //         then redraw other portions. This would prevent the
+  //         track / ticks from flickering needlessly. A full redraw would
+  //         be required if it was first draw action.
   gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Draw any ticks
@@ -1013,10 +1018,11 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   // instead of using #define to avoid polluting the global namespace.
   int16_t nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
   
-  // NOTE: The last parameter in CollectReset() must match the size of
+  // NOTE: The count parameters in CollectReset() must match the size of
   //       the asElem[] array. It is used for bounds checking when we
   //       add new elements.
-  gslc_CollectReset(&pXData->sCollect,pXData->asElem,nSubElemMax);
+  // NOTE: We only use RAM for subelement storage
+  gslc_CollectReset(&pXData->sCollect,pXData->asElem,nSubElemMax,pXData->asElemRef,nSubElemMax);
 
   
   sElem.pXData            = (void*)(pXData);
@@ -1061,7 +1067,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   #endif
   gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);
-  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
+  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
   #if (GSLC_LOCAL_STR)
   pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
@@ -1074,7 +1080,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   #endif
   gslc_ElemSetCol(pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224}); 
   gslc_ElemSetTxtCol(pElemTmp,GSLC_COL_WHITE);  
-  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
+  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
   #if (GSLC_LOCAL_STR)
   pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
@@ -1084,12 +1090,12 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif
-  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp);
+  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
 
   // Now proceed to add the compound element to the page
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem);
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     
     // Now propagate the parent relationship to enable a cascade
     // of redrawing from low-level elements to the top

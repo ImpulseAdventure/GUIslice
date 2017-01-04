@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 03 (LINUX):
 //     Accept touch input, graphic button
 //
@@ -26,13 +26,14 @@ enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 bool        m_bQuit = false;
 
 // Instantiate the GUI
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    2
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
-
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    5
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 // Configure environment variables suitable for display
 // - These may need modification to match your system
@@ -73,7 +74,7 @@ bool InitOverlays(const char *strPath)
 {
   gslc_tsElem*  pElem = NULL;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);

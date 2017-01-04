@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 03 (Arduino):
 //     Accept touch input, graphic button
 //
@@ -36,13 +36,14 @@ enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
 bool        m_bQuit = false;
 
 // Instantiate the GUI
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    5
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
-
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    6
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 
 // Button callbacks
@@ -59,7 +60,7 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
   
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
@@ -80,40 +81,28 @@ bool InitOverlays()
 
 void setup()
 {
-
-  // -----------------------------------
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
 
-  // -----------------------------------
   // Create the graphic elements
   InitOverlays(); 
   
-  // -----------------------------------
-  // Start display
-
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // -----------------------------------
-  // Main event loop
-
   m_bQuit = false;
-  while (!m_bQuit) {
-    
-    // Periodically call GUIslice update function
-    gslc_Update(&m_gui);
-    
-  } // bQuit
-
-
-  // -----------------------------------
-  // Close down display
-
-  gslc_Quit(&m_gui);
-
 }
 
-void loop() {}
-
+void loop()
+{
+  // Periodically call GUIslice update function
+  gslc_Update(&m_gui);
+    
+  // Upon Quit, close down GUI and terminate loop
+  if (m_bQuit) {
+    gslc_Quit(&m_gui);
+    exit(1);  // In Arduino, this essentially starts infinite loop
+  }
+  
+}
 

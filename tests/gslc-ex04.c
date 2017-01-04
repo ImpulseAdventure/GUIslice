@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 04 (LINUX): Dynamic content
 //     Demonstrates push buttons, checkboxes and slider controls
 //
@@ -27,18 +27,20 @@ bool        m_bQuit = false;
 unsigned    m_nCount = 0;
 
 // Instantiate the GUI
+#define MAX_PAGE            1
 #define MAX_FONT            5
+#define MAX_ELEM_PG_MAIN    20
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
+
 gslc_tsXGauge               m_sXGauge;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
-
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    20
-gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 
 #define MAX_STR             100
 
@@ -82,7 +84,7 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   
   // Background flat color

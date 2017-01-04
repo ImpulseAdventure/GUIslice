@@ -1,7 +1,7 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 05 (LINUX):
 //     Multiple page handling
 //     Background image
@@ -34,19 +34,23 @@ bool      m_bQuit = false;
 unsigned  m_nCount = 0;
 
 // Instantiate the GUI
+#define MAX_PAGE            2
 #define MAX_FONT            5
+#define MAX_ELEM_PG_MAIN    10  // Max # elements on main page
+#define MAX_ELEM_PG_EXTRA   10  // Max # elements on second page
+
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asMainElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asMainElemRef[MAX_ELEM_PG_MAIN];
+gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA];
+gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
+
 gslc_tsXGauge               m_sXGauge;
 gslc_tsXSelNum              m_sXSelNum[3];
 
-#define MAX_PAGE            2
-#define MAX_ELEM_PG_MAIN    10
-#define MAX_ELEM_PG_EXTRA   10
-gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asElemMain[MAX_ELEM_PG_MAIN];
-gslc_tsElem                 m_asElemExtra[MAX_ELEM_PG_EXTRA];
 
 #define MAX_STR             100
 
@@ -100,8 +104,8 @@ bool InitOverlays(char *strPath)
 {
   gslc_tsElem*  pElem = NULL;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asElemMain,MAX_ELEM_PG_MAIN);
-  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asElemExtra,MAX_ELEM_PG_EXTRA);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN,m_asMainElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
   
   // -----------------------------------
   // Background

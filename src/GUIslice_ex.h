@@ -4,12 +4,12 @@
 // =======================================================================
 // GUIslice library (extensions)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
+// - http://www.impulseadventure.com/elec/guislice-gui.html
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016 Calvin Hass
+// Copyright 2017 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -366,12 +366,13 @@ typedef struct {
    
   // Internal sub-element members
   gslc_tsCollect      sCollect;       ///< Collection management for sub-elements
+  gslc_tsElemRef      asElemRef[4];   ///< Storage for sub-element references
   gslc_tsElem         asElem[4];      ///< Storage for sub-elements
 
   #if (GSLC_LOCAL_STR == 0)
-  // If each element doesn't provide its own string buffer, then
-  // we need to provide storage here in the compound element. For
-  // now, we simply provide a fixed-length memory buffer.
+  // If elements don't provide their own internal string buffer, then
+  // we need to provide storage here in the extended data of the compound
+  // element. For now, simply provide a fixed-length memory buffer.
   char                acElemTxt[4][SELNUM_STR_LEN]; ///< Storage for strings
   #endif
 } gslc_tsXSelNum;
