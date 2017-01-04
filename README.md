@@ -1,8 +1,8 @@
 GUIslice library
 
 A lightweight GUI framework suitable for embedded displays
-- Web Page: http://www.impulseadventure.com/elec/microsdl-sdl-gui.html
-- Wiki Page: https://github.com/ImpulseAdventure/GUIslice/wiki
+- Web Page: [GUIslice Website (www.impulseadventure.com)](http://www.impulseadventure.com/elec/guislice-gui.html)
+- Wiki Page: [GUIslice Wiki (github](https://github.com/ImpulseAdventure/GUIslice/wiki)
 
 - Pure C library, no dynamic memory allocation
 - Widgets: text, images, buttons, checkboxes, radio buttons, sliders, etc. plus extensions and multiple pages.
