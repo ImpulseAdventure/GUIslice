@@ -4,14 +4,11 @@
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 07 (Arduino):
 //   - Sliders with dynamic color control and position callback
-//   - Also demonstrates the use of PROGMEM for strings and
-//     read-only elements (using ElemCreate*_P functions).
+//   - Demonstrates the use of ElemCreate*_P() functions
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
-// - To support a larger number of GUI elements, it is recommended to
-//   use an Arduino CPU that provides more than 2KB of SRAM.
 //
 
 #include "GUIslice.h"

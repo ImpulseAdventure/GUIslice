@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 03 (Arduino):
-//     Accept touch input, graphic button
+//   - Accept touch input, graphic button
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -16,8 +16,6 @@
 //   representing the quit button normal and glowing states. The file
 //   format is 24-bit BMP. These files have been included for reference in
 //   /arduino/res/
-// - To support a reasonable number of GUI elements, it is recommended to
-//   use an Arduino CPU that provides more than 2KB of SRAM.
 
 #include "GUIslice.h"
 #include "GUIslice_drv.h"

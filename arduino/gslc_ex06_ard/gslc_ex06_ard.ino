@@ -3,7 +3,8 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 06 (Arduino):
-//     Example of clipping plus draw and tick callback function
+//   - Example of clipping plus draw and tick callback function
+//   - Demonstrates the use of ElemCreate*_P() functions
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -11,8 +12,6 @@
 //   - IMPORTANT: This sketch can demonstrate use of a logo located on an external SD card
 //     accessed via a SPI interface. To enable, the GUIslice_config.h needs to set
 //     #define ADAGFX_SD_EN 1
-// - To support a reasonable number of GUI elements, it is recommended to
-//   use an Arduino CPU that provides more than 2KB of SRAM.
 // - This sketch is expected to exhibit some flickering on unbuffered displays
 //
 

@@ -3,14 +3,12 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 01 (Arduino):
-//     Display a box
-//     No touchscreen required
+//   - Display a box
+//   - No touchscreen required
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
-// - To support a reasonable number of GUI elements, it is recommended to
-//   use a CPU that provides more than 2KB of SRAM.
 //
 
 #include "GUIslice.h"

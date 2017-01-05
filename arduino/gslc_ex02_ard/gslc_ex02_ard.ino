@@ -3,8 +3,13 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 02 (Arduino):
-//     Accept touch input, text button
+//   - Accept touch input, text button
 //
+
+// ARDUINO NOTES:
+// - GUIslice_config.h must be edited to match the pinout connections
+//   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
+
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"

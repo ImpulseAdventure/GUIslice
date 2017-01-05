@@ -3,15 +3,17 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 05 (Arduino):
-//     Multiple page handling
-//     Background image
-//     Compound elements
+//   - Multiple page handling
+//   - Background image
+//   - Compound elements
+//   - Demonstrates the use of ElemCreate*_P() functions
+//     NOTE: This sketch requires CPUs with >2KB of RAM
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
-// - To support a reasonable number of GUI elements, it is recommended to
-//   use a CPU that provides more than 2KB of SRAM.
+// - To support a larger number of GUI elements, it is recommended to
+//   use a CPU that provides more than 2KB of SRAM (eg. ATmega2560).
 //
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
@@ -34,18 +36,22 @@ bool      m_bQuit = false;
 unsigned  m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_PAGE            2
-#define MAX_FONT            3
-#define MAX_ELEM_PG_MAIN    9  // Max # elements on main page
-#define MAX_ELEM_PG_EXTRA   7  // Max # elements on second page
+#define MAX_PAGE                2
+#define MAX_FONT                3
+#define MAX_ELEM_PG_MAIN        9                                         // # Elems total on Main page
+#define MAX_ELEM_PG_MAIN_PROG   4                                         // # Elems in Flash
+#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
+#define MAX_ELEM_PG_EXTRA       7                                         // # Elems total on Extra page
+#define MAX_ELEM_PG_EXTRA_PROG  4                                         // # Elems in Flash
+#define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asMainElem[MAX_ELEM_PG_MAIN];
+gslc_tsElem                 m_asMainElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asMainElemRef[MAX_ELEM_PG_MAIN];
-gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA];
+gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA_RAM];
 gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
 
 gslc_tsXGauge               m_sXGauge;
@@ -82,8 +88,8 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN,m_asMainElemRef,MAX_ELEM_PG_MAIN);
-  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN_RAM,m_asMainElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA_RAM,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
   
   // -----------------------------------
   // Background
@@ -96,17 +102,11 @@ bool InitOverlays()
   // PAGE: MAIN
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,50,280,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemCreateBox_P(m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);  
 
   // Create title
-  static const char mstr1[] PROGMEM = "GUIslice Demo";
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,10,310,40},
-    (char*)mstr1,strlen_P(mstr1),E_FONT_TITLE);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemCreateTxt_P(m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",2, // E_FONT_TITLE
+          GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);  
 
   // Create Quit button with text label
   static const char mstr2[] PROGMEM = "Quit";  
@@ -122,10 +122,8 @@ bool InitOverlays()
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
 
   // Create counter
-  static const char mstr4[] PROGMEM = "Count";   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,60,50,10},
-    (char*)mstr4,strlen_P(mstr4),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
+  gslc_ElemCreateTxt_P(m_gui,102,E_PG_MAIN,40,60,50,10,"Count",1, // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   static char mstr5[8] = "";  // Placeholder for counter  
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
     mstr5,8,E_FONT_TXT);
@@ -134,10 +132,8 @@ bool InitOverlays()
   
 
   // Create progress bar
-  static const char mstr6[] PROGMEM = "Progress";   
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,80,50,10},
-    (char*)mstr6,strlen_P(mstr6),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
+  gslc_ElemCreateTxt_P(m_gui,103,E_PG_MAIN,40,80,50,10,"Progress",1, // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
   m_pElemProgress = pElem; // Save for quick access    
@@ -151,9 +147,7 @@ bool InitOverlays()
   // PAGE: EXTRA
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){40,40,240,160});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-
+  gslc_ElemCreateBox_P(m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);  
 
   // Create Back button with text label
   static const char mstr7[] PROGMEM = "Back";    
@@ -163,25 +157,12 @@ bool InitOverlays()
 
 
   // Create a few labels
-  int16_t    nPosY = 50;
-  int16_t    nSpaceY = 20;
-  static const char mstr8[] PROGMEM = "Data 1";  
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)mstr8,strlen_P(mstr8),E_FONT_TXT); nPosY += nSpaceY;
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);      
-
-
-  static const char mstr9[] PROGMEM = "Data 2";    
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)mstr9,strlen_P(mstr9),E_FONT_TXT); nPosY += nSpaceY;
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);   
-
-
-  static const char mstr10[] PROGMEM = "Data 3";    
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)mstr10,strlen_P(mstr10),E_FONT_TXT); nPosY += nSpaceY;
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);   
-
+  gslc_ElemCreateTxt_P(m_gui,201,E_PG_EXTRA,60,50,50,10,"Data 1",1, // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
+  gslc_ElemCreateTxt_P(m_gui,202,E_PG_EXTRA,60,70,50,10,"Data 2",1, // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
+  gslc_ElemCreateTxt_P(m_gui,203,E_PG_EXTRA,60,90,50,10,"Data 3",1, // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
@@ -206,11 +187,11 @@ void setup()
   // - In this example, we are loading the same font but at
   //   different point sizes. We could also refer to other
   //   font files as well.
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1); // Font[0]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1); // Font[1]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3); // Font[2]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
   // Create page elements

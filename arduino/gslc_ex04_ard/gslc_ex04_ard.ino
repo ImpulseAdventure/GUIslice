@@ -3,13 +3,12 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 04 (Arduino): Dynamic content
-//     Demonstrates push buttons, checkboxes and slider controls
+//   - Demonstrates push buttons, checkboxes and slider controls
+//   - Demonstrates the use of ElemCreate*_P() functions
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
-// - To support a reasonable number of GUI elements, it is recommended to
-//   use a CPU that provides more than 2KB of SRAM.
 //
 
 #include "GUIslice.h"
@@ -34,15 +33,17 @@ unsigned    m_nCount = 0;
 
 
 // Instantiate the GUI
-#define MAX_PAGE            1
-#define MAX_FONT            2
-#define MAX_ELEM_PG_MAIN    20
+#define MAX_PAGE                1
+#define MAX_FONT                2
+#define MAX_ELEM_PG_MAIN        14                                        // # Elems total
+#define MAX_ELEM_PG_MAIN_PROG   6                                         // # Elems in Flash
+#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 gslc_tsXGauge               m_sXGauge;
@@ -73,15 +74,14 @@ bool InitOverlays()
 {
   gslc_tsElem*  pElem;
   
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
   
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemCreateBox_P(m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
   
   // Create Quit button with text label
   static const char mstr1[] PROGMEM = "Quit";
@@ -90,10 +90,8 @@ bool InitOverlays()
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
   // Create counter
-  static const char mstr2[] PROGMEM = "Count:";
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
-    (char*)mstr2,strlen_P(mstr2),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemCreateTxt_P(m_gui,101,E_PG_MAIN,20,60,50,10,"Count:",0,
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   static char mstr3[8] = ""; // Provide space for large counter value
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     mstr3,8,E_FONT_TXT);
@@ -101,36 +99,28 @@ bool InitOverlays()
   m_pElemCnt = pElem; // Save for quick access
 
   // Create progress bar
-  static const char mstr4[] PROGMEM = "Progress:";
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
-    (char*)mstr4,strlen_P(mstr4),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemCreateTxt_P(m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",0,
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);  
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   m_pElemProgress = pElem; // Save for quick access    
   
   // Create checkbox 1
-  static const char mstr5[] PROGMEM = "Check1:";  
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
-    (char*)mstr5,strlen_P(mstr5),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemCreateTxt_P(m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",0,
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
-  static const char mstr6[] PROGMEM = "Radio1:";    
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
-    (char*)mstr6,strlen_P(mstr6),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemCreateTxt_P(m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",0,
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
     (gslc_tsRect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
 
   // Create radio 2
-  static const char mstr7[] PROGMEM = "Radio2:";     
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
-    (char*)mstr7,strlen_P(mstr7),E_FONT_TXT);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemCreateTxt_P(m_gui,105,E_PG_MAIN,20,160,20,20,"Radio2:",0,
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
