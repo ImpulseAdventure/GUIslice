@@ -644,6 +644,8 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     }    
     
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
+    // TODO: Probably need to fix this to work with PROGMEM,
+    //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from program memory
       // - Dimensions and output color are defined in arrray header

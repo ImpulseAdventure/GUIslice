@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.2    (2017/01/03)
+// - Version 0.8.2    (2017/01/08)
 // =======================================================================
 //
 // The MIT License
@@ -32,6 +32,8 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+
+/// \file GUIslice.h
 
 
 #ifdef __cplusplus
@@ -554,36 +556,7 @@ typedef struct {
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events 
   
-  
 } gslc_tsGui;
-
-
-// ------------------------------------------------------------------------
-// General purpose macros
-// ------------------------------------------------------------------------
-
-// Create debug macro to selectively include the output code
-#define debug_print(fmt, ...) \
-        do { if (DEBUG_ERR) \
-          fprintf(stderr, "" fmt, __VA_ARGS__); \
-          fprintf(stderr, "\n"); \
-        } while (0)  
-
-// TODO: Consider supporting Serial.println() for Arduino target
-//       Can only do this if GUIslice files are renamed *.cpp in Arduino environment
-//       otherwise Serial will be undefined.
-/*
-#define debug_print(fmt, ...) \
-        do { if (DEBUG_ERR) \
-          if (DEBUG_ERR_SERIAL) { \
-            Serial.print("ERROR: @"); \
-            Serial.println(__LINE__); \
-          } else { \
-            fprintf(stderr, "" fmt, __VA_ARGS__); \
-            fprintf(stderr, "\n"); \ 
-          } \
-        } while (0)  
-*/
 
 
 
@@ -618,7 +591,6 @@ char* gslc_GetVer(gslc_tsGui* pGui);
 /// \return true if success, false if fail
 ///
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont);
-
 
 
 ///
@@ -1908,10 +1880,41 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 
 
-// =======================
+// ------------------------------------------------------------------------
+// General purpose macros
+// ------------------------------------------------------------------------
 
-#if defined(__AVR__)
+// Create debug macro to selectively include the output code
+#define debug_print(fmt, ...) \
+        do { if (DEBUG_ERR) \
+          fprintf(stderr, "" fmt, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
+        } while (0)  
+
+// TODO: Consider supporting Serial.println() for Arduino target
+//       Can only do this if GUIslice files are renamed *.cpp in Arduino environment
+//       otherwise Serial will be undefined.
+//xxx
+/*
+#define debug_print(fmt, ...) \
+        do { if (DEBUG_ERR) \
+          if (DEBUG_ERR_SERIAL) { \
+            Serial.print("ERROR: @"); \
+            Serial.println(__LINE__); \
+          } else { \
+            fprintf(stderr, "" fmt, __VA_ARGS__); \
+            fprintf(stderr, "\n"); \ 
+          } \
+        } while (0)  
+*/
+
+
+// ------------------------------------------------------------------------
+// Read-only element macros
+// ------------------------------------------------------------------------
+
 // Macro initializers for Read-Only Elements in Flash/PROGMEM
+//
 // - Generally useful in Arduino sketches targeting low-RAM CPUs (such as ATmega328)
 // - These macros perform initialization of a static tsElem variable (located
 //   in PROGMEM). If a string is required, then it too is allocated in
@@ -1924,82 +1927,174 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 //   don't return a tsElem pointer. Since the element definition is in
 //   Flash/PROGMEM, it is read-only and no updates should be attempted.
 // - These macros have to match the current definition and order of gslc_tsElem
-//   exactly, so any changes to the element defintion must be reflected here
+//   exactly, so any changes to the element definition must be reflected here
 //   as well.
 
-#define gslc_ElemCreateTxt_P(xgui,xid,xpage,xr_x,xr_y,xr_w,xr_h,xtxt,xfont,xtxt_col,xframe_col,xfill_col,xalign,xframe_en,xfill_en) \
-  static const char  str##xid[] PROGMEM = xtxt; \
-  static const gslc_tsElem sElem##xid PROGMEM = {\
-      xid,\
-      true,\
-      GSLC_TYPE_TXT,\
-      (gslc_tsRect){xr_x,xr_y,xr_w,xr_h},\
-      GSLC_GROUP_ID_NONE,false,false,xframe_en,xfill_en,\
-\
-      xframe_col,xfill_col,GSLC_COL_BLACK,GSLC_COL_BLACK,\
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
-      NULL, \
-\
-      (char*)str##xid,\
-\
-      0,\
-      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),\
-\
-      xtxt_col,\
-      xtxt_col,\
-      xalign,\
-      0,\
-      &m_asFont[xfont],\
-\
-      NULL,\
-\
-      NULL,\
-      NULL,\
-      NULL,\
-      NULL,\
-      false,\
-      false,       \
-  }; \
-  gslc_ElemAdd(&xgui,xpage,(gslc_tsElem*)&sElem##xid,GSLC_ELEMREF_SRC_PROG);
+
+/// \def gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn)
+///
+/// Create a read-only text element
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  nElemId:    Unique element ID to assign
+/// \param[in]  nPage:      Page ID to attach element to
+/// \param[in]  nX:         X coordinate of element
+/// \param[in]  nY:         Y coordinate of element
+/// \param[in]  nW:         Width of element
+/// \param[in]  nH:         Height of element
+/// \param[in]  strTxt:     Text string to display
+/// \param[in]  pFont:      Pointer to font resource
+/// \param[in]  colTxt:     Color for the text
+/// \param[in]  colFrame:   Color for the frame
+/// \param[in]  colFill:    Color for the fill
+/// \param[in]  nAlignTxt:  Text alignment
+/// \param[in]  bFrameEn:   True if framed, false otherwise
+/// \param[in]  bFillEn:    True if filled, false otherwise
+///
 
 
-#define gslc_ElemCreateBox_P(xgui,xid,xpage,xr_x,xr_y,xr_w,xr_h,xframe_col,xfill_col,xframe_en,xfill_en) \
-  static const gslc_tsElem sElem##xid PROGMEM = {\
-      xid,\
-      true,\
-      GSLC_TYPE_BOX,\
-      (gslc_tsRect){xr_x,xr_y,xr_w,xr_h},\
-      GSLC_GROUP_ID_NONE,false,false,xframe_en,xfill_en,\
-\
-      xframe_col,xfill_col,GSLC_COL_BLACK,GSLC_COL_BLACK,\
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},\
-      NULL, \
-\
-      NULL,\
-\
-      0,\
-      GSLC_TXT_DEFAULT,\
-\
-      GSLC_COL_WHITE,\
-      GSLC_COL_WHITE,\
-      GSLC_ALIGN_MID_MID,\
-      0,\
-      NULL,\
-\
-      NULL,\
-\
-      NULL,\
-      NULL,\
-      NULL,\
-      NULL,\
-      false,\
-      false,       \
-  }; \
-  gslc_ElemAdd(&xgui,xpage,(gslc_tsElem*)&sElem##xid,GSLC_ELEMREF_SRC_PROG);
+/// \def gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn)
+///
+/// Create a read-only box element
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  nElemId:    Unique element ID to assign
+/// \param[in]  nPage:      Page ID to attach element to
+/// \param[in]  nX:         X coordinate of element
+/// \param[in]  nY:         Y coordinate of element
+/// \param[in]  nW:         Width of element
+/// \param[in]  nH:         Height of element
+/// \param[in]  colFrame:   Color for the frame
+/// \param[in]  colFill:    Color for the fill
+/// \param[in]  bFrameEn:   True if framed, false otherwise
+/// \param[in]  bFillEn:    True if filled, false otherwise
+///
 
-#endif  // __AVR__
+#if (GSLC_USE_PROGMEM)
+
+#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+  static const char str##nElemId[] PROGMEM = strTxt;              \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_TXT,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)str##nElemId,                                        \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                           \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      false,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+
+
+#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn) \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_BOX,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      GSLC_TXT_DEFAULT,                                           \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      false,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+
+#else
+
+#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+  static const char str##nElemId[] = strTxt;                      \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_TXT,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)str##nElemId,                                        \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),   \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                                      \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      false,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
+
+
+#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn) \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_BOX,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      GSLC_TXT_DEFAULT,                                           \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      false,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
+
+#endif // GSLC_USE_PROGMEM
 
 
 #ifdef __cplusplus

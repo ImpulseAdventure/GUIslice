@@ -43,10 +43,20 @@ float     m_fCoordZ = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                5
-#define MAX_ELEM_PG_MAIN        21                                        // # Elems total
-#define MAX_ELEM_PG_MAIN_PROG   11                                        // # Elems in Flash
-#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
+#define MAX_FONT                2
+
+// Define the maximum number of elements per page
+// - To enable the same code to run on devices that support storing
+//   data into Flash (PROGMEM) and those that don't, we can make the
+//   number of elements in Flash dependent upon GSLC_USE_PROGMEM
+// - This should allow both Arduino and ARM Cortex to use the same code
+#define MAX_ELEM_PG_MAIN          21                                        // # Elems total
+#if (GSLC_USE_PROGMEM)
+  #define MAX_ELEM_PG_MAIN_PROG   11                                        // # Elems in Flash
+#else
+  #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
+#endif
+#define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -176,7 +186,7 @@ bool InitOverlays()
 
 
   // Create background box
-  gslc_ElemCreateBox_P(m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
 
   // Create Quit button with text label
   static const char mstr1[] PROGMEM = "Quit";
@@ -186,7 +196,7 @@ bool InitOverlays()
 
   // Create counter
   // - Static label
-  gslc_ElemCreateTxt_P(m_gui,101,E_PG_MAIN,20,60,50,10,"Searches:",0,
+  gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,20,60,50,10,"Searches:",&m_asFont[1],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // - Read-write value
   static char mstr3[8] = "";
@@ -196,7 +206,7 @@ bool InitOverlays()
   m_pElemCount = pElem; // Save for quick access  
 
   // Create progress bar
-  gslc_ElemCreateTxt_P(m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",0,
+  gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
@@ -206,7 +216,7 @@ bool InitOverlays()
   // Create other labels
 
   // Static label
-  gslc_ElemCreateTxt_P(m_gui,103,E_PG_MAIN,40,100,50,10,"Coord X:",0,
+  gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,40,100,50,10,"Coord X:",&m_asFont[1],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Read/write value
   static char mstr6[8] = "";
@@ -216,7 +226,7 @@ bool InitOverlays()
   m_pElemDataX = pElem; // Save for quick access   
   
   // Static label
-  gslc_ElemCreateTxt_P(m_gui,104,E_PG_MAIN,40,120,50,10,"Coord Y:",0,
+  gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,40,120,50,10,"Coord Y:",&m_asFont[1],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Read-write value
   static char mstr8[8] = "";
@@ -226,7 +236,7 @@ bool InitOverlays()
   m_pElemDataY = pElem; // Save for quick access 
   
   // Static label
-  gslc_ElemCreateTxt_P(m_gui,105,E_PG_MAIN,40,140,50,10,"Coord Z:",0,
+  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,40,140,50,10,"Coord Z:",&m_asFont[1],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Read-write value
   static char mstr10[8] = "";
@@ -235,23 +245,23 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
   m_pElemDataZ = pElem; // Save for quick access 
 
-  gslc_ElemCreateTxt_P(m_gui,106,E_PG_MAIN,20,170,50,10,"Control:",0,
+  gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,20,170,50,10,"Control:",&m_asFont[1],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,170,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
-  gslc_ElemCreateTxt_P(m_gui,107,E_PG_MAIN,110,170,50,10,"Enable",0,
+  gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,110,170,50,10,"Enable",&m_asFont[1],
           GSLC_COL_GRAY_LT1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  gslc_ElemCreateTxt_P(m_gui,108,E_PG_MAIN,120,210,170,20,"Example of GUIslice C library",0,
+  gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,120,210,170,20,"Example of GUIslice C library",&m_asFont[1],
           GSLC_COL_RED_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,false);
 
   // --------------------------------------------------------------------------
   // Create scanner
-  gslc_ElemCreateBox_P(m_gui,109,E_PG_MAIN,190-1-2,75-1-12,100+2+4,100+2+10+4,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,109,E_PG_MAIN,190-1-2,75-1-12,100+2+4,100+2+10+4,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,true,true);
 
-  gslc_ElemCreateTxt_P(m_gui,110,E_PG_MAIN,190,75-11,100,10,"SCANNER",0,
+  gslc_ElemCreateTxt_P(&m_gui,110,E_PG_MAIN,190,75-11,100,10,"SCANNER",&m_asFont[1],
           GSLC_COL_BLUE_DK2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,true);
 
   // We create a basic box and then provide a custom draw callback function for it
@@ -276,9 +286,9 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   // Load Fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1); // m_asFont[0]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1); // m_asFont[1]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 

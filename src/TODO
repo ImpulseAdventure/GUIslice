@@ -1,16 +1,3 @@
-FEATURES
-========
-* Polygon drawing primitive
-* Keypress handler
-
-IMPROVEMENTS
-============
-* Move the background into its own element
-* Enhance compound element (tsXSelNum) usage of common event passing system
-* Support debug_print() in GUIslice.c for Arduino
-* Support 16b BMP load from SD in DrawBmp24FromSD() for Arduino
-
-BUGS
-====
-* ?
-
+For a list of features, improvements and bugs on the GUIslice TODO list,
+please refer to the GUIslice wiki:
+* https://github.com/ImpulseAdventure/GUIslice/wiki/TODO

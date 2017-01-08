@@ -28,6 +28,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
+
 void setup()
 {
   gslc_tsElem*  pElem = NULL;
@@ -55,7 +56,6 @@ void setup()
   
   // Close down display
   gslc_Quit(&m_gui);
-
 }
 
 void loop() { }

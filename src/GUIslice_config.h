@@ -190,6 +190,22 @@ extern "C" {
 #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
 
+// -----------------------------------------------------------------------------------------
+
+// Define compatibility for non-AVR to call PROGMEM functions
+#if defined(__AVR__)
+    #define GSLC_USE_PROGMEM 1
+#else
+    #define GSLC_USE_PROGMEM 0
+#endif
+
+// Define how debug messaging is done
+#if defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
+  #define DEBUG_ERR_SERIAL  1
+#else
+  #define DEBUG_ERR_SERIAL  0
+#endif
+
 
 #ifdef __cplusplus
 }

@@ -36,7 +36,6 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 
-
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
@@ -75,6 +74,7 @@ void setup()
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){120,100,80,40},(char*)&mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
   gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
+
   
   // -----------------------------------
   // Start up display on main page

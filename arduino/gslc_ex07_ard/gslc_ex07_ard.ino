@@ -30,10 +30,20 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                5
-#define MAX_ELEM_PG_MAIN        17                                        // # Elems total
-#define MAX_ELEM_PG_MAIN_PROG   11                                        // # Elems in Flash
-#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
+#define MAX_FONT                2
+
+// Define the maximum number of elements per page
+// - To enable the same code to run on devices that support storing
+//   data into Flash (PROGMEM) and those that don't, we can make the
+//   number of elements in Flash dependent upon GSLC_USE_PROGMEM
+// - This should allow both Arduino and ARM Cortex to use the same code
+#define MAX_ELEM_PG_MAIN          17                                        // # Elems total
+#if (GSLC_USE_PROGMEM)
+  #define MAX_ELEM_PG_MAIN_PROG   11                                        // # Elems in Flash
+#else
+  #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
+#endif
+#define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -112,18 +122,18 @@ bool InitOverlays()
   #define TMP_COL1 (gslc_tsColor){ 32, 32, 60}
   #define TMP_COL2 (gslc_tsColor){128,128,240}
   // Note: must use title Font ID
-  gslc_ElemCreateTxt_P(m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",1,
+  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",&m_asFont[1],
           TMP_COL1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false); 
-  gslc_ElemCreateTxt_P(m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",1,
+  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",&m_asFont[1],
           TMP_COL2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 
  
   // Create background box
-  gslc_ElemCreateBox_P(m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
   
   // Create dividers
-  gslc_ElemCreateBox_P(m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
-  gslc_ElemCreateBox_P(m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
   
   
   // Create color box
@@ -140,7 +150,7 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
   
   // Create dummy selector
-  gslc_ElemCreateTxt_P(m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",0,
+  gslc_ElemCreateTxt_P(&m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",&m_asFont[0],
           GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   static const char mstr4[] PROGMEM = "Kitchen...";  
@@ -152,8 +162,6 @@ bool InitOverlays()
   
   // Create sliders
   // - Define element arrangement
-  int16_t   nCtrlY    = 115;
-  int16_t   nCtrlGap  = 30;
   uint16_t  nSlideW   = 80;
   uint16_t  nSlideH   = 20;
   int16_t   nLabelX   = 160;
@@ -161,48 +169,44 @@ bool InitOverlays()
   uint16_t  nLabelH   = 20;
   int16_t   nSlideX   = nLabelX + nLabelW + 20;
 
-  gslc_ElemCreateTxt_P(m_gui,105,E_PG_MAIN,160,115,120,20,"Set LED RGB:",0,
+  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,160,115,120,20,"Set LED RGB:",&m_asFont[0],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  nCtrlY += 25;
   
   // Create three sliders (R,G,B) and assign callback function
   // that is invoked upon change. The common callback will update
   // the color box.
 
   // Static text label
-  gslc_ElemCreateTxt_P(m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",0,
+  gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
-          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
+          (gslc_tsRect){nSlideX,140,nSlideW,nSlideH},0,255,m_nPosR,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);  
-  nCtrlY += nCtrlGap;
 
   // Static text label
-  gslc_ElemCreateTxt_P(m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",0,
+  gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
-          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
+          (gslc_tsRect){nSlideX,170,nSlideW,nSlideH},0,255,m_nPosG,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
-  nCtrlY += nCtrlGap;
   
   // Static text label
-  gslc_ElemCreateTxt_P(m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",0,
+  gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
-          (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
+          (gslc_tsRect){nSlideX,200,nSlideW,nSlideH},0,255,m_nPosB,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);          
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);    
-  nCtrlY += nCtrlGap;
 
-  gslc_ElemCreateTxt_P(m_gui,109,E_PG_MAIN,250,230,60,10,"GUIslice Example",0,
+  gslc_ElemCreateTxt_P(&m_gui,109,E_PG_MAIN,250,230,60,10,"GUIslice Example",0,
           GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_RIGHT,false,false);
 
   return true;
@@ -212,13 +216,13 @@ bool InitOverlays()
 void setup()
 {
   bool bOk = true;
-
+  
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }  
 
   // Load Fonts
   // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
-  //   the order in which fonts are added as this same font index is provided to certain
+  //   the font pointer (array index) as will be provided to certain
   //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
   bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1); // m_asFont[0]
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }

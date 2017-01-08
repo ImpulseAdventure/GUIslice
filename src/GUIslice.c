@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.2    (2017/01/03)
+// - Version 0.8.2    (2017/01/08)
 // =======================================================================
 //
 // The MIT License
@@ -33,17 +33,15 @@
 
 
 // GUIslice library
-
-
+#include "GUIslice_config.h"
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
-
 #include <stdio.h>
 #include <time.h> // for FrameRate reporting
 
-#if defined(__AVR__)
+#if (GSLC_USE_PROGMEM)
 #include <avr/pgmspace.h>   // For memcpy_P()
 #endif
 
@@ -118,7 +116,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   // Initialize the display and touch drivers
   if (!gslc_DrvInit(pGui)) { return false; }
   if (!gslc_InitTouch(pGui,GSLC_DEV_TOUCH)) { return false; }
-  
+
   return true;
 }
 
@@ -2070,16 +2068,15 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
       
       // If it is an external reference (eg. flash), copy to temp element
       if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
-        #if defined(__AVR__)
+        #if (GSLC_USE_PROGMEM)        
         // Copy from PROGMEM to RAM
         memcpy_P(&pGui->sElemTmp,pElem,sizeof(gslc_tsElem));
         // Update event data reference
         sEventNew.pvScope = (void*)(&pGui->sElemTmp);
         #else
-        // ERROR: Unsupported mode for this device target
-        // - Don't do any more processing for this element
-        //   (ie. don't issue the event call)
-        continue;
+        // Ignore PROGMEM and update as if RAM
+        // Update event data reference
+        sEventNew.pvScope = (void*)(pElem);        
         #endif
       } else {
         // Update event data reference
