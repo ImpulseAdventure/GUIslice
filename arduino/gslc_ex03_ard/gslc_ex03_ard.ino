@@ -43,6 +43,8 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
+// Define debug message function
+static int16_t DebugOut(char ch, FILE *pStream) { Serial.write(ch); return 0; }
 
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
@@ -79,8 +81,12 @@ bool InitOverlays()
 
 void setup()
 {
+  // Initialize debug output
+  Serial.begin(9600);
+  gslc_InitDebug(&m_gui,&DebugOut);
+    
   // Initialize
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }  
 
   // Create the graphic elements
   InitOverlays(); 
@@ -96,10 +102,13 @@ void loop()
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
     
-  // Upon Quit, close down GUI and terminate loop
+  // In a real program, we would detect the button press and take an action.
+  // For this Arduino demo, we will pretend to exit by emulating it with an
+  // infinite loop. Note that interrupts are not disabled so that any debug
+  // messages via Serial have an opportunity to be transmitted.
   if (m_bQuit) {
     gslc_Quit(&m_gui);
-    exit(1);  // In Arduino, this essentially starts infinite loop
+    while (1) { }
   }
   
 }

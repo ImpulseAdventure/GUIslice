@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.2    (2017/01/08)
+// - Version 0.8.3    (2017/01/10)
 // =======================================================================
 //
 // The MIT License
@@ -303,8 +303,9 @@ typedef enum {
 typedef struct gslc_tsElem  gslc_tsElem;
 typedef struct gslc_tsEvent gslc_tsEvent;
 
+
 // -----------------------------------------------------------------------
-// Types
+// Callback functions
 // -----------------------------------------------------------------------
 
 
@@ -319,6 +320,11 @@ typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16
 
 /// Callback function for element tick
 typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElem);
+
+/// Callback function for debug message output
+typedef int16_t (*GSLC_CB_DEBUG)(char ch,FILE *pStream);
+
+
 
 
 // -----------------------------------------------------------------------
@@ -556,6 +562,8 @@ typedef struct {
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events 
   
+  FILE                fileDebug;        ///< Stream for debug output
+
 } gslc_tsGui;
 
 
@@ -591,6 +599,20 @@ char* gslc_GetVer(gslc_tsGui* pGui);
 /// \return true if success, false if fail
 ///
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont);
+
+
+///
+/// Initialize debug output
+/// - Configures the stderr output stream to call a user function
+/// - This is particularly useful in Arduino targets where it is desirable
+///   to redirect all error output to a Serial function
+///
+/// \param[in]  pGui:      Pointer to GUI
+/// \param[in]  pfunc:     Pointer to user character-out function
+///
+/// \return none
+///
+void gslc_InitDebug(gslc_tsGui* pGui,GSLC_CB_DEBUG pfunc);
 
 
 ///
@@ -1885,29 +1907,33 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 // ------------------------------------------------------------------------
 
 // Create debug macro to selectively include the output code
-#define debug_print(fmt, ...) \
-        do { if (DEBUG_ERR) \
-          fprintf(stderr, "" fmt, __VA_ARGS__); \
-          fprintf(stderr, "\n"); \
-        } while (0)  
+/// \def GSLC_DEBUG_PRINT(fmt, ...)
+///
+/// Macro to enable optional debug output
+/// - Supports printf formatting
+/// - Supports storing the format string in PROGMEM
+///
+/// \param[in]  fmt:        Format string for debug message
+///
+#if (GSLC_USE_PROGMEM)
+  // Debug print macro for CPUs that support PROGMEM (Flash)
+  #define GSLC_DEBUG_PRINT(fmt, ...)                      \
+          do {                                            \
+            if (DEBUG_ERR) {                              \
+              fprintf_P(stderr,PSTR(fmt),__VA_ARGS__);    \
+            }                                             \
+          } while (0)  
 
-// TODO: Consider supporting Serial.println() for Arduino target
-//       Can only do this if GUIslice files are renamed *.cpp in Arduino environment
-//       otherwise Serial will be undefined.
-//xxx
-/*
-#define debug_print(fmt, ...) \
-        do { if (DEBUG_ERR) \
-          if (DEBUG_ERR_SERIAL) { \
-            Serial.print("ERROR: @"); \
-            Serial.println(__LINE__); \
-          } else { \
-            fprintf(stderr, "" fmt, __VA_ARGS__); \
-            fprintf(stderr, "\n"); \ 
-          } \
-        } while (0)  
-*/
+#else
+  // Debug print macro for CPUs that don't support PROGMEM (Flash)
+  #define GSLC_DEBUG_PRINT(fmt, ...)                      \
+          do {                                            \
+            if (DEBUG_ERR) {                              \
+              fprintf(stderr,fmt,__VA_ARGS__);            \
+            }                                             \
+          } while (0)  
 
+#endif
 
 // ------------------------------------------------------------------------
 // Read-only element macros

@@ -145,7 +145,6 @@ bool InitOverlays()
 
 int main( int argc, char* args[] )
 {
-  bool                bOk = true;
   char                acTxt[100];
 
   // -----------------------------------
@@ -154,10 +153,8 @@ int main( int argc, char* args[] )
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   // Load Fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
+  gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
+  gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
 
 
   // -----------------------------------

@@ -99,7 +99,7 @@ extern "C" {
   #define GSLC_LOCAL_STR  0
 
   // Error reporting
-  #define DEBUG_ERR   0       // Disable error message reporting (conserve memory)
+  #define DEBUG_ERR   1       // Disable error message reporting to conserve memory
   
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the

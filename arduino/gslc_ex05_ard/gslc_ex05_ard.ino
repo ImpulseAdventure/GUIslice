@@ -75,6 +75,9 @@ gslc_tsXSelNum              m_sXSelNum[3];
   gslc_tsElem*  m_pElemCnt = NULL;
   gslc_tsElem*  m_pElemProgress = NULL;
 
+// Define debug message function
+static int16_t DebugOut(char ch, FILE *pStream) { Serial.write(ch); return 0; }
+
 // Button callbacks
 // - Show example of common callback function
 bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
@@ -189,21 +192,20 @@ bool InitOverlays()
 
 void setup()
 {
-  bool              bOk = true;
-
+  // Initialize debug output
+  Serial.begin(9600);
+  gslc_InitDebug(&m_gui,&DebugOut);
+  
   // Initialize
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  // - In this example, we are loading the same font but at
-  //   different point sizes. We could also refer to other
-  //   font files as well.
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1); // m_asFont[0]
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1); // m_asFont[1]
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3); // m_asFont[2]
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
+  // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
+  //   the font pointer (array index) as it will be provided to certain
+  //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,"",1)) { return; }    // m_asFont[0]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }    // m_asFont[1]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,"",1)) { return; }  // m_asFont[2]
 
   // Create page elements
   InitOverlays();
@@ -239,10 +241,13 @@ void loop()
   // Slow down updates
   delay(100);
   
-  // Upon Quit, close down GUI and terminate loop
+  // In a real program, we would detect the button press and take an action.
+  // For this Arduino demo, we will pretend to exit by emulating it with an
+  // infinite loop. Note that interrupts are not disabled so that any debug
+  // messages via Serial have an opportunity to be transmitted.
   if (m_bQuit) {
     gslc_Quit(&m_gui);
-    exit(1);  // In Arduino, this essentially starts infinite loop
+    while (1) { }
   }
 }
 

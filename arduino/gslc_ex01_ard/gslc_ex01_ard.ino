@@ -28,13 +28,19 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
+// Define debug message function
+static int16_t DebugOut(char ch, FILE *pStream) { Serial.write(ch); return 0; }
 
 void setup()
 {
   gslc_tsElem*  pElem = NULL;
 
+  // Initialize debug output
+  Serial.begin(9600);
+  gslc_InitDebug(&m_gui,&DebugOut);  
+
   // Initialize
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }  
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
   

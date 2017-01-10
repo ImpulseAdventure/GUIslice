@@ -186,7 +186,7 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   pGui->sImgRefBkgnd = sImgRef;
   pGui->sImgRefBkgnd.pvImgRaw = gslc_DrvLoadImage(pGui,sImgRef);
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
-    debug_print("ERROR: DrvSetBkgndImage(%s) failed\n","");
+    GSLC_DEBUG_PRINT("ERROR: DrvSetBkgndImage(%s) failed\n","");
     return false;
   }      
   

@@ -37,6 +37,10 @@
 
 #include <stdio.h>
 
+#if (GSLC_USE_PROGMEM)
+    #include <avr/pgmspace.h>
+#endif
+
 // ----------------------------------------------------------------------------
 // Extended element definitions
 // ----------------------------------------------------------------------------
@@ -71,7 +75,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    debug_print("ERROR: ElemXGaugeCreate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeCreate(%s) called with NULL ptr\n","");
     return NULL;
   }    
   gslc_tsElem   sElem;
@@ -107,7 +111,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemXGaugeUpdate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeUpdate(%s) called with NULL ptr\n","");
     return;
   }   
   gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
@@ -130,7 +134,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
 bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXGaugeDraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) called with NULL ptr\n","");
     return false;
   }   
   
@@ -159,7 +163,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   gslc_tsXGauge* pGauge;
   pGauge = (gslc_tsXGauge*)(pElem->pXData);
   if (pGauge == NULL) {
-    debug_print("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
     return false;
   }
     
@@ -169,7 +173,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   int16_t nRng  = pGauge->nGaugeMax - pGauge->nGaugeMin;
 
   if (nRng == 0) {
-    debug_print("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
   // TODO: Change to fixed point
@@ -189,7 +193,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   } else if ((nMin < 0) && (nMax == 0)) {
     nGaugeMid = -nMin*fScl;
   } else {
-    debug_print("ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
+    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
@@ -308,7 +312,7 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   gslc_tsColor colCheck,bool bChecked)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    debug_print("ERROR: ElemXCheckboxCreate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxCreate(%s) called with NULL ptr\n","");
     return NULL;
   }      
   gslc_tsElem   sElem;
@@ -371,7 +375,7 @@ gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   gslc_tsElem*        pFoundElem = NULL;
 
   if (pGui == NULL) {
-    debug_print("ERROR: ElemXCheckboxFindChecked(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxFindChecked(%s) called with NULL ptr\n","");
     return NULL;
   }   
   for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
@@ -406,7 +410,7 @@ gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemXCheckboxSetState(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxSetState(%s) called with NULL ptr\n","");
     return;
   }   
   gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
@@ -479,7 +483,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
 void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
 {  
   if (pElem == NULL) {
-    debug_print("ERROR: ElemXCheckboxToggleState(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxToggleState(%s) called with NULL ptr\n","");
     return;
   }     
   // Update the data element
@@ -498,7 +502,7 @@ void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
 bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXCheckboxDraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxDraw(%s) called with NULL ptr\n","");
     return false;
   }   
   // Typecast the parameters to match the GUI and element types
@@ -511,7 +515,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   gslc_tsXCheckbox* pCheckbox;
   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
   if (pCheckbox == NULL) {
-    debug_print("ERROR: ElemXCheckboxDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxDraw(%s) pXData is NULL\n","");
     return false;
   }
   
@@ -583,7 +587,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
 bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXCheckboxTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxTouch(%s) called with NULL ptr\n","");
     return false;
   }       
   //gslc_tsGui*         pGui = NULL;
@@ -659,7 +663,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   uint16_t nThumbSz,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    debug_print("ERROR: ElemXSliderCreate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderCreate(%s) called with NULL ptr\n","");
     return NULL;
   }     
   gslc_tsElem   sElem;
@@ -706,7 +710,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
         int16_t nTickLen,gslc_tsColor colTick)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemXSliderSetStyle(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetStyle(%s) called with NULL ptr\n","");
     return;
   }   
   gslc_tsXSlider*  pSlider = (gslc_tsXSlider*)(pElem->pXData);
@@ -724,7 +728,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
 int gslc_ElemXSliderGetPos(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemXSliderGetPos(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderGetPos(%s) called with NULL ptr\n","");
     return 0;
   }     
   gslc_tsXSlider*  pSlider = (gslc_tsXSlider*)(pElem->pXData);
@@ -736,7 +740,7 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem)
 void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: ElemXSliderSetPos(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetPos(%s) called with NULL ptr\n","");
     return;
   }       
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
@@ -773,7 +777,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos)
 void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: ElemXSliderSetPosFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetPosFunc(%s) called with NULL ptr\n","");
     return;
   }
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
@@ -788,7 +792,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb)
 bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXSliderDraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) called with NULL ptr\n","");
     return false;
   }     
   // Typecast the parameters to match the GUI and element types
@@ -799,7 +803,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   gslc_tsXSlider* pSlider;
   pSlider = (gslc_tsXSlider*)(pElem->pXData);
   if (pSlider == NULL) {
-    debug_print("ERROR: ElemXSliderDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) pXData is NULL\n","");
     return false;
   }
   
@@ -816,7 +820,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   gslc_tsColor    colTick   = pSlider->colTick;
   
   if (bVert) {
-    debug_print("ERROR: ElemXSliderDraw(%s) bVert=true not supported yet\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) bVert=true not supported yet\n","");
     return false;
   }
   
@@ -905,7 +909,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXSliderTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSliderTouch(%s) called with NULL ptr\n","");
     return false;
   }    
   gslc_tsGui*           pGui = NULL;
@@ -996,7 +1000,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    debug_print("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
     return NULL;
   }   
   gslc_tsElem sElem;
@@ -1116,7 +1120,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXSelNumDraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumDraw(%s) called with NULL ptr\n","");
     return false;
   }     
   // Typecast the parameters to match the GUI and element types
@@ -1128,7 +1132,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   gslc_tsXSelNum* pSelNum;
   pSelNum = (gslc_tsXSelNum*)(pElem->pXData);
   if (pSelNum == NULL) {
-    debug_print("ERROR: ElemXSelNumDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumDraw(%s) pXData is NULL\n","");
     return false;
   }
   
@@ -1162,7 +1166,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
 int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
 {
   if ((pGui == NULL) || (pSelNum == NULL)) {
-    debug_print("ERROR: ElemXSelNumGetCounter(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumGetCounter(%s) called with NULL ptr\n","");
     return 0;
   }     
   return pSelNum->nCounter;
@@ -1171,7 +1175,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
 void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount)
 {
   if (pSelNum == NULL) {
-    debug_print("ERROR: ElemXSelNumSetCounter(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumSetCounter(%s) called with NULL ptr\n","");
     return;
   }
   pSelNum->nCounter = nCount;
@@ -1200,7 +1204,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount)
 bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXSelNumClick(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) called with NULL ptr\n","");
     return false;
   }  
   //gslc_tsGui*   pGui      = (gslc_tsGui*)(pvGui);
@@ -1210,13 +1214,13 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t 
   // element itself. This enables us to access the extra control data.
   gslc_tsElem*    pElemParent = pElem->pElemParent;
   if (pElemParent == NULL) {
-    debug_print("ERROR: ElemXSelNumClick(%s) parent Elem ptr NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) parent Elem ptr NULL\n","");
     return false;
   }
   
   gslc_tsXSelNum* pSelNum   = (gslc_tsXSelNum*)(pElemParent->pXData);
   if (pSelNum == NULL) {
-    debug_print("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
     return false;
   }
   
@@ -1252,7 +1256,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t 
 bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
-    debug_print("ERROR: ElemXSelNumTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumTouch(%s) called with NULL ptr\n","");
     return false;
   }    
   gslc_tsGui*           pGui = NULL;

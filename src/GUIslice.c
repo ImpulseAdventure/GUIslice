@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.2    (2017/01/08)
+// - Version 0.8.3    (2017/01/10)
 // =======================================================================
 //
 // The MIT License
@@ -46,8 +46,7 @@
 #endif
 
 // Version definition
-#define GUISLICE_VER "0.8.2"
-
+#define GUISLICE_VER "0.8.3"
 
 
 // ========================================================================
@@ -66,6 +65,7 @@ char* gslc_GetVer(gslc_tsGui* pGui)
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
 {
   unsigned  nInd;
+  bool      bOk = true;
   
   // Initialize state
   pGui->nDispW          = 0;
@@ -114,10 +114,31 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   #endif
   
   // Initialize the display and touch drivers
-  if (!gslc_DrvInit(pGui)) { return false; }
-  if (!gslc_InitTouch(pGui,GSLC_DEV_TOUCH)) { return false; }
+  if (bOk) { bOk &= gslc_DrvInit(pGui); }
+  if (bOk) { bOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH); }
 
-  return true;
+  if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
+  return bOk;
+}
+
+
+void gslc_InitDebug(gslc_tsGui* pGui,GSLC_CB_DEBUG pfunc)
+{
+#if defined(__AVR__)
+  // Configure the fileDebug stream so that it can receive stdio output
+  // - It also defines the "output character" callback function that will be used
+  fdev_setup_stream(&(pGui->fileDebug),pfunc,NULL,_FDEV_SETUP_WRITE);
+
+  // Redirect stderr to use the fileDebug stream
+  stderr = &(pGui->fileDebug);    
+#else
+  // In CPUs that don't use Serial port for debugging, we are going
+  // to use the built-in stderr output which is usually supported
+  // without any need to set it up explicitly.
+  
+  // TODO: Enhance this to support non-AVR CPUs as well
+#endif
+  
 }
 
 
@@ -168,11 +189,13 @@ void gslc_Update(gslc_tsGui* pGui)
   pGui->nFrameRateCnt++;
   uint32_t  nElapsed = (time(NULL) - pGui->nFrameRateStart);
   if (nElapsed > 0) {
-    debug_print("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
+    GSLC_DEBUG_PRINT("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
     pGui->nFrameRateStart = time(NULL);
     pGui->nFrameRateCnt = 0;
   }
-  #endif  
+  #endif
+
+
 }
 
 gslc_tsEvent  gslc_EventCreate(gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData)
@@ -379,12 +402,18 @@ gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt)
 
 gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
 {
-  gslc_tsImgRef sImgRef;
+  gslc_tsImgRef sImgRef;  
+#if (ADAGFX_SD_EN)
   sImgRef.eImgFlags = GSLC_IMGREF_SRC_SD | (GSLC_IMGREF_FMT & eFmt);
   sImgRef.pFname    = pFname;
   sImgRef.pImgBuf   = NULL;
   sImgRef.pvImgRaw  = NULL;
-  return sImgRef;
+#else
+  // TODO: Change message to also handle non-Arduino output
+  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) disabled as Config:ADAGFX_SD_EN=0\n","");
+  sImgRef.eImgFlags = GSLC_IMGREF_NONE;
+#endif  
+  return sImgRef;  
 }
 
 gslc_tsImgRef gslc_GetImageFromRam(unsigned char* pImgBuf,gslc_teImgRefFlags eFmt)
@@ -420,7 +449,7 @@ void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
   // Call optimized driver point drawing
   gslc_DrvDrawPoint(pGui,nX,nY,nCol);
 #else  
-  debug_print("ERROR: Mandatory DrvDrawPoint() is not defined in driver\n");
+  GSLC_DEBUG_PRINT("ERROR: Mandatory DrvDrawPoint() is not defined in driver\n");
 #endif
   
   gslc_PageFlipSet(pGui,true);
@@ -568,11 +597,11 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 
   // Detect error case of contracting region too far
   if (rRect.w + (2*nExpandW) < 0) {
-    //debug_print("ERROR: ExpandRect(%d,%d) contracts too far",nExpandW,nExpandH);
+    //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
     return rNew;
   }
   if (rRect.h + (2*nExpandH) < 0) {
-    //debug_print("ERROR: ExpandRect(%d,%d) contracts too far",nExpandW,nExpandH);
+    //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
     return rNew;
   }
 
@@ -671,7 +700,7 @@ void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
 bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,const char* acFontName,uint16_t nFontSz)
 {
   if (pGui->nFontCnt+1 > (pGui->nFontMax)) {
-    debug_print("ERROR: FontAdd(%s) added too many fonts\n","");
+    GSLC_DEBUG_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
     return false;
   } else { 
     // Fetch a font resource from the driver
@@ -708,7 +737,7 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId)
 bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    debug_print("ERROR: PageEvent(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: PageEvent(%s) called with NULL ptr\n","");
     return false;
   }
   //gslc_tsGui*       pGui        = (gslc_tsGui*)(pvGui);
@@ -788,7 +817,7 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   // Find the page
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
-    debug_print("ERROR: SetPageCur() can't find page (ID=%d)\n",nPageId);
+    GSLC_DEBUG_PRINT("ERROR: SetPageCur() can't find page (ID=%d)\n",nPageId);
     exit(1);
   }
   
@@ -968,7 +997,7 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId)
   // as it shows a serious config error and continued operation
   // is not viable.
   if (pFoundPage == NULL) {
-    debug_print("ERROR: PageGet() could not find page (ID=%d)",nPageId);
+    GSLC_DEBUG_PRINT("ERROR: PageGet() could not find page (ID=%d)",nPageId);
     exit(1);
   }
   
@@ -983,7 +1012,7 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nEle
   // Get the page
   pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
-    debug_print("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
+    GSLC_DEBUG_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
     exit(1);
   }
   // Find the element in the page's element collection
@@ -995,7 +1024,7 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nEle
 void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
 {
   if ((pPage == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: PageSetEventFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: PageSetEventFunc(%s) called with NULL ptr\n","");
     return;
   }    
   pPage->pfuncXEvent       = funcCb;
@@ -1048,7 +1077,7 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   
   // Ensure the Font has been defined
   if (gslc_FontGet(pGui,nFontId) == NULL) {
-    debug_print("ERROR: ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
+    GSLC_DEBUG_PRINT("ERROR: ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
     return NULL;
   }
 
@@ -1153,7 +1182,7 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
 bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    debug_print("ERROR: ElemEvent(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemEvent(%s) called with NULL ptr\n","");
     return false;
   }
   gslc_tsGui*         pGui          = (gslc_tsGui*)(pvGui);
@@ -1235,7 +1264,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: ElemDrawByRef(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemDrawByRef(%s) called with NULL ptr\n","");
     return false;
   }    
   
@@ -1380,7 +1409,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
 void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetFillEn(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetFillEn(%s) called with NULL ptr\n","");
     return;
   }
   pElem->bFillEn          = bFillEn;  
@@ -1391,7 +1420,7 @@ void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
 void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetFrameEn(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetFrameEn(%s) called with NULL ptr\n","");
     return;
   }
   pElem->bFrameEn         = bFrameEn;  
@@ -1402,7 +1431,7 @@ void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
 void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFill,gslc_tsColor colFillGlow)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetCol(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetCol(%s) called with NULL ptr\n","");
     return;
   }  
   pElem->colElemFrame     = colFrame;
@@ -1414,7 +1443,7 @@ void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFi
 void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetColGlow(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetColGlow(%s) called with NULL ptr\n","");
     return;
   }  
   pElem->colElemFrameGlow   = colFrameGlow;
@@ -1426,7 +1455,7 @@ void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsCol
 void gslc_ElemSetGroup(gslc_tsElem* pElem,int nGroupId)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetGroup(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetGroup(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->nGroup           = nGroupId;
@@ -1435,7 +1464,7 @@ void gslc_ElemSetGroup(gslc_tsElem* pElem,int nGroupId)
 int gslc_ElemGetGroup(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemGetGroup(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemGetGroup(%s) called with NULL ptr\n","");
     return GSLC_GROUP_ID_NONE;
   }    
   return pElem->nGroup;  
@@ -1445,7 +1474,7 @@ int gslc_ElemGetGroup(gslc_tsElem* pElem)
 void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetTxtAlign(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtAlign(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->eTxtAlign        = nAlign;
@@ -1455,7 +1484,7 @@ void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
 void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetTxtMargin(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMargin(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->nTxtMargin        = nMargin;
@@ -1465,7 +1494,7 @@ void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
 void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetTxtStr(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStr(%s) called with NULL ptr\n","");
     return;
   }    
   
@@ -1488,7 +1517,7 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetTxtCol(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtCol(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->colElemText      = colVal;
@@ -1499,7 +1528,7 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
 void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetTxtMem(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMem(%s) called with NULL ptr\n","");
     return;
   }
   if (GSLC_LOCAL_STR) {
@@ -1507,7 +1536,7 @@ void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
       // ERROR: Unsupported mode
       // - We don't support internal buffer mode with initialization
       //   from flash (PROGMEM)
-      debug_print("ERROR: ElemSetTxtMem(%s) GSLC_LOCAL_STR can't be used with GSLC_TXT_MEM_PROG\n","");      
+      GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMem(%s) GSLC_LOCAL_STR can't be used with GSLC_TXT_MEM_PROG\n","");      
       return;
     }
   }
@@ -1518,7 +1547,7 @@ void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
 void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: ElemUpdateFont(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemUpdateFont(%s) called with NULL ptr\n","");
     return;
   }
   pElem->pTxtFont = gslc_FontGet(pGui,nFontId);
@@ -1528,7 +1557,7 @@ void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
 void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetRedraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetRedraw(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->bNeedRedraw      = bRedraw;
@@ -1543,7 +1572,7 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw)
 bool gslc_ElemGetRedraw(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemGetRedraw(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemGetRedraw(%s) called with NULL ptr\n","");
     return false;
   }    
   return pElem->bNeedRedraw;
@@ -1552,7 +1581,7 @@ bool gslc_ElemGetRedraw(gslc_tsElem* pElem)
 void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetGlow(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetGlow(%s) called with NULL ptr\n","");
     return;
   }    
   // TODO: Should also check for change in bGlowEn
@@ -1566,7 +1595,7 @@ void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
 bool gslc_ElemGetGlow(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemGetGlow(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemGetGlow(%s) called with NULL ptr\n","");
     return false;
   }    
   return pElem->bGlowing;
@@ -1575,7 +1604,7 @@ bool gslc_ElemGetGlow(gslc_tsElem* pElem)
 void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemSetGlowEn(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetGlowEn(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->bGlowEn         = bGlowEn;
@@ -1585,7 +1614,7 @@ void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
 bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemGetGlowEn(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemGetGlowEn(%s) called with NULL ptr\n","");
     return false;
   }    
   return pElem->bGlowEn;
@@ -1594,7 +1623,7 @@ bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
 void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
 {
   if ((pElemSrc == NULL) || (pElemDest == NULL)) {
-    debug_print("ERROR: ElemSetStyleFrom(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetStyleFrom(%s) called with NULL ptr\n","");
     return;
   }
 
@@ -1646,7 +1675,7 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
 void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: ElemSetEventFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetEventFunc(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->pfuncXEvent       = funcCb;
@@ -1656,7 +1685,7 @@ void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb)
 void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: ElemSetDrawFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetDrawFunc(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->pfuncXDraw       = funcCb;
@@ -1666,7 +1695,7 @@ void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
 void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
 {
   if ((pElem == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: ElemSetTickFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTickFunc(%s) called with NULL ptr\n","");
     return;
   }    
   pElem->pfuncXTick       = funcCb; 
@@ -1675,7 +1704,7 @@ void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
 bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int16_t nX,int16_t nY,bool bOnlyClickEn)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemOwnsCoord(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemOwnsCoord(%s) called with NULL ptr\n","");
     return false;
   }
   if (bOnlyClickEn && !pElem->bClickEn) {
@@ -1809,7 +1838,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
   if ((pGui == NULL) || (pPage == NULL)) {
-    debug_print("ERROR: TrackTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: TrackTouch(%s) called with NULL ptr\n","");
     return;
   }    
 
@@ -1823,12 +1852,12 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
     eTouch = GSLC_TOUCH_DOWN;
     #ifdef DBG_TOUCH    
-    debug_print(" TS : (%3d,%3d) Pressure=%3u : TouchDown\n",nX,nY,nPress);
+    GSLC_DEBUG_PRINT(" TS : (%3d,%3d) Pressure=%3u : TouchDown\n",nX,nY,nPress);
     #endif
   } else if ((pGui->nTouchLastPress > 0) && (nPress == 0)) {
     eTouch = GSLC_TOUCH_UP;
     #ifdef DBG_TOUCH    
-    debug_print(" TS : (%3d,%3d) Pressure=%3u : TouchUp\n",nX,nY,nPress);
+    GSLC_DEBUG_PRINT(" TS : (%3d,%3d) Pressure=%3u : TouchUp\n",nX,nY,nPress);
     #endif
     
   } else if ((pGui->nTouchLastX != nX) || (pGui->nTouchLastY != nY)) {
@@ -1836,7 +1865,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
     if (nPress > 0) {
       eTouch = GSLC_TOUCH_MOVE;
       #ifdef DBG_TOUCH    
-      debug_print(" TS : (%3d,%3d) Pressure=%3u : TouchMove\n",nX,nY,nPress);
+      GSLC_DEBUG_PRINT(" TS : (%3d,%3d) Pressure=%3u : TouchMove\n",nX,nY,nPress);
       #endif
     }
   }
@@ -1865,7 +1894,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 {
   if (pGui == NULL) {
-    debug_print("ERROR: InitTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: InitTouch(%s) called with NULL ptr\n","");
     return false;
   }
   
@@ -1890,7 +1919,7 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 {
   if (pGui == NULL) {
-    debug_print("ERROR: GetTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: GetTouch(%s) called with NULL ptr\n","");
     return false;
   }    
   
@@ -1931,7 +1960,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   gslc_ResetElem(&sElem);
   
   if (pGui == NULL) {
-    debug_print("ERROR: ElemCreate(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) called with NULL ptr\n","");
     return sElem;
   }  
 
@@ -1944,7 +1973,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
     if (nElemId == GSLC_ID_AUTO) {
-      debug_print("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
+      GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
       return sElem;
     }
   } else {
@@ -1953,7 +1982,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     // next available if auto-incremented)
     pPage = gslc_PageFindById(pGui,nPageId);
     if (pPage == NULL) {
-      debug_print("ERROR: ElemCreate() can't find page (ID=%d)\n",nPageId);
+      GSLC_DEBUG_PRINT("ERROR: ElemCreate() can't find page (ID=%d)\n",nPageId);
       return sElem;
     }     
     pCollect  = &pPage->sCollect;
@@ -1965,12 +1994,12 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     } else {
       // Ensure the ID is positive
       if (nElemId < 0) {
-        debug_print("ERROR: ElemCreate() called with negative ID (%d)\n",nElemId);
+        GSLC_DEBUG_PRINT("ERROR: ElemCreate() called with negative ID (%d)\n",nElemId);
         return sElem;
       }
       // Ensure the ID isn't already taken
       if (gslc_CollectFindElemById(pCollect,nElemId) != NULL) {
-        debug_print("ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
+        GSLC_DEBUG_PRINT("ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
         return sElem;
       }
     }
@@ -2035,7 +2064,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
 bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    debug_print("ERROR: CollectEvent(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectEvent(%s) called with NULL ptr\n","");
     return false;
   }
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
@@ -2103,12 +2132,12 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: CollectElemAdd(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd(%s) called with NULL ptr\n","");
     return NULL;
   }    
   
   if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    debug_print("ERROR: CollectElemAdd(%s) too many element references\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd(%s) too many element references\n","");
     return NULL;
   }
   
@@ -2121,7 +2150,7 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pEl
   
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      debug_print("ERROR: CollectElemAddExt(%s) too many elements\n","");
+      GSLC_DEBUG_PRINT("ERROR: CollectElemAddExt(%s) too many elements\n","");
       return NULL;
     }
     
@@ -2200,19 +2229,20 @@ bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
 gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: ElemAdd(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemAdd(%s) called with NULL ptr\n","");
     return NULL;
   }    
 
   // Fetch the page containing the item
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
-    debug_print("ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
+    GSLC_DEBUG_PRINT("ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
     return NULL;
   }   
   
   gslc_tsCollect* pCollect = &pPage->sCollect;
-  return gslc_CollectElemAdd(pCollect,pElem,eFlags);
+  gslc_tsElem* pElemAdd = gslc_CollectElemAdd(pCollect,pElem,eFlags);
+  return pElemAdd;
 }
 
 
@@ -2233,7 +2263,7 @@ void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef
   gslc_tsImgRef sImgRefSel)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    debug_print("ERROR: ElemSetImage(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemSetImage(%s) called with NULL ptr\n","");
     return;
   }    
 
@@ -2279,7 +2309,7 @@ bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElem* pElemTracked,
 void gslc_ResetElem(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ResetElem(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ResetElem(%s) called with NULL ptr\n","");
     return;
   }  
   pElem->bValid           = false;
@@ -2327,7 +2357,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
 void gslc_ResetFont(gslc_tsFont* pFont)
 {
   if (pFont == NULL) {
-    debug_print("ERROR: ResetFont(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ResetFont(%s) called with NULL ptr\n","");
     return;
   }    
   pFont->nId    = GSLC_FONT_NONE;
@@ -2340,7 +2370,7 @@ void gslc_ResetFont(gslc_tsFont* pFont)
 void gslc_ElemDestruct(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    debug_print("ERROR: ElemDestruct(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemDestruct(%s) called with NULL ptr\n","");
     return;
   }    
   if (pElem->sImgRefNorm.pvImgRaw != NULL) {
@@ -2363,7 +2393,7 @@ void gslc_ElemDestruct(gslc_tsElem* pElem)
 void gslc_CollectDestruct(gslc_tsCollect* pCollect)
 {
   if (pCollect == NULL) {
-    debug_print("ERROR: CollectDestruct(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectDestruct(%s) called with NULL ptr\n","");
     return;
   }
   uint16_t      nInd;
@@ -2386,7 +2416,7 @@ void gslc_CollectDestruct(gslc_tsCollect* pCollect)
 void gslc_PageDestruct(gslc_tsPage* pPage)
 {
   if (pPage == NULL) {
-    debug_print("ERROR: PageDestruct(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: PageDestruct(%s) called with NULL ptr\n","");
     return;
   }      
   gslc_tsCollect* pCollect = &pPage->sCollect;
@@ -2397,7 +2427,7 @@ void gslc_PageDestruct(gslc_tsPage* pPage)
 void gslc_GuiDestruct(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
-    debug_print("ERROR: GuiDestruct(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: GuiDestruct(%s) called with NULL ptr\n","");
     return;
   }    
   // Loop through all pages in GUI
@@ -2430,7 +2460,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
         gslc_tsElemRef* asElemRef,uint16_t nElemRefMax)
 {
   if (pCollect == NULL) {
-    debug_print("ERROR: CollectReset(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectReset(%s) called with NULL ptr\n","");
     return;
   }  
   
@@ -2465,7 +2495,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
 {
   if (pCollect == NULL) {
-    debug_print("ERROR: CollectFindElemById(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) called with NULL ptr\n","");
     return NULL;
   }  
   gslc_tsElem*  pElem = NULL;
@@ -2473,7 +2503,7 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
   uint16_t      nInd;
   if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
-    debug_print("ERROR: CollectFindElemById(%s) searching for temp ID\n","");    
+    GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");    
     return NULL;
   }
  
@@ -2556,7 +2586,7 @@ void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent)
 void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
 {
   if ((pCollect == NULL) || (funcCb == NULL)) {
-    debug_print("ERROR: CollectSetEventFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectSetEventFunc(%s) called with NULL ptr\n","");
     return;
   }    
   pCollect->pfuncXEvent       = funcCb;
