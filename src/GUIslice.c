@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.3    (2017/01/10)
+// - Version 0.8.3    (2017/01/11)
 // =======================================================================
 //
 // The MIT License
@@ -45,11 +45,18 @@
 #include <avr/pgmspace.h>   // For memcpy_P()
 #endif
 
+#include <stdarg.h>         // For va_*
+
 // Version definition
 #define GUISLICE_VER "0.8.3"
 
 
 // ========================================================================
+
+/// Global debug output function
+/// - The user assigns this function via gslc_InitDebug()
+GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
+
 
 // ------------------------------------------------------------------------
 // General Functions
@@ -122,25 +129,163 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 }
 
 
-void gslc_InitDebug(gslc_tsGui* pGui,GSLC_CB_DEBUG pfunc)
+void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
 {
-#if defined(__AVR__)
-  // Configure the fileDebug stream so that it can receive stdio output
-  // - It also defines the "output character" callback function that will be used
-  fdev_setup_stream(&(pGui->fileDebug),pfunc,NULL,_FDEV_SETUP_WRITE);
-
-  // Redirect stderr to use the fileDebug stream
-  stderr = &(pGui->fileDebug);    
-#else
-  // In CPUs that don't use Serial port for debugging, we are going
-  // to use the built-in stderr output which is usually supported
-  // without any need to set it up explicitly.
-  
-  // TODO: Enhance this to support non-AVR CPUs as well
-#endif
-  
+  g_pfDebugOut = pfunc;
 }
 
+
+
+// A lightweight printf() routine that calls user function for
+// character output (enabling redirection to Serial). Only
+// supports the following tokens:
+// - %u (16-bit unsigned int) [see NOTE]
+// - %d (16-bit signed int)
+// - %s (null-terminated string)
+// This routine also supports format strings located in Flash
+// NOTE:
+// - Due to the way variadic arguments are passed, we can't pass uint16_t on Arduino
+//   as the parameters are promoted to "int" (ie. int16_t). Passing a value over 32767
+//   appears to be promoted to int32_t which involves pushing two more bytes onto
+//   the stack, causing the remainder of the va_args() to be offset.
+// PRE:
+// - g_pfDebugOut defined
+void gslc_DebugPrintf(const char* pFmt, ...)
+{
+  if (g_pfDebugOut) {
+
+    char*    pStr;
+    unsigned nMaxDivisor;
+    unsigned nNumRemain;
+    bool     bNumStart,bNumNeg;
+    unsigned nNumDivisor;
+    uint16_t nFmtInd=0;
+    char     cFmt,cOut;
+
+    va_list  vlist;
+    va_start(vlist,pFmt);
+
+    gslc_teDebugPrintState  nState = GSLC_DEBUG_PRINT_NORM;    
+
+    // Determine maximum number digit size
+    #if defined(__AVR__)
+      nMaxDivisor = 10000;      // ~2^16
+    #else
+      nMaxDivisor = 1000000000; // ~2^32
+    #endif
+
+    #if (GSLC_USE_PROGMEM)
+    cFmt = pgm_read_byte(&pFmt[nFmtInd]);
+    #else
+    cFmt = pFmt[nFmtInd];
+    #endif
+
+    while (cFmt != 0) {
+  
+      if (nState == GSLC_DEBUG_PRINT_NORM) {
+
+        if (cFmt == '%') {
+          nState = GSLC_DEBUG_PRINT_TOKEN;
+        } else {
+          // Normal char
+          (g_pfDebugOut)(cFmt);
+        }
+        nFmtInd++; // Advance format index
+
+      } else if (nState == GSLC_DEBUG_PRINT_TOKEN) {
+        
+        // Get token
+        if (cFmt == 'd') {
+          nState = GSLC_DEBUG_PRINT_UINT16;
+          // Detect negative value and convert to unsigned value
+          // with negation flag. This enables us to reuse the same
+          // decoding logic.
+          int nNumInt = va_arg(vlist,int);
+          if (nNumInt < 0) {
+            bNumNeg = true;
+            nNumRemain = -nNumInt;
+          } else {
+            bNumNeg = false;
+            nNumRemain = nNumInt;
+          }
+          bNumStart = false;
+          nNumDivisor = nMaxDivisor;
+          
+        } else if (cFmt == 'u') {
+          nState = GSLC_DEBUG_PRINT_UINT16;
+          nNumRemain = va_arg(vlist,unsigned);
+          bNumNeg = false;
+          bNumStart = false;        
+          nNumDivisor = nMaxDivisor;
+          
+        } else if (cFmt == 's') {
+          nState = GSLC_DEBUG_PRINT_STR;
+          pStr = va_arg(vlist,char*);
+        } else {
+          // ERROR
+        }
+        nFmtInd++; // Advance format index
+
+      } else if (nState == GSLC_DEBUG_PRINT_STR) {
+        while (*pStr != 0) {
+          cOut = *pStr;
+          (g_pfDebugOut)(cOut);
+          pStr++;
+        }
+        nState = GSLC_DEBUG_PRINT_NORM;
+        // Don't advance format string index
+        
+      } else if (nState == GSLC_DEBUG_PRINT_UINT16) {
+
+        // Handle the negation flag if required
+        if (bNumNeg) {
+          cOut = '-';
+          (g_pfDebugOut)(cOut);
+          bNumNeg = false;  // Clear the negation flag
+        }
+
+        // We remain in this state until we have consumed all of the digits
+        // in the original number (starting with the most significant).
+        // Each time we process a digit, the parser doesn't advance its input.
+        if (nNumRemain < nNumDivisor) {
+          if (bNumStart) {
+            cOut = '0';
+            (g_pfDebugOut)(cOut);
+          }
+        } else {
+          bNumStart = true;
+          unsigned nValDigit = nNumRemain / nNumDivisor;
+          cOut = nValDigit+'0';
+          nNumRemain -= nNumDivisor*nValDigit;
+          (g_pfDebugOut)(cOut);
+        }
+
+        // Detect end of digit decode (ie. 1's)
+        if (nNumDivisor == 1) {
+          // Done
+          nState = GSLC_DEBUG_PRINT_NORM;
+        } else {
+          // Shift the divisor by an order of magnitude
+          nNumDivisor /= 10;
+        }
+        // Don't advance format string index
+
+      }
+
+      // Read the format string (usually the next character)
+      #if (GSLC_USE_PROGMEM)
+      cFmt = pgm_read_byte(&pFmt[nFmtInd]);
+      #else
+      cFmt = pFmt[nFmtInd];
+      #endif
+
+    }
+    va_end(vlist);
+
+  } // g_pfDebugOut
+
+
+}
 
 void gslc_Quit(gslc_tsGui* pGui)
 {
@@ -410,7 +555,7 @@ gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
   sImgRef.pvImgRaw  = NULL;
 #else
   // TODO: Change message to also handle non-Arduino output
-  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) disabled as Config:ADAGFX_SD_EN=0\n","");
+  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:ADAGFX_SD_EN=0\n","");
   sImgRef.eImgFlags = GSLC_IMGREF_NONE;
 #endif  
   return sImgRef;  
@@ -818,7 +963,7 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
     GSLC_DEBUG_PRINT("ERROR: SetPageCur() can't find page (ID=%d)\n",nPageId);
-    exit(1);
+    return;
   }
   
   // Save a reference to the selected page
@@ -997,8 +1142,8 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId)
   // as it shows a serious config error and continued operation
   // is not viable.
   if (pFoundPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageGet() could not find page (ID=%d)",nPageId);
-    exit(1);
+    GSLC_DEBUG_PRINT("ERROR: PageGet() can't find page (ID=%d)\n",nPageId);
+    return NULL;
   }
   
   return pFoundPage;
@@ -1013,7 +1158,7 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nEle
   pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
     GSLC_DEBUG_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
-    exit(1);
+    return NULL;
   }
   // Find the element in the page's element collection
   pElem = gslc_CollectFindElemById(&pPage->sCollect,nElemId);
@@ -1024,7 +1169,7 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nEle
 void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
 {
   if ((pPage == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: PageSetEventFunc(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: PageSetEventFunc() called with NULL ptr\n",0);
     return;
   }    
   pPage->pfuncXEvent       = funcCb;
@@ -2137,7 +2282,7 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pEl
   }    
   
   if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd(%s) too many element references\n","");
+    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many element references (max=%u)\n",pCollect->nElemRefMax);
     return NULL;
   }
   
@@ -2150,7 +2295,7 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pEl
   
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG_PRINT("ERROR: CollectElemAddExt(%s) too many elements\n","");
+      GSLC_DEBUG_PRINT("ERROR: CollectElemAddExt() too many RAM elements (max=%u)\n",pCollect->nElemMax);
       return NULL;
     }
     

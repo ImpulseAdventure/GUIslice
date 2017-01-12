@@ -83,7 +83,7 @@ int16_t   m_nOriginY = 0;
   gslc_tsElem*  m_pElemProgress   = NULL;
 
 // Define debug message function
-static int16_t DebugOut(char ch, FILE *pStream) { Serial.write(ch); return 0; }
+static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 
 // Scanner drawing callback function
@@ -283,11 +283,12 @@ bool InitOverlays()
 
 void setup()
 {
-  bool              bOk = true;
+  bool bOk = true;
 
   // Initialize debug output
   Serial.begin(9600);
-  gslc_InitDebug(&m_gui,&DebugOut);
+  gslc_InitDebug(&DebugOut);
+  //delay(1000);  // NOTE: Feather M0 appears to require ~1s delay after Serial.begin() before it can be used  
   
   // -----------------------------------
   // Initialize

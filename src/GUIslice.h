@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.3    (2017/01/10)
+// - Version 0.8.3    (2017/01/11)
 // =======================================================================
 //
 // The MIT License
@@ -51,6 +51,18 @@ extern "C" {
 // Configuration
 // -----------------------------------------------------------------------
 #include "GUIslice_config.h"  // Import user configuration
+
+
+// -----------------------------------------------------------------------
+// Globals
+// -----------------------------------------------------------------------
+
+// Type for user-provided debug output function
+typedef int16_t (*GSLC_CB_DEBUG_OUT)(char ch);
+
+/// Global debug output function
+/// - The user assigns this function via gslc_InitDebug()
+extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
 
   
 // -----------------------------------------------------------------------
@@ -296,6 +308,14 @@ typedef enum {
   GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE,
 } gslc_teTxtFlags;
 
+//xxx
+typedef enum {
+  GSLC_DEBUG_PRINT_NORM,
+  GSLC_DEBUG_PRINT_TOKEN,
+  GSLC_DEBUG_PRINT_UINT16,
+  GSLC_DEBUG_PRINT_STR          
+} gslc_teDebugPrintState;
+
 // -----------------------------------------------------------------------
 // Forward declarations
 // -----------------------------------------------------------------------
@@ -320,11 +340,6 @@ typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16
 
 /// Callback function for element tick
 typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElem);
-
-/// Callback function for debug message output
-typedef int16_t (*GSLC_CB_DEBUG)(char ch,FILE *pStream);
-
-
 
 
 // -----------------------------------------------------------------------
@@ -562,8 +577,6 @@ typedef struct {
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events 
   
-  FILE                fileDebug;        ///< Stream for debug output
-
 } gslc_tsGui;
 
 
@@ -603,16 +616,27 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
 ///
 /// Initialize debug output
-/// - Configures the stderr output stream to call a user function
-/// - This is particularly useful in Arduino targets where it is desirable
-///   to redirect all error output to a Serial function
+/// - Defines the user function used for debug/error output
+/// - pfunc is responsible for outputing a single character
+/// - For Arduino, this user function would typically call Serial.print()
 ///
-/// \param[in]  pGui:      Pointer to GUI
 /// \param[in]  pfunc:     Pointer to user character-out function
 ///
 /// \return none
 ///
-void gslc_InitDebug(gslc_tsGui* pGui,GSLC_CB_DEBUG pfunc);
+void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc);
+
+
+///
+/// Optimized printf routine for GUIslice debug/error output
+/// - Only supports '%s','%d','%u' tokens
+/// - Calls on the output function configured in gslc_InitDebug()
+/// 
+/// \param[in]  pFmt:      Format string to use for printing
+/// \param[in]  ...:       Variable parameter list
+///
+/// \return none
+void gslc_DebugPrintf(const char* pFmt, ...);
 
 
 ///
@@ -1907,33 +1931,40 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 // ------------------------------------------------------------------------
 
 // Create debug macro to selectively include the output code
+
 /// \def GSLC_DEBUG_PRINT(fmt, ...)
 ///
 /// Macro to enable optional debug output
-/// - Supports printf formatting
+/// - Supports printf formatting via gslc_DebugPrintf()
 /// - Supports storing the format string in PROGMEM
+/// - Note that at least one variable argument must be provided
+///   to the macro after the format string. This is a limitation
+///   of the macro definition. If no parameters are needed, then
+///   simply pass 0. For example:
+///     GSLC_DEBUG_PRINT("Loaded OK",0);
 ///
-/// \param[in]  fmt:        Format string for debug message
+/// \param[in]  sFmt:       Format string for debug message
 ///
+
 #if (GSLC_USE_PROGMEM)
   // Debug print macro for CPUs that support PROGMEM (Flash)
-  #define GSLC_DEBUG_PRINT(fmt, ...)                      \
-          do {                                            \
-            if (DEBUG_ERR) {                              \
-              fprintf_P(stderr,PSTR(fmt),__VA_ARGS__);    \
-            }                                             \
+  #define GSLC_DEBUG_PRINT(sFmt, ...)                           \
+          do {                                                  \
+            if (DEBUG_ERR) {                                    \
+              gslc_DebugPrintf(PSTR(sFmt),__VA_ARGS__);         \
+            }                                                   \
           } while (0)  
-
 #else
   // Debug print macro for CPUs that don't support PROGMEM (Flash)
-  #define GSLC_DEBUG_PRINT(fmt, ...)                      \
-          do {                                            \
-            if (DEBUG_ERR) {                              \
-              fprintf(stderr,fmt,__VA_ARGS__);            \
-            }                                             \
+  #define GSLC_DEBUG_PRINT(sFmt, ...)                           \
+          do {                                                  \
+            if (DEBUG_ERR) {                                    \
+              gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
+            }                                                   \
           } while (0)  
-
 #endif
+
+
 
 // ------------------------------------------------------------------------
 // Read-only element macros

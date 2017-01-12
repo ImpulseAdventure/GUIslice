@@ -60,6 +60,9 @@ void UserInitEnv()
 #endif
 }
 
+// Define debug message function
+static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
+
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
@@ -102,6 +105,7 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
+  gslc_InitDebug(&DebugOut);  
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
   

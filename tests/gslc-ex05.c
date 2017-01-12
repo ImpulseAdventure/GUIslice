@@ -79,6 +79,9 @@ void UserInitEnv()
 #endif
 }
 
+// Define debug message function
+static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
+
 // Button callbacks
 // - Show example of common callback function
 bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
@@ -191,6 +194,7 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
+  gslc_InitDebug(&DebugOut);  
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 

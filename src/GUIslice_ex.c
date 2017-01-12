@@ -244,8 +244,8 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   rGauge.h = nRectClipY2-nRectClipY1+1;
 
   #ifdef DBG_LOG
-  printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
-    nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
+  //printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
+  //  nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
   #endif
 
   // To avoid flicker, we only erase the portion of the gauge
@@ -1172,6 +1172,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
   return pSelNum->nCounter;
 }
 
+
 void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount)
 {
   if (pSelNum == NULL) {
@@ -1181,7 +1182,8 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount)
   pSelNum->nCounter = nCount;
   
   // Determine new counter text
-  
+  // FIXME: Consider replacing the printf() with an optimized function to
+  //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
   char  acStrNew[GSLC_LOCAL_STR_LEN];
   snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%d",pSelNum->nCounter);
   

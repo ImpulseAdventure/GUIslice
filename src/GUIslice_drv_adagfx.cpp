@@ -514,37 +514,37 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
  
-  Serial.println();
-  Serial.print("Loading image '");
-  Serial.print(filename);
-  Serial.println('\'');
+  //Serial.println();
+  //Serial.print("Loading image '");
+  //Serial.print(filename);
+  //Serial.println('\'');
 
   // Open requested file on SD card
   if ((bmpFile = SD.open(filename)) == 0) {
-    Serial.print("File not found");
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() file not found [%s]",filename);
     return;
   }
 
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
-    Serial.print("File size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
+    //Serial.print("File size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
-    Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
+    //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
-    Serial.print("Header size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
+    //Serial.print("Header size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
     if(gslc_DrvRead16SD(bmpFile) == 1) { // # planes -- must be '1'
       bmpDepth = gslc_DrvRead16SD(bmpFile); // bits per pixel
-      Serial.print("Bit Depth: "); Serial.println(bmpDepth);
+      //Serial.print("Bit Depth: "); Serial.println(bmpDepth);
       if((bmpDepth == 24) && (gslc_DrvRead32SD(bmpFile) == 0)) { // 0 = uncompressed
 
         goodBmp = true; // Supported BMP format -- proceed!
-        Serial.print("Image size: ");
-        Serial.print(bmpWidth);
-        Serial.print('x');
-        Serial.println(bmpHeight);
+        //Serial.print("Image size: ");
+        //Serial.print(bmpWidth);
+        //Serial.print('x');
+        //Serial.println(bmpHeight);
 
         // BMP rows are padded (if needed) to 4-byte boundary
         rowSize = (bmpWidth * 3 + 3) & ~3;
@@ -608,15 +608,17 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
             
           } // end pixel
         } // end scanline
-        Serial.print("Loaded in ");
-        Serial.print(millis() - startTime);
-        Serial.println(" ms");
+        //Serial.print("Loaded in ");
+        //Serial.print(millis() - startTime);
+        //Serial.println(" ms");
       } // end goodBmp
     }
   }
 
   bmpFile.close();
-  if(!goodBmp) Serial.println("BMP format not recognized.");
+  if(!goodBmp) {
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() BMP format unknown [%s]",filename);
+  }
 }
 // ----- REFERENCE CODE end
 #endif // ADAGFX_SD_EN

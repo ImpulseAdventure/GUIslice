@@ -99,7 +99,7 @@ extern "C" {
   #define GSLC_LOCAL_STR  0
 
   // Error reporting
-  #define DEBUG_ERR   1       // Disable error message reporting to conserve memory
+  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
   
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
@@ -111,7 +111,7 @@ extern "C" {
   // Define general pins (modify these example pin assignments to match your board)
   #define ADAGFX_PIN_CS    10 // ProMini: 10, ATmega2560: 53, 2.8"AdaShield: 10, Feather: 10
   #define ADAGFX_PIN_DC     9 // ProMini:  9, ATmega2560: 47, 2.8"AdaShield: 9,  Feather:  9
-  #define ADAGFX_PIN_RST    0 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0,  Feather: 11
+  #define ADAGFX_PIN_RST   11 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0,  Feather: 11
   #define ADAGFX_PIN_MOSI
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
@@ -197,13 +197,6 @@ extern "C" {
     #define GSLC_USE_PROGMEM 1
 #else
     #define GSLC_USE_PROGMEM 0
-#endif
-
-// Define how debug messaging is done
-#if defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
-  #define DEBUG_ERR_SERIAL  1
-#else
-  #define DEBUG_ERR_SERIAL  0
 #endif
 
 
