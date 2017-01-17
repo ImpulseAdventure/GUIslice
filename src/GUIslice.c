@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.3    (2017/01/11)
+// - Version 0.8.3    (2017/01/17)
 // =======================================================================
 //
 // The MIT License
@@ -2038,6 +2038,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 
 bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 {
+  bool bOk;
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: InitTouch(%s) called with NULL ptr\n","");
     return false;
@@ -2049,15 +2050,18 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
   // or an external touch driver.
 #if defined(DRV_TOUCH_NONE)
   // Touch handling disabled
-  return true;
+  bOk = true;
 #elif defined(DRV_TOUCH_IN_DISP)  
   // Touch handling by display driver
-  return gslc_DrvInitTouch(pGui,acDev);
+  bOk = gslc_DrvInitTouch(pGui,acDev);
 #else
   // Touch handling by external touch driver
-  return gslc_TDrvInitTouch(pGui,acDev);
+  bOk = gslc_TDrvInitTouch(pGui,acDev);
 #endif
-  
+  if (!bOk) {
+    GSLC_DEBUG_PRINT("ERROR: InitTouch() failed in touch driver init\n",0);
+  }
+  return bOk;
 }
 
 

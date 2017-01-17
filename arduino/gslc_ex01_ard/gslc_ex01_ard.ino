@@ -20,7 +20,7 @@ enum {E_ELEM_BOX};
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    5
+#define MAX_ELEM_PG_MAIN    1
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -29,7 +29,7 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 // Define debug message function
-static int16_t DebugOut(char ch, FILE *pStream) { Serial.write(ch); return 0; }
+static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 void setup()
 {
@@ -37,8 +37,9 @@ void setup()
 
   // Initialize debug output
   Serial.begin(9600);
-  gslc_InitDebug(&m_gui,&DebugOut);  
-
+  gslc_InitDebug(&DebugOut);  
+  //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
+  
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }  
 

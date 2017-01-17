@@ -146,6 +146,7 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
 //   origin of the view which will shift the display
 bool CbTickScanner(void* pvGui,void* pvScope)
 {
+
   //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);  
   
@@ -160,7 +161,7 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
   gslc_ElemSetRedraw(pElem,true);  
-  
+
   return true;
 }
 
@@ -184,9 +185,11 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK3);
 
   // Graphic logo from SD card
+  #if 0
   static const char m_strLogo[] = IMG_LOGO;
   pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
     gslc_GetImageFromSD(m_strLogo,GSLC_IMGREF_FMT_BMP24));
+  #endif
 
 
   // Create background box
@@ -271,11 +274,12 @@ bool InitOverlays()
   // We create a basic box and then provide a custom draw callback function for it
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_tsRect){190-1,75-1,100+2,100+2});
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
+
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(pElem,&CbDrawScanner);
   // Set the callback function to update content automatically
   gslc_ElemSetTickFunc(pElem,&CbTickScanner);
-  
+
   // --------------------------------------------------------------------------
 
   return true;
@@ -288,7 +292,7 @@ void setup()
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
-  //delay(1000);  // NOTE: Feather M0 appears to require ~1s delay after Serial.begin() before it can be used  
+  //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
   
   // -----------------------------------
   // Initialize

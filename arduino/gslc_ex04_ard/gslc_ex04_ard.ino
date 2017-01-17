@@ -158,7 +158,7 @@ void setup()
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
-  //delay(1000);  // NOTE: Feather M0 appears to require ~1s delay after Serial.begin() before it can be used  
+  //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
   
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
