@@ -917,8 +917,13 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
 void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t nMaxElem,
         gslc_tsElemRef* psElemRef,uint16_t nMaxElemRef)
 {
-  gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
+  if (pGui->nPageCnt+1 > (pGui->nPageMax)) {
+    GSLC_DEBUG_PRINT("ERROR: PageAdd(%s) added too many pages\n","");
+    return;
+  }  
 
+  gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
+  
   // TODO: Create proper PageReset()
   pPage->bPageNeedRedraw  = true;
   pPage->bPageNeedFlip    = false;

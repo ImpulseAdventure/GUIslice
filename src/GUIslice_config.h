@@ -116,7 +116,7 @@ extern "C" {
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
   // SD card chip select
-  #define ADAGFX_PIN_SDCS   4 //              ATmega2560: 48, 2.8"AdaShield: 4,  Feather:  4?
+  #define ADAGFX_PIN_SDCS   4 // ProMini:  4, ATmega2560: 48, 2.8"AdaShield: 4,  Feather:  4?
 
   // Use hardware SPI?
   #define ADAGFX_SPI_HW

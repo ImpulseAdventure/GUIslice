@@ -139,7 +139,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // Initialize SD card usage
     #if (ADAGFX_SD_EN)
     if (!SD.begin(ADAGFX_PIN_SDCS)) {
-      return false; // ERROR
+      GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n",0);
+      return false;
     }
     #endif
     
@@ -524,22 +525,22 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
     GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() file not found [%s]",filename);
     return;
   }
-
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
-    //Serial.print("File size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
+    uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
+    //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
-    //Serial.print("Header size: "); Serial.println(gslc_DrvRead32SD(bmpFile));
+    uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
+    //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
     if(gslc_DrvRead16SD(bmpFile) == 1) { // # planes -- must be '1'
       bmpDepth = gslc_DrvRead16SD(bmpFile); // bits per pixel
       //Serial.print("Bit Depth: "); Serial.println(bmpDepth);
       if((bmpDepth == 24) && (gslc_DrvRead32SD(bmpFile) == 0)) { // 0 = uncompressed
-
         goodBmp = true; // Supported BMP format -- proceed!
         //Serial.print("Image size: ");
         //Serial.print(bmpWidth);
@@ -614,7 +615,6 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
       } // end goodBmp
     }
   }
-
   bmpFile.close();
   if(!goodBmp) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() BMP format unknown [%s]",filename);
@@ -731,13 +731,21 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
+      GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() failed to init STMPE610\n",0);
       return false;
     } else {
       return true;
     }
+  #elif defined(DRV_TOUCH_ADA_FT6206)
+    // TODO: add testing/support for FT6206
+    GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() doesn't support FT6206 yet\n",0);
+    return false;
+  #else
+    // ERROR: Unsupported driver mode
+    GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
+    return false;
   #endif
 
-  return false;
 }
 
 
