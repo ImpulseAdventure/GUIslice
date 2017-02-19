@@ -55,6 +55,9 @@
   #include <SPI.h>
   #include <Wire.h>
   #include "Adafruit_STMPE610.h"
+#elif defined(DRV_TOUCH_ADA_STMPE610)
+  #include <Wire.h>
+  #include "Adafruit_FT6206.h"
 #endif
 
 #ifdef __cplusplus
@@ -93,6 +96,10 @@ extern "C" {
   #elif defined(ADATOUCH_SPI_SW) // Use software SPI
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);   
   #endif
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_FT6206) 
+    // Always use I2C
+    Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #endif // DRV_TOUCH_ADA_*
 
@@ -737,9 +744,12 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
       return true;
     }
   #elif defined(DRV_TOUCH_ADA_FT6206)
-    // TODO: add testing/support for FT6206
-    GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() doesn't support FT6206 yet\n",0);
-    return false;
+    if (!m_touch.begin(ADATOUCH_SENSITIVITY)) {
+      GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() failed to init FT6206\n",0);
+      return false;
+    } else {
+      return true;
+    }
   #else
     // ERROR: Unsupported driver mode
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
@@ -754,7 +764,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   uint16_t  nRawX,nRawY;
   uint8_t   nRawPress;
 
-  #if defined(DRV_TOUCH_ADA_STMPE610)
+  #if defined(DRV_TOUCH_NONE)
+  return false;
+  #endif
 
   // As the STMPE610 hardware driver doesn't appear to return
   // an indication of "touch released" with a coordinate, we
@@ -769,6 +781,10 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   static bool     m_bLastTouched  = false;
   
   bool bValid = false;  // Indicate a touch event to GUIslice core?
+  
+  // ----------------------------------------------------------------
+  #if defined(DRV_TOUCH_ADA_STMPE610)    
+  
   if (m_touch.touched()) {
 
     if (m_touch.bufferEmpty()) {
@@ -826,6 +842,47 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     return false;
   }
   
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_FT6206)
+  
+  if (m_touch.touched()) {
+    TS_Point ptTouch = m_touch.getPoint();
+    m_nLastRawX = ptTouch.x;
+    m_nLastRawY = ptTouch.y;
+    m_nLastRawPress = 255;  //CAL!
+    m_bLastTouched = true;
+    bValid = true;
+    
+  } else {
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;      
+    }
+  }
+
+  // If an event was detected, signal it back to GUIslice
+  if (bValid) {
+    // Swap and flip coords
+    // - The swap and flip is done to rotate a native 240x320 display
+    //   to a landscape orientation.
+    // - TODO: Provide configuration options to support different orientations
+    *pnX = m_nLastRawY;
+    *pnY = (pGui->nDispH-1)-m_nLastRawX;
+    *pnPress = m_nLastRawPress;
+    
+    // Return with indication of new value
+    return true;
+  } else {
+    // No new value
+    return false;
+  }
+  
+  // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
 
   return false;

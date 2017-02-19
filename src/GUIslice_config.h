@@ -57,7 +57,7 @@ extern "C" {
 //#define DRV_TOUCH_SDL           // LINUX: Use SDL touch driver
 #define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
 //#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
-//#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver     [TODO]
+//#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver     [Untested]
 
 
 
@@ -169,6 +169,10 @@ extern "C" {
   #define ADATOUCH_X_MAX 3800
   #define ADATOUCH_Y_MAX 3700
 
+#elif defined(DRV_TOUCH_ADA_FT6206)
+  // Define sensitivity coefficient
+  #define ADATOUCH_SENSITIVITY  40
+  
 #endif // DRV_TOUCH_*
 
 // -----------------------------------------------------------------------------------------
