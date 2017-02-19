@@ -4,7 +4,7 @@ A lightweight GUI framework suitable for embedded displays
 - [Website (www.impulseadventure.com)](http://www.impulseadventure.com/elec/guislice-gui.html)
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [Release notes] (https://github.com/ImpulseAdventure/GUIslice/releases)
-
+- **Support email**: guislice @ impulseadventure . com
 
 - Pure C library, no dynamic memory allocation
 - Widgets: text, images, buttons, checkboxes, radio buttons, sliders, etc. plus extensions and multiple pages.
