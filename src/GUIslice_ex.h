@@ -70,6 +70,7 @@ typedef struct {
   int16_t         nGaugeVal;    ///< Current control value
   gslc_tsColor    colGauge;     ///< Color of gauge fill bar
   bool            bGaugeVert;   ///< Vertical if true, else Horizontal
+  bool            bGaugeFlip;   ///< Reverse direction of gauge
 } gslc_tsXGauge;
 
 
@@ -106,6 +107,20 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 /// \return none
 ///
 void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
+
+///
+/// Set a Gauge element's fill direction
+/// - Setting bFlip reverses the default fill direction
+/// - Default fill direction for horizontal gauges: left-to-right
+/// - Default fill direction for vertical gauges: bottom-to-top
+/// 
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  bFlip:       If set, reverse direction of fill from default
+///
+/// \return none
+///
+void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElem* pElem,bool bFlip);
 
 ///
 /// Draw a gauge element on the screen

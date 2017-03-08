@@ -21,7 +21,7 @@
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
+enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_PROGRESS1,
       E_ELEM_CHECK1,E_ELEM_RADIO1,E_ELEM_RADIO2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
 enum {E_FONT_BTN,E_FONT_TXT};
 enum {E_GROUP1};
@@ -41,7 +41,7 @@ unsigned    m_nCount = 0;
 //   data into Flash (PROGMEM) and those that don't, we can make the
 //   number of elements in Flash dependent upon GSLC_USE_PROGMEM
 // - This should allow both Arduino and ARM Cortex to use the same code
-#define MAX_ELEM_PG_MAIN          14                                        // # Elems total
+#define MAX_ELEM_PG_MAIN          15                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
   #define MAX_ELEM_PG_MAIN_PROG   6                                         // # Elems in Flash
 #else
@@ -56,7 +56,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXGauge;
+gslc_tsXGauge               m_sXGauge,m_sXGauge1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
@@ -66,6 +66,7 @@ gslc_tsXSlider              m_sXSlider;
   // Save some element references for quick access
   gslc_tsElem*  m_pElemCnt        = NULL;
   gslc_tsElem*  m_pElemProgress   = NULL;
+  gslc_tsElem*  m_pElemProgress1  = NULL;  
   gslc_tsElem*  m_pElemSlider     = NULL;
   gslc_tsElem*  m_pElemSliderTxt  = NULL;
 
@@ -111,13 +112,20 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
   m_pElemCnt = pElem; // Save for quick access
 
-  // Create progress bar
+  // Create progress bar (horizontal)
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);  
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   m_pElemProgress = pElem; // Save for quick access    
-  
+
+  // Second progress bar (vertical)
+  // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+    (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  m_pElemProgress1 = pElem; // Save for quick access   
+    
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -199,6 +207,8 @@ void loop()
   snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
   gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);  
 
+  gslc_ElemXGaugeUpdate(m_pElemProgress1,(nPos*80.0/100.0)-15);
+    
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 

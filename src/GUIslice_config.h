@@ -36,6 +36,8 @@
 // User Configuration
 // - This file can be modified by the user to match the
 //   intended target configuration
+// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+//   specific to board and display combinations
 // =======================================================================
 
 #ifdef __cplusplus
@@ -57,7 +59,7 @@ extern "C" {
 //#define DRV_TOUCH_SDL           // LINUX: Use SDL touch driver
 #define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
 //#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
-//#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver     [Untested]
+//#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
 
 
 
@@ -68,8 +70,10 @@ extern "C" {
   // Define default device paths for framebuffer & touchscreen  
   #define GSLC_DEV_FB    "/dev/fb1"
   #define GSLC_DEV_TOUCH "/dev/input/touchscreen"
-  // Enable SDL startup workaround?
-  #define DRV_SDL_FIX_START
+  // Enable SDL startup workaround? (1 to enable, 0 to disable)
+  #define DRV_SDL_FIX_START 1
+  // Show SDL mouse (1 to show, 0 to hide)
+  #define DRV_SDL_MOUSE_SHOW 0
 
   #define GSLC_LOCAL_STR  1
     
@@ -86,6 +90,9 @@ extern "C" {
   #define GSLC_DEV_FB    "/dev/fb0"
   #define GSLC_DEV_TOUCH "/dev/input/touchscreen"  
 
+  // Show SDL mouse (1 to show, 0 to hide)
+  #define DRV_SDL_MOUSE_SHOW 0
+  
   #define GSLC_LOCAL_STR  1
 
   // Error reporting
@@ -107,19 +114,28 @@ extern "C" {
   #define DRV_DISP_ADAGFX_ILI9341
   //#define DRV_DISP_ADAGFX_SSD1306   // [TODO]
 
+  
   // For Adafruit-GFX drivers, define pin connections
-  // Define general pins (modify these example pin assignments to match your board)
-  #define ADAGFX_PIN_CS    10 // ProMini: 10, ATmega2560: 53, 2.8"AdaShield: 10, Feather: 10
-  #define ADAGFX_PIN_DC     9 // ProMini:  9, ATmega2560: 47, 2.8"AdaShield: 9,  Feather:  9
-  #define ADAGFX_PIN_RST   11 // ProMini:  8, ATmega2560: 49, 2.8"AdaShield: 0,  Feather: 11
+  // - Define general pins (modify these example pin assignments to match your board)
+  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+  #define ADAGFX_PIN_CS    10   // Display chip select
+  #define ADAGFX_PIN_DC     9   // Display SPI data/command
+  #define ADAGFX_PIN_RST   11   // Display Reset
+  #define ADAGFX_PIN_SDCS   4   // SD card chip select
+
+  // Use hardware SPI interface?
+  // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
+  // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
+  //   ADAGFX_PIN_MISO, ADAGFX_PIN_CLK). These pin definitions can be left blank in
+  //   hardware SPI mode.
+  #define ADAGFX_SPI_HW     1
+
+  // Define custom SPI pin connections used in software SPI mode (ADAGFX_SPI_HW=0)
+  // - These definitions can be left blank in hardware mode (ADAGFX_SPI_HW=1)
   #define ADAGFX_PIN_MOSI
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
-  // SD card chip select
-  #define ADAGFX_PIN_SDCS   4 // ProMini:  4, ATmega2560: 48, 2.8"AdaShield: 4,  Feather:  4?
-
-  // Use hardware SPI?
-  #define ADAGFX_SPI_HW
+  
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
@@ -147,15 +163,15 @@ extern "C" {
   
 #elif defined(DRV_TOUCH_ADA_STMPE610)
 
-  // Select wiring method by uncommenting one of the following
-  //#define ADATOUCH_I2C_HW
-  #define ADATOUCH_SPI_HW
-  //#define ADATOUCH_SPI_SW   // [TODO]
+  // Select wiring method by setting one of the following to 1
+  #define ADATOUCH_I2C_HW 0
+  #define ADATOUCH_SPI_HW 1
+  #define ADATOUCH_SPI_SW 0  // [TODO]
 
-  // For ADATOUCH_I2C_HW
+  // For ADATOUCH_I2C_HW=1
   #define ADATOUCH_I2C_ADDR   0x41  // I2C address of touch device
 
-  // For ADATOUCH_SPI_HW
+  // For ADATOUCH_SPI_HW=1
   #define ADATOUCH_PIN_CS     8 // From Adafruit 2.8" TFT touch shield
 
   // Calibration values for touch display
@@ -170,11 +186,20 @@ extern "C" {
   #define ADATOUCH_Y_MAX 3700
 
 #elif defined(DRV_TOUCH_ADA_FT6206)
-  // Define sensitivity coefficient
+  // Define sensitivity coefficient (capacitive touch)
   #define ADATOUCH_SENSITIVITY  40
   
 #endif // DRV_TOUCH_*
 
+// Define any Touch Axis Swapping and Flipping
+// - Set any of the following to 1 to perform touch display
+//   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
+//   remapping modes should be enabled for your display
+// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+#define ADATOUCH_SWAP_XY  1
+#define ADATOUCH_FLIP_X   0
+#define ADATOUCH_FLIP_Y   1
+  
 // -----------------------------------------------------------------------------------------
 
 
@@ -184,6 +209,7 @@ extern "C" {
 
 
 // Debug modes
+// - Uncomment the following to enable specific debug modes
 //#define DBG_LOG           // Enable debugging log output
 //#define DBG_TOUCH         // Enable debugging of touch-presses
 //#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting

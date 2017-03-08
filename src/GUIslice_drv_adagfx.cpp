@@ -55,7 +55,7 @@
   #include <SPI.h>
   #include <Wire.h>
   #include "Adafruit_STMPE610.h"
-#elif defined(DRV_TOUCH_ADA_STMPE610)
+#elif defined(DRV_TOUCH_ADA_FT6206)
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
 #endif
@@ -68,7 +68,7 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX_ILI9341) 
-  #if defined(ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);    
   #else
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
@@ -76,7 +76,7 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
-  #if defined(ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RESET, ADAGFX_PIN_CS);
@@ -89,11 +89,11 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610) 
-  #if defined(ADATOUCH_I2C_HW) // Use I2C
+  #if (ADATOUCH_I2C_HW) // Use I2C
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
-  #elif defined(ADATOUCH_SPI_HW) // Use hardware SPI
+  #elif (ADATOUCH_SPI_HW) // Use hardware SPI
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
-  #elif defined(ADATOUCH_SPI_SW) // Use software SPI
+  #elif (ADATOUCH_SPI_SW) // Use software SPI
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);   
   #endif
 // ------------------------------------------------------------------------
@@ -821,26 +821,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       m_touch.readData(&nRawX,&nRawY,&nRawPress);
     }
   }
-
-  // If an event was detected, signal it back to GUIslice
-  if (bValid) {
-    // Clip the input range
-    m_nLastRawX = constrain(m_nLastRawX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
-    m_nLastRawY = constrain(m_nLastRawY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
-    // Scale the range, swap and flip coords
-    // - The swap and flip is done to rotate a native 240x320 display
-    //   to a landscape orientation.
-    // - TODO: Provide configuration options to support different orientations
-    *pnX = map(m_nLastRawY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,(pGui->nDispW-1));
-    *pnY = (pGui->nDispH-1)-map(m_nLastRawX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,(pGui->nDispH-1));
-    *pnPress = m_nLastRawPress;
-    
-    // Return with indication of new value
-    return true;
-  } else {
-    // No new value
-    return false;
-  }
   
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_ADA_FT6206)
@@ -849,7 +829,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     TS_Point ptTouch = m_touch.getPoint();
     m_nLastRawX = ptTouch.x;
     m_nLastRawY = ptTouch.y;
-    m_nLastRawPress = 255;  //CAL!
+    m_nLastRawPress = 255;  // Select arbitrary non-zero value
     m_bLastTouched = true;
     bValid = true;
     
@@ -865,26 +845,75 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     }
   }
 
-  // If an event was detected, signal it back to GUIslice
-  if (bValid) {
-    // Swap and flip coords
-    // - The swap and flip is done to rotate a native 240x320 display
-    //   to a landscape orientation.
-    // - TODO: Provide configuration options to support different orientations
-    *pnX = m_nLastRawY;
-    *pnY = (pGui->nDispH-1)-m_nLastRawX;
-    *pnPress = m_nLastRawPress;
-    
-    // Return with indication of new value
-    return true;
-  } else {
-    // No new value
-    return false;
-  }
-  
   // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
 
+  
+  // If an event was detected, signal it back to GUIslice
+  if (bValid) {
+
+    int nRawX,nRawY;
+    int nInputX,nInputY;
+    int nDispOutMaxX,nDispOutMaxY;
+    int nOutputX,nOutputY;
+
+    // Input assignment
+    nRawX = m_nLastRawX;
+    nRawY = m_nLastRawY;
+
+    // Perform any requested swapping of input axes
+    #if ADATOUCH_SWAP_XY
+      nInputX = nRawY;
+      nInputY = nRawX;
+    #else
+      nInputX = nRawX;
+      nInputY = nRawY;
+    #endif
+
+    // Define maximum bounds for display
+    nDispOutMaxX = pGui->nDispW-1;
+    nDispOutMaxY = pGui->nDispH-1;
+
+
+    // For resistive displays, perform constraint and scaling
+    #if defined(DRV_TOUCH_ADA_STMPE610)
+      // Perform constraining to input boundaries
+      nInputX = constrain(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
+      nInputY = constrain(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
+      // Perform scaling from input to output
+      nOutputX = map(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,nDispOutMaxX);
+      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);    
+    #else
+      // No scaling from input to output
+      nOutputX = nInputX;
+      nOutputY = nInputY;
+    #endif
+
+    // Perform any requested output axis flipping
+    #if ADATOUCH_FLIP_X
+      nOutputX = nDispOutMaxX - nOutputX;
+    #endif
+    #if ADATOUCH_FLIP_Y
+      nOutputY = nDispOutMaxY - nOutputY;
+    #endif
+
+    // Final assignment
+    *pnX      = nOutputX;
+    *pnY      = nOutputY;
+    *pnPress  = m_nLastRawPress;    
+
+    // Print output for debug
+    #ifdef DBG_TOUCH
+    GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
+        m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
+    #endif  
+  
+       
+    // Return with indication of new value
+    return true;
+  }
+    
+  // No new value
   return false;
 }
 

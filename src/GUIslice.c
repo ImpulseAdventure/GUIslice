@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.3    (2017/01/17)
+// - Version 0.8.4    (2017/03/05)
 // =======================================================================
 //
 // The MIT License
@@ -48,7 +48,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.3"
+#define GUISLICE_VER "0.8.4"
 
 
 // ========================================================================
@@ -1302,6 +1302,30 @@ gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,g
   }
 }
 
+gslc_tsElem* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1)
+{
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  gslc_tsRect   rRect;
+  rRect.x = nX0;
+  rRect.y = nY0;
+  rRect.w = nX1 - nX0 + 1;
+  rRect.h = nY1 - nY0 + 1;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_LINE,rRect,NULL,0,GSLC_FONT_NONE);
+  // For line elements, we will draw it with the "fill" color
+  sElem.colElemFill       = GSLC_COL_GRAY;
+  sElem.colElemFillGlow   = GSLC_COL_GRAY;
+  sElem.bFillEn           = false;  // Disable boundary box fill
+  sElem.bFrameEn          = false;  // Disable boundary box frame
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);  
+    return pElem;
+  } else {
+    // Save as temporary element
+    pGui->sElemTmp = sElem;
+    return &(pGui->sElemTmp);     
+  }
+}
 
 gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsRect rElem,gslc_tsImgRef sImgRef)
@@ -1487,6 +1511,14 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   }
   #endif
 
+  
+  // --------------------------------------------------------------------------
+  // Handle special element types
+  // --------------------------------------------------------------------------
+  if (pElem->nType == GSLC_TYPE_LINE) {
+    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
+  }
+  
   
   // --------------------------------------------------------------------------
   // Image overlays

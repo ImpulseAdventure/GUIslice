@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.3    (2017/01/17)
+// - Version 0.8.4    (2017/03/05)
 // =======================================================================
 //
 // The MIT License
@@ -1206,6 +1206,22 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 /// \return Pointer to the Element or NULL if failure
 ///
 gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem);
+
+///
+/// Create a Line Element
+/// - Draws a line with fill color
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  nX0:         X coordinate of line startpoint
+/// \param[in]  nY0:         Y coordinate of line startpoint
+/// \param[in]  nX1:         X coordinate of line endpoint
+/// \param[in]  nY1:         Y coordinate of line endpoint
+///
+/// \return Pointer to the Element or NULL if failure
+///
+gslc_tsElem* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1);
 
 ///
 /// Create an image Element

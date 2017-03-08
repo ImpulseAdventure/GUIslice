@@ -89,6 +89,7 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   pXData->nGaugeMax       = nMax;
   pXData->nGaugeVal       = nVal;
   pXData->bGaugeVert      = bVert;
+  pXData->bGaugeFlip      = false;
   pXData->colGauge        = colGauge;
   sElem.pXData            = (void*)(pXData);
   sElem.pfuncXDraw        = &gslc_ElemXGaugeDraw;
@@ -127,6 +128,32 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
   
 }
 
+// Update the gauge's fill direction
+// - Setting bFlip causes the gauge to be filled in the reverse direction
+//   to the default
+// - Default fill direction for horizontal gauges: left-to-right
+// - Default fill direction for vertical gauges: bottom-to-top
+void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElem* pElem,bool bFlip)
+{
+  if ((pGui == NULL) || (pElem == NULL)) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) called with NULL ptr\n","");
+    return;
+  }
+  
+  // Fetch the element's extended data structure
+  gslc_tsXGauge* pGauge;
+  pGauge = (gslc_tsXGauge*)(pElem->pXData);
+  if (pGauge == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) pXData is NULL\n","");
+    return;
+  }
+  pGauge->bGaugeFlip = bFlip;
+
+  // Mark for redraw
+  gslc_ElemSetRedraw(pElem,true);
+  
+}
+
 // Redraw the gauge
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
@@ -145,19 +172,16 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   gslc_tsRect   rTmp;           // Temporary rect for drawing
   gslc_tsRect   rGauge;         // Filled portion of gauge
   gslc_tsRect   rEmpty;         // Empty portion of gauge
-  int16_t       nElemX,nElemY;
   uint16_t      nElemW,nElemH;
+  int16_t       nElemX0,nElemY0,nElemX1,nElemY1;
+  int16_t       nGaugeX0,nGaugeY0,nGaugeX1,nGaugeY1;
+  nElemX0 = pElem->rElem.x;
+  nElemY0 = pElem->rElem.y;
+  nElemX1 = pElem->rElem.x + pElem->rElem.w - 1;
+  nElemY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nElemW  = pElem->rElem.w;
+  nElemH  = pElem->rElem.h;
 
-  nElemX = pElem->rElem.x;
-  nElemY = pElem->rElem.y;
-  nElemW = pElem->rElem.w;
-  nElemH = pElem->rElem.h;
-
-  // TODO: Inset the region by one pixel to ensure we only
-  //       redraw what is inside the framed region (to avoid flicker).
-  
-  rGauge.x = nElemX;
-  rGauge.y = nElemY;
   
   // Fetch the element's extended data structure
   gslc_tsXGauge* pGauge;
@@ -168,6 +192,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   }
     
   bool    bVert = pGauge->bGaugeVert;
+  bool    bFlip = pGauge->bGaugeFlip;  
   int16_t nMax  = pGauge->nGaugeMax;
   int16_t nMin  = pGauge->nGaugeMin;
   int16_t nRng  = pGauge->nGaugeMax - pGauge->nGaugeMin;
@@ -186,7 +211,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 
   // Calculate the control midpoint (for display purposes)
   int16_t nGaugeMid;
-  if ((nMin == 0) && (nMax > 0)) {
+  if ((nMin == 0) && (nMax >= 0)) {
     nGaugeMid = 0;
   } else if ((nMin < 0) && (nMax > 0)) {
     nGaugeMid = -nMin*fScl;
@@ -205,44 +230,52 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   // the current position is negative or positive.
   if (nLen >= 0) {
     if (bVert) {
-      rGauge.h = nLen;
-      rGauge.y = nElemY + nGaugeMid;
+      nGaugeY0 = nElemY0 + nGaugeMid;
+      nGaugeY1 = nElemY0 + nGaugeMid + nLen;
     } else {
-      rGauge.w = nLen;
-      rGauge.x = nElemX + nGaugeMid;
+      nGaugeX0 = nElemX0 + nGaugeMid;
+      nGaugeX1 = nElemX0 + nGaugeMid + nLen;
     }
   } else {
     if (bVert) {
-      rGauge.y = nElemY + nGaugeMid+nLen;
-      rGauge.h = -nLen;
+      nGaugeY0 = nElemY0 + nGaugeMid + nLen;
+      nGaugeY1 = nElemY0 + nGaugeMid;
     } else {
-      rGauge.x = nElemX + nGaugeMid+nLen;
-      rGauge.w = -nLen;
+      nGaugeX0 = nElemX0 + nGaugeMid + nLen;
+      nGaugeX1 = nElemX0 + nGaugeMid;
     }
   }
   if (bVert) {
-    rGauge.w = nElemW;
-    rGauge.x = nElemX;
+    nGaugeX0 = nElemX0;
+    nGaugeX1 = nElemX1;
   } else {
-    rGauge.h = nElemH;
-    rGauge.y = nElemY;
+    nGaugeY0 = nElemY0;
+    nGaugeY1 = nElemY1;
   }
 
+  
   // Clip the region
-  // TODO: Confirm that +/-1 adjustments are correct
-  int16_t nRectClipX1 = rGauge.x;
-  int16_t nRectClipX2 = rGauge.x+rGauge.w-1;
-  int16_t nRectClipY1 = rGauge.y;
-  int16_t nRectClipY2 = rGauge.y+rGauge.h-1;
-  if (nRectClipX1 < nElemX)               { nRectClipX1 = nElemX;           }
-  if (nRectClipX2 > nElemX+(int)nElemW-1) { nRectClipX2 = nElemX+nElemW-1;  }
-  if (nRectClipY1 < nElemY)               { nRectClipY1 = nElemY;           }
-  if (nRectClipY2 > nElemY+(int)nElemH-1) { nRectClipY2 = nElemY+nElemH-1;  }
-  rGauge.x = nRectClipX1;
-  rGauge.y = nRectClipY1;
-  rGauge.w = nRectClipX2-nRectClipX1+1;
-  rGauge.h = nRectClipY2-nRectClipY1+1;
-
+  nGaugeX0 = (nGaugeX0 < nElemX0)? nElemX0 : nGaugeX0;
+  nGaugeY0 = (nGaugeY0 < nElemY0)? nElemY0 : nGaugeY0;
+  nGaugeX1 = (nGaugeX1 > nElemX1)? nElemX1 : nGaugeX1;
+  nGaugeX1 = (nGaugeX1 > nElemX1)? nElemX1 : nGaugeX1;
+  
+  // Support flipping of gauge directionality
+  // - The bFlip flag reverses the fill direction
+  // - Vertical gauges are flipped by default
+  int16_t nTmp;
+  if (bVert && !bFlip) {
+    nTmp      = nElemY0+(nElemY1-nGaugeY1);  // nTmp will be swapped into nGaugeY0
+    nGaugeY1  = nElemY1-(nGaugeY0-nElemY0);
+    nGaugeY0  = nTmp;
+    nGaugeMid = nElemH-nGaugeMid-1;      
+  } else if (!bVert && bFlip) {
+    nTmp      = nElemX0+(nElemX1-nGaugeX1);  // nTmp will be swapped into nGaugeX0
+    nGaugeX1  = nElemX1-(nGaugeX0-nElemX0);
+    nGaugeX0  = nTmp;
+    nGaugeMid = nElemW-nGaugeMid-1;
+  }
+  
   #ifdef DBG_LOG
   //printf("Gauge: nMin=%4d nMax=%4d nRng=%d nVal=%4d fScl=%6.3f nGaugeMid=%4d RectX=%4d RectW=%4d\n",
   //  nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
@@ -250,42 +283,41 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
 
   // To avoid flicker, we only erase the portion of the gauge
   // that isn't "filled". Determine the gauge empty region and erase it
+  // There are two empty regions (one in negative and one in positive)
   if (bVert) {
-    rEmpty.y = (rGauge.y + rGauge.h);
-    rEmpty.x = nElemX;
-    rEmpty.h = (nElemH - rGauge.h);
-    rEmpty.w = nElemW;
+    // Empty Region #1 (negative)
+    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nElemX1-nElemX0+1,nGaugeY0-nElemY0+1};
+    rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
+    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
+    // Empty Region #2 (positive)
+    rEmpty = (gslc_tsRect){nElemX0,nGaugeY1,nElemX1-nElemX0+1,nElemY1-nGaugeY1+1};
+    rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
+    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
   } else {
-    rEmpty.x = (rGauge.x + rGauge.w);
-    rEmpty.y = nElemY;
-    rEmpty.w = (nElemW - rGauge.w);
-    rEmpty.h = nElemH;
+    // Empty Region #1 (negative)
+    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nGaugeX0-nElemX0+1,nElemY1-nElemY0+1};
+    rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
+    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
+    // Empty Region #2 (positive)
+    rEmpty = (gslc_tsRect){nGaugeX1,nElemY0,nElemX1-nGaugeX1+1,nElemY1-nElemY0+1};
+    rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
+    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
   }
-  rTmp = gslc_ExpandRect(rEmpty,-1,-1);    
-  gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);  
   
   // Draw the gauge fill region
+  rGauge = (gslc_tsRect){nGaugeX0,nGaugeY0,nGaugeX1-nGaugeX0+1,nGaugeY1-nGaugeY0+1};
   rTmp = gslc_ExpandRect(rGauge,-1,-1);
   gslc_DrawFillRect(pGui,rTmp,pGauge->colGauge);
   
-
+ 
   // Draw the midpoint line
-  gslc_tsRect   rMidLine;
   if (bVert) {
-    rMidLine.x = nElemX;
-    rMidLine.y = nElemY+nGaugeMid;
-    rMidLine.w = nElemW;
-    rMidLine.h = 1;
+    gslc_DrawLine(pGui, nElemX0, nElemY0+nGaugeMid, nElemX1, nElemY0+nGaugeMid, pElem->colElemFrame);
   } else {
-    rMidLine.x = nElemX+nGaugeMid;
-    rMidLine.y = nElemY;
-    rMidLine.w = 1;
-    rMidLine.h = nElemH;
+    gslc_DrawLine(pGui, nElemX0+nGaugeMid, nElemY0, nElemX0+nGaugeMid, nElemY1, pElem->colElemFrame);
   }
+ 
   
-  // Paint the filled progress region
-  gslc_DrawFillRect(pGui,rMidLine,pElem->colElemFrame);
-
   // Draw a frame around the gauge
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   

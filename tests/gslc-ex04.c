@@ -16,7 +16,7 @@
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
+enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_PROGRESS1,
       E_ELEM_CHECK1,E_ELEM_RADIO1,E_ELEM_RADIO2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
 enum {E_FONT_BTN,E_FONT_TXT};
 enum {E_GROUP1};
@@ -29,7 +29,7 @@ unsigned    m_nCount = 0;
 // Instantiate the GUI
 #define MAX_PAGE            1
 #define MAX_FONT            5
-#define MAX_ELEM_PG_MAIN    20
+#define MAX_ELEM_PG_MAIN    21
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -38,7 +38,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXGauge;
+gslc_tsXGauge               m_sXGauge,m_sXGauge1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
@@ -108,12 +108,18 @@ bool InitOverlays()
     "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
 
-  // Create progress bar
+  // Create progress bar (horizontal)
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",0,E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   
+  // Second progress bar (vertical)
+  // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range    
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+    (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
+    
   // Create checkbox 1
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
     "Check1:",0,E_FONT_TXT);
@@ -171,6 +177,7 @@ int main( int argc, char* args[] )
   // Save some element references for quick access
   gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  gslc_tsElem*  pElemProgress1  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);  
   gslc_tsElem*  pElemSlider     = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER);
   gslc_tsElem*  pElemSliderTxt  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER);
 
@@ -197,6 +204,8 @@ int main( int argc, char* args[] )
     int nPos = gslc_ElemXSliderGetPos(pElemSlider);  
     snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
     gslc_ElemSetTxtStr(pElemSliderTxt,acTxt);
+    
+    gslc_ElemXGaugeUpdate(pElemProgress1,(nPos*80.0/100.0)-15);    
     
     // Periodically call GUIslice update function    
     gslc_Update(&m_gui);

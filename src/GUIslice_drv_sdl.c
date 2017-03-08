@@ -41,7 +41,7 @@
 
 
 // Optionally enable SDL clean start VT workaround
-#if defined(DRV_SDL_FIX_START)
+#if (DRV_SDL_FIX_START)
   #include <fcntl.h>      // For O_RDONLY
   #include <errno.h>      // For errno
   #include <unistd.h>     // For close()
@@ -87,7 +87,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   }
 
 
-#if defined(DRV_SDL_FIX_START)
+#if (DRV_SDL_FIX_START)
   // Force a clean start to SDL to workaround any bad state
   // left behind by a previous SDL application's failure to
   // clean up.
@@ -176,7 +176,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // Since the mouse cursor is based on SDL coords which are badly
   // scaled when in touch mode, we will disable the mouse pointer.
   // Note that the SDL coords seem to be OK when in actual mouse mode.
+  #if (!DRV_SDL_MOUSE_SHOW)
   SDL_ShowCursor(SDL_DISABLE);
+  #endif
 
   return true;
 }
@@ -784,9 +786,11 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   
   // Perform any driver-specific touchscreen init here
   
-  // Assign default
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
-  pDriver->pTsDev = NULL;
+  #if defined(DRV_TOUCH_TSLIB)  
+    // Assign default
+    gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+    pDriver->pTsDev = NULL;
+  #endif
   
   // Nothing further to do with SDL driver
   return true;
@@ -870,7 +874,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 //   in the call to SDL_SetVideoMode().
 bool gslc_DrvCleanStart(const char* sTTY)
 {
-#if defined(DRV_SDL_FIX_START)
+#if (DRV_SDL_FIX_START)
     int     nFD = -1;
     int     nRet = false;
     
