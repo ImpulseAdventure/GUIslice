@@ -822,6 +822,16 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     } else if (sEvent.type == SDL_KEYUP) {
 
     } else if (sEvent.type == SDL_MOUSEMOTION) {
+      SDL_GetMouseState(&nX,&nY);
+      *pnX = (int16_t)nX;
+      *pnY = (int16_t)nY;
+      // For MOUSEMOTION, we want to return the previous state of
+      // the touch pressure in pnPress as MOUSEMOTION is called during
+      // both mouse up and mouse down states.
+      // Note that we can't simply leave pnPress as-is since it
+      // doesn't retain its state in the caller.
+      *pnPress = pGui->nTouchLastPress;
+      bRet = true;      
     } else if (sEvent.type == SDL_MOUSEBUTTONDOWN) {
       SDL_GetMouseState(&nX,&nY);
       *pnX = (int16_t)nX;
@@ -1144,12 +1154,12 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   // Open in non-blocking mode
   pDriver->pTsDev = ts_open(acDev,1);
   if (!pDriver->pTsDev) {
-    GSLC_DEBUG_PRINT("ERROR: TsOpen(%s)\n","");
+    GSLC_DEBUG_PRINT("ERROR: TsOpen(%s) failed\n","");
     return false;
   }
 
   if (ts_config(pDriver->pTsDev)) {
-    GSLC_DEBUG_PRINT("ERROR: TsConfig(%s)\n","");
+    GSLC_DEBUG_PRINT("ERROR: TsConfig(%s) failed\n","");
     // Clear the tslib pointer so we don't try to call it again
     pDriver->pTsDev = NULL;
     return false;

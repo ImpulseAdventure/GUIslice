@@ -296,9 +296,10 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
-  int16_t   nTouchX,nTouchY;
-  uint16_t  nTouchPress;
-  bool      bTouchEvent;
+  int16_t   nTouchX = 0;
+  int16_t   nTouchY = 0;
+  uint16_t  nTouchPress = 0;
+  bool      bTouchEvent = false;
   
   // Poll for touchscreen presses  
   bTouchEvent = gslc_GetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
