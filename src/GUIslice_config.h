@@ -112,7 +112,8 @@ extern "C" {
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
   #define DRV_DISP_ADAGFX_ILI9341
-  //#define DRV_DISP_ADAGFX_SSD1306   // [TODO]
+  //#define DRV_DISP_ADAGFX_ST7735
+  //#define DRV_DISP_ADAGFX_SSD1306
 
   
   // For Adafruit-GFX drivers, define pin connections

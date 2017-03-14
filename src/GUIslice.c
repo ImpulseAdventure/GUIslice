@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.4    (2017/03/05)
+// - Version 0.8.5    (2017/03/13)
 // =======================================================================
 //
 // The MIT License
@@ -48,7 +48,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.4"
+#define GUISLICE_VER "0.8.5"
 
 
 // ========================================================================

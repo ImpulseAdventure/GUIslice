@@ -49,6 +49,12 @@
   #include <SPI.h>
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #include <Adafruit_SSD1306.h>
+  // TODO: Select either SPI or I2C. For now, assume SPI
+  #include <SPI.h>
+  #include <Wire.h>
+#elif defined(DRV_DISP_ADAGFX_ST7735)
+  #include <Adafruit_ST7735.h>
+  #include <SPI.h>
 #endif
 
 #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -59,6 +65,7 @@
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
 #endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,6 +89,14 @@ extern "C" {
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RESET, ADAGFX_PIN_CS);
   #endif
 
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ST7735)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
+  #endif
+    
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
 
@@ -135,8 +150,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
-      pGui->nDispW = LCDWIDTH;
-      pGui->nDispH = LCDHEIGHT;
+      pGui->nDispW = SSD1306_LCDWIDTH;
+      pGui->nDispH = SSD1306_LCDHEIGHT;
+      
+    #elif defined(DRV_DISP_ADAGFX_ST7735)
+      m_disp.initR(INITR_144GREENTAB);  // 1.44"
+      //m_disp.initR(INITR_BLACKTAB);     // 1.8" [TODO]
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+      
     #endif
 
     // Defaults for clipping region
@@ -319,7 +341,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735)
     // Nothing to do as we're not double-buffered
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -327,6 +349,8 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
     // NOTE: You _must_ call display after making any drawing commands
     // to make them visible on the display hardware!
     m_disp.display();
+
+    // TODO: Might need to call m_disp.clearDisplay() now?
     
   #endif
 }
@@ -930,14 +954,14 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
   
-  #if defined(DRV_DISP_ADAGFX_ILI9341)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735)
     // RGB565
     nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
     nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
     nColRaw |= (((nCol.b & 0xF8) >> 3) <<  0); // Mask: 0000 0000 0001 1111
   
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
-    if ((nCol.r == 0) || (nCol.g == 0) || (nCol.b == 0)) { // GSLC_COL_BLACK
+    if ((nCol.r == 0) && (nCol.g == 0) && (nCol.b == 0)) { // GSLC_COL_BLACK
       nColRaw = 0;  // BLACK
     } else {
       nColRaw = 1;  // WHITE
