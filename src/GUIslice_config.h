@@ -68,8 +68,9 @@ extern "C" {
 // Graphics display driver-specific additional configuration  
 #if defined(DRV_DISP_SDL1)
   // Define default device paths for framebuffer & touchscreen  
-  #define GSLC_DEV_FB    "/dev/fb1"
-  #define GSLC_DEV_TOUCH "/dev/input/touchscreen"
+  #define GSLC_DEV_FB       "/dev/fb1"
+  #define GSLC_DEV_TOUCH    "/dev/input/touchscreen"
+  #define GSLC_DEV_VID_DRV  "fbcon"
   // Enable SDL startup workaround? (1 to enable, 0 to disable)
   #define DRV_SDL_FIX_START 1
   // Show SDL mouse (1 to show, 0 to hide)
@@ -87,11 +88,12 @@ extern "C" {
   // - Raspberry Pi can support hardware acceleration onto fb0
   // - To use SDL2.0 with hardware acceleration with such displays,
   //   use fb0 as the target and then run fbcp to mirror fb0 to fb1
-  #define GSLC_DEV_FB    "/dev/fb0"
-  #define GSLC_DEV_TOUCH "/dev/input/touchscreen"  
+  #define GSLC_DEV_FB       "/dev/fb0"
+  #define GSLC_DEV_TOUCH    ""  
+  #define GSLC_DEV_VID_DRV  "x11"
 
   // Show SDL mouse (1 to show, 0 to hide)
-  #define DRV_SDL_MOUSE_SHOW 0
+  #define DRV_SDL_MOUSE_SHOW 1
   
   #define GSLC_LOCAL_STR  1
 

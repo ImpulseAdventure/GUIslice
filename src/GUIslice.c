@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.5    (2017/03/13)
+// - Version 0.8.6    (2017/03/17)
 // =======================================================================
 //
 // The MIT License
@@ -48,7 +48,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.5"
+#define GUISLICE_VER "0.8.6"
 
 
 // ========================================================================
@@ -299,22 +299,34 @@ void gslc_Update(gslc_tsGui* pGui)
   int16_t   nTouchX = 0;
   int16_t   nTouchY = 0;
   uint16_t  nTouchPress = 0;
-  bool      bTouchEvent = false;
+  bool      bTouchEvent = true;
   
-  // Poll for touchscreen presses  
-  bTouchEvent = gslc_GetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
-  
-  if (bTouchEvent) {
-    // Track and handle the touch events
-    // - Handle the events on the current page
-    gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
-    
-    #ifdef DBG_TOUCH
-    // Highlight current touch for coordinate debug
-    gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
-    gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
-    #endif    
-  }
+  // Handle touchscreen presses
+  // - We clear the event queue here so that we don't fall behind
+  // - In the time it takes to update the display, several mouse /
+  //   finger events may have occurred. If we only handle a single
+  //   motion event per display update, then we may experience very
+  //   lagging responsiveness from the controls.
+  // - Instead, we drain the even queue before proceeding on to the
+  //   display update, giving rise to a much more responsive GUI.
+  // - Note that SDL2 may synchronize the RenderPresent call to
+  //   the VSYNC, which will effectively insert a delay into the
+  //   gslc_PageRedrawGo() call below. It might be possible to
+  //   adjust this blocking behavior via SDL_RENDERER_PRESENTVSYNC.
+  do {
+    bTouchEvent = gslc_GetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);   
+    if (bTouchEvent) {
+      // Track and handle the touch events
+      // - Handle the events on the current page
+      gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
+
+      #ifdef DBG_TOUCH
+      // Highlight current touch for coordinate debug
+      gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
+      gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
+      #endif    
+    }
+  } while (bTouchEvent);
   
   // Issue a timer tick to all pages
   uint8_t nPageInd;

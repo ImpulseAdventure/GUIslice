@@ -40,7 +40,7 @@ void UserInitEnv()
 #if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
-  setenv((char*)"SDL_VIDEODRIVER",(char*)"fbcon",1);
+  setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
 #endif  
   
 #if defined(DRV_TOUCH_TSLIB)

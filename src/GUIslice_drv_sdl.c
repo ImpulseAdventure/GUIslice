@@ -844,6 +844,32 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       *pnY = (int16_t)nY;
       (*pnPress) = 0;
       bRet = true;
+     
+// SDL2 defines touch events instead of reusing mouse events
+#if defined(DRV_DISP_SDL2)    
+     
+    } else if (sEvent.type == SDL_FINGERMOTION) {
+      *pnX = (int16_t)(sEvent.tfinger.x);
+      *pnY = (int16_t)(sEvent.tfinger.y);
+      // For FINGERMOTION, we want to return the previous state of
+      // the touch pressure in pnPress as FINGERMOTION is called during
+      // both up and down states.
+      // Note that we can't simply leave pnPress as-is since it
+      // doesn't retain its state in the caller.      
+      *pnPress = pGui->nTouchLastPress;
+      bRet = true;
+    } else if (sEvent.type == SDL_FINGERDOWN) {
+      *pnX = (int16_t)(sEvent.tfinger.x);
+      *pnY = (int16_t)(sEvent.tfinger.y);
+      (*pnPress) = 1;
+      bRet = true;
+    } else if (sEvent.type == SDL_FINGERUP) {
+      *pnX = (int16_t)(sEvent.tfinger.x);
+      *pnY = (int16_t)(sEvent.tfinger.y);
+      (*pnPress) = 0;
+      bRet = true;
+#endif
+      
     }
   } // SDL_PollEvent()
 

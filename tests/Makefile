@@ -1,8 +1,11 @@
 ##
 ## Makefile for GUIslice library
 ## - Calvin Hass
-## - http://www.impulseadventure.com/elec/
+## - http://www.impulseadventure.com/elec/guislice-gui.html
 ##
+## NOTE: This Makefile handles both SDL1.2 and SDL2 compilation.
+##       A simpler Makefile can be used if this flexibility is
+##       not required.
 
 DEBUG = -O3
 CC = gcc
@@ -26,25 +29,29 @@ GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
 GSLC_DRV := SDL1
 #GSLC_DRV := SDL2
 
+# Define any extra linker settings
+# - For tslib (GUIslice_config.h has #define DRV_TOUCH_TSLIB), add "-lts"
+#GSLC_LDLIB_EXTRA :=
+GSLC_LDLIB_EXTRA := -lts
 
 # === SDL1.2 ===
 ifeq (SDL1,${GSLC_DRV})
   $(info GUIslice driver mode: SDL1)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  # - Add "-lts" if GUIslice_config.h: #define DRV_TOUCH_TSLIB
-  LDLIBS = -lSDL -lSDL_ttf -lts
+  # - Add extra linker libraries if needed
+  LDLIBS = -lSDL -lSDL_ttf ${GSLC_LDLIB_EXTRA}
 endif
 
 # === SDL2.0 ===
 ifeq (SDL2,${GSLC_DRV})
   $(info GUIslice driver mode: SDL2)
   GSLC_SRCS = ../src/GUIslice_drv_sdl.c
-  # - Add "-lts" if GUIslice_config.h: #define DRV_TOUCH_TSLIB
-  LDLIBS = -lSDL2 -lSDL2_ttf -lts
+  # - Add extra linker libraries if needed
+  LDLIBS = -lSDL2 -lSDL2_ttf ${GSLC_LDLIB_EXTRA}
 endif
 
 # === Adafruit-GFX ===
-# TBD
+# No makefile for Arduino as most users will use the IDE for compilation
 
 # ---------------------------------------------------------------------------
 

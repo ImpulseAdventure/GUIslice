@@ -9,8 +9,8 @@ A lightweight GUI framework suitable for embedded displays
 - Pure C library, no dynamic memory allocation
 - Widgets: text, images, buttons, checkboxes, radio buttons, sliders, etc. plus extensions and multiple pages.
 - Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX
-- Typical target: Raspberry Pi, Arduino, Cortex M0 (Feather M0), LINUX
-- Typical displays: PiTFT, Waveshare, Adafruit TFT 2.2" / 2.8"
+- Typical target: Raspberry Pi, Arduino, Cortex M0 (Feather M0), LINUX, Beaglebone Black
+- Typical displays: PiTFT, Waveshare, Adafruit TFT 2.2" / 2.8" / 1.44', OLED 0.96"
 - Supports touchscreen control
 - No GUIslice installation -- just add include files and go!
 - LINUX Dependencies: sdl, sdl-ttf, optional: tslib
