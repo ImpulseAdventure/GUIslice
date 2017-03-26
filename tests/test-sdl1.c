@@ -50,7 +50,7 @@ int main(int argc, char* args[]) {
 
   // Configure the video mode
   // - SDL_SWSURFACE appears to be most robust mode
-  int nFlags = SDL_SWSURFACE;
+  int nFlags = SDL_SWSURFACE | SDL_FULLSCREEN;
   scrMain = SDL_SetVideoMode(nResX, nResY, nDepth, nFlags);
   if (scrMain == 0) {
     fprintf(stderr, "ERROR in SDL_SetVideoMode(): %s\n", SDL_GetError());

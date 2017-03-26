@@ -53,7 +53,7 @@ void UserInitEnv()
   setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
 #endif
 }
 

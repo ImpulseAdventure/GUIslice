@@ -69,7 +69,7 @@ void UserInitEnv()
   setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
 #endif
 }
 
@@ -221,6 +221,7 @@ int main( int argc, char* args[] )
     // Periodically call GUIslice update function    
     gslc_Update(&m_gui);
 
+    // Simple update rate reporting
     #if (TEST_UPDATE_RATE)
     nNumUpdates++;
     sClkEnd = clock();

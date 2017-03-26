@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.7    (2017/03/21)
+// - Version 0.8.7    (2017/03/26)
 // =======================================================================
 //
 // The MIT License

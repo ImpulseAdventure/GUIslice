@@ -139,7 +139,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   #endif
   
   // SDL_SWSURFACE is apparently more reliable
-  pDriver->pSurfScreen = SDL_SetVideoMode(nSystemX,nSystemY,nBpp,SDL_SWSURFACE);
+  pDriver->pSurfScreen = SDL_SetVideoMode(nSystemX,nSystemY,nBpp,SDL_SWSURFACE | SDL_FULLSCREEN);
   if (!pDriver->pSurfScreen) {
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_SetVideoMode(): %s\n",SDL_GetError());
     return false;
@@ -903,7 +903,6 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
  
     // SDL2 defines touch events instead of reusing mouse events
     #if defined(DRV_DISP_SDL2)    
-    #if (DRV_SDL_FINGER_EN)
 
     } else if (sEvent.type == SDL_FINGERMOTION) {
       *pnX = (int16_t)(sEvent.tfinger.x);
@@ -925,7 +924,6 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       *pnY = (int16_t)(sEvent.tfinger.y);
       (*pnPress) = 0;
       bRet = true;
-    #endif  // DRV_SDL_FINGER_EN
     #endif  // DRV_DISP_SDL2
       
     }
@@ -1331,7 +1329,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   }
 
   if (ts_config(pDriver->pTsDev)) {
-    GSLC_DEBUG_PRINT("ERROR: TsConfig(%s) failed\n","");
+    GSLC_DEBUG_PRINT("ERROR: ts_config(%s) failed\n","");
     // Clear the tslib pointer so we don't try to call it again
     pDriver->pTsDev = NULL;
     return false;

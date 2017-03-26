@@ -31,7 +31,7 @@ GSLC_DRV := SDL1
 
 # Define any extra linker settings
 # - For tslib (GUIslice_config.h has #define DRV_TOUCH_TSLIB), add "-lts"
-#GSLC_LDLIB_EXTRA :=
+#GSLC_LDLIB_EXTRA := -lm
 GSLC_LDLIB_EXTRA := -lm -lts
 
 # === SDL1.2 ===
