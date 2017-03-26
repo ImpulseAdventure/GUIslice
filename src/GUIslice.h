@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.6    (2017/03/17)
+// - Version 0.8.7    (2017/03/21)
 // =======================================================================
 //
 // The MIT License
@@ -253,6 +253,10 @@ typedef enum {
   GSLC_EVTSUB_DRAW_NEEDED,
   GSLC_EVTSUB_DRAW_FORCE        
 } gslc_teEventSubType;
+
+// Define the maximum number of touch events that are handled
+// per gslc_Update() call.
+#define GSLC_MAX_EVT    30
 
 /// Element reference flags: Describes characteristics of an element
 /// - Primarily used to support relocation of elements to Flash memory (PROGMEM)
@@ -922,6 +926,19 @@ void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   uint16_t nRadius,gslc_tsColor nCol);
 
+///
+/// Draw a filled circle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nMidX:       Center X coordinate
+/// \param[in]  nMidY:       Center Y coordinate
+/// \param[in]  nRadius:     Radius of circle
+/// \param[in]  nCol:        Color RGB value for the fill
+///
+/// \return none
+///
+void gslc_DrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
+  uint16_t nRadius,gslc_tsColor nCol);
 
 
 // -----------------------------------------------------------------------

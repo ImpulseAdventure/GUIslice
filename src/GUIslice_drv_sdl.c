@@ -64,6 +64,10 @@
 
 bool gslc_DrvInit(gslc_tsGui* pGui)
 {
+  // Report any debug info (before init) if enabled
+  #if defined(DBG_DRIVER)
+  gslc_DrvReportInfoPre();
+  #endif  
   
   // Primary surface definitions
   pGui->sImgRefBkgnd = gslc_ResetImage();
@@ -109,6 +113,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // affects the next SDL program execution.
   atexit(SDL_Quit);
 
+  // Report any debug info (after init) if enabled
+  #if defined(DBG_DRIVER)
+  gslc_DrvReportInfoPost();
+  #endif  
+
+  
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   
 #if defined(DRV_DISP_SDL1)  
@@ -122,6 +132,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   pGui->nDispW      = nSystemX;
   pGui->nDispH      = nSystemY;  
   pGui->nDispDepth  = nBpp;
+
+  #if defined(DBG_DRIVER)
+  printf("DBG: Video mode: %u x %u x %u bit/pixel\n",
+          pGui->nDispW,pGui->nDispH,pGui->nDispDepth);
+  #endif
   
   // SDL_SWSURFACE is apparently more reliable
   pDriver->pSurfScreen = SDL_SetVideoMode(nSystemX,nSystemY,nBpp,SDL_SWSURFACE);
@@ -129,12 +144,13 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_SetVideoMode(): %s\n",SDL_GetError());
     return false;
   }
-#endif  
+#endif
+  
 #if defined(DRV_DISP_SDL2)
   // Default to using OpenGL rendering engine and full-screen
   // When using SDL_WINDOW_FULLSCREEN, the width & height dimensions are ignored
   pDriver->pWind = SDL_CreateWindow("GUIslice",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
-          0,0,SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+          0,0,SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);  
   if (!pDriver->pWind) {
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_CreateWindow(): %s\n",SDL_GetError());
     return false;
@@ -155,13 +171,37 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   }
   pGui->nDispDepth = SDL_BITSPERPIXEL(sDispMode.format);
   
+  #if defined(DBG_DRIVER)
+  printf("DBG: Video mode: %u x %u x %u bit/pixel\n",
+          pGui->nDispW,pGui->nDispH,pGui->nDispDepth);
+  #endif 
+  
   // Create renderer
-  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_ACCELERATED);
+  // TODO: Resolve performance with "accelerated" renderer (SDL_RENDERER_ACCELERATED.
+  //       For now, use software renderer (SDL_RENDERER_SOFTWARE) which appears
+  //       to be much faster.
+  
+  // If we are sure that the OpenGL ES 2.0 driver has been installed, we
+  // can request that SDL use this as a renderer. Disable this for now.
+  // SDL_SetHint(SDL_HINT_RENDER_DRIVER,"opengles2");
+  
+  #if (DRV_SDL_RENDER_ACCEL)
+  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_ACCELERATED);  
+  #else
+  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_SOFTWARE);  
+  #endif
   if (!pDriver->pRender) {
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_CreateRenderer(): %s\n",SDL_GetError());
     return false;
   }
 
+  #if defined(DBG_DRIVER)
+  SDL_RendererInfo  sRendInfo;
+  SDL_GetRendererInfo(pDriver->pRender,&sRendInfo);
+  printf("DBG: Renderer selected: [%s]\n",
+          sRendInfo.name);
+  #endif   
+  
   // If we wanted to support scaling of the renderer, we would call
   // SDL_RenderSetLogicalSize() here. For now, don't scale.
   
@@ -822,7 +862,12 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     } else if (sEvent.type == SDL_KEYUP) {
 
     } else if (sEvent.type == SDL_MOUSEMOTION) {
+      #if defined(DRV_DISP_SDL1)  
       SDL_GetMouseState(&nX,&nY);
+      #elif defined(DRV_DISP_SDL2)
+      nX = sEvent.button.x;
+      nY = sEvent.button.y;
+      #endif      
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       // For MOUSEMOTION, we want to return the previous state of
@@ -833,21 +878,33 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       *pnPress = pGui->nTouchLastPress;
       bRet = true;      
     } else if (sEvent.type == SDL_MOUSEBUTTONDOWN) {
+      #if defined(DRV_DISP_SDL1)  
       SDL_GetMouseState(&nX,&nY);
+      #elif defined(DRV_DISP_SDL2)
+      nX = sEvent.button.x;
+      nY = sEvent.button.y;
+      #endif 
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 1;
       bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONUP) {
+      #if defined(DRV_DISP_SDL1)  
       SDL_GetMouseState(&nX,&nY);
+      #elif defined(DRV_DISP_SDL2)
+      nX = sEvent.motion.x;
+      nY = sEvent.motion.y;
+      #endif       
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 0;
       bRet = true;
      
-// SDL2 defines touch events instead of reusing mouse events
-#if defined(DRV_DISP_SDL2)    
-     
+ 
+    // SDL2 defines touch events instead of reusing mouse events
+    #if defined(DRV_DISP_SDL2)    
+    #if (DRV_SDL_FINGER_EN)
+
     } else if (sEvent.type == SDL_FINGERMOTION) {
       *pnX = (int16_t)(sEvent.tfinger.x);
       *pnY = (int16_t)(sEvent.tfinger.y);
@@ -868,7 +925,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       *pnY = (int16_t)(sEvent.tfinger.y);
       (*pnPress) = 0;
       bRet = true;
-#endif
+    #endif  // DRV_SDL_FINGER_EN
+    #endif  // DRV_DISP_SDL2
       
     }
   } // SDL_PollEvent()
@@ -937,6 +995,94 @@ bool gslc_DrvCleanStart(const char* sTTY)
     return true;
 }
 
+// Report some SDL debug info
+void gslc_DrvReportInfoPre()
+{
+
+  
+#if defined(DRV_DISP_SDL1)
+
+#elif defined(DRV_DISP_SDL2)
+  int16_t           nDriverInd = 0;
+  int16_t           nNumDrivers = 0;
+  
+  // Video driver info
+  const char*   pDriverName = NULL;
+  bool          bDriverOk = false;
+  nNumDrivers = SDL_GetNumVideoDrivers();
+  for (nDriverInd=0;nDriverInd<nNumDrivers;nDriverInd++) {
+    pDriverName = SDL_GetVideoDriver(nDriverInd);
+    printf("DBG: Video driver #%2d: [%s]\n",nDriverInd,pDriverName);
+    
+    bDriverOk = false;
+    #if defined(DRV_DISP_SDL1)
+    if (SDL_VideoInit(pDriverName,0) == 0) {
+      SDL_VideoQuit();
+      bDriverOk = true;
+    }
+    #elif defined(DRV_DISP_SDL2)
+    if (SDL_VideoInit(pDriverName) == 0) {
+      SDL_VideoQuit();
+      bDriverOk = true;
+    }
+    #endif
+    if (bDriverOk) {
+      printf("DBG: - OK\n");
+    } else {
+      printf("DBG: - Failed [%s]\n",SDL_GetError());
+    }
+
+  }
+  #endif
+  
+
+  
+  #if defined(DRV_DISP_SDL2)   
+  // Renderer info
+  SDL_RendererInfo  sRendInfo;  
+  nNumDrivers = SDL_GetNumRenderDrivers();
+  for (nDriverInd=0;nDriverInd<nNumDrivers;nDriverInd++) {
+    SDL_GetRenderDriverInfo(nDriverInd,&sRendInfo);
+    printf("DBG: Render driver #%2d: [%s]\n",nDriverInd,sRendInfo.name);
+    printf("DBG: - Flags         = 0x%08X\n",sRendInfo.flags);
+    printf("DBG: -  Software     = %u\n",(sRendInfo.flags & SDL_RENDERER_SOFTWARE)?1:0);
+    printf("DBG: -  Accelerated  = %u\n",(sRendInfo.flags & SDL_RENDERER_ACCELERATED)?1:0);
+    printf("DBG: -  PresentVSync = %u\n",(sRendInfo.flags & SDL_RENDERER_PRESENTVSYNC)?1:0);
+  }
+  
+  #endif
+}
+
+// Report some SDL debug info
+void gslc_DrvReportInfoPost()
+{
+  #if defined(DRV_DISP_SDL1)
+  // Video driver info
+  char acDriverName[40];
+  SDL_VideoDriverName(acDriverName,40);
+  printf("DBG: Video Driver [%s]\n",acDriverName);
+  
+  #elif defined(DRV_DISP_SDL2)
+  // Display Modes
+  int16_t nDispCnt,nDispInd;
+  int16_t nModeInd = 0;
+  bool    bModeOk;
+  SDL_DisplayMode sMode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+
+  nDispCnt = SDL_GetNumVideoDisplays();
+  printf("DBG: Display count = %u\n",nDispCnt);
+  for (nDispInd=0;nDispInd<nDispCnt;nDispInd++) {
+    const char* pDispName = NULL;
+    bModeOk = (SDL_GetDisplayMode(nDispInd, nModeInd, &sMode) == 0)? true : false;
+    pDispName = SDL_GetDisplayName(nDispInd);
+    printf("DBG: Display #%2d: [%s]\n",nDispInd,pDispName);
+    printf("DBG: - OK = %u\n",bModeOk?1:0);
+    if (bModeOk) {
+      printf("DBG: - %d x %d, %u bpp\n",sMode.w,sMode.h,SDL_BITSPERPIXEL(sMode.format));
+    }
+  }
+  #endif  
+}
 
 // -----------------------------------------------------------------------
 // Conversion Functions

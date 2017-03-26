@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.6    (2017/03/17)
+// - Version 0.8.7    (2017/03/21)
 // =======================================================================
 //
 // The MIT License
@@ -48,10 +48,12 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.6"
+#define GUISLICE_VER "0.8.7"
 
 
 // ========================================================================
+
+
 
 /// Global debug output function
 /// - The user assigns this function via gslc_InitDebug()
@@ -313,6 +315,11 @@ void gslc_Update(gslc_tsGui* pGui)
   //   the VSYNC, which will effectively insert a delay into the
   //   gslc_PageRedrawGo() call below. It might be possible to
   //   adjust this blocking behavior via SDL_RENDERER_PRESENTVSYNC.
+  
+  // In case we are flooded with events, limit the maximum number
+  // that we handle in one gslc_Update() call.
+  bool      bDoneEvts = false;
+  uint16_t  nNumEvts  = 0;
   do {
     bTouchEvent = gslc_GetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);   
     if (bTouchEvent) {
@@ -325,8 +332,15 @@ void gslc_Update(gslc_tsGui* pGui)
       gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
       gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
       #endif    
+
+      nNumEvts++;
     }
-  } while (bTouchEvent);
+    
+    // Should we stop handling events?
+    if ((!bTouchEvent) || (nNumEvts >= GSLC_MAX_EVT)) {
+      bDoneEvts = true;
+    }
+  } while (!bDoneEvts);
   
   // Issue a timer tick to all pages
   uint8_t nPageInd;
@@ -849,6 +863,60 @@ void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   gslc_PageFlipSet(pGui,true);
 }
 
+// Draw a filled circle using midpoint circle algorithm
+// - Algorithm reference: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+// - Adapted for fill by connecting points by lines
+// - No separate frame color is performed
+void gslc_DrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
+  uint16_t nRadius,gslc_tsColor nCol)
+{
+  
+  #if (DRV_HAS_DRAW_CIRCLE_FILL)
+    // Call optimized driver implementation
+    gslc_DrvDrawFillCircle(pGui,nMidX,nMidY,nRadius,nCol);    
+  #else
+    // Emulate circle with line drawing
+    
+    int16_t nX    = nRadius;  // a
+    int16_t nY    = 0;        // b
+    int16_t nErr  = 0;
+
+    while (nX >= nY)
+    {
+
+      // Connect pairs of the reflected points around the circumference
+     
+      //gslc_DrvDrawPoint(pGui,nMidX - nY, nMidY + nX,nCol);  // (-b,+a)
+      //gslc_DrvDrawPoint(pGui,nMidX + nY, nMidY + nX,nCol);  // (+b,+a)
+      gslc_DrawLine(pGui,nMidX-nY,nMidY+nX,nMidX+nY,nMidY+nX,nCol);
+              
+      //gslc_DrvDrawPoint(pGui,nMidX - nX, nMidY + nY,nCol);  // (-a,+b)      
+      //gslc_DrvDrawPoint(pGui,nMidX + nX, nMidY + nY,nCol);  // (+a,+b)
+      gslc_DrawLine(pGui,nMidX-nX,nMidY+nY,nMidX+nX,nMidY+nY,nCol);
+      
+      //gslc_DrvDrawPoint(pGui,nMidX - nX, nMidY - nY,nCol);  // (-a,-b)
+      //gslc_DrvDrawPoint(pGui,nMidX + nX, nMidY - nY,nCol);  // (+a,-b)
+      gslc_DrawLine(pGui,nMidX-nX,nMidY-nY,nMidX+nX,nMidY-nY,nCol);
+      
+      //gslc_DrvDrawPoint(pGui,nMidX - nY, nMidY - nX,nCol);  // (-b,-a)      
+      //gslc_DrvDrawPoint(pGui,nMidX + nY, nMidY - nX,nCol);  // (+b,-a)
+      gslc_DrawLine(pGui,nMidX-nY,nMidY-nX,nMidX+nY,nMidY-nX,nCol);
+      
+
+      nY    += 1;
+      nErr  += 1 + 2*nY;
+      if (2*(nErr-nX) + 1 > 0)
+      {
+          nX -= 1;
+          nErr += 1 - 2*nX;
+      }
+    } // while
+
+
+  #endif
+  
+  gslc_PageFlipSet(pGui,true);
+}
 
 
 // -----------------------------------------------------------------------

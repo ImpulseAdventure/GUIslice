@@ -130,6 +130,12 @@ extern "C" {
 
 bool gslc_DrvInit(gslc_tsGui* pGui)
 {
+
+  // Report any debug info if enabled
+  #if defined(DBG_DRIVER)
+  // TODO
+  #endif  
+
   // Initialize any library-specific members
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
@@ -947,6 +953,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 // =======================================================================
 // Private Functions
 // =======================================================================
+
 
 // Convert from RGB struct to native screen format
 // TODO: Use 32bit return type?

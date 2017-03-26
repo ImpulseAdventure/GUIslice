@@ -71,11 +71,13 @@ extern "C" {
   #define GSLC_DEV_FB       "/dev/fb1"
   #define GSLC_DEV_TOUCH    "/dev/input/touchscreen"
   #define GSLC_DEV_VID_DRV  "fbcon"
+
   // Enable SDL startup workaround? (1 to enable, 0 to disable)
   #define DRV_SDL_FIX_START 1
+
   // Show SDL mouse (1 to show, 0 to hide)
   #define DRV_SDL_MOUSE_SHOW 0
-
+  
   #define GSLC_LOCAL_STR  1
     
   // Error reporting
@@ -93,7 +95,11 @@ extern "C" {
   #define GSLC_DEV_VID_DRV  "x11"
 
   // Show SDL mouse (1 to show, 0 to hide)
-  #define DRV_SDL_MOUSE_SHOW 1
+  #define DRV_SDL_MOUSE_SHOW 0
+  // Enable SDL finger touch events
+  #define DRV_SDL_FINGER_EN 1
+  // Enable hardware acceleration
+  #define DRV_SDL_RENDER_ACCEL 1
   
   #define GSLC_LOCAL_STR  1
 
@@ -217,6 +223,7 @@ extern "C" {
 //#define DBG_TOUCH         // Enable debugging of touch-presses
 //#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting
 //#define DBG_DRAW_IMM      // Enable immediate rendering of drawing primitives
+#define DBG_DRIVER        // Enable graphics driver debug reporting
   
 // Enable for bitmap transparency and definition of color to use
 #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled

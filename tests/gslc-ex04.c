@@ -10,6 +10,7 @@
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
+#include <time.h> // For clock() (frame rate reporting)
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
@@ -43,6 +44,9 @@ gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
 #define MAX_STR             100
+
+// Enable frame/update rate reporting? (1 to enable, 0 to disable)
+#define TEST_UPDATE_RATE     0
 
 // Configure environment variables suitable for display
 // - These may need modification to match your system
@@ -96,6 +100,7 @@ bool InitOverlays()
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  
   
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
@@ -184,6 +189,12 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
   
+  #if (TEST_UPDATE_RATE)
+  uint32_t  nNumUpdates = 0;
+  clock_t   sClkStart,sClkEnd;
+  sClkStart = clock();
+  #endif
+  
   m_bQuit = false;
   while (!m_bQuit) {
 
@@ -210,6 +221,18 @@ int main( int argc, char* args[] )
     // Periodically call GUIslice update function    
     gslc_Update(&m_gui);
 
+    #if (TEST_UPDATE_RATE)
+    nNumUpdates++;
+    sClkEnd = clock();
+    if ((sClkEnd - sClkStart) > 10*1000000) {
+      // Reached end of interval, report average
+      printf("DBG: Update rate = [%5.2f per sec]\n",(float)(nNumUpdates)/10.0);
+      // Reset interval
+      nNumUpdates = 0;
+      sClkStart = sClkEnd;
+    }
+    #endif
+    
   } // bQuit
 
   // Read checkbox state

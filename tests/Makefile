@@ -13,7 +13,7 @@ INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 LDFLAGS = -L/usr/local/lib
 
-GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c
+GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config.h
 
 # ---------------------------------------------------------------------------
 # Define compiler flags for GUIslice
@@ -32,7 +32,7 @@ GSLC_DRV := SDL1
 # Define any extra linker settings
 # - For tslib (GUIslice_config.h has #define DRV_TOUCH_TSLIB), add "-lts"
 #GSLC_LDLIB_EXTRA :=
-GSLC_LDLIB_EXTRA := -lts
+GSLC_LDLIB_EXTRA := -lm -lts
 
 # === SDL1.2 ===
 ifeq (SDL1,${GSLC_DRV})

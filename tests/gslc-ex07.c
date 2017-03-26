@@ -61,7 +61,7 @@ void UserInitEnv()
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
 #endif  
-  
+
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
   setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
@@ -69,6 +69,7 @@ void UserInitEnv()
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
   setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
 #endif
+   
 }
 
 // Define debug message function

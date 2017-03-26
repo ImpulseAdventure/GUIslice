@@ -142,7 +142,6 @@ typedef struct {
 bool gslc_DrvInit(gslc_tsGui* pGui);
 
 
-
 ///
 /// Free up any members associated with the driver
 /// - Eg. renderers, windows, background surfaces, etc.
@@ -441,6 +440,20 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 ///
 bool gslc_DrvCleanStart(const char* sTTY);
 
+
+///
+/// Report driver debug info (before initialization)
+///
+/// \return none
+///
+void gslc_DrvReportInfoPre();
+
+///
+/// Report driver debug info (after initialization)
+///
+/// \return none
+///
+void gslc_DrvReportInfoPost();
 
 // -----------------------------------------------------------------------
 // Private Conversion Functions
