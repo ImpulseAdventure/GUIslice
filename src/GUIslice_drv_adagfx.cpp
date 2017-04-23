@@ -448,6 +448,30 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 }
 
 
+bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+        int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
+{
+#if (ADAGFX_CLIP)
+  // TODO
+#endif
+  
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
+  m_disp.drawTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+  return true;
+}
+
+bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+        int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
+{
+#if (ADAGFX_CLIP)
+  // TODO
+#endif
+  
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
+  m_disp.fillTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+  return true;   
+}
+
 
 
 // ----- REFERENCE CODE begin
@@ -527,6 +551,7 @@ uint16_t gslc_DrvRead16SD(File f) {
   ((uint8_t *)&result)[1] = f.read(); // MSB
   return result;
 }
+
 uint32_t gslc_DrvRead32SD(File f) {
   uint32_t result;
   ((uint8_t *)&result)[0] = f.read(); // LSB
@@ -535,6 +560,7 @@ uint32_t gslc_DrvRead32SD(File f) {
   ((uint8_t *)&result)[3] = f.read(); // MSB
   return result;
 }
+
 void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, uint16_t y)
 {
   File     bmpFile;

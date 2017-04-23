@@ -64,6 +64,8 @@ extern "C" {
   #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
   #define DRV_HAS_DRAW_CIRCLE_FRAME   1 ///< Support gslc_DrvDrawFrameCircle()
   #define DRV_HAS_DRAW_CIRCLE_FILL    1 ///< Support gslc_DrvDrawFillCircle()
+  #define DRV_HAS_DRAW_TRI_FRAME      1 ///< Support gslc_DrvDrawFrameTriangle()
+  #define DRV_HAS_DRAW_TRI_FILL       1 ///< Support gslc_DrvDrawFillTriangle()
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
   
 // =======================================================================
@@ -379,6 +381,42 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,uint16
 /// \return true if success, false if error
 ///
 bool gslc_DrvDrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol);
+
+
+///
+/// Draw a framed triangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX0:         X Coordinate #1
+/// \param[in]  nY0:         Y Coordinate #1
+/// \param[in]  nX1:         X Coordinate #2
+/// \param[in]  nY1:         Y Coordinate #2
+/// \param[in]  nX2:         X Coordinate #3
+/// \param[in]  nY2:         Y Coordinate #3
+/// \param[in]  nCol:        Color RGB value to frame
+///
+/// \return true if success, false if error
+///
+bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+        int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol);
+
+
+///
+/// Draw a filled triangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX0:         X Coordinate #1
+/// \param[in]  nY0:         Y Coordinate #1
+/// \param[in]  nX1:         X Coordinate #2
+/// \param[in]  nY1:         Y Coordinate #2
+/// \param[in]  nX2:         X Coordinate #3
+/// \param[in]  nY2:         Y Coordinate #3
+/// \param[in]  nCol:        Color RGB value to fill
+///
+/// \return true if success, false if error
+///
+bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+        int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol);
 
 
 ///
