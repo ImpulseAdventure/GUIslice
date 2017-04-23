@@ -62,7 +62,9 @@ SRC =   gslc-ex01.c \
 	gslc-ex04.c \
 	gslc-ex05.c \
 	gslc-ex06.c \
-	gslc-ex07.c
+	gslc-ex07.c \
+	gslc-ex09.c \
+	gslc-ex10.c
 
 # Add simple example for specific driver modes
 ifeq (SDL1,${GSLC_DRV})
@@ -120,3 +122,10 @@ gslc-ex07: gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
+gslc-ex09: gslc-ex09.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ gslc-ex09.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+
+gslc-ex10: gslc-ex10.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ gslc-ex10.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
