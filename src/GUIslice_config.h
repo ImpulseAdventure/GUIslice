@@ -73,12 +73,14 @@ extern "C" {
   #define GSLC_DEV_VID_DRV  "fbcon"
 
   // Enable SDL startup workaround? (1 to enable, 0 to disable)
-  #define DRV_SDL_FIX_START 0
+  #define DRV_SDL_FIX_START 1
 
   // Show SDL mouse (1 to show, 0 to hide)
   #define DRV_SDL_MOUSE_SHOW 0
   
-  #define GSLC_LOCAL_STR  1
+  #define GSLC_LOCAL_STR      1
+  #define GSLC_USE_FLOAT      1
+
     
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
@@ -99,7 +101,9 @@ extern "C" {
   // Enable hardware acceleration
   #define DRV_SDL_RENDER_ACCEL 1
   
-  #define GSLC_LOCAL_STR  1
+  #define GSLC_LOCAL_STR      1
+  #define GSLC_USE_FLOAT      1
+
 
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
@@ -109,7 +113,8 @@ extern "C" {
 
   #define GSLC_DEV_TOUCH ""   // No device path used
 
-  #define GSLC_LOCAL_STR  0
+  #define GSLC_LOCAL_STR      0
+  #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
 
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
