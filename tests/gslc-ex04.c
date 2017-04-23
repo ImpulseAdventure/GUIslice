@@ -227,7 +227,7 @@ int main( int argc, char* args[] )
     sClkEnd = clock();
     if ((sClkEnd - sClkStart) > 10*1000000) {
       // Reached end of interval, report average
-      printf("DBG: Update rate = [%5.2f per sec]\n",(float)(nNumUpdates)/10.0);
+      printf("DBG: Update rate = [%6u per 10 sec]\n",nNumUpdates);
       // Reset interval
       nNumUpdates = 0;
       sClkStart = sClkEnd;
