@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.7    (2017/03/26)
+// - Version 0.8.8    (2017/04/23)
 // =======================================================================
 //
 // The MIT License
@@ -41,6 +41,10 @@
 #include <stdio.h>
 #include <time.h> // for FrameRate reporting
 
+#if (GSLC_USE_FLOAT)
+  #include <math.h>
+#endif
+
 #if (GSLC_USE_PROGMEM)
 #include <avr/pgmspace.h>   // For memcpy_P()
 #endif
@@ -48,7 +52,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.7"
+#define GUISLICE_VER "0.8.8"
 
 
 // ========================================================================
@@ -59,6 +63,8 @@
 /// - The user assigns this function via gslc_InitDebug()
 GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
 
+// Forward declaration for trigonometric lookup table
+extern uint16_t  m_nLUTSinF0X16[257];
 
 // ------------------------------------------------------------------------
 // General Functions
@@ -610,6 +616,132 @@ gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFl
 }
 
 
+// Sine function with optional lookup table
+int16_t gslc_sinFX(int16_t n64Ang)
+{
+  int16_t   nRetValS;
+
+#if (GSLC_USE_FLOAT)
+  // Use floating-point math library function
+  
+  // Calculate angle in radians
+  float fAngRad = n64Ang*GSLC_2PI/(360.0*64.0);
+  // Perform floating point calc
+  float fSin = sin(fAngRad);
+  // Return as fixed point result
+  nRetValS = fSin * 32767.0;
+  return nRetValS;  
+  
+#else
+  // Use lookup tables
+  bool bNegate = false;
+  
+  // Support multiple waveform periods
+  if (n64Ang >= 360*64) {
+    // For some reason this modulus is broken!
+    n64Ang = n64Ang % (int16_t)(360*64);
+    //n64Ang = n64Ang - (360*64);
+  } else if (n64Ang <= -360*64) {
+    n64Ang = -(-n64Ang % 360*64);
+  }
+  // Handle negative range
+  if (n64Ang < 0) {
+    n64Ang = -n64Ang;
+    bNegate = !bNegate;
+  }
+  // Handle 3rd and 4th phase
+  if (n64Ang >= 180*64) {
+    n64Ang -= 180*64;
+    bNegate = !bNegate;
+  }
+  // Handle 2nd phase
+  if (n64Ang >= 90*64) {
+    n64Ang = 180*64 - n64Ang;
+  }
+  
+  // n64Ang is quarter-phase range [0 .. 90*64]
+  // suitable for lookup table indexing
+  uint16_t  nLutInd = (n64Ang * 256)/(90*64);
+  uint16_t  nLutVal = m_nLUTSinF0X16[nLutInd];
+  
+  // Leave MSB for the signed bit
+  nLutVal /= 2;
+  if (bNegate) {
+    nRetValS = -nLutVal;
+  } else {
+    nRetValS = nLutVal;
+  }
+  return nRetValS;
+  
+#endif  
+  
+}
+
+// Cosine function with optional lookup table
+int16_t gslc_cosFX(int16_t n64Ang)
+{
+  int16_t   nRetValS;
+  
+#if (GSLC_USE_FLOAT)
+  // Use floating-point math library function
+  
+  // Calculate angle in radians
+  float fAngRad = n64Ang*GSLC_2PI/(360.0*64.0);
+  // Perform floating point calc
+  float fCos = cos(fAngRad);
+  // Return as fixed point result
+  nRetValS = fCos * 32767.0;
+  return nRetValS;  
+  
+#else
+  // Use lookup tables
+  // Cosine function is equivalent to Sine shifted by 90 degrees
+  return gslc_sinFX(n64Ang+90*64);
+
+#endif
+  
+}
+
+// Convert from polar to cartesian
+void gslc_PolarToXY(uint16_t nRad,int16_t n64Ang,int16_t* nDX,int16_t* nDY)
+{
+  *nDX = (int16_t)nRad *  gslc_sinFX(n64Ang)/(int16_t)32767;
+  *nDY = (int16_t)nRad * -gslc_cosFX(n64Ang)/(int16_t)32767; 
+}
+
+// Call with nMidAmt=500 to create simple linear blend between two colors
+gslc_tsColor gslc_ColorBlend2(gslc_tsColor colStart,gslc_tsColor colEnd,uint16_t nMidAmt,uint16_t nBlendAmt)
+{
+  gslc_tsColor  colMid;
+  colMid.r = (colEnd.r+colStart.r)/2;
+  colMid.g = (colEnd.g+colStart.g)/2;
+  colMid.b = (colEnd.b+colStart.b)/2;
+  return gslc_ColorBlend3(colStart,colMid,colEnd,nMidAmt,nBlendAmt);
+}
+
+gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsColor colEnd,uint16_t nMidAmt,uint16_t nBlendAmt)
+{
+  gslc_tsColor  colNew;
+  nMidAmt   = (nMidAmt  >1000)?1000:nMidAmt;
+  nBlendAmt = (nBlendAmt>1000)?1000:nBlendAmt;
+  
+  uint16_t  nRngLow   = nMidAmt;
+  uint16_t  nRngHigh  = 1000-nMidAmt;
+  uint16_t  nSubBlendAmt;
+  if (nBlendAmt >= nMidAmt) {
+    nSubBlendAmt = (nBlendAmt - nMidAmt)*1000/nRngHigh;
+    colNew.r = nSubBlendAmt*(colEnd.r - colMid.r)/1000 + colMid.r;
+    colNew.g = nSubBlendAmt*(colEnd.g - colMid.g)/1000 + colMid.g;
+    colNew.b = nSubBlendAmt*(colEnd.b - colMid.b)/1000 + colMid.b;
+  } else {
+    nSubBlendAmt = (nBlendAmt - 0)*1000/nRngLow;
+    colNew.r = nSubBlendAmt*(colMid.r - colStart.r)/1000 + colStart.r;
+    colNew.g = nSubBlendAmt*(colMid.g - colStart.g)/1000 + colStart.g;
+    colNew.b = nSubBlendAmt*(colMid.b - colStart.b)/1000 + colStart.b;
+  }
+  return colNew;
+}
+
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
 // ------------------------------------------------------------------------
@@ -652,19 +784,19 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
   if (nDX == 0) {
     if (nDY == 0) {
       return;
-    } else if (nDY >= 0) {
-      gslc_DrawLineV(pGui,nX0,nY0,nDY,nCol);
+    } else if (nY1-nY0 >= 0) {
+      gslc_DrawLineV(pGui,nX0,nY0,nDY+1,nCol);
       bDone = true;
     } else {
-      gslc_DrawLineV(pGui,nX1,nY1,-nDY,nCol);
+      gslc_DrawLineV(pGui,nX1,nY1,nDY+1,nCol);
       bDone = true;
     }
   } else if (nDY == 0) {
-    if (nDX >= 0) {
-      gslc_DrawLineH(pGui,nX0,nY0,nDX,nCol);
+    if (nX1-nX0 >= 0) {
+      gslc_DrawLineH(pGui,nX0,nY0,nDX+1,nCol);
       bDone = true;      
     } else {
-      gslc_DrawLineH(pGui,nX1,nY1,-nDX,nCol);
+      gslc_DrawLineH(pGui,nX1,nY1,nDX+1,nCol);
       bDone = true;      
     }
   }
@@ -689,7 +821,6 @@ void gslc_DrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t 
 
 void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_tsColor nCol)
 {
-  
   uint16_t nOffset;
   for (nOffset=0;nOffset<nW;nOffset++) {
     gslc_DrvDrawPoint(pGui,nX+nOffset,nY,nCol);    
@@ -700,13 +831,24 @@ void gslc_DrawLineH(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nW,gslc_ts
 
 void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_tsColor nCol)
 {
-  
   uint16_t nOffset;
   for (nOffset=0;nOffset<nH;nOffset++) {
     gslc_DrvDrawPoint(pGui,nX,nY+nOffset,nCol);    
   }
   
   gslc_PageFlipSet(pGui,true);
+}
+
+
+// Note that angle is in degrees * 64
+void gslc_DrawLinePolar(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nRadStart,uint16_t nRadEnd,int16_t n64Ang,gslc_tsColor nCol)
+{
+  // Draw the ray representing the current value
+  int16_t nDxS = nRadStart * gslc_sinFX(n64Ang)/32768;
+  int16_t nDyS = nRadStart * gslc_cosFX(n64Ang)/32768;
+  int16_t nDxE = nRadEnd   * gslc_sinFX(n64Ang)/32768;
+  int16_t nDyE = nRadEnd   * gslc_cosFX(n64Ang)/32768;
+  gslc_DrawLine(pGui,nX+nDxS,nY-nDyS,nX+nDxE,nY-nDyE,nCol);  
 }
 
 
@@ -916,6 +1058,165 @@ void gslc_DrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   #endif
   
   gslc_PageFlipSet(pGui,true);
+}
+
+
+// Draw a triangle
+void gslc_DrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+    int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
+{
+  
+  #if (DRV_HAS_DRAW_TRI_FRAME)
+    // Call optimized driver implementation
+    gslc_DrvDrawFrameTriangle(pGui,nX0,nY0,nX1,nY1,nX2,nY2,nCol);    
+  #else
+    // Draw triangle with three lines
+    gslc_DrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+    gslc_DrawLine(pGui,nX1,nY1,nX2,nY2,nCol);
+    gslc_DrawLine(pGui,nX2,nY2,nX0,nY0,nCol);
+
+  #endif
+  
+  gslc_PageFlipSet(pGui,true);
+}
+
+void gslc_SwapCoords(int16_t* pnXa,int16_t* pnYa,int16_t* pnXb,int16_t* pnYb)
+{
+  int16_t nSwapX,nSwapY;
+  nSwapX = *pnXa;
+  nSwapY = *pnYa;
+  *pnXa = *pnXb;
+  *pnYa = *pnYb;
+  *pnXb = nSwapX;
+  *pnYb = nSwapY;
+}
+
+
+// Draw a filled triangle
+void gslc_DrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+    int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
+{
+  
+  #if (DRV_HAS_DRAW_TRI_FILL)
+    // Call optimized driver implementation
+    gslc_DrvDrawFillTriangle(pGui,nX0,nY0,nX1,nY1,nX2,nY2,nCol);    
+    
+  #else
+    // Emulate triangle fill
+    
+    // Algorithm:
+    // - An arbitrary triangle is cut into two portions:
+    //   1) a flat bottom triangle
+    //   2) a flat top triangle
+    // - Sort the vertices in descending vertical position.
+    //   This serves two purposes:
+    //   1) ensures that the division between the flat bottom
+    //      and flat top triangles occurs at Y=Y1
+    //   2) ensure that we avoid division-by-zero in the for loops
+    // - Walk each scan line and determine the intersection
+    //   between triangle side A & B (flat bottom triangle)
+    //   and then C and B (flat top triangle) using line slopes.
+        
+    // Sort vertices
+    // - Want nY0 >= nY1 >= nY2
+    if (nY2>nY1) { gslc_SwapCoords(&nX2,&nY2,&nX1,&nY1); }
+    if (nY1>nY0) { gslc_SwapCoords(&nX0,&nY0,&nX1,&nY1); }
+    if (nY2>nY1) { gslc_SwapCoords(&nX2,&nY2,&nX1,&nY1); }
+
+    // TODO: It is more efficient to calculate row endpoints
+    // using incremental additions instead of multiplies/divides
+    
+    int16_t nXa,nXb,nXc,nYos;
+    int16_t nX01,nX20,nY01,nY20,nX21,nY21;
+    nX01 = nX0-nX1; nY01 = nY0-nY1;
+    nX20 = nX2-nX0; nY20 = nY2-nY0;
+    nX21 = nX2-nX1; nY21 = nY2-nY1;
+    
+    // Flat bottom scenario
+    // NOTE: Due to vertex sorting and loop range, it shouldn't
+    // be possible to enter loop when nY0 == nY1 or nY2
+    for (nYos=0;nYos<nY01;nYos++) {
+      // Determine row endpoints (no rounding)
+      //nXa = (nYos          )*(nX0-nX1)/(nY0-nY1);
+      //nXb = (nYos-(nY0-nY1))*(nX2-nX0)/(nY2-nY0);
+
+      // Determine row endpoints (using rounding)
+      nXa  = 2*(nYos)*nX01;
+      nXa += (nXa>=0)?abs(nY01):-abs(nY01);
+      nXa /= 2*nY01;
+      
+      nXb = 2*(nYos-nY01)*nX20;
+      nXb += (nXb>=0)?abs(nY20):-abs(nY20);
+      nXb /= 2*nY20;      
+
+      // Draw horizontal line between endpoints
+      gslc_DrawLine(pGui,nX1+nXa,nY1+nYos,nX0+nXb,nY1+nYos,nCol);
+    }
+
+    // Flat top scenario
+    // NOTE: Due to vertex sorting and loop range, it shouldn't
+    // be possible to enter loop when nY2 == nY0 or nY1
+    for (nYos=nY21;nYos<0;nYos++) {
+
+      // Determine row endpoints (no rounding)
+      //nXc = (nYos          )*(nX2-nX1)/(nY2-nY1);
+      //nXb = (nYos-(nY0-nY1))*(nX2-nX0)/(nY2-nY0);
+      
+      // Determine row endpoints (using rounding)
+      nXc  = 2*(nYos)*nX21;
+      nXc += (nXc>=0)?abs(nY21):-abs(nY21);
+      nXc /= 2*nY21;
+      
+      nXb = 2*(nYos-nY01)*nX20;      
+      nXb += (nXb>=0)?abs(nY20):-abs(nY20);
+      nXb /= 2*nY20;      
+
+      // Draw horizontal line between endpoints
+      gslc_DrawLine(pGui,nX1+nXc,nY1+nYos,nX0+nXb,nY1+nYos,nCol);
+    }
+    
+  #endif  // DRV_HAS_DRAW_TRI_FILL
+  
+  gslc_PageFlipSet(pGui,true);
+}
+
+void gslc_DrawFrameQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
+{
+  int16_t nX0,nY0,nX1,nY1;
+
+  nX0 = psPt[0].x; nY0 = psPt[0].y; nX1 = psPt[1].x; nY1 = psPt[1].y;
+  gslc_DrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+
+  nX0 = psPt[1].x; nY0 = psPt[1].y; nX1 = psPt[2].x; nY1 = psPt[2].y;
+  gslc_DrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+
+  nX0 = psPt[2].x; nY0 = psPt[2].y; nX1 = psPt[3].x; nY1 = psPt[3].y;
+  gslc_DrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+
+  nX0 = psPt[3].x; nY0 = psPt[3].y; nX1 = psPt[0].x; nY1 = psPt[0].y;
+  gslc_DrawLine(pGui,nX0,nY0,nX1,nY1,nCol);
+  
+}
+
+// Filling a quadrilateral is done by breaking it down into
+// two filled triangles sharing one side. We have to be careful
+// about the triangle fill routine (ie. using rounding) so that
+// we can avoid leaving a thin seam between the two triangles.
+void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
+{
+  int16_t nX0,nY0,nX1,nY1,nX2,nY2;
+
+  // Break down quadrilateral into two triangles
+  nX0 = psPt[0].x; nY0 = psPt[0].y;
+  nX1 = psPt[1].x; nY1 = psPt[1].y;
+  nX2 = psPt[2].x; nY2 = psPt[2].y;
+  gslc_DrawFillTriangle(pGui,nX0,nY0,nX1,nY1,nX2,nY2,nCol);
+
+  nX0 = psPt[2].x; nY0 = psPt[2].y;
+  nX1 = psPt[0].x; nY1 = psPt[0].y;
+  nX2 = psPt[3].x; nY2 = psPt[3].y;
+  gslc_DrawFillTriangle(pGui,nX0,nY0,nX1,nY1,nX2,nY2,nCol);
+  
 }
 
 
@@ -2858,3 +3159,23 @@ void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
   }    
   pCollect->pfuncXEvent       = funcCb;
 }
+
+uint16_t  m_nLUTSinF0X16[257] = {
+  0x0000,0x0192,0x0324,0x04B6,0x0648,0x07DA,0x096C,0x0AFD,0x0C8F,0x0E21,0x0FB2,0x1143,0x12D5,0x1465,0x15F6,0x1787,
+  0x1917,0x1AA7,0x1C37,0x1DC6,0x1F56,0x20E5,0x2273,0x2402,0x258F,0x271D,0x28AA,0x2A37,0x2BC3,0x2D4F,0x2EDB,0x3066,
+  0x31F1,0x337B,0x3505,0x368E,0x3816,0x399E,0x3B26,0x3CAD,0x3E33,0x3FB9,0x413E,0x42C3,0x4447,0x45CA,0x474C,0x48CE,
+  0x4A4F,0x4BD0,0x4D4F,0x4ECE,0x504D,0x51CA,0x5347,0x54C3,0x563E,0x57B8,0x5931,0x5AAA,0x5C21,0x5D98,0x5F0E,0x6083,
+  0x61F7,0x636A,0x64DC,0x664D,0x67BD,0x692C,0x6A9A,0x6C07,0x6D73,0x6EDE,0x7048,0x71B1,0x7319,0x747F,0x75E5,0x7749,
+  0x78AC,0x7A0F,0x7B6F,0x7CCF,0x7E2E,0x7F8B,0x80E7,0x8242,0x839B,0x84F3,0x864A,0x87A0,0x88F5,0x8A48,0x8B99,0x8CEA,
+  0x8E39,0x8F86,0x90D3,0x921E,0x9367,0x94AF,0x95F6,0x973B,0x987F,0x99C1,0x9B02,0x9C41,0x9D7F,0x9EBB,0x9FF6,0xA12F,
+  0xA266,0xA39D,0xA4D1,0xA604,0xA735,0xA865,0xA993,0xAABF,0xABEA,0xAD13,0xAE3B,0xAF60,0xB085,0xB1A7,0xB2C8,0xB3E7,
+  0xB504,0xB61F,0xB739,0xB851,0xB967,0xBA7B,0xBB8E,0xBC9F,0xBDAE,0xBEBB,0xBFC6,0xC0D0,0xC1D7,0xC2DD,0xC3E1,0xC4E3,
+  0xC5E3,0xC6E1,0xC7DD,0xC8D7,0xC9D0,0xCAC6,0xCBBB,0xCCAD,0xCD9E,0xCE8C,0xCF79,0xD063,0xD14C,0xD232,0xD317,0xD3F9,
+  0xD4DA,0xD5B8,0xD695,0xD76F,0xD847,0xD91D,0xD9F1,0xDAC3,0xDB93,0xDC60,0xDD2C,0xDDF5,0xDEBD,0xDF82,0xE045,0xE106,
+  0xE1C4,0xE281,0xE33B,0xE3F3,0xE4A9,0xE55D,0xE60E,0xE6BD,0xE76A,0xE815,0xE8BE,0xE964,0xEA08,0xEAAA,0xEB4A,0xEBE7,
+  0xEC82,0xED1B,0xEDB1,0xEE45,0xEED7,0xEF67,0xEFF4,0xF07F,0xF108,0xF18E,0xF212,0xF294,0xF313,0xF390,0xF40A,0xF483,
+  0xF4F9,0xF56C,0xF5DD,0xF64C,0xF6B9,0xF723,0xF78A,0xF7F0,0xF853,0xF8B3,0xF911,0xF96D,0xF9C6,0xFA1D,0xFA72,0xFAC4,
+  0xFB13,0xFB61,0xFBAB,0xFBF4,0xFC3A,0xFC7D,0xFCBE,0xFCFD,0xFD39,0xFD73,0xFDAA,0xFDDF,0xFE12,0xFE42,0xFE6F,0xFE9A,
+  0xFEC3,0xFEE9,0xFF0D,0xFF2E,0xFF4D,0xFF69,0xFF83,0xFF9B,0xFFB0,0xFFC2,0xFFD2,0xFFE0,0xFFEB,0xFFF3,0xFFFA,0xFFFD,
+  0xFFFF,
+};

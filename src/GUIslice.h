@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.7    (2017/03/26)
+// - Version 0.8.8    (2017/04/23)
 // =======================================================================
 //
 // The MIT License
@@ -64,6 +64,11 @@ typedef int16_t (*GSLC_CB_DEBUG_OUT)(char ch);
 /// - The user assigns this function via gslc_InitDebug()
 extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
 
+
+// -----------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------
+#define GSLC_2PI  6.28318530718
   
 // -----------------------------------------------------------------------
 // Enumerations
@@ -822,6 +827,75 @@ gslc_tsImgRef gslc_GetImageFromRam(unsigned char* pImgBuf,gslc_teImgRefFlags eFm
 gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFlags eFmt);
 
 
+///
+/// Convert polar coordinate to cartesian
+///
+/// \param[in]   nRad         Radius of ray
+/// \param[in]   n64Ang       Angle of ray (in units of 1/64 degrees, 0 is up)
+/// \param[out]  nDX          X offset for ray end
+/// \param[out]  nDY          Y offset for ray end
+///
+/// \return none
+///
+void gslc_PolarToXY(uint16_t nRad,int16_t n64Ang,int16_t* nDX,int16_t* nDY);
+
+
+///
+/// Calculate fixed-point sine function from fractional degrees
+/// - Depending on configuration, the result is derived from either
+///   floating point math library or fixed point lookup table.
+/// - gslc_sinFX(nAngDeg*64)/32768.0 = sin(nAngDeg*2pi/360)
+///
+/// \param[in]   n64Ang       Angle (in units of 1/64 degrees)
+///
+/// \return Fixed-point sine result. Signed 16-bit; divide by 32768
+///         to get the actual value.
+///
+int16_t gslc_sinFX(int16_t n64Ang);
+
+
+///
+/// Calculate fixed-point cosine function from fractional degrees
+/// - Depending on configuration, the result is derived from either
+///   floating point math library or fixed point lookup table.
+/// - gslc_cosFX(nAngDeg*64)/32768.0 = cos(nAngDeg*2pi/360)
+///
+/// \param[in]   n64Ang       Angle (in units of 1/64 degrees)
+///
+/// \return Fixed-point cosine result. Signed 16-bit; divide by 32768
+///         to get the actual value.
+///
+int16_t gslc_cosFX(int16_t n64Ang);
+
+///
+/// Create a color based on a blend between two colors
+///
+/// \param[in]  colStart:    Starting color
+/// \param[in]  colEnd:      Ending color
+/// \param[in]  nMidAmt:     Position (0..1000) between start and end color at which the
+///                          midpoint between colors should appear. Normally set to 500 (half-way).
+/// \param[in]  nBlendAmt:   The position (0..1000) between start and end at which we
+///                          want to calculate the resulting blended color.
+///
+/// \return Blended color
+///
+gslc_tsColor gslc_ColorBlend2(gslc_tsColor colStart,gslc_tsColor colEnd,uint16_t nMidAmt,uint16_t nBlendAmt);
+
+///
+/// Create a color based on a blend between three colors
+///
+/// \param[in]  colStart:    Starting color
+/// \param[in]  colMid:      Intermediate color
+/// \param[in]  colEnd:      Ending color
+/// \param[in]  nMidAmt:     Position (0..1000) between start and end color at which the
+///                          intermediate color should appear.
+/// \param[in]  nBlendAmt:   The position (0..1000) between start and end at which we
+///                          want to calculate the resulting blended color.
+///
+/// \return Blended color
+///
+gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsColor colEnd,uint16_t nMidAmt,uint16_t nBlendAmt);
+
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
 // - These routines cause immediate drawing to occur on the
@@ -890,6 +964,23 @@ void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_ts
 
 
 ///
+/// Draw a polar ray segment
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX:          X coordinate of line startpoint
+/// \param[in]  nY:          Y coordinate of line startpoint
+/// \param[in]  nRadStart:   Starting radius of line
+/// \param[in]  nRadEnd:     Ending radius of line
+/// \param[in]  n64Ang:      Angle of ray (degrees * 64). 0 is up, +90*64 is to right
+///                          From -180*64 to +180*64
+/// \param[in]  nCol:        Color RGB value for the line
+///
+/// \return none
+///
+void gslc_DrawLinePolar(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nRadStart,uint16_t nRadEnd,int16_t n64Ang,gslc_tsColor nCol);
+
+
+///
 /// Draw a framed rectangle
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -939,6 +1030,66 @@ void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
 ///
 void gslc_DrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
   uint16_t nRadius,gslc_tsColor nCol);
+
+
+///
+/// Draw a framed triangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX0:         X Coordinate #1
+/// \param[in]  nY0:         Y Coordinate #1
+/// \param[in]  nX1:         X Coordinate #2
+/// \param[in]  nY1:         Y Coordinate #2
+/// \param[in]  nX2:         X Coordinate #3
+/// \param[in]  nY2:         Y Coordinate #3
+/// \param[in]  nCol:        Color RGB value for the frame
+///
+/// \return true if success, false if error
+///
+void gslc_DrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+    int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol);
+
+
+///
+/// Draw a filled triangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX0:         X Coordinate #1
+/// \param[in]  nY0:         Y Coordinate #1
+/// \param[in]  nX1:         X Coordinate #2
+/// \param[in]  nY1:         Y Coordinate #2
+/// \param[in]  nX2:         X Coordinate #3
+/// \param[in]  nY2:         Y Coordinate #3
+/// \param[in]  nCol:        Color RGB value for the fill
+///
+/// \return true if success, false if error
+///
+void gslc_DrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
+    int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol);
+
+
+///
+/// Draw a framed quadrilateral
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  psPt:        Pointer to array of 4 points
+/// \param[in]  nCol:        Color RGB value for the frame
+///
+/// \return true if success, false if error
+///
+void gslc_DrawFrameQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
+
+
+///
+/// Draw a filled quadrilateral
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  psPt:        Pointer to array of 4 points
+/// \param[in]  nCol:        Color RGB value for the frame
+///
+/// \return true if success, false if error
+///
+void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 
 
 // -----------------------------------------------------------------------
