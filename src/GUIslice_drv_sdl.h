@@ -77,6 +77,8 @@ extern "C" {
   #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
   #define DRV_HAS_DRAW_CIRCLE_FRAME   0 ///< Support gslc_DrvDrawFrameCircle()
   #define DRV_HAS_DRAW_CIRCLE_FILL    0 ///< Support gslc_DrvDrawFillCircle()
+  #define DRV_HAS_DRAW_TRI_FRAME      0 ///< Support gslc_DrvDrawFrameTriangle()
+  #define DRV_HAS_DRAW_TRI_FILL       0 ///< Support gslc_DrvDrawFillTriangle()
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
 #endif
   
@@ -87,6 +89,8 @@ extern "C" {
   #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
   #define DRV_HAS_DRAW_CIRCLE_FRAME   0 ///< Support gslc_DrvDrawFrameCircle()
   #define DRV_HAS_DRAW_CIRCLE_FILL    0 ///< Support gslc_DrvDrawFillCircle()
+  #define DRV_HAS_DRAW_TRI_FRAME      0 ///< Support gslc_DrvDrawFrameTriangle()
+  #define DRV_HAS_DRAW_TRI_FILL       0 ///< Support gslc_DrvDrawFillTriangle()
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
 #endif  
   
