@@ -33,9 +33,12 @@
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
+#include "GUIslice_drv.h"
 
 
 #include <stdio.h>
+
+#include <math.h>   // For sin/cos in XRadial
 
 #if (GSLC_USE_PROGMEM)
     #include <avr/pgmspace.h>
@@ -85,12 +88,19 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.bFillEn           = true;
   sElem.bClickEn          = false;          // Element is not "clickable"
   sElem.nGroup            = GSLC_GROUP_ID_NONE;  
-  pXData->nGaugeMin       = nMin;
-  pXData->nGaugeMax       = nMax;
-  pXData->nGaugeVal       = nVal;
-  pXData->bGaugeVert      = bVert;
-  pXData->bGaugeFlip      = false;
+  pXData->nMin            = nMin;
+  pXData->nMax            = nMax;
+  pXData->nVal            = nVal;
+  pXData->nStyle          = GSLCX_GAUGE_STYLE_PROG_BAR;  // Default to progress bar
+  pXData->bVert           = bVert;
+  pXData->bFlip           = false;
   pXData->colGauge        = colGauge;
+  pXData->colTick         = GSLC_COL_GRAY;
+  pXData->nTickCnt        = 8;
+  pXData->nTickLen        = 5;
+  pXData->nIndicLen       = 10;     // Dummy default to be overridden
+  pXData->nIndicTip       = 3;      // Dummy default to be overridden
+  pXData->bIndicFill      = false;
   sElem.pXData            = (void*)(pXData);
   sElem.pfuncXDraw        = &gslc_ElemXGaugeDraw;
   sElem.pfuncXTouch       = NULL;           // No need to track touches
@@ -108,6 +118,58 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   }
 }
 
+
+void gslc_ElemXGaugeSetStyle(gslc_tsElem* pElem,gslc_teXGaugeStyle nStyle)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetStyle(%s) called with NULL ptr\n","");
+    return;
+  }   
+  gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
+  
+  // Update the type element
+  pGauge->nStyle = nStyle;
+  
+  // Just in case we were called at runtime, mark as needing redraw
+  gslc_ElemSetRedraw(pElem,true);
+}
+
+void gslc_ElemXGaugeSetIndicator(gslc_tsElem* pElem,gslc_tsColor colGauge,
+    uint16_t nIndicLen,uint16_t nIndicTip,bool bIndicFill)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetIndicator(%s) called with NULL ptr\n","");
+    return;
+  }   
+  gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
+  
+  // Update the config
+  pGauge->colGauge    = colGauge;
+  pGauge->nIndicLen   = nIndicLen;
+  pGauge->nIndicTip   = nIndicTip;
+  pGauge->bIndicFill  = bIndicFill;
+  
+  // Just in case we were called at runtime, mark as needing redraw
+  gslc_ElemSetRedraw(pElem,true);
+}
+
+void gslc_ElemXGaugeSetTicks(gslc_tsElem* pElem,gslc_tsColor colTick,uint16_t nTickCnt,uint16_t nTickLen)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetTicks(%s) called with NULL ptr\n","");
+    return;
+  }   
+  gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
+  
+  // Update the config
+  pGauge->colTick   = colTick;
+  pGauge->nTickCnt  = nTickCnt;
+  pGauge->nTickLen  = nTickLen;
+  
+  // Just in case we were called at runtime, mark as needing redraw
+  gslc_ElemSetRedraw(pElem,true);
+}
+
 // Update the gauge control's current position
 void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
 {
@@ -118,8 +180,8 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
   gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
   
   // Update the data element
-  int16_t nValOld = pGauge->nGaugeVal;
-  pGauge->nGaugeVal = nVal;
+  int16_t nValOld = pGauge->nVal;
+  pGauge->nVal = nVal;
   
   // Element needs redraw
   if (nVal != nValOld) {
@@ -133,9 +195,9 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
 //   to the default
 // - Default fill direction for horizontal gauges: left-to-right
 // - Default fill direction for vertical gauges: bottom-to-top
-void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElem* pElem,bool bFlip)
+void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip)
 {
-  if ((pGui == NULL) || (pElem == NULL)) {
+  if (pElem == NULL) {
     GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) called with NULL ptr\n","");
     return;
   }
@@ -147,12 +209,13 @@ void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElem* pElem,bool bFlip)
     GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) pXData is NULL\n","");
     return;
   }
-  pGauge->bGaugeFlip = bFlip;
+  pGauge->bFlip = bFlip;
 
   // Mark for redraw
   gslc_ElemSetRedraw(pElem,true);
   
 }
+
 
 // Redraw the gauge
 // - Note that this redraw is for the entire element rect region
@@ -169,20 +232,6 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
 
-  gslc_tsRect   rTmp;           // Temporary rect for drawing
-  gslc_tsRect   rGauge;         // Filled portion of gauge
-  gslc_tsRect   rEmpty;         // Empty portion of gauge
-  uint16_t      nElemW,nElemH;
-  int16_t       nElemX0,nElemY0,nElemX1,nElemY1;
-  int16_t       nGaugeX0,nGaugeY0,nGaugeX1,nGaugeY1;
-  nElemX0 = pElem->rElem.x;
-  nElemY0 = pElem->rElem.y;
-  nElemX1 = pElem->rElem.x + pElem->rElem.w - 1;
-  nElemY1 = pElem->rElem.y + pElem->rElem.h - 1;
-  nElemW  = pElem->rElem.w;
-  nElemH  = pElem->rElem.h;
-
-  
   // Fetch the element's extended data structure
   gslc_tsXGauge* pGauge;
   pGauge = (gslc_tsXGauge*)(pElem->pXData);
@@ -190,40 +239,87 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
     return false;
   }
-    
-  bool    bVert = pGauge->bGaugeVert;
-  bool    bFlip = pGauge->bGaugeFlip;  
-  int16_t nMax  = pGauge->nGaugeMax;
-  int16_t nMin  = pGauge->nGaugeMin;
-  int16_t nRng  = pGauge->nGaugeMax - pGauge->nGaugeMin;
+  
+  switch (pGauge->nStyle) {
+    case GSLCX_GAUGE_STYLE_PROG_BAR:
+      gslc_ElemXGaugeDrawProgressBar(pGui,pElem);      
+      break;
+    case GSLCX_GAUGE_STYLE_RADIAL:
+      gslc_ElemXGaugeDrawRadial(pGui,pElem);      
+      break;
+    case GSLCX_GAUGE_STYLE_RAMP:
+      gslc_ElemXGaugeDrawRamp(pGui,pElem);      
+      break;
+    default:
+      // ERROR
+      break;
+  }
+  
+  // Save as "last state" to support incremental erase/redraw
+  pGauge->nValLast      = pGauge->nVal;
+  pGauge->bValLastValid = true;
+  
+  // Clear the redraw flag
+  gslc_ElemSetRedraw(pElem,false);
+  
+  return true;
+}
 
+
+bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem)
+{
+  gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
+  
+  gslc_tsRect   rTmp;           // Temporary rect for drawing
+  gslc_tsRect   rGauge;         // Filled portion of gauge
+  gslc_tsRect   rEmpty;         // Empty portion of gauge
+  uint16_t      nElemW,nElemH;
+  int16_t       nElemX0,nElemY0,nElemX1,nElemY1;
+  int16_t       nGaugeX0,nGaugeY0,nGaugeX1,nGaugeY1;
+  
+  nElemX0 = pElem->rElem.x;
+  nElemY0 = pElem->rElem.y;
+  nElemX1 = pElem->rElem.x + pElem->rElem.w - 1;
+  nElemY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nElemW  = pElem->rElem.w;
+  nElemH  = pElem->rElem.h;
+  
+  bool    bVert = pGauge->bVert;
+  bool    bFlip = pGauge->bFlip;  
+  int16_t nMax  = pGauge->nMax;
+  int16_t nMin  = pGauge->nMin;
+  int16_t nRng  = pGauge->nMax - pGauge->nMin;
+
+  uint16_t nScl;   
+  int16_t nGaugeMid;  
+  int16_t nLen;
+  int16_t nTmp;
+  
   if (nRng == 0) {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
-  // TODO: Change to fixed point
-  float   fScl;
+  
   if (bVert) {
-    fScl = (float)nElemH/(float)nRng;
+    nScl = nElemH*32768/nRng;
   } else {
-    fScl = (float)nElemW/(float)nRng;
+    nScl = nElemW*32768/nRng;    
   }
 
   // Calculate the control midpoint (for display purposes)
-  int16_t nGaugeMid;
   if ((nMin == 0) && (nMax >= 0)) {
     nGaugeMid = 0;
   } else if ((nMin < 0) && (nMax > 0)) {
-    nGaugeMid = -nMin*fScl;
+    nGaugeMid = -(nMin*nScl/32768);
   } else if ((nMin < 0) && (nMax == 0)) {
-    nGaugeMid = -nMin*fScl;
+    nGaugeMid = -(nMin*nScl/32768);
   } else {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
   // Calculate the length of the bar
-  int16_t nLen = pGauge->nGaugeVal * fScl;
+  nLen = pGauge->nVal * nScl/32768;  
 
   // Define the gauge's fill rectangle region
   // depending on the orientation (bVert) and whether
@@ -263,7 +359,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   // Support flipping of gauge directionality
   // - The bFlip flag reverses the fill direction
   // - Vertical gauges are flipped by default
-  int16_t nTmp;
+
   if (bVert && !bFlip) {
     nTmp      = nElemY0+(nElemY1-nGaugeY1);  // nTmp will be swapped into nGaugeY0
     nGaugeY1  = nElemY1-(nGaugeY0-nElemY0);
@@ -321,9 +417,224 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   // Draw a frame around the gauge
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
-  // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  return true;
+}
+
+void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nArrowLen,uint16_t nArrowSz,int16_t n64Ang,bool bFill,gslc_tsColor colFrame)
+{
+  int16_t   nTipX,nTipY;
+  int16_t   nBaseX1,nBaseY1,nBaseX2,nBaseY2;
+  int16_t   nTipBaseX,nTipBaseY;
   
+  gslc_PolarToXY(nArrowLen,n64Ang,&nTipX,&nTipY);
+  gslc_PolarToXY(nArrowLen-nArrowSz,n64Ang,&nTipBaseX,&nTipBaseY);    
+  gslc_PolarToXY(nArrowSz,n64Ang-90*64,&nBaseX1,&nBaseY1);
+  gslc_PolarToXY(nArrowSz,n64Ang+90*64,&nBaseX2,&nBaseY2);
+
+  if (!bFill) {
+    // Framed
+    gslc_DrawLine(pGui,nX+nBaseX1,nY+nBaseY1,nX+nBaseX1+nTipBaseX,nY+nBaseY1+nTipBaseY,colFrame);
+    gslc_DrawLine(pGui,nX+nBaseX2,nY+nBaseY2,nX+nBaseX2+nTipBaseX,nY+nBaseY2+nTipBaseY,colFrame);
+    gslc_DrawLine(pGui,nX+nBaseX1+nTipBaseX,nY+nBaseY1+nTipBaseY,nX+nTipX,nY+nTipY,colFrame);
+    gslc_DrawLine(pGui,nX+nBaseX2+nTipBaseX,nY+nBaseY2+nTipBaseY,nX+nTipX,nY+nTipY,colFrame);
+    gslc_DrawLine(pGui,nX+nBaseX1,nY+nBaseY1,nX+nBaseX2,nY+nBaseY2,colFrame);  
+
+  } else {
+    // Filled
+    gslc_tsPt asPt[4];
+
+    // Main body of pointer
+    asPt[0] = (gslc_tsPt){nX+nBaseX1,nY+nBaseY1};
+    asPt[1] = (gslc_tsPt){nX+nBaseX1+nTipBaseX,nY+nBaseY1+nTipBaseY};
+    asPt[2] = (gslc_tsPt){nX+nBaseX2+nTipBaseX,nY+nBaseY2+nTipBaseY};
+    asPt[3] = (gslc_tsPt){nX+nBaseX2,nY+nBaseY2};
+    gslc_DrawFillQuad(pGui,asPt,colFrame);
+    
+    // Tip of pointer
+    asPt[0] = (gslc_tsPt){nX+nBaseX1+nTipBaseX,nY+nBaseY1+nTipBaseY};
+    asPt[1] = (gslc_tsPt){nX+nTipX,nY+nTipY};
+    asPt[2] = (gslc_tsPt){nX+nBaseX2+nTipBaseX,nY+nBaseY2+nTipBaseY};
+    gslc_DrawFillTriangle(pGui,asPt[0].x,asPt[0].y,asPt[1].x,asPt[1].y,asPt[2].x,asPt[2].y,colFrame);
+
+  }
+  
+}
+
+bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem)
+{
+  gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
+  
+  uint16_t      nElemW,nElemH,nElemRad;
+  int16_t       nElemX0,nElemY0,nElemX1,nElemY1;
+  int16_t       nElemMidX,nElemMidY;  
+  nElemX0   = pElem->rElem.x;
+  nElemY0   = pElem->rElem.y;
+  nElemX1   = pElem->rElem.x + pElem->rElem.w - 1;
+  nElemY1   = pElem->rElem.y + pElem->rElem.h - 1;
+  nElemMidX = (nElemX0+nElemX1)/2;
+  nElemMidY = (nElemY0+nElemY1)/2;
+  nElemW    = pElem->rElem.w;
+  nElemH    = pElem->rElem.h;
+  nElemRad  = (nElemW>=nElemH)? nElemH/2 : nElemW/2;
+
+  int16_t   nMax            = pGauge->nMax;
+  int16_t   nMin            = pGauge->nMin;
+  int16_t   nRng            = pGauge->nMax - pGauge->nMin;
+  int16_t   nVal            = pGauge->nVal;
+  int16_t   nValLast        = pGauge->nValLast;
+  bool      bValLastValid   = pGauge->bValLastValid;
+  uint16_t  nTickLen        = pGauge->nTickLen;
+  uint16_t  nTickAng        = 360 / pGauge->nTickCnt;
+  uint16_t  nArrowLen       = pGauge->nIndicLen;
+  uint16_t  nArrowSize      = pGauge->nIndicTip;
+  bool      bFill           = pGauge->bIndicFill;
+
+  int16_t   n64Ang,n64AngLast;
+  int16_t   nInd;
+  
+
+  if (nRng == 0) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXRadialDraw() Zero range [%d,%d]\n",nMin,nMax);
+    return false;
+  }
+
+  // Support reversing of direction
+  if (pGauge->bFlip) {
+    n64Ang      = (nMax - nVal    )* 360*64 /nRng;
+    n64AngLast  = (nMax - nValLast)* 360*64 /nRng;
+  } else {
+    n64Ang      = (nVal     - nMin)* 360*64 /nRng;
+    n64AngLast  = (nValLast - nMin)* 360*64 /nRng;
+  }
+   
+  // Clear old
+  if (bValLastValid) {
+    gslc_ElemXGaugeDrawRadialHelp(pGui,nElemMidX,nElemMidY,nArrowLen,nArrowSize,n64AngLast,bFill,pElem->colElemFill);
+  }
+
+  // Draw frame
+  if (!bValLastValid) {
+    gslc_DrawFillCircle(pGui,nElemMidX,nElemMidY,nElemRad,pElem->colElemFill);  // Erase first
+    gslc_DrawFrameCircle(pGui,nElemMidX,nElemMidY,nElemRad,pElem->colElemFrame);
+    for (nInd=0;nInd<360;nInd+=nTickAng) {
+      gslc_DrawLinePolar(pGui,nElemMidX,nElemMidY,nElemRad-nTickLen,nElemRad,nInd*64,pGauge->colTick);
+    }
+  }
+
+  // Draw pointer  
+  gslc_ElemXGaugeDrawRadialHelp(pGui,nElemMidX,nElemMidY,nArrowLen,nArrowSize,n64Ang,bFill,pGauge->colGauge);   
+  
+  return true;
+}
+
+
+bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem)
+{
+  gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
+  
+  uint16_t      nElemW,nElemH;
+  int16_t       nElemX0,nElemY1;
+  nElemX0   = pElem->rElem.x;
+  nElemY1   = pElem->rElem.y + pElem->rElem.h - 1;
+  nElemW    = pElem->rElem.w;
+  nElemH    = pElem->rElem.h;
+
+  int16_t   nMax            = pGauge->nMax;
+  int16_t   nMin            = pGauge->nMin;
+  int16_t   nRng            = pGauge->nMax - pGauge->nMin;
+  int16_t   nVal            = pGauge->nVal;
+  int16_t   nValLast        = pGauge->nValLast;
+  bool      bValLastValid   = pGauge->bValLastValid;
+  int16_t   nInd;
+
+  if (nRng == 0) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeDrawRamp() Zero range [%d,%d]\n",nMin,nMax);
+    return false;
+  }
+
+  uint16_t  nSclFX;
+  uint16_t  nHeight;  
+  int32_t   nHeightTmp;
+  uint16_t  nHeightBot;
+  uint16_t  nX;
+  uint16_t  nColInd;
+  
+  // Calculate region to draw or clear
+  bool      bModeErase;
+  int16_t   nValStart;
+  int16_t   nValEnd;
+  if (!bValLastValid) {
+    // If we haven't drawn anything before, draw full range from zero
+    bModeErase  = false;
+    nValStart   = 0;
+    nValEnd     = nVal;
+  } else {
+    if (nVal >= nValLast) {
+      // As we are advancing the control, we just draw the new range
+      bModeErase  = false;
+      nValStart   = nValLast;
+      nValEnd     = nVal;
+    } else {
+      // Since we are retracting the control, we erase the new range
+      bModeErase  = true;
+      nValStart   = nVal;
+      nValEnd     = nValLast;
+    }  
+  }
+  
+  // Calculate the scaled gauge position
+  // - TODO: Also support reversing of direction
+  int16_t   nPosXStart,nPosXEnd;
+  nPosXStart  = (nValStart - nMin)*nElemW/nRng;
+  nPosXEnd    = (nValEnd   - nMin)*nElemW/nRng;
+  
+  nSclFX = nElemH*32767/(nElemW*nElemW);
+  
+  for (nX=nPosXStart;nX<nPosXEnd;nX++) {
+    nInd = nElemW-nX;
+    nHeightTmp = nSclFX * nInd*nInd /32767;
+    nHeight = nElemH-nHeightTmp;
+    if (nHeight >= 20) {
+      nHeightBot = nHeight-20;
+    } else {
+      nHeightBot = 0;
+    }
+    gslc_tsColor  nCol;
+    uint16_t      nSteps = 10;
+    uint16_t      nGap = 3;
+    
+    if (nSteps == 0) {
+      nColInd = nX*1000/nElemW;
+      nCol = gslc_ColorBlend3(GSLC_COL_GREEN,GSLC_COL_YELLOW,GSLC_COL_RED,500,nColInd);
+    } else {
+      uint16_t  nBlockLen,nSegLen,nSegInd,nSegOffset,nSegStart;
+      nBlockLen = (nElemW-(nSteps-1)*nGap)/nSteps;
+      nSegLen = nBlockLen + nGap;
+      nSegInd = nX/nSegLen;
+      nSegOffset = nX % nSegLen;
+      nSegStart = nSegInd * nSegLen;
+      
+      if (nSegOffset <= nBlockLen) {
+        // Inside block
+        nColInd = nSegStart*1000/nElemW;
+        //gslc_tsColor nCol = gslc_ColorBlend2(GSLC_COL_WHITE,GSLC_COL_RED,750,nColInd);
+        nCol = gslc_ColorBlend3(GSLC_COL_GREEN,GSLC_COL_YELLOW,GSLC_COL_RED,500,nColInd);
+
+      } else {
+        // Inside gap
+        // - No draw
+        nCol = pElem->colElemFill;
+      }    
+      
+    }
+    
+    if (bModeErase) {
+      nCol = pElem->colElemFill;
+    }
+    gslc_DrawLine(pGui,nElemX0+nX,nElemY1-nHeightBot,nElemX0+nX,nElemY1-nHeight,nCol);      
+    
+  }
+ 
   return true;
 }
 
@@ -851,16 +1162,12 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   int16_t         nTickLen  = pSlider->nTickLen;
   gslc_tsColor    colTick   = pSlider->colTick;
   
-  if (bVert) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) bVert=true not supported yet\n","");
-    return false;
-  }
-  
-  int16_t nX0,nY0,nX1,nY1,nYMid;
+  int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
   nX0 = pElem->rElem.x;
   nY0 = pElem->rElem.y;
   nX1 = pElem->rElem.x + pElem->rElem.w - 1;
   nY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nXMid = (nX0+nX1)/2;
   nYMid = (nY0+nY1)/2;
   
   // Scale the current position
@@ -870,7 +1177,12 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   
   // Provide some margin so thumb doesn't exceed control bounds
   int16_t nMargin   = nThumbSz;
-  int16_t nCtrlRng  = (nX1-nMargin)-(nX0+nMargin);
+  int16_t nCtrlRng;
+  if (!bVert) {
+    nCtrlRng = (nX1-nMargin)-(nX0+nMargin);
+  } else {
+    nCtrlRng = (nY1-nMargin)-(nY0+nMargin);
+  }
   int16_t nCtrlPos  = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
   
   
@@ -883,14 +1195,22 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
   gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Draw any ticks
-  if (nTickDiv>0) {
+  // - Need at least one tick segment
+  if (nTickDiv>=1) {
     uint16_t  nTickInd;
-    int16_t   nTickGap = nCtrlRng/(nTickDiv-1);
+    int16_t   nTickOffset;
     for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
-      gslc_DrawLine(pGui,nX0+nMargin+nTickInd*nTickGap,nYMid,
-              nX0+nMargin+nTickInd*nTickGap,nYMid+nTickLen,colTick);
+      nTickOffset = nTickInd * nCtrlRng / nTickDiv;
+      if (!bVert) {
+        gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
+                nX0+nMargin + nTickOffset,nYMid+nTickLen,colTick);
+      } else {
+        gslc_DrawLine(pGui,nXMid,nY0+nMargin+ nTickOffset,
+                nXMid+nTickLen,nY0+nMargin + nTickOffset,colTick);
+      }
     }
   }  
+  
   
   // Draw the track
   if (!bVert) {
@@ -903,14 +1223,25 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
     }
     
   } else {
-    // TODO:
+    // Make the track highlight during glow
+    gslc_DrawLine(pGui,nXMid,nY0+nMargin,nXMid,nY1-nMargin,
+            bGlow? pElem->colElemFrameGlow : pElem->colElemFrame);
+    // Optionally draw a trim line
+    if (bTrim) {
+      gslc_DrawLine(pGui,nXMid+1,nY0+nMargin,nXMid+1,nY1-nMargin,colTrim);
+    }
   }
   
 
   int16_t       nCtrlX0,nCtrlY0;
   gslc_tsRect   rThumb;
-  nCtrlX0   = nX0+nCtrlPos-nThumbSz;
-  nCtrlY0   = nYMid-nThumbSz;
+  if (!bVert) {
+    nCtrlX0   = nX0+nCtrlPos-nThumbSz;
+    nCtrlY0   = nYMid-nThumbSz;
+  } else {
+    nCtrlX0   = nXMid-nThumbSz;
+    nCtrlY0   = nY0+nCtrlPos-nThumbSz;
+  }
   rThumb.x  = nCtrlX0;
   rThumb.y  = nCtrlY0;
   rThumb.w  = 2*nThumbSz;
@@ -999,7 +1330,11 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
   if (bUpdatePos) {
     // Calc new position
     nPosRng = pSlider->nPosMax - pSlider->nPosMin;
-    nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+    if (!pSlider->bVert) {
+      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+    } else {
+      nPos = (nRelY * nPosRng / pElem->rElem.h) + pSlider->nPosMin;      
+    }
     // Update the slider
     gslc_ElemXSliderSetPos(pGui,pElem,nPos);
   }
@@ -1347,6 +1682,342 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
   
   return true;
 
+}
+
+
+// ============================================================================
+
+gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXTextbox* pXData,gslc_tsRect rElem,int16_t nFontId,char* pBuf,
+    uint16_t nBufRows,uint16_t nBufCols)
+{
+  if ((pGui == NULL) || (pXData == NULL)) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxCreate(%s) called with NULL ptr\n","");
+    return NULL;
+  }      
+  gslc_tsElem   sElem;
+  gslc_tsElem*  pElem = NULL;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_TEXTBOX,rElem,NULL,0,nFontId);
+  sElem.bFrameEn          = true;
+  sElem.bFillEn           = true;
+  sElem.bClickEn          = false;
+  sElem.bGlowEn           = false;
+  sElem.bGlowing          = false;
+  // Default group assignment. Can override later with ElemSetGroup()
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;
+  // Save a pointer to the GUI in the extended element data
+  // - We do this so that we can later perform actions on
+  //   other elements (ie. when clicking radio button, others
+  //   are deselected).
+  // TODO: Replace this by using reference to pCollect
+  pXData->pGui            = pGui;
+  // Define other extended data
+  pXData->pBuf            = pBuf;
+  pXData->nMargin         = 5;
+  pXData->bWrapEn         = true;
+  pXData->nCurPosX        = 0;
+  pXData->nCurPosY        = 0;
+  
+  pXData->nBufRows        = nBufRows;
+  pXData->nBufCols        = nBufCols;
+  pXData->nBufPosX        = 0;
+  pXData->nBufPosY        = 0;
+  pXData->nWndRowStart    = 0;
+
+  
+  // Clear the buffer
+  memset(pBuf,0,nBufRows*nBufCols*sizeof(char));
+  
+  // Precalculate certain parameters
+  // Determine the maximum size of a character
+  // - For now, assume we are using a monospaced font and derive
+  //   text pixel coords from the size of a worst-case character.
+  uint16_t      nChSzW,nChSzH;
+  char          acMono[2] = "%";
+  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMono,sElem.eTxtFlags,&nChSzW,&nChSzH); 
+  pXData->nWndCols = (rElem.w - (2*pXData->nMargin)) / nChSzW;
+  pXData->nWndRows = (rElem.h - (2*pXData->nMargin)) / nChSzH;
+  pXData->nChSizeX = nChSzW;
+  pXData->nChSizeY = nChSzH;  
+  
+  pXData->nScrollPos      = pXData->nBufRows - pXData->nWndRows;
+  
+  sElem.pXData            = (void*)(pXData);
+  
+  // Specify the custom drawing callback
+  sElem.pfuncXDraw        = &gslc_ElemXTextboxDraw;
+  sElem.pfuncXTouch       = NULL;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_WHITE;   
+  if (nPage != GSLC_PAGE_NONE) {
+    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElem;
+  } else {
+    // Save as temporary element
+    pGui->sElemTmp = sElem;
+    return &(pGui->sElemTmp);     
+  }
+}
+
+
+// Advance the buffer writer to the next line
+// The window is also 
+void gslc_ElemXTextboxLineWrAdv(gslc_tsXTextbox* pBox)
+{
+  pBox->nBufPosX = 0;
+  pBox->nBufPosY++;
+
+  // Wrap the pointers around end of buffer
+  pBox->nBufPosY      = pBox->nBufPosY % pBox->nBufRows;
+  
+}
+
+void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax)
+{
+  gslc_tsXTextbox* pBox;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
+  
+  // Set the redraw flag
+  gslc_ElemSetRedraw(pElem,true);
+}
+
+// Write a character to the buffer
+// - Advance the write ptr, wrap if needed
+// - If encroach upon buffer read ptr, then drop the oldest line from the buffer 
+// NOTE: This should not be called with newline char!
+void gslc_ElemXTextboxBufAdd(gslc_tsXTextbox* pBox,char chNew,bool bAdvance)
+{
+  // Ensure that we haven't gone past end of line
+  if (pBox->nBufPosX >= pBox->nBufCols) {
+    if (pBox->bWrapEn) {
+      // Perform line wrap
+      gslc_ElemXTextboxLineWrAdv(pBox);
+    } else {
+      // Ignore the write
+    }
+    return;
+  }
+  
+  uint16_t    nBufPos = pBox->nBufPosY * pBox->nBufCols + pBox->nBufPosX;
+
+  // Add the character
+  pBox->pBuf[nBufPos] = chNew;
+  
+  // Optionally advance the pointer
+  // - The only time we don't advance is if we added NULL
+  //   but note that in some special commands there may be
+  //   zero values added, so we still need to advance these
+  if (bAdvance) {
+    pBox->nBufPosX++;
+  }
+
+}
+
+void gslc_ElemXTextboxColSet(gslc_tsElem* pElem,gslc_tsColor nCol)
+{
+  gslc_tsXTextbox*  pBox = NULL;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  gslc_ElemXTextboxBufAdd(pBox,GSLC_XTEXTBOX_CODE_COL_SET,true);
+  gslc_ElemXTextboxBufAdd(pBox,nCol.r,true);
+  gslc_ElemXTextboxBufAdd(pBox,nCol.g,true);
+  gslc_ElemXTextboxBufAdd(pBox,nCol.b,true);
+}
+
+void gslc_ElemXTextboxColReset(gslc_tsElem* pElem)
+{
+  gslc_tsXTextbox*  pBox = NULL;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  gslc_ElemXTextboxBufAdd(pBox,GSLC_XTEXTBOX_CODE_COL_RESET,true);
+}
+
+void gslc_ElemXTextboxWrapSet(gslc_tsElem* pElem,bool bWrapEn)
+{
+  gslc_tsXTextbox*  pBox = NULL;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  pBox->bWrapEn = bWrapEn;
+}
+
+
+void gslc_ElemXTextboxAdd(gslc_tsElem* pElem,char* pTxt)
+{
+  gslc_tsXTextbox*  pBox = NULL;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  
+  // Add null-terminated string to the bottom of the buffer
+  // If the string exceeds the buffer length then it will wrap
+  // back to the beginning.
+  // TODO: Ensure that buffer wrap doesn't encroach upon visible region!
+  // TODO: Assert (pBox)
+  bool        bDone = false;
+  uint16_t    nTxtPos = 0;
+  char        chNext;
+  if (pTxt == NULL) { bDone = true; }
+  while (!bDone) {
+    chNext = pTxt[nTxtPos];
+    nTxtPos++;
+    if (chNext == 0) {
+      // Reached terminator character
+      // Add terminator to buffer but don't advance write pointer
+      // since we want next write to overwrite this
+      gslc_ElemXTextboxBufAdd(pBox,0,false);
+
+      bDone = true;
+      continue;
+    }
+
+    if (chNext == '\n') {
+      // Terminate the line
+      gslc_ElemXTextboxBufAdd(pBox,0,false);
+      // Advance the writer by one line
+      gslc_ElemXTextboxLineWrAdv(pBox);
+    } else {
+      // TODO: Check to see if we are in mask/truncate state
+      gslc_ElemXTextboxBufAdd(pBox,chNext,true);
+    }
+    
+    if (pBox->nBufPosX >= pBox->nBufCols) {
+      // TODO: Wrap line?
+      // - No, this should be handled in ElemXTextboxBufAdd()
+    }
+  }
+  
+  // Set the redraw flag
+  gslc_ElemSetRedraw(pElem,true);
+}
+
+
+bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem)
+{
+  if ((pvGui == NULL) || (pvElem == NULL)) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxDraw(%s) called with NULL ptr\n","");
+    return false;
+  }   
+  // Typecast the parameters to match the GUI and element types
+  gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
+  gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
+  
+  // Fetch the element's extended data structure
+  gslc_tsXTextbox* pBox;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  if (pBox == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxDraw(%s) pXData is NULL\n","");
+    return false;
+  }
+  
+  bool     bGlow     = pElem->bGlowEn && pElem->bGlowing; 
+  bool     bFrameEn  = pElem->bFrameEn; 
+  
+  // Draw the background
+  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+
+  // Draw the frame
+  if (bFrameEn) {
+    gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  }
+  
+  char              chNext;
+  uint16_t          nBufPos = 0;
+  uint8_t           nCurX = 0;
+  uint8_t           nCurY = 0;
+  uint16_t          nTxtPixX;
+  uint16_t          nTxtPixY;
+  gslc_tsColor      colTxt;
+  
+  enum              {TBOX_NORM, TBOX_COL_SET};
+  int16_t           eTBoxState = TBOX_NORM;
+  uint16_t          nTBoxStateCnt = 0;
+  
+  // Initialize color state
+  colTxt = pElem->colElemText;
+  
+  // Calculate the current window position based on
+  // the current buffer write pointer and scroll
+  // position
+  uint8_t nScrollMax  = pBox->nBufRows - pBox->nWndRows;
+  pBox->nWndRowStart  = pBox->nBufRows + pBox->nBufPosY;
+  pBox->nWndRowStart -= (pBox->nWndRows - 1);
+  pBox->nWndRowStart -= (nScrollMax - pBox->nScrollPos);
+  pBox->nWndRowStart  = pBox->nWndRowStart % pBox->nBufRows;  
+  
+  uint8_t nOutRow = 0;
+  uint8_t nOutCol = 0;
+  uint8_t nMaxCol = 0;
+  uint8_t nMaxRow = 0;
+  bool    bRowDone = false;
+  nMaxCol = (pBox->nBufCols < pBox->nWndCols)? pBox->nBufCols : pBox->nWndCols;
+  nMaxRow = (pBox->nBufRows < pBox->nWndRows)? pBox->nBufRows : pBox->nWndRows;  
+  for (nOutRow=0;nOutRow<nMaxRow;nOutRow++) {
+    bRowDone = false;
+    nCurX = 0;
+    for (nOutCol=0;(!bRowDone)&&(nOutCol<nMaxCol);nOutCol++) {
+
+      // Calculate row offset after accounting for buffer wrap
+      // and current window starting offset
+      uint8_t nRowCur = pBox->nWndRowStart + nOutRow;
+      nRowCur = nRowCur % pBox->nBufRows;
+      
+      // NOTE: At the start of buffer fill where we have
+      // only written a couple rows, we don't stop reading
+      // across all of the rows. We are dependent upon
+      // the reset to initialize all rows with NULL terminator
+      // so that we don't show garbage.
+      
+      nBufPos = nRowCur * pBox->nBufCols + nOutCol;
+      chNext = pBox->pBuf[nBufPos];
+      
+      if (eTBoxState == TBOX_NORM) {
+        if (chNext == 0) {
+          // Reached early terminator
+          bRowDone = true;
+          continue;
+        } else if (chNext == GSLC_XTEXTBOX_CODE_COL_SET) {
+          // Set color (enter FSM)
+          eTBoxState = TBOX_COL_SET;
+          nTBoxStateCnt = 0;
+        } else if (chNext == GSLC_XTEXTBOX_CODE_COL_RESET) {
+          // Reset color
+          colTxt = pElem->colElemText;
+        } else {
+
+          // Render the character
+          // TODO: Optimize by coalescing all characters in row before calling DrvDrawTxt
+          //       - Note that this would make it harder to change aspects (such as color)
+          //         in mid-line.
+          char  acChToDraw[2] = "";
+          acChToDraw[0] = chNext;
+          acChToDraw[1] = 0;
+          nTxtPixX = pElem->rElem.x + pBox->nMargin + nCurX * pBox->nChSizeX;
+          nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;      
+          gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&acChToDraw,pElem->eTxtFlags,colTxt);
+
+          nCurX++;
+
+        }
+
+      } else if (eTBoxState == TBOX_COL_SET) {
+        nTBoxStateCnt++;
+        if      (nTBoxStateCnt == 1) { colTxt.r = chNext; }
+        else if (nTBoxStateCnt == 2) { colTxt.g = chNext; }
+        else if (nTBoxStateCnt == 3) {
+          colTxt.b = chNext;
+          eTBoxState = TBOX_NORM;
+        }
+      }  
+      
+    }
+    nCurY++;
+  }
+  
+  // Clear the redraw flag
+  gslc_ElemSetRedraw(pElem,false);
+  
+  // Mark page as needing flip
+  gslc_PageFlipSet(pGui,true);
+
+  return true;
 }
 
 
