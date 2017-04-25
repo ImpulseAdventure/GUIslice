@@ -7,7 +7,8 @@ A lightweight GUI framework suitable for embedded displays
 
 
 - Pure C library, no dynamic memory allocation
-- Widgets: text, images, buttons, checkboxes, radio buttons, sliders, etc. plus extensions and multiple pages.
+- Widgets: text, images, buttons, checkboxes, radio buttons, sliders, 
+  radial controls, scrolling textboxes, etc. plus extensions and multiple pages.
 - Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX
 - Typical target: Raspberry Pi, Arduino, Cortex M0 (Feather M0), LINUX, Beaglebone Black
 - Typical displays: PiTFT, Waveshare, Adafruit TFT 2.2" / 2.8" / 1.44', OLED 0.96"
@@ -24,3 +25,4 @@ Screenshots
 ![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
+![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl1.png)
