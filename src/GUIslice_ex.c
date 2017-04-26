@@ -131,7 +131,7 @@ void gslc_ElemXGaugeSetStyle(gslc_tsElem* pElem,gslc_teXGaugeStyle nStyle)
   pGauge->nStyle = nStyle;
   
   // Just in case we were called at runtime, mark as needing redraw
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 void gslc_ElemXGaugeSetIndicator(gslc_tsElem* pElem,gslc_tsColor colGauge,
@@ -150,7 +150,7 @@ void gslc_ElemXGaugeSetIndicator(gslc_tsElem* pElem,gslc_tsColor colGauge,
   pGauge->bIndicFill  = bIndicFill;
   
   // Just in case we were called at runtime, mark as needing redraw
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 void gslc_ElemXGaugeSetTicks(gslc_tsElem* pElem,gslc_tsColor colTick,uint16_t nTickCnt,uint16_t nTickLen)
@@ -167,7 +167,7 @@ void gslc_ElemXGaugeSetTicks(gslc_tsElem* pElem,gslc_tsColor colTick,uint16_t nT
   pGauge->nTickLen  = nTickLen;
   
   // Just in case we were called at runtime, mark as needing redraw
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 // Update the gauge control's current position
@@ -185,7 +185,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
   
   // Element needs redraw
   if (nVal != nValOld) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
   
 }
@@ -212,7 +212,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip)
   pGauge->bFlip = bFlip;
 
   // Mark for redraw
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   
 }
 
@@ -221,7 +221,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip)
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
 //   simpler callback function definition & scalability.
-bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
+bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) called with NULL ptr\n","");
@@ -260,7 +260,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem)
   pGauge->bValLastValid = true;
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   return true;
 }
@@ -812,7 +812,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   
   // Element needs redraw
   if (bChecked != bCheckedOld) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
 
 }
@@ -834,7 +834,7 @@ void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
   gslc_ElemXCheckboxSetState(pElem,bCheckNew);
 
   // Element needs redraw
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   
 }
 
@@ -842,7 +842,7 @@ void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
 //   simpler callback function definition & scalability.
-bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
+bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxDraw(%s) called with NULL ptr\n","");
@@ -911,7 +911,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem)
   }
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   // Mark page as needing flip
   gslc_PageFlipSet(pGui,true);
@@ -986,7 +986,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_
   if (pElem->bGlowing != bGlowingOld) { bChanged = true; }
   if (pCheckbox->bChecked != bCheckedOld) { bChanged = true; }
   if (bChanged) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
   
   return true;
@@ -1065,7 +1065,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
   pSlider->colTick    = colTick;
   
   // Update
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 int gslc_ElemXSliderGetPos(gslc_tsElem* pElem)
@@ -1103,7 +1103,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos)
     }  
     
     // Mark for redraw
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
   
 }
@@ -1132,7 +1132,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb)
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
 //   simpler callback function definition & scalability.
-bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
+bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) called with NULL ptr\n","");
@@ -1258,7 +1258,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem)
     
 
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   // Mark page as needing flip
   gslc_PageFlipSet(pGui,true);
@@ -1341,7 +1341,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
   
   // If the slider changed state, redraw
   if (pElem->bGlowing != bGlowingOld) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
   
   return true;
@@ -1484,7 +1484,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 // Redraw the compound element
 // - When drawing a compound element, we clear the background
 //   and then redraw the sub-element collection.
-bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
+bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXSelNumDraw(%s) called with NULL ptr\n","");
@@ -1521,7 +1521,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem)
   gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   // Mark page as needing flip
   gslc_PageFlipSet(pGui,true);
@@ -1676,7 +1676,7 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
   // Mark compound element as needing redraw if any
   // sub-element needs redraw
   if (gslc_CollectGetRedraw(pCollect)) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
   
   
@@ -1781,7 +1781,7 @@ void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nS
   pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
   
   // Set the redraw flag
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 // Write a character to the buffer
@@ -1885,11 +1885,11 @@ void gslc_ElemXTextboxAdd(gslc_tsElem* pElem,char* pTxt)
   }
   
   // Set the redraw flag
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 
-bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem)
+bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXTextboxDraw(%s) called with NULL ptr\n","");
@@ -2012,7 +2012,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem)
   }
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   // Mark page as needing flip
   gslc_PageFlipSet(pGui,true);

@@ -1404,7 +1404,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
     }
     pElem = pCollect->asElemRef[nInd].pElem;
 
-    if (pElem->bNeedRedraw) {
+    if (pElem->eRedraw != GSLC_REDRAW_NONE) {
       
       // Determine if entire page requires redraw
       bool  bRedrawFullPage = false;
@@ -1466,6 +1466,7 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   }
     
   // Draw other elements (as needed, unless forced page redraw)
+  // TODO: Handle GSLC_EVTSUB_DRAW_NEEDED
   uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
   void* pvData = (void*)(pGui->pCurPage);
   gslc_tsEvent  sEvent = gslc_EventCreate(GSLC_EVT_DRAW,nSubType,pvData,NULL);
@@ -1755,10 +1756,14 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters      
       pElem = (gslc_tsElem*)(pvScope);
-      if ((sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) || (pElem->bNeedRedraw)) {
-        // Call the function that invokes the callback
-        return gslc_ElemDrawByRef(pGui,pElem);
+      
+      // If redraw needed, call the function that invokes the callback
+      if (sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) {
+        return gslc_ElemDrawByRef(pGui,pElem,GSLC_REDRAW_FULL);
+      } else if (pElem->eRedraw != GSLC_REDRAW_NONE) {
+        return gslc_ElemDrawByRef(pGui,pElem,pElem->eRedraw);
       } else {
+        // No redraw needed
         return true;
       }
       break;
@@ -1817,8 +1822,13 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 // Draw an element to the active display
 // - Element is referenced by an element pointer
 // - TODO: Handle GSLC_TYPE_BKGND
-bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
+bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
 {
+  if (eRedraw == GSLC_REDRAW_NONE) {
+    // No redraw to do
+    return true;
+  }
+  
   if ((pGui == NULL) || (pElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemDrawByRef(%s) called with NULL ptr\n","");
     return false;
@@ -1834,7 +1844,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem)
   // - Note that the end of the callback function is expected
   //   to clear the redraw flag
   if (pElem->pfuncXDraw != NULL) {
-    (*pElem->pfuncXDraw)((void*)(pGui),(void*)(pElem));
+    (*pElem->pfuncXDraw)((void*)(pGui),(void*)(pElem),eRedraw);
     return true;
   }  
   
@@ -1977,7 +1987,7 @@ void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
     return;
   }
   pElem->bFillEn          = bFillEn;  
-  gslc_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
 }
 
 
@@ -1988,7 +1998,7 @@ void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
     return;
   }
   pElem->bFrameEn         = bFrameEn;  
-  gslc_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
 }
 
 
@@ -2001,7 +2011,7 @@ void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFi
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
   pElem->colElemFillGlow      = colFillGlow;
-  gslc_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
 }
 
 void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
@@ -2013,7 +2023,7 @@ void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsCol
   pElem->colElemFrameGlow   = colFrameGlow;
   pElem->colElemFillGlow    = colFillGlow;
   pElem->colElemTextGlow    = colTxtGlow;
-  gslc_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
 }
 
 void gslc_ElemSetGroup(gslc_tsElem* pElem,int nGroupId)
@@ -2042,7 +2052,7 @@ void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
     return;
   }    
   pElem->eTxtAlign        = nAlign;
-  gslc_ElemSetRedraw(pElem,true);  
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);  
 }
 
 void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
@@ -2052,7 +2062,7 @@ void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
     return;
   }    
   pElem->nTxtMargin        = nMargin;
-  gslc_ElemSetRedraw(pElem,true);  
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);  
 }
 
 void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
@@ -2074,7 +2084,7 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
     strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
     pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
 }
 
@@ -2086,7 +2096,7 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
   }    
   pElem->colElemText      = colVal;
   pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
-  gslc_ElemSetRedraw(pElem,true); 
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
 }
 
 void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
@@ -2115,31 +2125,38 @@ void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
     return;
   }
   pElem->pTxtFont = gslc_FontGet(pGui,nFontId);
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw)
+void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
 {
   if (pElem == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemSetRedraw(%s) called with NULL ptr\n","");
     return;
   }    
-  pElem->bNeedRedraw      = bRedraw;
+
+  // TODO: Handle GSLC_REDRAW_INC (possible promotion to GSLC_REDRAW_FULL)
+  pElem->eRedraw          = eRedraw;
+
   
   // Now propagate up the element hierarchy
   // (eg. in case of compound elements)
+  
+  // TODO: Perhaps we need to qualify this with bRedraw=true?
+  // - ie. we only want to invalidate the parent element
+  //   containers, but we don't want to reset their status
   if (pElem->pElemParent != NULL) {
-    gslc_ElemSetRedraw(pElem->pElemParent,bRedraw);
+    gslc_ElemSetRedraw(pElem->pElemParent,eRedraw);
   }
 }
 
-bool gslc_ElemGetRedraw(gslc_tsElem* pElem)
+gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemGetRedraw(%s) called with NULL ptr\n","");
-    return false;
+    return GSLC_REDRAW_NONE;
   }    
-  return pElem->bNeedRedraw;
+  return pElem->eRedraw;
 }
 
 void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
@@ -2152,7 +2169,7 @@ void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
   bool  bGlowingOld = pElem->bGlowing;
   pElem->bGlowing         = bGlowing;
   if (bGlowing != bGlowingOld) {
-    gslc_ElemSetRedraw(pElem,true);
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
 }
 
@@ -2172,7 +2189,7 @@ void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
     return;
   }    
   pElem->bGlowEn         = bGlowEn;
-  gslc_ElemSetRedraw(pElem,true);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
 bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
@@ -2210,7 +2227,7 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   pElemDest->colElemFrame     = pElemSrc->colElemFrame;
   pElemDest->colElemFrameGlow = pElemSrc->colElemFrameGlow;
 
-  // bNeedRedraw
+  // eRedraw
 
   pElemDest->pElemParent      = pElemSrc->pElemParent;
 
@@ -2233,7 +2250,7 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   pElemDest->pfuncXTouch      = pElemSrc->pfuncXTouch;
   pElemDest->pfuncXTick       = pElemSrc->pfuncXTick;
    
-  gslc_ElemSetRedraw(pElemDest,true); 
+  gslc_ElemSetRedraw(pElemDest,GSLC_REDRAW_FULL); 
 }
 
 void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb)
@@ -2253,7 +2270,7 @@ void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
     return;
   }    
   pElem->pfuncXDraw       = funcCb;
-  gslc_ElemSetRedraw(pElem,true);   
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);   
 }
 
 void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
@@ -2774,7 +2791,7 @@ bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
       // Fetch the element pointer from the reference array
       pSubElem = pCollect->asElemRef[nInd].pElem;   
-      if (gslc_ElemGetRedraw(pSubElem)) {
+      if (gslc_ElemGetRedraw(pSubElem) != GSLC_REDRAW_NONE) {
         bCollectRedraw = true;
         break;
       }
@@ -2892,7 +2909,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->bClickEn         = false;
   pElem->bFrameEn         = false;
   pElem->bFillEn          = false;
-  pElem->bNeedRedraw      = true;
+  pElem->eRedraw          = GSLC_REDRAW_FULL;
   pElem->colElemFrame     = GSLC_COL_WHITE;
   pElem->colElemFill      = GSLC_COL_WHITE;
   pElem->colElemFrameGlow = GSLC_COL_WHITE;  

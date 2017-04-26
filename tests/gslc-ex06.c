@@ -90,7 +90,7 @@ static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 // - The scanner implements a custom element that replaces
 //   the Box element type with a custom rendering function.
 // - Clipping region is updated temporarily during this draw
-bool CbDrawScanner(void* pvGui,void* pvElem)
+bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   int nInd;
 
@@ -131,7 +131,7 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   return true;
 }
@@ -155,7 +155,7 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
-  gslc_ElemSetRedraw(pElem,true);  
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);  
   
   return true;
 }

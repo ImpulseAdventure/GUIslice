@@ -255,9 +255,17 @@ typedef enum {
 /// Event sub-types
 typedef enum {
   GSLC_EVTSUB_NONE,
-  GSLC_EVTSUB_DRAW_NEEDED,
-  GSLC_EVTSUB_DRAW_FORCE        
+  GSLC_EVTSUB_DRAW_NEEDED,  ///< Incremental redraw (as needed)
+  GSLC_EVTSUB_DRAW_FORCE    ///< Force a full redraw
 } gslc_teEventSubType;
+
+/// Redraw types
+typedef enum {
+  GSLC_REDRAW_NONE,         ///< No redraw requested
+  GSLC_REDRAW_FULL,         ///< Full redraw of element requested
+  GSLC_REDRAW_INC           ///< Incremental redraw of element requested
+} gslc_teRedrawType;
+
 
 // Define the maximum number of touch events that are handled
 // per gslc_Update() call.
@@ -317,7 +325,7 @@ typedef enum {
   GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE,
 } gslc_teTxtFlags;
 
-//xxx
+// TODO: DOC
 typedef enum {
   GSLC_DEBUG_PRINT_NORM,
   GSLC_DEBUG_PRINT_TOKEN,
@@ -342,7 +350,7 @@ typedef struct gslc_tsEvent gslc_tsEvent;
 typedef bool (*GSLC_CB_EVENT)(void* pvGui,gslc_tsEvent sEvent);
         
 /// Callback function for element drawing
-typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElem);
+typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 /// Callback function for element touch tracking
 typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY);
@@ -485,7 +493,7 @@ typedef struct gslc_tsElem {
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
   
   // Current status
-  bool                bNeedRedraw;      ///< Element needs to be redrawn
+  gslc_teRedrawType   eRedraw;          ///< Type of redraw requested for element
   bool                bGlowing;         ///< Element is currently glowing
 
 } gslc_tsElem;
@@ -1562,20 +1570,20 @@ void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId);
 /// Update the need-redraw status for an element
 ///
 /// \param[in]  pElem:       Pointer to Element
-/// \param[in]  bRedraw:     True if redraw required, false otherwise
+/// \param[in]  eRedraw:     Redraw state to set
 ///
 /// \return none
 ///
-void gslc_ElemSetRedraw(gslc_tsElem* pElem,bool bRedraw);
+void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 
 ///
 /// Get the need-redraw status for an element
 ///
 /// \param[in]  pElem:       Pointer to Element
 ///
-/// \return True if redraw required, false otherwise
-///
-bool gslc_ElemGetRedraw(gslc_tsElem* pElem);
+/// \return Redraw status
+/// 
+gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsElem* pElem);
 
 ///
 /// Update the glowing enable for an element
@@ -2021,16 +2029,17 @@ bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 ///
 bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
+
 /// Draw an element to the active display
 /// - Element is referenced by an element pointer
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Ptr to Element to draw
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem);
-
+bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 
 
 ///

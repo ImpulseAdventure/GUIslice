@@ -203,10 +203,11 @@ void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip);
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem);
+bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -232,7 +233,16 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem);
 ///
 bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem);
 
-//xxx TODO DOC
+
+///
+/// Helper function to draw a gauge with style: ramp
+/// - Called from gslc_ElemXGaugeDraw()
+///
+/// \param[in]  pGui:        Ptr to GUI
+/// \param[in]  pElem:       Ptr to Element
+///
+/// \return true if success, false otherwise
+///
 bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem);
 
 // ============================================================================
@@ -322,10 +332,11 @@ void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem);
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem);
+bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 ///
 /// Handle touch events to Checkbox element
@@ -444,10 +455,11 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb);
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem);
+bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 ///
 /// Handle touch events to Slider element
@@ -517,10 +529,11 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem);
+bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -638,10 +651,11 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
 /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem);
+bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
 /// Add a text string to the textbox
 /// - If it includes a newline then the buffer will
