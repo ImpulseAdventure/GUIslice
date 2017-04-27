@@ -185,7 +185,11 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal)
   
   // Element needs redraw
   if (nVal != nValOld) {
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    // We only need an incremental redraw
+    // NOTE: If the user configures the indicator to be
+    //       long enough that it overlaps some of the gauge indicators
+    //       then a full redraw should be done instead.
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
   }
   
 }
@@ -242,13 +246,13 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   
   switch (pGauge->nStyle) {
     case GSLCX_GAUGE_STYLE_PROG_BAR:
-      gslc_ElemXGaugeDrawProgressBar(pGui,pElem);      
+      gslc_ElemXGaugeDrawProgressBar(pGui,pElem,eRedraw);      
       break;
     case GSLCX_GAUGE_STYLE_RADIAL:
-      gslc_ElemXGaugeDrawRadial(pGui,pElem);      
+      gslc_ElemXGaugeDrawRadial(pGui,pElem,eRedraw);      
       break;
     case GSLCX_GAUGE_STYLE_RAMP:
-      gslc_ElemXGaugeDrawRamp(pGui,pElem);      
+      gslc_ElemXGaugeDrawRamp(pGui,pElem,eRedraw);      
       break;
     default:
       // ERROR
@@ -266,7 +270,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 }
 
 
-bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem)
+bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
 {
   gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
   
@@ -460,7 +464,7 @@ void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16
   
 }
 
-bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem)
+bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
 {
   gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
   
@@ -513,7 +517,7 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem)
   }
 
   // Draw frame
-  if (!bValLastValid) {
+  if (eRedraw == GSLC_REDRAW_FULL) {
     gslc_DrawFillCircle(pGui,nElemMidX,nElemMidY,nElemRad,pElem->colElemFill);  // Erase first
     gslc_DrawFrameCircle(pGui,nElemMidX,nElemMidY,nElemRad,pElem->colElemFrame);
     for (nInd=0;nInd<360;nInd+=nTickAng) {
@@ -528,7 +532,7 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem)
 }
 
 
-bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem)
+bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
 {
   gslc_tsXGauge* pGauge = (gslc_tsXGauge*)(pElem->pXData);  
   
@@ -565,6 +569,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem)
   int16_t   nValEnd;
   if (!bValLastValid) {
     // If we haven't drawn anything before, draw full range from zero
+    // Could have also checked eRedraw==GSLC_REDRAW_FULL
     bModeErase  = false;
     nValStart   = 0;
     nValEnd     = nVal;
@@ -812,7 +817,8 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
   
   // Element needs redraw
   if (bChecked != bCheckedOld) {
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    // Only need an incremental redraw
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
   }
 
 }
@@ -834,7 +840,8 @@ void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem)
   gslc_ElemXCheckboxSetState(pElem,bCheckNew);
 
   // Element needs redraw
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  // - Only incremental is needed
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
   
 }
 
@@ -986,7 +993,8 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_
   if (pElem->bGlowing != bGlowingOld) { bChanged = true; }
   if (pCheckbox->bChecked != bCheckedOld) { bChanged = true; }
   if (bChanged) {
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    // Incremental redraw
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
   }
   
   return true;
@@ -1103,7 +1111,8 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos)
     }  
     
     // Mark for redraw
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    // - Only need incremental redraw
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
   }
   
 }
@@ -1781,7 +1790,8 @@ void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nS
   pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
   
   // Set the redraw flag
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  // - Only need incremental redraw
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
 }
 
 // Write a character to the buffer
@@ -1885,7 +1895,8 @@ void gslc_ElemXTextboxAdd(gslc_tsElem* pElem,char* pTxt)
   }
   
   // Set the redraw flag
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  // - Only need incremental redraw
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
 }
 
 
@@ -1910,14 +1921,18 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   bool     bGlow     = pElem->bGlowEn && pElem->bGlowing; 
   bool     bFrameEn  = pElem->bFrameEn; 
   
-  // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Draw the frame
-  if (bFrameEn) {
-    gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+  if (eRedraw == GSLC_REDRAW_FULL) {
+    if (bFrameEn) {
+      gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+    }
   }
   
+  // Clear the background (inset from frame)
+  gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
+  gslc_DrawFillRect(pGui,rInner,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+
   char              chNext;
   uint16_t          nBufPos = 0;
   uint8_t           nCurX = 0;

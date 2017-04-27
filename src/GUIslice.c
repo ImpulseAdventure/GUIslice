@@ -1970,7 +1970,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   }
 
   // Mark the element as no longer requiring redraw
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   return true;
 }
@@ -2135,8 +2135,16 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
     return;
   }    
 
-  // TODO: Handle GSLC_REDRAW_INC (possible promotion to GSLC_REDRAW_FULL)
-  pElem->eRedraw          = eRedraw;
+  // Handle request for update of redraw state
+  // - We permit the new state to be assigned except in the
+  //   case wherein we are currently pending a full redraw
+  //   but an incremental redraw has been requested. In that
+  //   case we leave the full redraw request pending.
+  if ((eRedraw == GSLC_REDRAW_INC) && (pElem->eRedraw == GSLC_REDRAW_FULL)) {
+    // Don't update redraw state; leave it as full redraw pending
+  } else {
+    pElem->eRedraw = eRedraw;
+  }
 
   
   // Now propagate up the element hierarchy

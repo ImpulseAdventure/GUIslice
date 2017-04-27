@@ -216,10 +216,11 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 ///
 /// \param[in]  pGui:        Ptr to GUI
 /// \param[in]  pElem:       Ptr to Element
+/// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem);
+bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -228,10 +229,11 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem);
 ///
 /// \param[in]  pGui:        Ptr to GUI
 /// \param[in]  pElem:       Ptr to Element
+/// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem);
+bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -240,10 +242,11 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem);
 ///
 /// \param[in]  pGui:        Ptr to GUI
 /// \param[in]  pElem:       Ptr to Element
+/// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem);
+bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 
 // ============================================================================
 // Extended Element: Checkbox
