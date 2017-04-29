@@ -154,7 +154,7 @@ void gslc_ElemXGaugeSetStyle(gslc_tsElem* pElem,gslc_teXGaugeStyle nType);
 /// \return none
 ///
 void gslc_ElemXGaugeSetIndicator(gslc_tsElem* pElem,gslc_tsColor colGauge,
-        uint16_t nIndicLen,uint16_t nTipSize,bool bIndicFill);
+        uint16_t nIndicLen,uint16_t nIndicTip,bool bIndicFill);
 
 
 ///
@@ -188,7 +188,6 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
 /// - Default fill direction for horizontal gauges: left-to-right
 /// - Default fill direction for vertical gauges: bottom-to-top
 /// 
-/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bFlip:       If set, reverse direction of fill from default
 ///
@@ -609,6 +608,7 @@ typedef struct {
   
   uint16_t                    nBufRows;     ///< Number of rows in buffer
   uint16_t                    nBufCols;     ///< Number of columns in buffer
+  bool                        bScrollEn;    ///< Enable for scrollbar
   uint16_t                    nScrollPos;   ///< Current scrollbar position
   
   // Precalculated params
@@ -663,9 +663,11 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 /// Add a text string to the textbox
 /// - If it includes a newline then the buffer will
 ///   advance to the next row
+/// - If wrap has been enabled, then a newline will
+///   be forced
 ///
-/// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pTxt         Pointer to text string (null-terminated)
 ///
 /// \return none
 ///

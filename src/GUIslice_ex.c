@@ -1749,7 +1749,17 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
   pXData->nChSizeX = nChSzW;
   pXData->nChSizeY = nChSzH;  
   
-  pXData->nScrollPos      = pXData->nBufRows - pXData->nWndRows;
+  // Determine if scrollbar should be enabled
+  if (pXData->nWndRows >= pXData->nBufRows) {
+    // Disable scrollbar as the window is larger
+    // than the number of rows in the buffer
+    pXData->bScrollEn   = false;
+    pXData->nScrollPos  = 0;
+  } else {
+    // Scrollbar is enabled
+    pXData->bScrollEn   = true;
+    pXData->nScrollPos  = pXData->nBufRows - pXData->nWndRows;
+  }
   
   sElem.pXData            = (void*)(pXData);
   
@@ -1785,8 +1795,17 @@ void gslc_ElemXTextboxLineWrAdv(gslc_tsXTextbox* pBox)
 
 void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax)
 {
+  
   gslc_tsXTextbox* pBox;
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
+  // Ensure scrollbar is enabled
+  if (!pBox->bScrollEn) {
+    // Scrollbar is disabled, so ignore
+    return;
+  }
+  
+  // Assign proportional value based on visible window region
   pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
   
   // Set the redraw flag
@@ -1807,8 +1826,8 @@ void gslc_ElemXTextboxBufAdd(gslc_tsXTextbox* pBox,char chNew,bool bAdvance)
       gslc_ElemXTextboxLineWrAdv(pBox);
     } else {
       // Ignore the write
+      return;
     }
-    return;
   }
   
   uint16_t    nBufPos = pBox->nBufPosY * pBox->nBufCols + pBox->nBufPosX;
@@ -1830,6 +1849,15 @@ void gslc_ElemXTextboxColSet(gslc_tsElem* pElem,gslc_tsColor nCol)
 {
   gslc_tsXTextbox*  pBox = NULL;
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
+  // Ensure that there are enough free columns in current
+  // buffer row to accommodate the color code (4 bytes)
+  if (pBox->nBufPosX +4 >= pBox->nBufCols) {
+    // Not enough space for the code, so ignore it
+    // TODO: Error
+    return;
+  }
+  
   gslc_ElemXTextboxBufAdd(pBox,GSLC_XTEXTBOX_CODE_COL_SET,true);
   gslc_ElemXTextboxBufAdd(pBox,nCol.r,true);
   gslc_ElemXTextboxBufAdd(pBox,nCol.g,true);
@@ -1945,17 +1973,22 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   int16_t           eTBoxState = TBOX_NORM;
   uint16_t          nTBoxStateCnt = 0;
   
+  uint8_t           nScrollMax;
+  
   // Initialize color state
   colTxt = pElem->colElemText;
   
   // Calculate the current window position based on
   // the current buffer write pointer and scroll
   // position
-  uint8_t nScrollMax  = pBox->nBufRows - pBox->nWndRows;
+  nScrollMax          = pBox->nBufRows - pBox->nWndRows;
   pBox->nWndRowStart  = pBox->nBufRows + pBox->nBufPosY;
   pBox->nWndRowStart -= (pBox->nWndRows - 1);
-  pBox->nWndRowStart -= (nScrollMax - pBox->nScrollPos);
-  pBox->nWndRowStart  = pBox->nWndRowStart % pBox->nBufRows;  
+  // Only correct for scrollbar position if enabled
+  if (pBox->bScrollEn) {
+    pBox->nWndRowStart -= (nScrollMax - pBox->nScrollPos);
+  }
+  pBox->nWndRowStart  = pBox->nWndRowStart % pBox->nBufRows;      
   
   uint8_t nOutRow = 0;
   uint8_t nOutCol = 0;
