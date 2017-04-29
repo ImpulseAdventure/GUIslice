@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.8    (2017/04/23)
+// - Version 0.8.8    (2017/04/29)
 // =======================================================================
 //
 // The MIT License
@@ -143,6 +143,13 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
 }
 
 
+// Internal enumerations for printf() parser state machine
+typedef enum {
+  GSLC_DEBUG_PRINT_NORM,
+  GSLC_DEBUG_PRINT_TOKEN,
+  GSLC_DEBUG_PRINT_UINT16,
+  GSLC_DEBUG_PRINT_STR          
+} gslc_teDebugPrintState;
 
 // A lightweight printf() routine that calls user function for
 // character output (enabling redirection to Serial). Only

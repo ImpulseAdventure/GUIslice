@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.8.8    (2017/04/23)
+// - Version 0.8.8    (2017/04/29)
 // =======================================================================
 //
 // The MIT License
@@ -325,13 +325,7 @@ typedef enum {
   GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE,
 } gslc_teTxtFlags;
 
-// TODO: DOC
-typedef enum {
-  GSLC_DEBUG_PRINT_NORM,
-  GSLC_DEBUG_PRINT_TOKEN,
-  GSLC_DEBUG_PRINT_UINT16,
-  GSLC_DEBUG_PRINT_STR          
-} gslc_teDebugPrintState;
+
 
 // -----------------------------------------------------------------------
 // Forward declarations
