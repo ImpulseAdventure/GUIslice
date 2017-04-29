@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 10 (LINUX):
-//     Demonstrate textbox controls
+//     Demonstrate textbox control with scrollbar
 //
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
@@ -19,7 +19,7 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
       E_SLIDER,E_ELEM_TXT_COUNT,
       E_ELEM_TEXTBOX,E_SCROLLBAR};
-enum {E_FONT_BTN,E_FONT_TXT,E_FONT_HEAD,E_FONT_TITLE};
+enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
 
@@ -28,8 +28,8 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            5
-#define MAX_ELEM_PG_MAIN    17
+#define MAX_FONT            3
+#define MAX_ELEM_PG_MAIN    9
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -41,8 +41,8 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsXSlider              m_sXSlider;
 gslc_tsXSlider              m_sXSliderText;
 
-#define TBOX_ROWS       20
-#define TBOX_COLS       20
+#define TBOX_ROWS           20
+#define TBOX_COLS           20
 gslc_tsXTextbox             m_sTextbox;
 char                        m_acTextboxBuf[TBOX_ROWS*TBOX_COLS];
 
@@ -206,8 +206,6 @@ int main( int argc, char* args[] )
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,FONT_DROID_SANS,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,FONT_DROID_SANS,36);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }

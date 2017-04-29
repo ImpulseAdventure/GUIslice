@@ -19,7 +19,7 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
       E_RADIAL,E_RAMP,E_SLIDER,E_ELEM_TXT_COUNT};
-enum {E_FONT_BTN,E_FONT_TXT,E_FONT_HEAD,E_FONT_TITLE};
+enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
 
@@ -28,8 +28,8 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            5
-#define MAX_ELEM_PG_MAIN    17
+#define MAX_FONT            3
+#define MAX_ELEM_PG_MAIN    8
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -38,7 +38,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXGauge,m_sXGauge1;
+gslc_tsXGauge               m_sXRadial,m_sXRamp;
 gslc_tsXSlider              m_sXSlider;
 
 
@@ -140,14 +140,14 @@ bool InitOverlays()
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXGauge,
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXRadial,
           (gslc_tsRect){210,140,80,80},0,100,0,GSLC_COL_YELLOW,false);
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);   
   gslc_ElemXGaugeSetStyle(pElem,GSLCX_GAUGE_STYLE_RADIAL);
   gslc_ElemXGaugeSetIndicator(pElem,GSLC_COL_YELLOW,30,3,true);
   gslc_ElemXGaugeSetTicks(pElem,GSLC_COL_GRAY_LT1,8,5);
   
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RAMP,E_PG_MAIN,&m_sXGauge1,
+  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RAMP,E_PG_MAIN,&m_sXRamp,
           (gslc_tsRect){80,140,100,80},0,100,50,GSLC_COL_YELLOW,false);
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);   
   gslc_ElemXGaugeSetStyle(pElem,GSLCX_GAUGE_STYLE_RAMP);
@@ -186,8 +186,6 @@ int main( int argc, char* args[] )
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,FONT_DROID_SANS,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
   bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,FONT_DROID_SANS,36);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
