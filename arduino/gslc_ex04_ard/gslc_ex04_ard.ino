@@ -195,7 +195,7 @@ void loop()
   m_nCount++;
 
   // Update elements on active page
-  snprintf(acTxt,MAX_STR,"%u",m_nCount);
+  snprintf(acTxt,MAX_STR,"%u",m_nCount/5);
   gslc_ElemSetTxtStr(m_pElemCnt,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
@@ -213,7 +213,7 @@ void loop()
   gslc_Update(&m_gui);
 
   // Slow down updates
-  delay(100);
+  delay(10);
  
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
