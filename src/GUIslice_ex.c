@@ -298,6 +298,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teR
   int16_t nGaugeMid;  
   int16_t nLen;
   int16_t nTmp;
+  int32_t nTmpL;
   
   if (nRng == 0) {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
@@ -314,16 +315,20 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teR
   if ((nMin == 0) && (nMax >= 0)) {
     nGaugeMid = 0;
   } else if ((nMin < 0) && (nMax > 0)) {
-    nGaugeMid = -(nMin*nScl/32768);
+    nTmpL     = -( (int32_t)nMin * (int32_t)nScl / 32768);
+    nGaugeMid = (int16_t)nTmpL;
   } else if ((nMin < 0) && (nMax == 0)) {
-    nGaugeMid = -(nMin*nScl/32768);
+    nTmpL     = -( (int32_t)nMin * (int32_t)nScl / 32768);
+    nGaugeMid = (int16_t)nTmpL;
   } else {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
   // Calculate the length of the bar
-  nLen = pGauge->nVal * nScl/32768;  
+  // - Use long mult/divide to avoid need for floating point
+  nTmpL = (int32_t)(pGauge->nVal) * (int32_t)(nScl) / 32768;
+  nLen  = (int16_t)(nTmpL);
 
   // Define the gauge's fill rectangle region
   // depending on the orientation (bVert) and whether
@@ -1817,7 +1822,7 @@ void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nS
 // - Advance the write ptr, wrap if needed
 // - If encroach upon buffer read ptr, then drop the oldest line from the buffer 
 // NOTE: This should not be called with newline char!
-void gslc_ElemXTextboxBufAdd(gslc_tsXTextbox* pBox,char chNew,bool bAdvance)
+void gslc_ElemXTextboxBufAdd(gslc_tsXTextbox* pBox,unsigned char chNew,bool bAdvance)
 {
   // Ensure that we haven't gone past end of line
   if (pBox->nBufPosX >= pBox->nBufCols) {
@@ -1831,7 +1836,7 @@ void gslc_ElemXTextboxBufAdd(gslc_tsXTextbox* pBox,char chNew,bool bAdvance)
   }
   
   uint16_t    nBufPos = pBox->nBufPosY * pBox->nBufCols + pBox->nBufPosX;
-
+  
   // Add the character
   pBox->pBuf[nBufPos] = chNew;
   
@@ -1854,7 +1859,7 @@ void gslc_ElemXTextboxColSet(gslc_tsElem* pElem,gslc_tsColor nCol)
   // buffer row to accommodate the color code (4 bytes)
   if (pBox->nBufPosX +4 >= pBox->nBufCols) {
     // Not enough space for the code, so ignore it
-    // TODO: Error
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColSet() not enough cols [Pos=%u Cols=%u]\n",pBox->nBufPosX,pBox->nBufCols);
     return;
   }
   
@@ -1889,9 +1894,9 @@ void gslc_ElemXTextboxAdd(gslc_tsElem* pElem,char* pTxt)
   // back to the beginning.
   // TODO: Ensure that buffer wrap doesn't encroach upon visible region!
   // TODO: Assert (pBox)
-  bool        bDone = false;
-  uint16_t    nTxtPos = 0;
-  char        chNext;
+  bool            bDone = false;
+  uint16_t        nTxtPos = 0;
+  unsigned char   chNext;
   if (pTxt == NULL) { bDone = true; }
   while (!bDone) {
     chNext = pTxt[nTxtPos];
@@ -1961,7 +1966,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
   gslc_DrawFillRect(pGui,rInner,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
-  char              chNext;
+  unsigned char     chNext;
   uint16_t          nBufPos = 0;
   uint8_t           nCurX = 0;
   uint8_t           nCurY = 0;
