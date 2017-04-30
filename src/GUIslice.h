@@ -2241,7 +2241,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      false,                                                      \
+      GSLC_REDRAW_NONE,                                                      \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
@@ -2271,7 +2271,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      false,                                                      \
+      GSLC_REDRAW_NONE,                                                      \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
@@ -2303,7 +2303,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      false,                                                      \
+      GSLC_REDRAW_NONE,                                                      \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
@@ -2333,7 +2333,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      false,                                                      \
+      GSLC_REDRAW_NONE,                                                      \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
