@@ -52,7 +52,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.8.8"
+#define GUISLICE_VER "0.9"
 
 
 // ========================================================================
