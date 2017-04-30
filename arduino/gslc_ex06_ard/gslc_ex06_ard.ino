@@ -94,7 +94,7 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 // - NOTE: For Arduino displays, we don't have enough RAM to
 //   support double-buffering, so some flicker will be inevitable
 //   if we allow a faster frame update rate.
-bool CbDrawScanner(void* pvGui,void* pvElem)
+bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 {
   int nInd;
 
@@ -135,7 +135,7 @@ bool CbDrawScanner(void* pvGui,void* pvElem)
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,false);
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
   
   return true;
 }
@@ -160,7 +160,7 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
-  gslc_ElemSetRedraw(pElem,true);  
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);  
 
   return true;
 }
