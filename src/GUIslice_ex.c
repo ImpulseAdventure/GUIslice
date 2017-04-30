@@ -1811,11 +1811,15 @@ void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nS
   }
   
   // Assign proportional value based on visible window region
+  uint16_t nScrollPosOld = pBox->nScrollPos;
   pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
   
   // Set the redraw flag
   // - Only need incremental redraw
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
+  // - Only redraw if changed actual scroll row  
+  if (pBox->nScrollPos != nScrollPosOld) {
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
+  }
 }
 
 // Write a character to the buffer
