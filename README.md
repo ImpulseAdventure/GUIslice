@@ -26,4 +26,4 @@ Screenshots
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
 
-![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl1.png)
+![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
