@@ -25,3 +25,5 @@ Screenshots
 ![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
+
+![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl1.png)
