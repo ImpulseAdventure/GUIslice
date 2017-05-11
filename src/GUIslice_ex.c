@@ -879,8 +879,8 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   bool                    bGlow     = pElem->bGlowEn && pElem->bGlowing; 
   
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
-
+  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  
   // Generic coordinate calcs
   int16_t nX0,nY0,nX1,nY1,nMidX,nMidY;
   nX0 = pElem->rElem.x;
@@ -914,8 +914,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
     if (bChecked) {
-      // TODO: A FillCircle() may look better here
-      gslc_DrawFrameCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
+      gslc_DrawFillCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);    
     }
     // Draw a frame around the checkbox     
     gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame); 
