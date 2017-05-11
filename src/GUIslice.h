@@ -369,8 +369,8 @@ typedef struct gslc_tsRect {
 
 /// Define point coordinates
 typedef struct gslc_tsPt {
-  int   x;        ///< X coordinate
-  int   y;        ///< Y coordinate
+  int16_t   x;        ///< X coordinate
+  int16_t   y;        ///< Y coordinate
 } gslc_tsPt;
 
 /// Color structure. Defines RGB triplet.
