@@ -572,7 +572,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawTy
   bool      bModeErase;
   int16_t   nValStart;
   int16_t   nValEnd;
-  if (!bValLastValid) {
+  if (eRedraw == GSLC_REDRAW_FULL) {
     // If we haven't drawn anything before, draw full range from zero
     // Could have also checked eRedraw==GSLC_REDRAW_FULL
     bModeErase  = false;
