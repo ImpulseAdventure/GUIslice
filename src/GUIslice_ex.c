@@ -2012,7 +2012,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 
       // Calculate row offset after accounting for buffer wrap
       // and current window starting offset
-      uint8_t nRowCur = pBox->nWndRowStart + nOutRow;
+      uint16_t nRowCur = pBox->nWndRowStart + nOutRow;
       nRowCur = nRowCur % pBox->nBufRows;
       
       // NOTE: At the start of buffer fill where we have
