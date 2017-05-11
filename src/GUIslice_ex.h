@@ -54,6 +54,7 @@ typedef enum {
     GSLC_TYPEX_SLIDER,      ///< Slider extended element
     GSLC_TYPEX_SELNUM,      ///< SelNum extended element
     GSLC_TYPEX_TEXTBOX,     ///< Textbox extended element
+    GSLC_TYPEX_GRAPH,       ///< Graph extended element            
 } gslc_teTypeExtend;
   
   
@@ -601,7 +602,7 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
 /// Extended data for Textbox element
 typedef struct {
   // Config
-  gslc_tsGui*                 pGui;         ///< Ptr to GUI (for radio group control)
+  gslc_tsGui*                 pGui;         ///< Ptr to GUI
   char*                       pBuf;         ///< Ptr to the text buffer (circular buffer))
   uint8_t                     nMargin;      ///< Margin for text area within element rect
   bool                        bWrapEn;      ///< Enable for line wrapping
@@ -714,6 +715,125 @@ void gslc_ElemXTextboxWrapSet(gslc_tsElem* pElem,bool bWrapEn);
 /// \return none
 ///
 void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax);
+
+
+
+// ============================================================================
+// Extended Element: Graph
+// ============================================================================
+
+/// Graph drawing style
+typedef enum {
+  GSLCX_GRAPH_STYLE_DOT,        ///< Dot
+  GSLCX_GRAPH_STYLE_LINE,       ///< Line
+  GSLCX_GRAPH_STYLE_FILL,       ///< Filled
+} gslc_teXGraphStyle;
+
+/// Extended data for Graph element
+typedef struct {
+  // Config
+  gslc_tsGui*                 pGui;         ///< Ptr to GUI
+  int16_t*                    pBuf;         ///< Ptr to the data buffer (circular buffer))
+  uint8_t                     nMargin;      ///< Margin for graph area within element rect
+  gslc_tsColor                colGraph;     ///< Color of the graph
+  gslc_teXGraphStyle          eStyle;       ///< Style of the graph
+  
+  uint16_t                    nBufRows;     ///< Number of rows in buffer
+  bool                        bScrollEn;    ///< Enable for scrollbar
+  uint16_t                    nScrollPos;   ///< Current scrollbar position
+  
+  int16_t                     nPlotValMax;  ///< Maximum value to plot
+  int16_t                     nPlotValMin;  ///< Minimum value to plot
+  
+  // Precalculated params
+  uint16_t                    nWndRows;     ///< Window Y size
+  // Current status
+  uint16_t                    nCurPosY;     ///< Cursor Y position
+  uint16_t                    nBufPosY;     ///< Buffer Y position
+  uint16_t                    nWndRowStart; ///< First row of current window
+
+} gslc_tsXGraph;
+
+
+
+///
+/// Create a Graph Element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  pXData:      Ptr to extended element data structure
+/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
+/// \param[in]  nFontId:     Font ID to use for graph area
+/// \param[in]  pBuf:        Ptr to data buffer (already allocated)
+///                          with size (nBufRows) int16_t
+/// \param[in]  nBufRows:    Number of rows in buffer
+/// \param[in]  colGraph:    Color of the graph
+///
+/// \return Element pointer or NULL if failure
+///
+gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXGraph* pXData,gslc_tsRect rElem,int16_t nFontId,int16_t* pBuf,
+  uint16_t nBufRows,gslc_tsColor colGraph);
+
+///
+/// Set the graph's additional drawing characteristics
+/// 
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  eStyle:      Drawing style for the graph
+/// \param[in]  nMargin:     Margin to provide around graph area inside frame
+///
+/// \return none
+///
+void gslc_ElemXGraphSetStyle(gslc_tsElem* pElem,
+        gslc_teXGraphStyle eStyle,uint8_t nMargin);
+
+///
+/// Set the graph's drawing range
+/// 
+/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  nYMin:       Minimum Y value to draw
+/// \param[in]  nYMax:       Maximum Y value to draw
+///
+/// \return none
+///
+void gslc_ElemXGraphSetRange(gslc_tsElem* pElem,
+        int16_t nYMin,int16_t nYMax);
+
+///
+/// Draw a Graph element on the screen
+/// - Called from gslc_ElemDraw()
+///
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eRedraw:     Redraw mode
+///
+/// \return true if success, false otherwise
+///
+bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+
+/// Add a value to the graph at the latest position
+///
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  nData:       Data value to add
+///
+/// \return none
+///
+void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nData);
+
+
+///
+/// Set the graph scroll position (nScrollPos) as a fraction of
+/// nScrollMax
+///
+/// \param[in]  pElem:       Pointer to element
+/// \param[in]  nScrollPos:  New scroll position
+/// \param[in]  nScrollMax:  Maximum scroll position
+///
+/// \return none
+///
+void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax);
+
 
 // ============================================================================
 
