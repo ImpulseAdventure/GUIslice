@@ -572,9 +572,17 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawTy
   bool      bModeErase;
   int16_t   nValStart;
   int16_t   nValEnd;
-  if ((eRedraw == GSLC_REDRAW_FULL) || (!bValLastValid)) {
+  if ((eRedraw == GSLC_REDRAW_INC) && (!bValLastValid)) {
+    // - If the request was incremental (GSLC_REDRAW_INC) but
+    //   the last value wasn't marked as valid (!bValLastValid)
+    //   then we want to force a full redraw.
+    // - We don't expect to enter here since bValLastValid
+    //   should always be set after we perform our first
+    //   redraw.
+    eRedraw = GSLC_REDRAW_FULL;
+  }
+  if (eRedraw == GSLC_REDRAW_FULL) {
     // If we haven't drawn anything before, draw full range from zero
-    // Could have also checked eRedraw==GSLC_REDRAW_FULL
     bModeErase  = false;
     nValStart   = 0;
     nValEnd     = nVal;
@@ -627,7 +635,6 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawTy
       if (nSegOffset <= nBlockLen) {
         // Inside block
         nColInd = nSegStart*1000/nElemW;
-        //gslc_tsColor nCol = gslc_ColorBlend2(GSLC_COL_WHITE,GSLC_COL_RED,750,nColInd);
         nCol = gslc_ColorBlend3(GSLC_COL_GREEN,GSLC_COL_YELLOW,GSLC_COL_RED,500,nColInd);
 
       } else {
@@ -2080,7 +2087,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 
 gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXGraph* pXData,gslc_tsRect rElem,int16_t nFontId,int16_t* pBuf,
-  uint16_t nBufRows,gslc_tsColor colGraph)
+  uint16_t nBufMax,gslc_tsColor colGraph)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXGraphCreate(%s) called with NULL ptr\n","");
@@ -2105,26 +2112,33 @@ gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   // Define other extended data
   pXData->pBuf            = pBuf;
   pXData->nMargin         = 5;
-  pXData->nCurPosY        = 0;
   
-  pXData->nBufRows        = nBufRows;
-  pXData->nBufPosY        = 0;
-  pXData->nWndRowStart    = 0;
+  pXData->nBufMax         = nBufMax;
+  pXData->nBufCnt         = 0;
+  pXData->nPlotIndStart   = 0;
   
   pXData->colGraph        = colGraph;
   pXData->eStyle          = GSLCX_GRAPH_STYLE_DOT;
   
-  // Assign default range; can be overridden by user
-  pXData->nPlotValMax     = sElem.rElem.h - (2*pXData->nMargin);
-  pXData->nPlotValMin     = 0;
+  // Define the visible region of the window
+  // - The range in value can be overridden by the user
+  pXData->nWndHeight = rElem.h - (2*pXData->nMargin);
+  pXData->nWndWidth  = rElem.w - (2*pXData->nMargin);
+
+  // Default scale is
+  // - Each data point (buffer row) gets 1 pixel in X direction
+  // - Data value is directly mapped to height in Y direction
+  pXData->nPlotValMin   = 0;
+  pXData->nPlotValMax   = pXData->nWndHeight;
+  pXData->nPlotIndMax    = pXData->nWndWidth;
+  
   
   // Clear the buffer
-  memset(pBuf,0,nBufRows*sizeof(int16_t));
+  memset(pBuf,0,nBufMax*sizeof(int16_t));
   
-  pXData->nWndRows = rElem.w - (2*pXData->nMargin);
   
   // Determine if scrollbar should be enabled
-  if (pXData->nWndRows >= pXData->nBufRows) {
+  if (pXData->nPlotIndMax >= pXData->nBufMax) {
     // Disable scrollbar as the window is larger
     // than the number of rows in the buffer
     pXData->bScrollEn   = false;
@@ -2132,7 +2146,7 @@ gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   } else {
     // Scrollbar is enabled
     pXData->bScrollEn   = true;
-    pXData->nScrollPos  = pXData->nBufRows - pXData->nWndRows;
+    pXData->nScrollPos  = pXData->nBufMax - pXData->nPlotIndMax;
   }
   
   sElem.pXData            = (void*)(pXData);
@@ -2163,6 +2177,10 @@ void gslc_ElemXGraphSetStyle(gslc_tsElem* pElem,
 
   pBox->eStyle  = eStyle;
   pBox->nMargin = nMargin;
+  
+  // TODO: Recalculate the window extents and defaults
+  // - Note that ElemXGraphSetStyle() was not intended to be
+  //   called after the control is already in use/displayed
 
   // Set the redraw flag
   // - Force full redraw
@@ -2181,8 +2199,10 @@ void gslc_ElemXGraphSetRange(gslc_tsElem* pElem,
   pBox->nPlotValMin = nYMin;
 
   // Set the redraw flag
-  // - Support incremental redraw
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
+  // - As we are changing the scale, force a full redraw
+  //   since incremental redraws may make assumption about
+  //   prior coordinate scaling
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 
 }
 
@@ -2201,7 +2221,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
   
   // Assign proportional value based on visible window region
   uint16_t nScrollPosOld = pBox->nScrollPos;
-  pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
+  pBox->nScrollPos = nScrollPos * (pBox->nBufMax - pBox->nPlotIndMax) / nScrollMax;
   
   // Set the redraw flag
   // - Only need incremental redraw
@@ -2215,17 +2235,17 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 // Write a data value to the buffer
 // - Advance the write ptr, wrap if needed
 // - If encroach upon buffer read ptr, then drop the oldest line from the buffer 
-void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nData)
+void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nVal)
 {
   gslc_tsXGraph*  pBox = NULL;
   pBox = (gslc_tsXGraph*)(pElem->pXData);
 
   // Add the data value
-  pBox->pBuf[pBox->nBufPosY] = nData;
+  pBox->pBuf[pBox->nBufCnt] = nVal;
   
   // Advance the pointer
   // - Wrap the pointers around end of buffer
-  pBox->nBufPosY = (pBox->nBufPosY+1) % pBox->nBufRows;   
+  pBox->nBufCnt = (pBox->nBufCnt+1) % pBox->nBufMax;   
 
   // Set the redraw flag
   // - Only need incremental redraw
@@ -2263,82 +2283,84 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   }
   
   // Clear the background (inset from frame)
+  // TODO: Support incremental redraw in which case we don't
+  //       erase the inner region. Instead we would just erase
+  //       old values and redraw new ones
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
   gslc_DrawFillRect(pGui,rInner,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
-  //unsigned char     chNext;
   int16_t           nDataVal;
-  uint16_t          nBufPos = 0;
-  uint16_t          nCurY = 0;
-  uint16_t          nPixX,nPixY,nPixYBase;
-  //gslc_tsColor      colTxt;
+  uint16_t          nCurX = 0;
+  int16_t           nPixX,nPixY,nPixYBase,nPixYOffset;
   gslc_tsColor      colGraph;
   
   uint8_t           nScrollMax;
   
   // Initialize color state
-  //colTxt    = pElem->colElemText;
   colGraph  = pBox->colGraph;
   
   // Calculate the current window position based on
   // the current buffer write pointer and scroll
   // position
-  nScrollMax          = pBox->nBufRows - pBox->nWndRows;
-  pBox->nWndRowStart  = pBox->nBufRows + pBox->nBufPosY;
-  pBox->nWndRowStart -= pBox->nWndRows;  
+  nScrollMax           = pBox->nBufMax - pBox->nPlotIndMax;
+  pBox->nPlotIndStart  = pBox->nBufMax + pBox->nBufCnt;
+  pBox->nPlotIndStart -= pBox->nPlotIndMax;  
   // Only correct for scrollbar position if enabled
   if (pBox->bScrollEn) {
-    pBox->nWndRowStart -= (nScrollMax - pBox->nScrollPos);
+    pBox->nPlotIndStart -= (nScrollMax - pBox->nScrollPos);
   }
-  pBox->nWndRowStart  = pBox->nWndRowStart % pBox->nBufRows;      
+  pBox->nPlotIndStart  = pBox->nPlotIndStart % pBox->nBufMax;      
   
-
-  
-  uint8_t nOutRow = 0;
-  uint8_t nMaxRow = 0;
-  nMaxRow = (pBox->nBufRows < pBox->nWndRows)? pBox->nBufRows : pBox->nWndRows;  
-  for (nOutRow=0;nOutRow<nMaxRow;nOutRow++) {
+  uint8_t nPlotInd = 0;
+  uint8_t nIndMax = 0;
+  nIndMax = (pBox->nBufMax < pBox->nPlotIndMax)? pBox->nBufMax : pBox->nPlotIndMax;  
+  for (nPlotInd=0;nPlotInd<nIndMax;nPlotInd++) {
     
     // Calculate row offset after accounting for buffer wrap
     // and current window starting offset
-    uint16_t nRowCur = pBox->nWndRowStart + nOutRow;
-    nRowCur = nRowCur % pBox->nBufRows;    
+    uint16_t nBufInd = pBox->nPlotIndStart + nPlotInd;
+    nBufInd = nBufInd % pBox->nBufMax;    
 
-    // FIXME
-      // NOTE: At the start of buffer fill where we have
-      // only written a couple rows, we don't stop reading
-      // across all of the rows. We are dependent upon
-      // the reset to initialize all rows with NULL terminator
-      // so that we don't show garbage.
+    // NOTE: At the start of buffer fill when we have
+    // only written a few values, we will continue to read
+    // values out of the buffer so we are dependent upon
+    // the reset to initialize the buffer to zero.
     
-    nBufPos = nRowCur;
-    
-    nDataVal = pBox->pBuf[nBufPos];
+    nDataVal = pBox->pBuf[nBufInd];
     
     // Clip the value to the plot range
     if      (nDataVal > pBox->nPlotValMax) { nDataVal = pBox->nPlotValMax; }
     else if (nDataVal < pBox->nPlotValMin) { nDataVal = pBox->nPlotValMin; }
     
-    // Scale data value
-    //printf("DBG: - Val=%3u\n",nDataVal);  //xxx
+    // TODO: Make nCurX a scaled version of nPlotInd
+    // - Support different modes for mapping multiple data points
+    //   a single X coordinate and mapping a single data point
+    //   to multiple X coordinates
+    // - For now, just have a 1:1 correspondence between data
+    //   points and the X coordinate
+    nCurX = nPlotInd;
     
-/*
-#if 1
-    if (nBufPos < 5) {
-      colGraph = GSLC_COL_GREEN;
-    } else if (nBufPos > pBox->nBufRows-5) {
-      colGraph = GSLC_COL_RED;
-    } else {
-      colGraph = GSLC_COL_BLUE;
-    }
-#else
-    colGraph = gslc_ColorBlend2(GSLC_COL_BLACK,GSLC_COL_WHITE,500,nDataVal*500/200);
-#endif
-*/   
-    
-    nPixX       = pElem->rElem.x + pBox->nMargin + nCurY;
+    // TODO: Scale data value
+
+    // TODO: Consider supporting various color mapping modes
+    //colGraph = gslc_ColorBlend2(GSLC_COL_BLACK,GSLC_COL_WHITE,500,nDataVal*500/200);
+
+    // Determine the drawing coordinates
+    nPixX       = pElem->rElem.x + pBox->nMargin + nCurX;
     nPixYBase   = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1;
-    nPixY       = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1 - nDataVal;    
+    
+    // Calculate Y coordinate
+    nPixYOffset = nDataVal;
+    
+    // Clip plot Y coordinate
+    if (nPixY > pBox->nWndHeight) { nPixY = pBox->nWndHeight; }
+    if (nPixY < 0)                { nPixY = 0;                }
+    
+    // Calculate final Y coordinate
+    nPixY       = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1 - nPixYOffset;    
+    
+    
+    // Render the datapoints
     if (pBox->eStyle == GSLCX_GRAPH_STYLE_DOT) {    
       gslc_DrawSetPixel(pGui,nPixX,nPixY,colGraph);
     } else if (pBox->eStyle == GSLCX_GRAPH_STYLE_LINE) {
@@ -2346,7 +2368,6 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
       gslc_DrawLine(pGui,nPixX,nPixYBase,nPixX,nPixY,colGraph);   
     }
 
-    nCurY++;
   }
   
   // Clear the redraw flag

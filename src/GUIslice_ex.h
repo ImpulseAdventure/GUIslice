@@ -732,25 +732,25 @@ typedef enum {
 /// Extended data for Graph element
 typedef struct {
   // Config
-  gslc_tsGui*                 pGui;         ///< Ptr to GUI
-  int16_t*                    pBuf;         ///< Ptr to the data buffer (circular buffer))
-  uint8_t                     nMargin;      ///< Margin for graph area within element rect
-  gslc_tsColor                colGraph;     ///< Color of the graph
-  gslc_teXGraphStyle          eStyle;       ///< Style of the graph
+  gslc_tsGui*               pGui;           ///< Ptr to GUI
+  int16_t*                  pBuf;           ///< Ptr to the data buffer (circular buffer))
+  uint8_t                   nMargin;        ///< Margin for graph area within element rect
+  gslc_tsColor              colGraph;       ///< Color of the graph
+  gslc_teXGraphStyle        eStyle;         ///< Style of the graph
   
-  uint16_t                    nBufRows;     ///< Number of rows in buffer
-  bool                        bScrollEn;    ///< Enable for scrollbar
-  uint16_t                    nScrollPos;   ///< Current scrollbar position
+  uint16_t                  nBufMax;        ///< Maximum number of points in buffer
+  bool                      bScrollEn;      ///< Enable for scrollbar
+  uint16_t                  nScrollPos;     ///< Current scrollbar position
   
-  int16_t                     nPlotValMax;  ///< Maximum value to plot
-  int16_t                     nPlotValMin;  ///< Minimum value to plot
+  uint16_t                  nWndHeight;     ///< Visible window height
+  uint16_t                  nWndWidth;      ///< Visible window width
+  int16_t                   nPlotValMax;    ///< Visible window maximum value
+  int16_t                   nPlotValMin;    ///< Visible window minimum value
+  uint16_t                  nPlotIndMax;    ///< Number of data points to show in window
   
-  // Precalculated params
-  uint16_t                    nWndRows;     ///< Window Y size
   // Current status
-  uint16_t                    nCurPosY;     ///< Cursor Y position
-  uint16_t                    nBufPosY;     ///< Buffer Y position
-  uint16_t                    nWndRowStart; ///< First row of current window
+  uint16_t                  nBufCnt;        ///< Number of points in buffer
+  uint16_t                  nPlotIndStart;  ///< First row of current window
 
 } gslc_tsXGraph;
 
@@ -766,8 +766,8 @@ typedef struct {
 /// \param[in]  rElem:       Rectangle coordinates defining checkbox size
 /// \param[in]  nFontId:     Font ID to use for graph area
 /// \param[in]  pBuf:        Ptr to data buffer (already allocated)
-///                          with size (nBufRows) int16_t
-/// \param[in]  nBufRows:    Number of rows in buffer
+///                          with size (nBufMax) int16_t
+/// \param[in]  nBufMax:     Maximum number of points in buffer
 /// \param[in]  colGraph:    Color of the graph
 ///
 /// \return Element pointer or NULL if failure
@@ -815,11 +815,11 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 /// Add a value to the graph at the latest position
 ///
 /// \param[in]  pElem:       Pointer to element
-/// \param[in]  nData:       Data value to add
+/// \param[in]  nVal:        Data value to add
 ///
 /// \return none
 ///
-void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nData);
+void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nVal);
 
 
 ///
