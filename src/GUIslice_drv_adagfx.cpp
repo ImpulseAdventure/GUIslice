@@ -777,8 +777,6 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
       //       background should be a flat color instead of
       //       an image.
       uint16_t nColRaw = pDriver->nColRawBkgnd;
-	  
- 	  // TODO ba:should this be pDriver.fillScreen?
       m_disp.fillScreen(nColRaw);
 	} else {
       // An image should be loaded
