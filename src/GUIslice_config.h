@@ -31,6 +31,7 @@
 //
 // =======================================================================
 
+// Added Adafruit HX8357 support. ALittleSlow 2017-08-29.
 
 // =======================================================================
 // User Configuration
@@ -48,17 +49,17 @@ extern "C" {
   
 // Specify the graphics driver library
 // - Uncomment one of the following graphics drivers
-#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
+//#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
 //#define DRV_DISP_SDL2              // LINUX: SDL 2.0 library
-//#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
+#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
 
   
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
 //#define DRV_TOUCH_NONE          // No touchscreen support
 //#define DRV_TOUCH_SDL           // LINUX: Use SDL touch driver
-#define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
-//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
+//#define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
+#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
 
 
@@ -122,9 +123,10 @@ extern "C" {
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
-  #define DRV_DISP_ADAGFX_ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9341
   //#define DRV_DISP_ADAGFX_ST7735
   //#define DRV_DISP_ADAGFX_SSD1306
+  #define DRV_DISP_ADAGFX_HX8357
 
   
   // For Adafruit-GFX drivers, define pin connections
@@ -132,7 +134,7 @@ extern "C" {
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
-  #define ADAGFX_PIN_RST   11   // Display Reset
+  #define ADAGFX_PIN_RST   -1   // Display Reset
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
 
   // Use hardware SPI interface?
@@ -154,7 +156,7 @@ extern "C" {
   // - Note that the inclusion of the SD library consumes considerable
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
-  #define ADAGFX_SD_EN    0
+  #define ADAGFX_SD_EN    1
   
   // Define buffer size for loading images from SD
   // - A larger buffer will be faster but at the cost of RAM
@@ -162,7 +164,7 @@ extern "C" {
 
   // Enable support for clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  #define ADAGFX_CLIP 1
+  #define ADAGFX_CLIP 0
 
 #endif // DRV_DISP_*
 
@@ -176,8 +178,8 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by setting one of the following to 1
-  #define ADATOUCH_I2C_HW 0
-  #define ADATOUCH_SPI_HW 1
+  #define ADATOUCH_I2C_HW 1
+  #define ADATOUCH_SPI_HW 0
   #define ADATOUCH_SPI_SW 0  // [TODO]
 
   // For ADATOUCH_I2C_HW=1
@@ -192,10 +194,16 @@ extern "C" {
   // - These values can be determined from the Adafruit touchtest example sketch
   //   (check for min and max values reported from program as you touch display corners)
   // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN 230
-  #define ADATOUCH_Y_MIN 260
-  #define ADATOUCH_X_MAX 3800
-  #define ADATOUCH_Y_MAX 3700
+  //#define ADATOUCH_X_MIN 230
+  //#define ADATOUCH_Y_MIN 260
+  //#define ADATOUCH_X_MAX 3800
+  //#define ADATOUCH_Y_MAX 3700
+  ////These values obtained from a Adafruit HX8357 (P/N 2050) touch screen:
+  #define ADATOUCH_X_MIN 100
+  #define ADATOUCH_Y_MIN 190
+  #define ADATOUCH_X_MAX 3846
+  #define ADATOUCH_Y_MAX 3961
+ 
 
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // Define sensitivity coefficient (capacitive touch)
@@ -208,9 +216,10 @@ extern "C" {
 //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
 //   remapping modes should be enabled for your display
 // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+//These values for Adafruit HX8357 in landscape oriented with ground pin on the bottom edge
 #define ADATOUCH_SWAP_XY  1
-#define ADATOUCH_FLIP_X   0
-#define ADATOUCH_FLIP_Y   1
+#define ADATOUCH_FLIP_X   1
+#define ADATOUCH_FLIP_Y   0
   
 // -----------------------------------------------------------------------------------------
 
