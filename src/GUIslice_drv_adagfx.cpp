@@ -28,6 +28,8 @@
 //
 // =======================================================================
 
+// Added Adafruit HX8357 support. ALittleSlow 2017-08-29.
+
 
 // =======================================================================
 // Driver Layer for Adafruit-GFX
@@ -54,6 +56,13 @@
   #include <Wire.h>
 #elif defined(DRV_DISP_ADAGFX_ST7735)
   #include <Adafruit_ST7735.h>
+  #include <SPI.h>
+#elif defined(DRV_DISP_ADAGFX_HX8357)
+  #include <Adafruit_HX8357.h>
+  // TODO: Select either SPI or I2C. For now, assume SPI
+  #if (ADAGFX_SD_EN)
+    #include <SD.h>   // Include support for SD card access
+  #endif
   #include <SPI.h>
 #endif
 
@@ -95,6 +104,12 @@ extern "C" {
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
+  #endif
+#elif defined(DRV_DISP_ADAGFX_HX8357)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
     
 // ------------------------------------------------------------------------
@@ -164,6 +179,13 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       //m_disp.initR(INITR_BLACKTAB);     // 1.8" [TODO]
       pGui->nDispW = m_disp.width();
       pGui->nDispH = m_disp.height();
+    #elif defined(DRV_DISP_ADAGFX_HX8357)
+      m_disp.begin(HX8357D);      
+      // Rotate display from native portrait orientation to landscape
+      // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
+      m_disp.setRotation(1);
+      pGui->nDispW = HX8357_TFTHEIGHT;
+      pGui->nDispH = HX8357_TFTWIDTH;
       
     #endif
 
@@ -347,7 +369,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // Nothing to do as we're not double-buffered
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -750,13 +772,13 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
     
     // Check to see if an image has been assigned to the background
     if (pGui->sImgRefBkgnd.eImgFlags == GSLC_IMGREF_NONE) {
-      // No image assigned, so assume flat color background
+	  // No image assigned, so assume flat color background
       // TODO: Create a new eImgFlags enum to signal that the
       //       background should be a flat color instead of
       //       an image.
       uint16_t nColRaw = pDriver->nColRawBkgnd;
       m_disp.fillScreen(nColRaw);
-    } else {
+	} else {
       // An image should be loaded
       // TODO: For now, re-use the DrvDrawImage(). Later, consider
       //       extending to support different background drawing
@@ -987,7 +1009,7 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
   
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // RGB565
     nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
     nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000

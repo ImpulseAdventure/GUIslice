@@ -30,7 +30,7 @@
 //
 // =======================================================================
 
-
+// Added Adafruit HX8357 support. ALittleSlow 2017-08-29. Only change was to conditionally exclude time.h since I didn't know what library that was.
 
 // GUIslice library
 #include "GUIslice_config.h"
@@ -39,7 +39,10 @@
 #include "GUIslice_drv.h"
 
 #include <stdio.h>
+
+#ifdef DBG_FRAME_RATE
 #include <time.h> // for FrameRate reporting
+#endif
 
 #if (GSLC_USE_FLOAT)
   #include <math.h>
@@ -52,7 +55,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9"
+#define GUISLICE_VER "0.9.ALS0.1"
 
 
 // ========================================================================
