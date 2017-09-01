@@ -31,7 +31,8 @@
 //
 // =======================================================================
 
-// Added Adafruit HX8357 support. ALittleSlow 2017-08-29.
+// Other contributions:
+// - 2017/08/29: Added Adafruit HX8357 support. [by ALittleSlow]
 
 // =======================================================================
 // User Configuration
@@ -49,17 +50,17 @@ extern "C" {
   
 // Specify the graphics driver library
 // - Uncomment one of the following graphics drivers
-//#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
+#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
 //#define DRV_DISP_SDL2              // LINUX: SDL 2.0 library
-#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
+//#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
 
   
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
 //#define DRV_TOUCH_NONE          // No touchscreen support
 //#define DRV_TOUCH_SDL           // LINUX: Use SDL touch driver
-//#define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
-#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
+#define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
+//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
 
 
@@ -123,10 +124,10 @@ extern "C" {
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
-  //#define DRV_DISP_ADAGFX_ILI9341
+  #define DRV_DISP_ADAGFX_ILI9341
   //#define DRV_DISP_ADAGFX_ST7735
   //#define DRV_DISP_ADAGFX_SSD1306
-  #define DRV_DISP_ADAGFX_HX8357
+  //#define DRV_DISP_ADAGFX_HX8357
 
   
   // For Adafruit-GFX drivers, define pin connections
@@ -134,7 +135,7 @@ extern "C" {
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
-  #define ADAGFX_PIN_RST   -1   // Display Reset
+  #define ADAGFX_PIN_RST   11   // Display Reset
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
 
   // Use hardware SPI interface?
@@ -156,7 +157,7 @@ extern "C" {
   // - Note that the inclusion of the SD library consumes considerable
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
-  #define ADAGFX_SD_EN    1
+  #define ADAGFX_SD_EN    0
   
   // Define buffer size for loading images from SD
   // - A larger buffer will be faster but at the cost of RAM
@@ -164,7 +165,7 @@ extern "C" {
 
   // Enable support for clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  #define ADAGFX_CLIP 0
+  #define ADAGFX_CLIP 1
 
 #endif // DRV_DISP_*
 

@@ -28,8 +28,14 @@
 //
 // =======================================================================
 
-// Added Adafruit HX8357 support. ALittleSlow 2017-08-29.
+// Other contributions:
+// - 2017/08/29: Added Adafruit HX8357 support. [by ALittleSlow]
 
+// =======================================================================
+
+// Compiler guard for requested driver
+#include "GUIslice_config.h" // Sets DRV_DISP_*
+#if defined(DRV_DISP_ADAGFX)
 
 // =======================================================================
 // Driver Layer for Adafruit-GFX
@@ -105,6 +111,8 @@ extern "C" {
   #else
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
+
+// ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_HX8357)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -1030,3 +1038,6 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif // Compiler guard for requested driver
+
