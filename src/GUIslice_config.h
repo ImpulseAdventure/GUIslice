@@ -179,8 +179,8 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by setting one of the following to 1
-  #define ADATOUCH_I2C_HW 1
-  #define ADATOUCH_SPI_HW 0
+  #define ADATOUCH_I2C_HW 0
+  #define ADATOUCH_SPI_HW 1
   #define ADATOUCH_SPI_SW 0  // [TODO]
 
   // For ADATOUCH_I2C_HW=1
@@ -195,15 +195,11 @@ extern "C" {
   // - These values can be determined from the Adafruit touchtest example sketch
   //   (check for min and max values reported from program as you touch display corners)
   // - Note that X & Y directions reference the display's natural orientation
-  //#define ADATOUCH_X_MIN 230
-  //#define ADATOUCH_Y_MIN 260
-  //#define ADATOUCH_X_MAX 3800
-  //#define ADATOUCH_Y_MAX 3700
-  ////These values obtained from a Adafruit HX8357 (P/N 2050) touch screen:
-  #define ADATOUCH_X_MIN 100
-  #define ADATOUCH_Y_MIN 190
-  #define ADATOUCH_X_MAX 3846
-  #define ADATOUCH_Y_MAX 3961
+  #define ADATOUCH_X_MIN 230
+  #define ADATOUCH_Y_MIN 260
+  #define ADATOUCH_X_MAX 3800
+  #define ADATOUCH_Y_MAX 3700
+
  
 
 #elif defined(DRV_TOUCH_ADA_FT6206)
@@ -219,8 +215,8 @@ extern "C" {
 // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
 //These values for Adafruit HX8357 in landscape oriented with ground pin on the bottom edge
 #define ADATOUCH_SWAP_XY  1
-#define ADATOUCH_FLIP_X   1
-#define ADATOUCH_FLIP_Y   0
+#define ADATOUCH_FLIP_X   0
+#define ADATOUCH_FLIP_Y   1
   
 // -----------------------------------------------------------------------------------------
 
