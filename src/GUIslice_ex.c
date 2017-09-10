@@ -1792,6 +1792,30 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
 }
 
 
+void gslc_ElemXTextboxReset(gslc_tsElem* pElem)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxReset(%s) called with NULL ptr\n","");
+    return;
+  }        
+  gslc_tsXTextbox* pBox;
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
+  // Reset the positional state
+  pBox->nCurPosX        = 0;
+  pBox->nCurPosY        = 0;
+  pBox->nBufPosX        = 0;
+  pBox->nBufPosY        = 0;
+  pBox->nWndRowStart    = 0;
+
+  // Clear the buffer
+  memset(pBox->pBuf,0,pBox->nBufRows*pBox->nBufCols*sizeof(char));
+  
+  // Set the redraw flag
+  // - Only need incremental redraw
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
+}
+
 // Advance the buffer writer to the next line
 // The window is also 
 void gslc_ElemXTextboxLineWrAdv(gslc_tsXTextbox* pBox)

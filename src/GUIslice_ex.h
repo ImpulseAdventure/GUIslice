@@ -649,6 +649,16 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
         uint16_t nBufRows,uint16_t nBufCols);
 
 
+/// Reset the contents of the textbox
+/// - Clears the buffer and resets the position
+///
+/// \param[in]  pElem:       Pointer to element
+///
+/// \return none
+///
+void gslc_ElemXTextboxReset(gslc_tsElem* pElem);
+
+
 ///
 /// Draw a Textbox element on the screen
 /// - Called from gslc_ElemDraw()
