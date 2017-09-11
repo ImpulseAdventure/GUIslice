@@ -53,7 +53,8 @@ extern "C" {
 #define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
 //#define DRV_DISP_SDL2              // LINUX: SDL 2.0 library
 //#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
-
+//#define DRV_DISP_TFT_ESPI          // Arduino: Bodmer/TFT_eSPI library
+  
   
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
@@ -167,6 +168,38 @@ extern "C" {
   // - Note that this will impact performance of drawing graphics primitives
   #define ADAGFX_CLIP 1
 
+  
+#elif defined(DRV_DISP_TFT_ESPI)  
+
+  // NOTE: When using the TFT_eSPI library, there are additional
+  //       library-specific configuration files that may need
+  //       customization (including pin configuration), such as
+  //       "User_Setup_Select.h" (typically located in the
+  //       Arduino /libraries/TFT_eSPI folder). Please refer to
+  //       Bodmer's TFT_eSPI library for more details:
+  //       https://github.com/Bodmer/TFT_eSPI
+  
+  #define GSLC_DEV_TOUCH ""   // No device path used
+
+  #define GSLC_LOCAL_STR      0
+  #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
+
+  // Error reporting
+  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
+  
+
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  // - TODO: Add support for ESP8266 SPIFF
+  #define ADAGFX_SD_EN    0
+
+  // Enable support for clipping (DrvSetClipRect)
+  // - Note that this will impact performance of drawing graphics primitives
+  #define ADAGFX_CLIP 1
+  
 #endif // DRV_DISP_*
 
 
@@ -213,7 +246,6 @@ extern "C" {
 //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
 //   remapping modes should be enabled for your display
 // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-//These values for Adafruit HX8357 in landscape oriented with ground pin on the bottom edge
 #define ADATOUCH_SWAP_XY  1
 #define ADATOUCH_FLIP_X   0
 #define ADATOUCH_FLIP_Y   1
