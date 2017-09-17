@@ -272,6 +272,15 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           if (bNumStart) {
             cOut = '0';
             (g_pfDebugOut)(cOut);
+          } else {
+            // We haven't started outputting a number yet
+            // Check for special case of zero
+            if (nNumRemain == 0) {
+              cOut = '0';
+              (g_pfDebugOut)(cOut);
+              // Now fall through to done state
+              nNumDivisor = 1;
+            }
           }
         } else {
           bNumStart = true;
