@@ -3,7 +3,12 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 10 (Arduino):
-//     Demonstrate textbox controls
+//   - Demonstrate textbox controls
+//   - NOTE: This is the simple version of the example without
+//     optimizing for memory consumption. Therefore, it may not
+//     run on Arduino devices with limited memory. A "minimal"
+//     version is located in the "arduino_min" folder which includes
+//     FLASH memory optimization for reduced memory devices.
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -34,17 +39,8 @@ unsigned  m_nCount = 0;
 #define MAX_FONT                2
 
 // Define the maximum number of elements per page
-// - To enable the same code to run on devices that support storing
-//   data into Flash (PROGMEM) and those that don't, we can make the
-//   number of elements in Flash dependent upon GSLC_USE_PROGMEM
-// - This should allow both Arduino and ARM Cortex to use the same code
-#define MAX_ELEM_PG_MAIN          7                                        // # Elems total
-#if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   1                                        // # Elems in Flash
-#else
-  #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
-#endif
-#define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
+#define MAX_ELEM_PG_MAIN          7                  // # Elems total
+#define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN   // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -133,15 +129,21 @@ bool InitOverlays()
 /*  
   #define TMP_COL1 (gslc_tsColor){ 32, 32, 60}
   #define TMP_COL2 (gslc_tsColor){128,128,240}
-  // Note: must use title Font ID
-  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",&m_asFont[1],
-          TMP_COL1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false); 
-  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",&m_asFont[1],
-          TMP_COL2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
+    (char*)"Textbox",0,E_FONT_TITLE);
+  gslc_ElemSetTxtCol(pElem,TMP_COL1);
+  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(pElem,false);
+  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
+    (char*)"Textbox",0,E_FONT_TITLE);
+  gslc_ElemSetTxtCol(pElem,TMP_COL2);
+  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(pElem,false);
 */
  
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
+  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   // Example horizontal slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
@@ -174,10 +176,8 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbControls); 
 
   // Quit button
-  static const char mstr1[] PROGMEM = "Quit";  
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},(char*)mstr1,strlen_P(mstr1),E_FONT_TXT,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+    (gslc_tsRect){250,60,50,30},(char*)"QUIT",0,E_FONT_TXT,&CbBtnQuit);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);    
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);  
 
@@ -198,11 +198,8 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
-  //   the font pointer (array index) as it will be provided to certain
-  //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }   // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3)) { return; } // m_asFont[1]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,"",3)) { return; }
 
   // Create pages display
   InitOverlays();

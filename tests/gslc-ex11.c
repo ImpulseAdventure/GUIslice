@@ -210,6 +210,7 @@ int main( int argc, char* args[] )
   gslc_InitDebug(&DebugOut);
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }  
+ 
   
   // Load Fonts
   // - Normally we would select a number of different fonts
