@@ -344,7 +344,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     nTxtLen = strlen_P(pStr);
   }
   *pnTxtSzW = (nTxtLen*6*nTxtScale);
-  *pnTxtSzH = 8;
+  *pnTxtSzH = 8*nTxtScale;
   return true;
 }
 
