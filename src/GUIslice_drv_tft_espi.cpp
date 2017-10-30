@@ -47,7 +47,6 @@
 #include <SPI.h>
 
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -682,15 +681,54 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
-  // TODO
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
+    return false;
+  }    
+  
+  // Perform any driver-specific touchscreen init here
+  
+  // NOTE: TFT_eSPI constructor already initializes the touch
+  // driver if TOUCH_CS is defined in the TFT_eSPI library's "User_Setup.h"
+   
+  // Nothing further to do with driver
   return true;
 }
 
 
+// Confirm that TOUCH_CS has been defined otherwise the
+// m_disp.getTouch() call won't be defined in TFT_eSPI
+#if defined(DRV_TOUCH_TFT_ESPI)
+  #if !defined(TOUCH_CS)
+    #error "To use DRV_TOUCH_TFT_ESPI, TOUCH_CS needs to be defined in TFT_eSPI User_Setup"
+  #endif
+#endif
+
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
 {
-  // TODO
-  return false;
+
+  if ((pGui == NULL) || (pGui->pvDriver == NULL)) {
+    GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n","");
+    return false;
+  }    
+    
+  // Use TFT_eSPI for touch events
+  bool        bPressed = false;
+  uint16_t    nX=0;
+  uint16_t    nY=0;
+  
+  bPressed = m_disp.getTouch(&nX,&nY);
+  
+  // Assign coordinates
+  *pnX = (int16_t)nX;
+  *pnY = (int16_t)nY;
+  if (bPressed) {
+    *pnPress = 1;
+  } else {
+    *pnPress = 0;
+  }
+  
+  return true;
 }
 
 // ------------------------------------------------------------------------
