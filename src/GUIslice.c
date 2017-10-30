@@ -764,6 +764,11 @@ gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsC
   return colNew;
 }
 
+bool gslc_ColorEqual(gslc_tsColor a,gslc_tsColor b)
+{
+  return a.r == b.r && a.g == b.g && a.b == b.b;
+}
+
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
 // ------------------------------------------------------------------------
@@ -2115,10 +2120,13 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
   if (pElem == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemSetTxtCol(%s) called with NULL ptr\n","");
     return;
-  }    
-  pElem->colElemText      = colVal;
-  pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL); 
+  }
+  if (!gslc_ColorEqual(pElem->colElemText, colVal) ||
+      !gslc_ColorEqual(pElem->colElemTextGlow, colVal)) {
+    pElem->colElemText      = colVal;
+    pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  }
 }
 
 void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
