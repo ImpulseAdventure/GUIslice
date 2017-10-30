@@ -47,6 +47,16 @@
 #include <SPI.h>
 
 
+#if defined(DRV_TOUCH_ADA_STMPE610)
+  #include <SPI.h>
+  #include <Wire.h>
+  #include "Adafruit_STMPE610.h"
+#elif defined(DRV_TOUCH_ADA_FT6206)
+  #include <Wire.h>
+  #include "Adafruit_FT6206.h"
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -58,8 +68,22 @@ extern "C" {
 TFT_eSPI m_disp = TFT_eSPI();
 
     
-// ------------------------------------------------------------------------
 
+// ------------------------------------------------------------------------
+#if defined(DRV_TOUCH_ADA_STMPE610) 
+  #if (ADATOUCH_I2C_HW) // Use I2C
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
+  #elif (ADATOUCH_SPI_HW) // Use hardware SPI
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
+  #elif (ADATOUCH_SPI_SW) // Use software SPI
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);   
+  #endif
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_FT6206) 
+    // Always use I2C
+    Adafruit_FT6206 m_touch = Adafruit_FT6206();
+// ------------------------------------------------------------------------
+#endif // DRV_TOUCH_ADA_*
 
 
 // =======================================================================
