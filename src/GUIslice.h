@@ -898,6 +898,16 @@ gslc_tsColor gslc_ColorBlend2(gslc_tsColor colStart,gslc_tsColor colEnd,uint16_t
 ///
 gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsColor colEnd,uint16_t nMidAmt,uint16_t nBlendAmt);
 
+///
+/// Check whether two colors are equal
+///
+/// \param[in]  a:    First color
+/// \param[in]  b:    Second color
+///
+/// \return True iff a and b are the same color.
+///
+bool gslc_ColorEqual(gslc_tsColor a,gslc_tsColor b);
+
 // ------------------------------------------------------------------------
 // Graphics Primitive Functions
 // - These routines cause immediate drawing to occur on the
