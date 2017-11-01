@@ -180,6 +180,9 @@ extern "C" {
   //       Bodmer's TFT_eSPI library for more details:
   //       https://github.com/Bodmer/TFT_eSPI
   
+  // NOTE: To avoid potential SPI conflicts, it is recommended
+  //       that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
+  
   #define GSLC_DEV_TOUCH ""   // No device path used
 
   #define GSLC_LOCAL_STR      0
@@ -242,6 +245,7 @@ extern "C" {
 
 #elif defined(DRV_TOUCH_TFT_ESPI)
   // The TFT_eSPI display library also includes support for XPT2046 touch controller
+  // Note that TFT_eSPI's "User_Setup" should define TOUCH_CS
   #define DRV_TOUCH_IN_DISP   // Use the display driver (TFT_eSPI) for touch events
 
 #endif // DRV_TOUCH_*
