@@ -153,8 +153,9 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(pElem,&CbControls);    
 
   // Text to show slider value
+  static char mstr1[8] = "";  
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
-    (char*)"",0,E_FONT_TXT); 
+    mstr1,sizeof(mstr1),E_FONT_TXT); 
   
   
   // Create wrapping box for textbox and scrollbar

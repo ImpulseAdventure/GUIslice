@@ -198,8 +198,9 @@ bool InitOverlays()
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     (char*)"Searches:",0,E_FONT_TXT);
+  static char mstr1[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr1,sizeof(mstr1),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
   m_pElemCount = pElem; // Save for quick access  
 
@@ -216,24 +217,27 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
     (char*)"Coord X:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  static char mstr2[8] = "";     
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr2,sizeof(mstr2),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
   m_pElemDataX = pElem; // Save for quick access   
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
     (char*)"Coord Y:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  static char mstr3[8] = "";  
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr3,sizeof(mstr3),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
   m_pElemDataY = pElem; // Save for quick access 
   
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
     (char*)"Coord Z:",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  static char mstr4[8] = ""; 
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr4,sizeof(mstr4),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
   m_pElemDataZ = pElem; // Save for quick access 
 

@@ -100,8 +100,9 @@ bool InitOverlays()
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     (char*)"Count:",0,E_FONT_TXT);
+  static char mstr1[8] = "";    
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr1,sizeof(mstr1),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
   m_pElemCnt = pElem; // Save for quick access
 
@@ -145,9 +146,10 @@ bool InitOverlays()
   gslc_ElemXSliderSetStyle(pElem,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
   m_pElemSlider = pElem; // Save for quick access
-  
+
+  static char mstr2[16] = "Slider: ???";    
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
-    (char*)"Slider: ???",0,E_FONT_TXT);
+    mstr2,sizeof(mstr2),E_FONT_TXT);
   m_pElemSliderTxt = pElem; // Save for quick access    
 
   return true;
@@ -204,6 +206,9 @@ void loop()
     
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
+
+  //CAL!
+  //yield();
 
   // Slow down updates
   delay(10);

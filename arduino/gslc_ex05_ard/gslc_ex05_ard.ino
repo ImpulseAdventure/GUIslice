@@ -130,8 +130,9 @@ bool InitOverlays()
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,60,50,10},
     (char*)"Count:",0,E_FONT_TXT);
+  static char mstr1[8] = "";  
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
-    (char*)"",0,E_FONT_TXT);
+    mstr1,sizeof(mstr1),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
   m_pElemCnt = pElem; // Save for quick access
   
