@@ -62,14 +62,14 @@ void UserInitEnv()
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
-#endif  
-  
+#endif
+
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1);
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
 #endif
 }
 
@@ -90,18 +90,18 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 bool InitOverlays()
 {
   gslc_tsElem*  pElem;
-  
+
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
-  
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
-  
+
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  
-  
+
+
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){160,80,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
@@ -118,13 +118,13 @@ bool InitOverlays()
     "Progress:",0,E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
-  
+
   // Second progress bar (vertical)
-  // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range    
+  // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
-    
+
   // Create checkbox 1
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
     "Check1:",0,E_FONT_TXT);
@@ -144,7 +144,7 @@ bool InitOverlays()
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
-    
+
   // Create slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
@@ -168,8 +168,8 @@ int main( int argc, char* args[] )
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   // Load Fonts
-  gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
-  gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
+  gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,12);
+  gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT_DROID_SANS,10);
 
 
   // -----------------------------------
@@ -182,19 +182,19 @@ int main( int argc, char* args[] )
   // Save some element references for quick access
   gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-  gslc_tsElem*  pElemProgress1  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);  
+  gslc_tsElem*  pElemProgress1  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);
   gslc_tsElem*  pElemSlider     = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER);
   gslc_tsElem*  pElemSliderTxt  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER);
 
   // -----------------------------------
   // Main event loop
-  
+
   #if (TEST_UPDATE_RATE)
   uint32_t  nNumUpdates = 0;
   clock_t   sClkStart,sClkEnd;
   sClkStart = clock();
   #endif
-  
+
   m_bQuit = false;
   while (!m_bQuit) {
 
@@ -208,17 +208,17 @@ int main( int argc, char* args[] )
     gslc_ElemSetTxtStr(pElemCnt,acTxt);
 
     gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/200)%100));
-    
+
     // NOTE: A more efficient method is to move the following
     //       code into the slider position callback function.
     //       Please see example 07.
-    int nPos = gslc_ElemXSliderGetPos(pElemSlider);  
+    int nPos = gslc_ElemXSliderGetPos(pElemSlider);
     snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
     gslc_ElemSetTxtStr(pElemSliderTxt,acTxt);
-    
-    gslc_ElemXGaugeUpdate(pElemProgress1,(nPos*80.0/100.0)-15);    
-    
-    // Periodically call GUIslice update function    
+
+    gslc_ElemXGaugeUpdate(pElemProgress1,(nPos*80.0/100.0)-15);
+
+    // Periodically call GUIslice update function
     gslc_Update(&m_gui);
 
     // Simple update rate reporting
@@ -233,7 +233,7 @@ int main( int argc, char* args[] )
       sClkStart = sClkEnd;
     }
     #endif
-    
+
   } // bQuit
 
   // Read checkbox state

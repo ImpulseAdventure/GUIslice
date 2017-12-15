@@ -43,22 +43,22 @@ extern "C" {
 #include "GUIslice.h"
 
 #include <stdio.h>
-  
+
 #if defined(DRV_DISP_SDL1)
   #include <SDL/SDL.h>
   #include <SDL/SDL_getenv.h>
   #include <SDL/SDL_ttf.h>
 #endif
-#if defined(DRV_DISP_SDL2)  
+#if defined(DRV_DISP_SDL2)
   #include <SDL2/SDL.h>
   #include <SDL2/SDL_ttf.h>
 #endif
-  
+
 // Includes for optional tslib touch handling
 #if defined(DRV_TOUCH_TSLIB)
   #include "tslib.h"
-#endif    
-  
+#endif
+
 // =======================================================================
 // API support definitions
 // - These defines indicate whether the driver includes optimized
@@ -67,11 +67,11 @@ extern "C" {
 // - At the very minimum, the point draw routine must be available:
 //   gslc_DrvDrawPoint()
 // =======================================================================
-  
+
 #define DRV_HAS_DRAW_POINT          1 ///< Support gslc_DrvDrawPoint()
-  
+
 #if defined(DRV_DISP_SDL1)
-  #define DRV_HAS_DRAW_POINTS         1 ///< Support gslc_DrvDrawPoints()  
+  #define DRV_HAS_DRAW_POINTS         1 ///< Support gslc_DrvDrawPoints()
   #define DRV_HAS_DRAW_LINE           0 ///< Support gslc_DrvDrawLine()
   #define DRV_HAS_DRAW_RECT_FRAME     0 ///< Support gslc_DrvDrawFrameRect()
   #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
@@ -81,7 +81,7 @@ extern "C" {
   #define DRV_HAS_DRAW_TRI_FILL       0 ///< Support gslc_DrvDrawFillTriangle()
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
 #endif
-  
+
 #if defined(DRV_DISP_SDL2)
   #define DRV_HAS_DRAW_POINTS         1 ///< Support gslc_DrvDrawPoints()
   #define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
@@ -92,14 +92,14 @@ extern "C" {
   #define DRV_HAS_DRAW_TRI_FRAME      0 ///< Support gslc_DrvDrawFrameTriangle()
   #define DRV_HAS_DRAW_TRI_FILL       0 ///< Support gslc_DrvDrawFillTriangle()
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
-#endif  
-  
+#endif
+
 // =======================================================================
 // Driver-specific members
 // =======================================================================
 typedef struct {
-  
-  #if defined(DRV_DISP_SDL1)  
+
+  #if defined(DRV_DISP_SDL1)
   SDL_Surface*        pSurfScreen;      ///< Surface ptr for screen
   #endif
 
@@ -110,12 +110,12 @@ typedef struct {
 
   #if defined(DRV_TOUCH_TSLIB)
   struct tsdev*       pTsDev;           ///< Ptr to touchscreen device
-  #endif  
-  
-} gslc_tsDriver;
-  
+  #endif
 
-  
+} gslc_tsDriver;
+
+
+
 // =======================================================================
 // Public APIs to GUIslice core library
 // - These functions define the renderer / driver-dependent
@@ -149,9 +149,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui);
 ///
 /// Free up any members associated with the driver
 /// - Eg. renderers, windows, background surfaces, etc.
-/// 
+///
 /// \param[in]  pGui:         Pointer to GUI
-/// 
+///
 /// \return none
 ///
 void gslc_DrvDestruct(gslc_tsGui* pGui);
@@ -170,7 +170,7 @@ void gslc_DrvDestruct(gslc_tsGui* pGui);
 /// \param[in]  sImgRef:     Image reference
 ///
 /// \return Image pointer (surface/texture/path) or NULL if error
-/// 
+///
 void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 
 ///
@@ -217,26 +217,26 @@ bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
 /// \param[in]  sImgRef:     Image reference
 ///
 /// \return true if success, false if error
-///  
+///
 bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef);
 
 
-/// 
+///
 /// Release an image surface
-/// 
+///
 /// \param[in]  pvImg:          Void ptr to image
-/// 
+///
 /// \return none
 ///
-void gslc_DrvImageDestruct(void* pvImg);  
+void gslc_DrvImageDestruct(void* pvImg);
 
 
-/// 
+///
 /// Set the clipping rectangle for future drawing updates
-/// 
-/// \param[in]  pGui:          Pointer to GUI  
+///
+/// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pRect:         Rectangular region to constrain edits
-/// 
+///
 /// \return true if success, false if error
 ///
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
@@ -246,22 +246,24 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 // Font handling Functions
 // -----------------------------------------------------------------------
 
+
 ///
-/// Load a font from a file and return pointer to it
+/// Load a font from a resource and return pointer to it
 ///
-/// \param[in]  acFontName:  Filename path to the font
-/// \param[in]  nFontSz:     Typeface size to use
+/// \param[in]  eFontRefType:   Font reference type (GSLC_FONTREF_FNAME for SDL)
+/// \param[in]  pvFontRef:      Font reference pointer (Pointer to the font filename)
+/// \param[in]  nFontSz:        Typeface size to use
 ///
 /// \return Void ptr to driver-specific font if load was successful, NULL otherwise
 ///
-void* gslc_DrvFontAdd(const char* acFontName,uint16_t nFontSz);
+const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz);
 
 
-/// 
+///
 /// Release all fonts defined in the GUI
-/// 
-/// \param[in]  pGui:          Pointer to GUI  
-/// 
+///
+/// \param[in]  pGui:          Pointer to GUI
+///
 /// \return none
 ///
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
@@ -274,12 +276,15 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 /// \param[in]  pFont:       Ptr to Font structure
 /// \param[in]  pStr:        String to display
 /// \param[in]  eTxtFlags:   Flags associated with text string
+/// \param[out] pnTxtX:      Ptr to offset X of text
+/// \param[out] pnTxtY:      Ptr to offset Y of text
 /// \param[out] pnTxtSzW:    Ptr to width of text
 /// \param[out] pnTxtSzH:    Ptr to height of text
 ///
 /// \return true if success, false if failure
-///  
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
+///
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
+        int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
 
 
 ///
@@ -294,7 +299,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 /// \param[in]  colTxt:      Color to draw text
 ///
 /// \return true if success, false if failure
-///  
+///
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt);
 
 
@@ -310,13 +315,13 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 /// \param[in]  pGui:        Pointer to GUI
 ///
 /// \return none
-/// 
+///
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui);
 
 
 // -----------------------------------------------------------------------
 // Graphics Primitives Functions
-// -----------------------------------------------------------------------  
+// -----------------------------------------------------------------------
 
 ///
 /// Draw a point
@@ -401,12 +406,12 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 ///
 /// \return true if success, false if fail
 ///
-void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);  
+void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 
 
 // -----------------------------------------------------------------------
 // Touch Functions
-// -----------------------------------------------------------------------  
+// -----------------------------------------------------------------------
 
 ///
 /// Get the last touch event from the SDL_Event handler
@@ -571,7 +576,7 @@ void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint32_t nPi
 /// \param[in]  pvDest:        Void Ptr to destination surface (typically the screen)
 ///
 /// \return none
-/// 
+///
 void gslc_DrvPasteSurface(gslc_tsGui* pGui,int16_t nX, int16_t nY, void* pvSrc, void* pvDest);
 
 #endif // DRV_DISP_SDL1
@@ -580,7 +585,7 @@ void gslc_DrvPasteSurface(gslc_tsGui* pGui,int16_t nX, int16_t nY, void* pvSrc, 
 
 // -----------------------------------------------------------------------
 // Private Touchscreen Functions (if using SDL)
-// ----------------------------------------------------------------------- 
+// -----------------------------------------------------------------------
 
 ///
 /// Perform any touchscreen-specific initialization
@@ -609,7 +614,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 
 // -----------------------------------------------------------------------
 // Touchscreen Functions (if using tslib)
-// ----------------------------------------------------------------------- 
+// -----------------------------------------------------------------------
 
 #if defined(DRV_TOUCH_TSLIB)
 ///

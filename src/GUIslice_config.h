@@ -235,6 +235,7 @@ extern "C" {
 
   // For ADATOUCH_SPI_HW=1
   #define ADATOUCH_PIN_CS     8 // From Adafruit 2.8" TFT touch shield
+  //#define ADATOUCH_PIN_CS     PIN_D0 // From Adafruit 2.8" TFT touch shield (for ESP8266)
 
   // Calibration values for touch display
   // - These values may need to be updated to match your display

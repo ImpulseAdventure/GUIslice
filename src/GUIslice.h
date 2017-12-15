@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.1    (2017/09/01)
+// - Version 0.9.2    (2017/12/14)
 // =======================================================================
 //
 // The MIT License
@@ -267,6 +267,18 @@ typedef enum {
 } gslc_teRedrawType;
 
 
+/// Font Reference types
+/// - The Font Reference type defines the way in which a
+///   font is selected. In some device targets (such as
+///   LINUX SDL) a filename to a font file is provided. In
+///   others (such as Arduino, ESP8266), a pointer is given to a
+///   font structure (or NULL for default).
+typedef enum {
+  GSLC_FONTREF_FNAME,      ///< Font reference is a filename (full path)
+  GSLC_FONTREF_PTR         ///< Font reference is a pointer to a font structure
+} gslc_teFontRefType;
+
+
 // Define the maximum number of touch events that are handled
 // per gslc_Update() call.
 #define GSLC_MAX_EVT    30
@@ -401,9 +413,10 @@ typedef struct gslc_tsEventTouch {
 
 /// Font reference structure
 typedef struct {
-  int16_t   nId;      ///< Font ID specified by user
-  void*     pvFont;   ///< Void ptr to the Font (type defined by driver)
-  uint16_t  nSize;    ///< Font size
+  int16_t               nId;            ///< Font ID specified by user
+  gslc_teFontRefType    eFontRefType;   ///< Font reference type
+  const void*           pvFont;         ///< Void ptr to the font reference (type defined by driver)
+  uint16_t              nSize;          ///< Font size
 } gslc_tsFont;
 
 
@@ -1119,14 +1132,18 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 /// Load a font into the local font cache and assign
 /// font ID (nFontId).
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nFontId:     ID to use when referencing this font
-/// \param[in]  acFontName:  Filename path to the font
-/// \param[in]  nFontSz:     Typeface size to use
+/// \param[in]  pGui:           Pointer to GUI
+/// \param[in]  nFontId:        ID to use when referencing this font
+/// \param[in]  eFontRefType:   Font reference type (eg. filename or pointer)
+/// \param[in]  pvFontRef:      Reference pointer to identify the font. In the case of SDL
+///                             mode, it is a filepath to the font file. In the case of Arduino
+///                             it is a pointer value to the font bitmap array (GFXFont)
+/// \param[in]  nFontSz:        Typeface size to use (only used in SDL mode)
 ///
 /// \return true if load was successful, false otherwise
 ///
-bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId, const char* acFontName, uint16_t nFontSz);
+bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefType,
+    const void* pvFontRef,uint16_t nFontSz);
 
 
 ///

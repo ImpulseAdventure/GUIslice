@@ -70,15 +70,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // Report any debug info (before init) if enabled
   #if defined(DBG_DRIVER)
   gslc_DrvReportInfoPre();
-  #endif  
-  
+  #endif
+
   // Primary surface definitions
   pGui->sImgRefBkgnd = gslc_ResetImage();
-  
+
   // Initialize any SDL version-specific members
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-    
+
     #if defined(DRV_DISP_SDL1)
     pDriver->pSurfScreen = NULL;
     pGui->bRedrawPartialEn = true;
@@ -101,7 +101,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // TODO: Allow compiler option to skip this workaround
   // TODO: Allow determination of the TTY to use
   gslc_DrvCleanStart(DRV_SDL_FIX_TTY);
-#endif  
+#endif
 
   // Setup SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -119,12 +119,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // Report any debug info (after init) if enabled
   #if defined(DBG_DRIVER)
   gslc_DrvReportInfoPost();
-  #endif  
+  #endif
 
-  
+
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
-#if defined(DRV_DISP_SDL1)  
+
+#if defined(DRV_DISP_SDL1)
   // Set up pGui->pSurfScreen
   const SDL_VideoInfo*  videoInfo = SDL_GetVideoInfo();
   int16_t               nSystemX = videoInfo->current_w;
@@ -133,14 +133,14 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
   // Save a copy of the display dimensions
   pGui->nDispW      = nSystemX;
-  pGui->nDispH      = nSystemY;  
+  pGui->nDispH      = nSystemY;
   pGui->nDispDepth  = nBpp;
 
   #if defined(DBG_DRIVER)
   printf("DBG: Video mode: %u x %u x %u bit/pixel\n",
           pGui->nDispW,pGui->nDispH,pGui->nDispDepth);
   #endif
-  
+
   // SDL_SWSURFACE is apparently more reliable
   pDriver->pSurfScreen = SDL_SetVideoMode(nSystemX,nSystemY,nBpp,SDL_SWSURFACE | SDL_FULLSCREEN);
   if (!pDriver->pSurfScreen) {
@@ -148,23 +148,23 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     return false;
   }
 #endif
-  
+
 #if defined(DRV_DISP_SDL2)
   // Default to using OpenGL rendering engine and full-screen
   // When using SDL_WINDOW_FULLSCREEN, the width & height dimensions are ignored
   pDriver->pWind = SDL_CreateWindow("GUIslice",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
-          0,0,SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);  
+          0,0,SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   if (!pDriver->pWind) {
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_CreateWindow(): %s\n",SDL_GetError());
     return false;
   }
-  
+
   // Save a copy of the display dimensions from the created fullscreen window
   int nSystemX,nSystemY;
   SDL_GetWindowSize(pDriver->pWind,&nSystemX,&nSystemY);
   pGui->nDispW = nSystemX;
   pGui->nDispH = nSystemY;
-  
+
   // Fetch the bit depth of the first display
   SDL_DisplayMode sDispMode;
   int nRet = SDL_GetCurrentDisplayMode(0,&sDispMode);
@@ -173,25 +173,25 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     return false;
   }
   pGui->nDispDepth = SDL_BITSPERPIXEL(sDispMode.format);
-  
+
   #if defined(DBG_DRIVER)
   printf("DBG: Video mode: %u x %u x %u bit/pixel\n",
           pGui->nDispW,pGui->nDispH,pGui->nDispDepth);
-  #endif 
-  
+  #endif
+
   // Create renderer
   // TODO: Resolve performance with "accelerated" renderer (SDL_RENDERER_ACCELERATED.
   //       For now, use software renderer (SDL_RENDERER_SOFTWARE) which appears
   //       to be much faster.
-  
+
   // If we are sure that the OpenGL ES 2.0 driver has been installed, we
   // can request that SDL use this as a renderer. Disable this for now.
   // SDL_SetHint(SDL_HINT_RENDER_DRIVER,"opengles2");
-  
+
   #if (DRV_SDL_RENDER_ACCEL)
-  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_ACCELERATED);  
+  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_ACCELERATED);
   #else
-  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_SOFTWARE);  
+  pDriver->pRender = SDL_CreateRenderer(pDriver->pWind,-1,SDL_RENDERER_SOFTWARE);
   #endif
   if (!pDriver->pRender) {
     GSLC_DEBUG_PRINT("ERROR: DrvInit() error in SDL_CreateRenderer(): %s\n",SDL_GetError());
@@ -203,11 +203,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   SDL_GetRendererInfo(pDriver->pRender,&sRendInfo);
   printf("DBG: Renderer selected: [%s]\n",
           sRendInfo.name);
-  #endif   
-  
+  #endif
+
   // If we wanted to support scaling of the renderer, we would call
   // SDL_RenderSetLogicalSize() here. For now, don't scale.
-  
+
 #endif
 
   // Initialize font engine
@@ -230,19 +230,19 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 #if defined(DRV_DISP_SDL2)
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (pDriver->pRender) {
     SDL_DestroyRenderer(pDriver->pRender);
     pDriver->pRender = NULL;
-  }  
+  }
   if (pDriver->pWind) {
     SDL_DestroyWindow(pDriver->pWind);
     pDriver->pWind = NULL;
   }
-#endif  
-  
+#endif
+
   // Close down SDL
-  SDL_Quit();  
+  SDL_Quit();
 }
 
 // -----------------------------------------------------------------------
@@ -257,7 +257,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     // Load image from SD card
     // TODO: Not yet supported
-    return NULL;    
+    return NULL;
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
     // Load image from RAM
     // TODO: Not yet supported
@@ -269,7 +269,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
     // Load image from file system
     const char* pStrFname = sImgRef.pFname;
-    
+
     // Pointer to the surface image that was loaded
     SDL_Surface* pSurfLoaded = NULL;
 
@@ -305,7 +305,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
         SDL_SetColorKey( pSurfOptimized, SDL_SRCCOLORKEY,
           SDL_MapRGB( pSurfOptimized->format, GSLC_BMP_TRANS_RGB ) );
       } // GSLC_BMP_TRANS_EN
-    } 
+    }
 
     //Return the optimized surface
     return (void*)(pSurfOptimized);
@@ -313,7 +313,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
     #endif
 
     #if defined(DRV_DISP_SDL2)
-    gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver); 
+    gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
     SDL_Texture*  pTex = NULL;
 
     if( pSurfLoaded != NULL ) {
@@ -326,25 +326,25 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
         SDL_SetColorKey( pSurfLoaded, SDL_TRUE,
           SDL_MapRGB( pSurfLoaded->format, GSLC_BMP_TRANS_RGB ) );
       } // GSLC_BMP_TRANS_EN
-    } 
+    }
 
     pTex = (void*)SDL_CreateTextureFromSurface(pDriver->pRender,pSurfLoaded);
     if (pTex == NULL) {
       GSLC_DEBUG_PRINT("ERROR: DrvLoadBmp(%s) SDL_CreateTextureFromSurface() failed: %s\n",pStrFname,SDL_GetError());
-      return NULL;    
-    }  
+      return NULL;
+    }
 
     // Dispose of surface
     SDL_FreeSurface(pSurfLoaded);
-    pSurfLoaded = NULL;  
+    pSurfLoaded = NULL;
 
     //Return the texture
     return (void*)pTex;
 
-    #endif      
+    #endif
 
   } // eImgFlags
-  
+
   // If reached here, it is an error
   return NULL;
 }
@@ -363,42 +363,42 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetBkgndImage(%s) failed\n","");
     return false;
-  }      
-  
+  }
+
   return true;
 }
 
 bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 {
-  
+
   // Dispose of previous background
   if (pGui->sImgRefBkgnd.eImgFlags != GSLC_IMGREF_NONE) {
     gslc_DrvImageDestruct(pGui->sImgRefBkgnd.pvImgRaw);
     pGui->sImgRefBkgnd = gslc_ResetImage();
   }
-  
+
   SDL_Surface* pSurfBkgnd = NULL;
-  
+
   uint16_t nScreenW = pGui->nDispW;
   uint16_t nScreenH = pGui->nDispH;
-  uint8_t  nBpp     = pGui->nDispDepth;  
-  
+  uint8_t  nBpp     = pGui->nDispDepth;
+
   // Create surface that we can draw into
-  // - For the masks, we can pass 0 to get defaults  
+  // - For the masks, we can pass 0 to get defaults
 #if defined(DRV_DISP_SDL1)
   pSurfBkgnd = SDL_CreateRGBSurface(SDL_SWSURFACE,nScreenW,nScreenH,nBpp,0,0,0,0);
 #endif
 #if defined(DRV_DISP_SDL2)
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   // - In SDL2, the flags field is ignored, so set to 0
-  pSurfBkgnd = SDL_CreateRGBSurface(0,nScreenW,nScreenH,nBpp,0,0,0,0);  
+  pSurfBkgnd = SDL_CreateRGBSurface(0,nScreenW,nScreenH,nBpp,0,0,0,0);
 #endif
-  
+
   if (pSurfBkgnd == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetBkgndColor() SDL_CreateRGBSurface failed: %s\n",SDL_GetError());
     return false;
   }
-  
+
   // Fill with requested color
   SDL_FillRect(pSurfBkgnd,NULL,
     SDL_MapRGB(pSurfBkgnd->format,nCol.r,nCol.g,nCol.b));
@@ -407,18 +407,18 @@ bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   // Save surface into GUI struct
   pGui->sImgRefBkgnd.pvImgRaw = (void*)(pSurfBkgnd);
 #endif
-#if defined(DRV_DISP_SDL2) 
+#if defined(DRV_DISP_SDL2)
   // Convert to texture and save into GUI struct
   pGui->sImgRefBkgnd.pvImgRaw = (void*)SDL_CreateTextureFromSurface(pDriver->pRender,pSurfBkgnd);
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetBkgndColor() SDL_CreateTextureFromSurface failed: %s\n",SDL_GetError());
     return false;
-  }  
+  }
   // Dispose of temporary surface
   SDL_FreeSurface(pSurfBkgnd);
-  pSurfBkgnd = NULL;  
+  pSurfBkgnd = NULL;
 #endif
-  
+
   return true;
 }
 
@@ -429,14 +429,14 @@ bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
     GSLC_DEBUG_PRINT("ERROR: DrvSetElemImageNorm(%s) with pvImgRaw already set\n","");
     return false;
   }
-  
+
   pElem->sImgRefNorm = sImgRef;
   pElem->sImgRefNorm.pvImgRaw = gslc_DrvLoadImage(pGui,sImgRef);
   if (pElem->sImgRefNorm.pvImgRaw == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetElemImageNorm(%s) failed\n","");
     return false;
-  }    
-  return true;  
+  }
+  return true;
 }
 
 
@@ -452,8 +452,8 @@ bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
   if (pElem->sImgRefGlow.pvImgRaw == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetElemImageGlow(%s) failed\n","");
     return false;
-  }    
-  return true;  
+  }
+  return true;
 }
 
 
@@ -461,13 +461,13 @@ void gslc_DrvImageDestruct(void* pvImg)
 {
   if (pvImg == NULL) {
     return;
-  }  
-  #if defined(DRV_DISP_SDL1)  
+  }
+  #if defined(DRV_DISP_SDL1)
   SDL_FreeSurface((SDL_Surface*)pvImg);
   #endif
   #if defined(DRV_DISP_SDL2)
   SDL_DestroyTexture((SDL_Texture*)pvImg);
-  #endif  
+  #endif
 }
 
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
@@ -483,7 +483,7 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
   }
   return true;
 #endif
-  
+
 #if defined(DRV_DISP_SDL2)
   SDL_Renderer*  pRender = pDriver->pRender;
   if (pRect == NULL) {
@@ -493,8 +493,8 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     SDL_RenderSetClipRect(pRender,&rSRect);
   }
   return true;
-#endif  
-  
+#endif
+
 }
 
 
@@ -503,15 +503,22 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 // Font handling Functions
 // -----------------------------------------------------------------------
 
-void* gslc_DrvFontAdd(const char* acFontName,uint16_t nFontSz)
+const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
-  TTF_Font*   pFont;
-  pFont = TTF_OpenFont(acFontName,nFontSz);
-  if (pFont == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont failed\n",acFontName);
+  // UNIX/SDL mode currently only supports font definitions from files
+  if (eFontRefType != GSLC_FONTREF_FNAME) {
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - SDL mode only supports file-based fonts\n","");
     return NULL;
-  } 
-  return (void*)pFont;
+  }
+  TTF_Font*   pFont;
+  // In the case of SDL, the pvFontRef is a string that defines the
+  // file path to the font file
+  pFont = TTF_OpenFont((const char*)pvFontRef,nFontSz);
+  if (pFont == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont failed\n",pvFontRef);
+    return NULL;
+  }
+  return (const void*)pFont;
 }
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
@@ -526,10 +533,11 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
     }
   }
   pGui->nFontCnt = 0;
-  TTF_Quit();  
+  TTF_Quit();
 }
 
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
+        int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
   // NOTE: Shouldn't need to process eTxtFlags
   int32_t nTxtSzW,nTxtSzH;
@@ -537,6 +545,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   TTF_SizeText(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
   *pnTxtSzW = (uint16_t)nTxtSzW;
   *pnTxtSzH = (uint16_t)nTxtSzH;
+  // No offset coordinates used
+  *pnTxtX = 0;
+  *pnTxtY = 0;
   return true;
 }
 
@@ -544,7 +555,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
   if ((pGui == NULL) || (pFont == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: DrvDrawTxt(%s) with NULL ptr\n",""); 
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawTxt(%s) with NULL ptr\n","");
     return false;
   }
   if ((pStr == NULL) || (pStr[0] == '\0')) {
@@ -573,7 +584,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     return false;
   }
   SDL_RenderCopy(pRender,pTex,NULL,&rRect);
-  
+
   // Destroy texture
   // TODO: Consider if worth optimizing by retaining texture in case
   //       we need to redraw it without changing content
@@ -585,8 +596,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   if (pSurfTxt != NULL) {
     SDL_FreeSurface(pSurfTxt);
     pSurfTxt = NULL;
-  }  
-  
+  }
+
   return true;
 }
 
@@ -598,8 +609,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-#if defined(DRV_DISP_SDL1)  
-  SDL_Surface*   pScreen = pDriver->pSurfScreen;  
+#if defined(DRV_DISP_SDL1)
+  SDL_Surface*   pScreen = pDriver->pSurfScreen;
   SDL_Flip(pScreen);
 #endif
 #if defined(DRV_DISP_SDL2)
@@ -608,7 +619,7 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
     // Flip the offscreen buffer so we can display our drawing output
     SDL_RenderPresent(pRender);
     // Clear the drawing before any new drawing occurs
-    SDL_SetRenderDrawColor(pRender,0x00,0x00,0x00,0xFF); 
+    SDL_SetRenderDrawColor(pRender,0x00,0x00,0x00,0xFF);
     SDL_RenderClear(pRender);
   }
 #endif
@@ -617,25 +628,25 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 
 // -----------------------------------------------------------------------
 // Graphics Primitives Functions
-// -----------------------------------------------------------------------  
+// -----------------------------------------------------------------------
 
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
 #if defined(DRV_DISP_SDL1)
   if (gslc_DrvScreenLock(pGui)) {
-    uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);    
+    uint32_t nColRaw = gslc_DrvAdaptColorRaw(pGui,nCol);
     gslc_DrvDrawSetPixelRaw(pGui,nX,nY,nColRaw);
     gslc_DrvScreenUnlock(pGui);
   }
 #endif
 #if defined(DRV_DISP_SDL2)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  SDL_Renderer*  pRender = pDriver->pRender;    
+  SDL_Renderer*  pRender = pDriver->pRender;
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
-  
+
   // Call SDL optimized routine
-  SDL_RenderDrawPoint(pRender,nX,nY);  
+  SDL_RenderDrawPoint(pRender,nX,nY);
 #endif
   return true;
 }
@@ -655,15 +666,15 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,uint16_t nNumPt,gslc_ts
 #endif
 #if defined(DRV_DISP_SDL2)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  SDL_Renderer* pRender = pDriver->pRender;     
+  SDL_Renderer* pRender = pDriver->pRender;
   // NOTE: gslc_tsPt is defined to have the same layout as SDL_Point
   //       so we simply typecast it here. This saves us from having
   //       to perform any malloc() and type conversion.
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
-  
+
   // Call SDL optimized routine
-  SDL_RenderDrawPoints(pRender,(SDL_Point*)asPt,(int)nNumPt);  
-#endif  
+  SDL_RenderDrawPoints(pRender,(SDL_Point*)asPt,(int)nNumPt);
+#endif
   return true;
 }
 
@@ -672,22 +683,22 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 #if defined(DRV_DISP_SDL1)
   // Typecast
-  SDL_Rect      rSRect  = gslc_DrvAdaptRect(rRect);  
+  SDL_Rect      rSRect  = gslc_DrvAdaptRect(rRect);
   SDL_Surface*  pScreen = pDriver->pSurfScreen;
-  
+
   // Call SDL optimized routine
   SDL_FillRect(pScreen,&rSRect,
-    SDL_MapRGB(pScreen->format,nCol.r,nCol.g,nCol.b)); 
+    SDL_MapRGB(pScreen->format,nCol.r,nCol.g,nCol.b));
 #endif
 #if defined(DRV_DISP_SDL2)
-  SDL_Renderer* pRender = pDriver->pRender;    
+  SDL_Renderer* pRender = pDriver->pRender;
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
-  
+
   // Call SDL optimized routine
   SDL_Rect  rRectSdl;
-  rRectSdl = gslc_DrvAdaptRect(rRect);  
-  SDL_RenderFillRect(pRender,&rRectSdl);  
-#endif  
+  rRectSdl = gslc_DrvAdaptRect(rRect);
+  SDL_RenderFillRect(pRender,&rRectSdl);
+#endif
   return true;
 }
 
@@ -698,15 +709,15 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 #endif
 #if defined(DRV_DISP_SDL2)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  SDL_Renderer* pRender  = pDriver->pRender;  
+  SDL_Renderer* pRender  = pDriver->pRender;
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
-  
+
   // Call SDL optimized routine
   SDL_Rect  rRectSdl;
   rRectSdl = gslc_DrvAdaptRect(rRect);
-  SDL_RenderDrawRect(pRender,&rRectSdl);  
+  SDL_RenderDrawRect(pRender,&rRectSdl);
   return true;
-#endif  
+#endif
 }
 
 
@@ -720,11 +731,11 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Renderer* pRender  = pDriver->pRender;
   SDL_SetRenderDrawColor(pRender,nCol.r,nCol.g,nCol.b,255);
-  
+
   // Call SDL optimized routine
   SDL_RenderDrawLine(pRender,nX0,nY0,nX1,nY1);
   return true;
-#endif  
+#endif
 }
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
@@ -741,27 +752,27 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     GSLC_DEBUG_PRINT("ERROR: DrvDrawImage(%s) with NULL pvImgRaw\n","");
     return false;
   }
-    
+
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
+
 #if defined(DRV_DISP_SDL1)
   gslc_DrvPasteSurface(pGui,nDstX,nDstY,pImage,pDriver->pSurfScreen);
 #endif
 
-#if defined(DRV_DISP_SDL2)  
+#if defined(DRV_DISP_SDL2)
   SDL_Renderer* pRender = pDriver->pRender;
   SDL_Texture*  pTex    = (SDL_Texture*)pImage;
-  
+
   // Determine dest rect based on source texture dimensions and parameterized offset
   SDL_Rect  rDest;
   rDest.x = nDstX;
   rDest.y = nDstY;
   SDL_QueryTexture(pTex,NULL,NULL,&rDest.w,&rDest.h);
-  
+
   // Default to copying all of source texture rect by specifying NULL
-  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
+  SDL_RenderCopy(pRender,pTex,NULL,&rDest);
 #endif
-  
+
   return true;
 }
 
@@ -783,17 +794,17 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
   }
 
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  
+
 #if defined(DRV_DISP_SDL1)
   gslc_DrvPasteSurface(pGui,0,0,pGui->sImgRefBkgnd.pvImgRaw,pDriver->pSurfScreen);
 #endif
 
-#if defined(DRV_DISP_SDL2)  
+#if defined(DRV_DISP_SDL2)
   SDL_Renderer* pRender = pDriver->pRender;
   SDL_Texture*  pTex    = (SDL_Texture*)(pGui->sImgRefBkgnd.pvImgRaw);
-  
+
   // Determine destination rect
-  
+
   // TODO: Support other background modes such as:
   // - Single Corner Unscaled
   // - Single Centered Unscaled
@@ -804,12 +815,12 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
   SDL_Rect  rDest;
   SDL_RenderGetViewport(pDriver->pRender,&rDest);
   rDest.x = 0;
-  rDest.y = 0;  
+  rDest.y = 0;
 
   // Default to copying all of source texture rect by specifying NULL
-  SDL_RenderCopy(pRender,pTex,NULL,&rDest);  
+  SDL_RenderCopy(pRender,pTex,NULL,&rDest);
 #endif
-  
+
 }
 
 
@@ -825,16 +836,16 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
     return false;
-  }    
-  
+  }
+
   // Perform any driver-specific touchscreen init here
-  
-  #if defined(DRV_TOUCH_TSLIB)  
+
+  #if defined(DRV_TOUCH_TSLIB)
     // Assign default
     gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
     pDriver->pTsDev = NULL;
   #endif
-  
+
   // Nothing further to do with SDL driver
   return true;
 }
@@ -846,8 +857,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n","");
     return false;
-  }    
-  
+  }
+
   // Use SDL for touch events
   bool        bRet = false;
   SDL_Event   sEvent;
@@ -865,12 +876,12 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     } else if (sEvent.type == SDL_KEYUP) {
 
     } else if (sEvent.type == SDL_MOUSEMOTION) {
-      #if defined(DRV_DISP_SDL1)  
+      #if defined(DRV_DISP_SDL1)
       SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
       nX = sEvent.button.x;
       nY = sEvent.button.y;
-      #endif      
+      #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       // For MOUSEMOTION, we want to return the previous state of
@@ -879,33 +890,33 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       // Note that we can't simply leave pnPress as-is since it
       // doesn't retain its state in the caller.
       *pnPress = pGui->nTouchLastPress;
-      bRet = true;      
+      bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONDOWN) {
-      #if defined(DRV_DISP_SDL1)  
+      #if defined(DRV_DISP_SDL1)
       SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
       nX = sEvent.button.x;
       nY = sEvent.button.y;
-      #endif 
+      #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 1;
       bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONUP) {
-      #if defined(DRV_DISP_SDL1)  
+      #if defined(DRV_DISP_SDL1)
       SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
       nX = sEvent.motion.x;
       nY = sEvent.motion.y;
-      #endif       
+      #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 0;
       bRet = true;
-     
- 
+
+
     // SDL2 defines touch events instead of reusing mouse events
-    #if defined(DRV_DISP_SDL2)    
+    #if defined(DRV_DISP_SDL2)
 
     } else if (sEvent.type == SDL_FINGERMOTION) {
       *pnX = (int16_t)(sEvent.tfinger.x);
@@ -914,7 +925,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       // the touch pressure in pnPress as FINGERMOTION is called during
       // both up and down states.
       // Note that we can't simply leave pnPress as-is since it
-      // doesn't retain its state in the caller.      
+      // doesn't retain its state in the caller.
       *pnPress = pGui->nTouchLastPress;
       bRet = true;
     } else if (sEvent.type == SDL_FINGERDOWN) {
@@ -928,7 +939,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       (*pnPress) = 0;
       bRet = true;
     #endif  // DRV_DISP_SDL2
-      
+
     }
   } // SDL_PollEvent()
 
@@ -972,7 +983,7 @@ bool gslc_DrvCleanStart(const char* sTTY)
 #if (DRV_SDL_FIX_START)
     int     nFD = -1;
     int     nRet = false;
-    
+
     nFD = open(sTTY, O_RDONLY, 0);
     if (nFD < 0) {
         GSLC_DEBUG_PRINT( "ERROR: DrvCleanStart() failed to open console (%s): %s\n",
@@ -992,7 +1003,7 @@ bool gslc_DrvCleanStart(const char* sTTY)
         return false;
     }
     close(nFD);
-#endif    
+#endif
     return true;
 }
 
@@ -1000,13 +1011,13 @@ bool gslc_DrvCleanStart(const char* sTTY)
 void gslc_DrvReportInfoPre()
 {
 
-  
+
 #if defined(DRV_DISP_SDL1)
 
 #elif defined(DRV_DISP_SDL2)
   int16_t           nDriverInd = 0;
   int16_t           nNumDrivers = 0;
-  
+
   // Video driver info
   const char*   pDriverName = NULL;
   bool          bDriverOk = false;
@@ -1014,7 +1025,7 @@ void gslc_DrvReportInfoPre()
   for (nDriverInd=0;nDriverInd<nNumDrivers;nDriverInd++) {
     pDriverName = SDL_GetVideoDriver(nDriverInd);
     printf("DBG: Video driver #%2d: [%s]\n",nDriverInd,pDriverName);
-    
+
     bDriverOk = false;
     #if defined(DRV_DISP_SDL1)
     if (SDL_VideoInit(pDriverName,0) == 0) {
@@ -1035,12 +1046,12 @@ void gslc_DrvReportInfoPre()
 
   }
   #endif
-  
 
-  
-  #if defined(DRV_DISP_SDL2)   
+
+
+  #if defined(DRV_DISP_SDL2)
   // Renderer info
-  SDL_RendererInfo  sRendInfo;  
+  SDL_RendererInfo  sRendInfo;
   nNumDrivers = SDL_GetNumRenderDrivers();
   for (nDriverInd=0;nDriverInd<nNumDrivers;nDriverInd++) {
     SDL_GetRenderDriverInfo(nDriverInd,&sRendInfo);
@@ -1050,7 +1061,7 @@ void gslc_DrvReportInfoPre()
     printf("DBG: -  Accelerated  = %u\n",(sRendInfo.flags & SDL_RENDERER_ACCELERATED)?1:0);
     printf("DBG: -  PresentVSync = %u\n",(sRendInfo.flags & SDL_RENDERER_PRESENTVSYNC)?1:0);
   }
-  
+
   #endif
 }
 
@@ -1062,7 +1073,7 @@ void gslc_DrvReportInfoPost()
   char acDriverName[40];
   SDL_VideoDriverName(acDriverName,40);
   printf("DBG: Video Driver [%s]\n",acDriverName);
-  
+
   #elif defined(DRV_DISP_SDL2)
   // Display Modes
   int16_t nDispCnt,nDispInd;
@@ -1082,7 +1093,7 @@ void gslc_DrvReportInfoPost()
       printf("DBG: - %d x %d, %u bpp\n",sMode.w,sMode.h,SDL_BITSPERPIXEL(sMode.format));
     }
   }
-  #endif  
+  #endif
 }
 
 // -----------------------------------------------------------------------
@@ -1128,7 +1139,7 @@ uint32_t gslc_DrvAdaptColorRaw(gslc_tsGui* pGui,gslc_tsColor nCol)
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvAdaptColorRaw(%s) called with NULL ptr\n","");
     return 0;
-  }      
+  }
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Surface*   pScreen = pDriver->pSurfScreen;
   return SDL_MapRGB(pScreen->format,nCol.r,nCol.g,nCol.b);
@@ -1145,17 +1156,17 @@ bool gslc_DrvScreenLock(gslc_tsGui* pGui)
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvScreenLock(%s) called with NULL ptr\n","");
     return false;
-  }       
+  }
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   // Typecast
-  SDL_Surface*   pScreen = pDriver->pSurfScreen;  
-  
+  SDL_Surface*   pScreen = pDriver->pSurfScreen;
+
   if (SDL_MUSTLOCK(pScreen)) {
     if (SDL_LockSurface(pScreen) < 0) {
       GSLC_DEBUG_PRINT("ERROR: DrvScreenLock() can't lock screen: %s\n",SDL_GetError());
       return false;
     }
-  }   
+  }
 
   return true;
 }
@@ -1165,11 +1176,11 @@ void gslc_DrvScreenUnlock(gslc_tsGui* pGui)
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvScreenUnlock(%s) called with NULL ptr\n","");
     return;
-  }      
+  }
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   // Typecast
-  SDL_Surface*   pScreen = pDriver->pSurfScreen;  
-  
+  SDL_Surface*   pScreen = pDriver->pSurfScreen;
+
   if (SDL_MUSTLOCK(pScreen)) {
     SDL_UnlockSurface(pScreen);
   }
@@ -1189,7 +1200,7 @@ uint32_t gslc_DrvDrawGetPixelRaw(gslc_tsGui* pGui, int16_t nX, int16_t nY)
   if (pScreen == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawGetPixelRaw(%s) screen surface NULL\n","");
     return 0;
-  }      
+  }
   int nBpp = pScreen->format->BytesPerPixel;
 
   // Handle any range violations for entire surface
@@ -1206,19 +1217,19 @@ uint32_t gslc_DrvDrawGetPixelRaw(gslc_tsGui* pGui, int16_t nX, int16_t nY)
   switch(nBpp) {
     case 1:
       return *pPixel;
-  
+
     case 2:
       return *(uint16_t *)pPixel;
-  
+
     case 3:
       if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
         return pPixel[0] << 16 | pPixel[1] << 8 | pPixel[2];
       else
         return pPixel[0] | pPixel[1] << 8 | pPixel[2] << 16;
-  
+
     case 4:
       return *(uint32_t *)pPixel;
-  
+
     default:
       return 0;       // shouldn't happen, but avoids warnings
   }
@@ -1240,7 +1251,7 @@ void gslc_DrvDrawSetPixelRaw(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint32_t n
   if (pScreen == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawSetPixelRaw(%s) screen surface NULL\n","");
     return;
-  }        
+  }
   uint8_t nBpp = pScreen->format->BytesPerPixel;
 
   // Handle any clipping
@@ -1311,19 +1322,19 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch(%s) called with NULL ptr\n","");
     return false;
-  }    
-  
+  }
+
   // Perform any driver-specific touchscreen init here
-  
+
   // Assign default
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   pDriver->pTsDev = NULL;
-  
+
   // TODO: Consider using env "TSLIB_TSDEVICE" instead
   //char* pDevName = NULL;
   //pDevName = getenv("TSLIB_TSDEVICE");
   //pDriver->pTsDev = ts_open(pDevName,1);
-  
+
   // Open in non-blocking mode
   pDriver->pTsDev = ts_open(acDev,1);
   if (!pDriver->pTsDev) {
@@ -1347,7 +1358,7 @@ int gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: TDrvGetTouch(%s) called with NULL ptr\n","");
     return 0;
-  }    
+  }
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   // In case tslib was not loaded, exit now
   if (pDriver->pTsDev == NULL) {

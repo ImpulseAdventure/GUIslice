@@ -49,14 +49,14 @@ void UserInitEnv()
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
-#endif  
-  
+#endif
+
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1);
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
 #endif
 }
 
@@ -76,9 +76,9 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 bool InitOverlays(const char *strPath)
 {
   gslc_tsElem*  pElem = NULL;
-  
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
-  
+
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
@@ -105,10 +105,10 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-  gslc_InitDebug(&DebugOut);  
+  gslc_InitDebug(&DebugOut);
   UserInitEnv();
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
-  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }
+
   // -----------------------------------
   // Create the graphic elements
   InitOverlays(dirname(args[0])); // Pass executable path to find resource files
@@ -124,10 +124,10 @@ int main( int argc, char* args[] )
 
   m_bQuit = false;
   while (!m_bQuit) {
-    
+
     // Periodically call GUIslice update function
     gslc_Update(&m_gui);
-    
+
   } // bQuit
 
 

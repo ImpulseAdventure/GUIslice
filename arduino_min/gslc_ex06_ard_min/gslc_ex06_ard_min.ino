@@ -101,19 +101,19 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
-  
+
   // Create shorthand variables for the origin
   int16_t  nX = pElem->rElem.x + m_nOriginX;
   int16_t  nY = pElem->rElem.y + m_nOriginY;
-  
+
   // Draw the background
   gslc_tsRect rInside = pElem->rElem;
   rInside = gslc_ExpandRect(rInside,-1,-1);
   gslc_DrawFillRect(pGui,rInside,pElem->colElemFill);
-  
+
   // Enable localized clipping
   gslc_SetClipRect(pGui,&rInside);
-  
+
   // Perform the drawing of example graphic primitives
   gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);
   gslc_DrawLine(pGui,nX-200,nY,nX+200,nY,GSLC_COL_GRAY_DK2);
@@ -130,13 +130,13 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 
   // Disable clipping region
   gslc_SetClipRect(pGui,NULL);
-  
+
   // Draw the frame
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
-  
+
   // Clear the redraw flag
   gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
-  
+
   return true;
 }
 
@@ -148,8 +148,8 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 {
 
   //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
-  gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);  
-  
+  gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);
+
   m_fCoordX = 50+25.0*(sin(m_nCount/2.5));
   m_fCoordY = 50+15.0*(cos(m_nCount/1.75));
   m_fCoordZ = 13.02;
@@ -157,10 +157,10 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   // Adjust the scanner's origin for fun
   m_nOriginX = (int16_t)m_fCoordX;
   m_nOriginY = (int16_t)m_fCoordY;
-  
+
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);  
+  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 
   return true;
 }
@@ -180,7 +180,7 @@ bool InitOverlays()
   gslc_tsElem*  pElem = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
-  
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK3);
 
@@ -198,8 +198,8 @@ bool InitOverlays()
   // Create Quit button with text label
   static const char mstr1[] PROGMEM = "Quit";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){40,210,50,20},(char*)mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit); 
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+    (gslc_tsRect){40,210,50,20},(char*)mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
+  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
   // Create counter
   // - Static label
@@ -210,16 +210,16 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     mstr3,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
-  m_pElemCount = pElem; // Save for quick access  
+  m_pElemCount = pElem; // Save for quick access
 
   // Create progress bar
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access    
+  m_pElemProgress = pElem; // Save for quick access
 
-  
+
   // Create other labels
 
   // Static label
@@ -230,8 +230,8 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
     mstr6,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
-  m_pElemDataX = pElem; // Save for quick access   
-  
+  m_pElemDataX = pElem; // Save for quick access
+
   // Static label
   gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,40,120,50,10,"Coord Y:",&m_asFont[1],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -240,8 +240,8 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
     mstr8,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
-  m_pElemDataY = pElem; // Save for quick access 
-  
+  m_pElemDataY = pElem; // Save for quick access
+
   // Static label
   gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,40,140,50,10,"Coord Z:",&m_asFont[1],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -250,7 +250,7 @@ bool InitOverlays()
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
     mstr10,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
-  m_pElemDataZ = pElem; // Save for quick access 
+  m_pElemDataZ = pElem; // Save for quick access
 
   gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,20,170,50,10,"Control:",&m_asFont[1],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -293,15 +293,15 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
+
   // -----------------------------------
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,"",1); // m_asFont[0]
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1); // m_asFont[0]
   if (!bOk) { return; }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,"",1); // m_asFont[1]
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1); // m_asFont[1]
   if (!bOk) { return; }
 
 
@@ -311,14 +311,14 @@ void setup()
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-  
+
   m_bQuit = false;
 }
 
 void loop()
 {
   char              acTxt[MAX_STR];
-    
+
   // Update the data display values
   m_nCount++;
 
@@ -345,7 +345,7 @@ void loop()
 
   // Slow down display
   delay(10);
-    
+
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
   // infinite loop. Note that interrupts are not disabled so that any debug
@@ -354,7 +354,7 @@ void loop()
     gslc_Quit(&m_gui);
     while (1) { }
   }
-  
+
 }
 
 

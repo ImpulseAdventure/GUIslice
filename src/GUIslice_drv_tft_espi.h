@@ -224,14 +224,16 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 // -----------------------------------------------------------------------
 
 ///
-/// Load a font from a file and return pointer to it
+/// Load a font from a resource and return pointer to it
 ///
-/// \param[in]  acFontName:  Filename path to the font
-/// \param[in]  nFontSz:     Typeface size to use
+/// \param[in]  eFontRefType:   Font reference type (GSLC_FONTREF_PTR for Arduino)
+/// \param[in]  pvFontRef:      Font reference pointer (Pointer to the GFXFont array)
+/// \param[in]  nFontSz:        Typeface size to use
 ///
-/// \return true if load was successful, false otherwise
+/// \return Void ptr to driver-specific font if load was successful, NULL otherwise
 ///
-void* gslc_DrvFontAdd(const char* acFontName,uint16_t nFontSz);
+const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz);
+
 
 ///
 /// Release all fonts defined in the GUI
@@ -250,12 +252,15 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 /// \param[in]  pFont:       Ptr to Font structure
 /// \param[in]  pStr:        String to display
 /// \param[in]  eTxtFlags:   Flags associated with text string
+/// \param[out] pnTxtX:      Ptr to offset X of text
+/// \param[out] pnTxtY:      Ptr to offset Y of text
 /// \param[out] pnTxtSzW:    Ptr to width of text
 /// \param[out] pnTxtSzH:    Ptr to height of text
 ///
 /// \return true if success, false if failure
 ///
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
+        int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH);
 
 
 ///

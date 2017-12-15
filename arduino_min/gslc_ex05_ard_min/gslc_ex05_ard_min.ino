@@ -48,10 +48,10 @@ unsigned  m_nCount = 0;
 #define MAX_ELEM_PG_EXTRA       7                                         // # Elems total on Extra page
 #if (GSLC_USE_PROGMEM)
   #define MAX_ELEM_PG_MAIN_PROG   4                                       // # Elems in Flash
-  #define MAX_ELEM_PG_EXTRA_PROG  4                                       // # Elems in Flash  
+  #define MAX_ELEM_PG_EXTRA_PROG  4                                       // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                       // # Elems in Flash
-  #define MAX_ELEM_PG_EXTRA_PROG  0                                       // # Elems in Flash  
+  #define MAX_ELEM_PG_EXTRA_PROG  0                                       // # Elems in Flash
 #endif
 #define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
 #define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
@@ -101,73 +101,73 @@ bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t
 bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
-  
+
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN_RAM,m_asMainElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA_RAM,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
-  
+
   // -----------------------------------
   // Background
   // - Background image from SD card disabled, uncomment to enable
   // - Ensure that ADAGFX_SD_EN is set to 1 in GUIslice_config.h
   //static const char m_strImgBkgnd[] = IMG_BKGND;
-  //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24)); 
-   
+  //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24));
+
   // -----------------------------------
   // PAGE: MAIN
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);  
+  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
 
   // Create title
   gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",&m_asFont[2], // E_FONT_TITLE
-          GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);  
+          GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 
   // Create Quit button with text label
-  static const char mstr2[] PROGMEM = "Quit";  
+  static const char mstr2[] PROGMEM = "Quit";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){100,140,50,20},(char*)mstr2,strlen_P(mstr2),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
- 
+
   // Create Extra button with text label
-  static const char mstr3[] PROGMEM = "Extra";  
+  static const char mstr3[] PROGMEM = "Extra";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
     (gslc_tsRect){170,140,50,20},(char*)mstr3,strlen_P(mstr3),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);    
+  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
   // Create counter
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,40,60,50,10,"Count",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  static char mstr5[8] = "";  // Placeholder for counter  
+  static char mstr5[8] = "";  // Placeholder for counter
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
     mstr5,8,E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
   m_pElemCnt = pElem; // Save for quick access
-  
+
 
   // Create progress bar
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,40,80,50,10,"Progress",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access    
-    
+  m_pElemProgress = pElem; // Save for quick access
+
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
-    (gslc_tsRect){160,60,120,50},E_FONT_BTN);  
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);  
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
 
   // Create Back button with text label
-  static const char mstr7[] PROGMEM = "Back";    
+  static const char mstr7[] PROGMEM = "Back";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
     (gslc_tsRect){50,170,50,20},(char*)mstr7,strlen_P(mstr7),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);       
+  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
 
   // Create a few labels
@@ -183,9 +183,9 @@ bool InitOverlays()
     (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
-    (gslc_tsRect){130,120,120,50},E_FONT_BTN);    
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
-    
+
   return true;
 }
 
@@ -196,7 +196,7 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
+
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
@@ -204,16 +204,16 @@ void setup()
   // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
   //   the font pointer (array index) as it will be provided to certain
   //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,"",1)) { return; }    // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }    // m_asFont[1]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,"",1)) { return; }  // m_asFont[2]
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[0]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[1]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }  // m_asFont[2]
 
   // Create page elements
   InitOverlays();
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-  
+
   m_bQuit = false;
 }
 
@@ -224,7 +224,7 @@ void loop()
   // Save some element references for easy access
   gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-    
+
   m_nCount++;
 
   // Perform drawing updates
@@ -235,13 +235,13 @@ void loop()
   gslc_ElemSetTxtStr(pElemCnt,acTxt);
 
   gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
-    
+
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
   // Slow down updates
   delay(100);
-  
+
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
   // infinite loop. Note that interrupts are not disabled so that any debug

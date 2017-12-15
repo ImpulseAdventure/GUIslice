@@ -66,13 +66,13 @@ gslc_tsXSlider              m_sXSlider;
   // Save some element references for quick access
   gslc_tsElem*  m_pElemCnt        = NULL;
   gslc_tsElem*  m_pElemProgress   = NULL;
-  gslc_tsElem*  m_pElemProgress1  = NULL;  
+  gslc_tsElem*  m_pElemProgress1  = NULL;
   gslc_tsElem*  m_pElemSlider     = NULL;
   gslc_tsElem*  m_pElemSliderTxt  = NULL;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
-  
+
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
@@ -87,16 +87,16 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 bool InitOverlays()
 {
   gslc_tsElem*  pElem;
-  
+
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
-  
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
-  
+
   // Create background box
   gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
-  
+
   // Create Quit button with text label
   static const char mstr1[] PROGMEM = "Quit";
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
@@ -114,18 +114,18 @@ bool InitOverlays()
 
   // Create progress bar (horizontal)
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1], // E_FONT_TXT
-          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);  
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access    
+  m_pElemProgress = pElem; // Save for quick access
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  m_pElemProgress1 = pElem; // Save for quick access   
-    
+  m_pElemProgress1 = pElem; // Save for quick access
+
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -145,17 +145,17 @@ bool InitOverlays()
   pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(pElem,E_GROUP1);
-    
+
   // Create slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
   gslc_ElemXSliderSetStyle(pElem,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
   m_pElemSlider = pElem; // Save for quick access
-  static char mstr8[15] = "Slider: ???"; // Provide space for counter value  
+  static char mstr8[15] = "Slider: ???"; // Provide space for counter value
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
     mstr8,15,E_FONT_TXT);
-  m_pElemSliderTxt = pElem; // Save for quick access    
+  m_pElemSliderTxt = pElem; // Save for quick access
 
   return true;
 }
@@ -167,7 +167,7 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
+
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
@@ -175,8 +175,8 @@ void setup()
   // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
   //   the font pointer (array index) as it will be provided to certain
   //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,"",1)) { return; }    // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }    // m_asFont[1]
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[0]
+  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[1]
 
   // Create graphic elements
   InitOverlays();
@@ -190,7 +190,7 @@ void setup()
 void loop()
 {
   char                acTxt[MAX_STR];
-  
+
   // General counter
   m_nCount++;
 
@@ -199,22 +199,22 @@ void loop()
   gslc_ElemSetTxtStr(m_pElemCnt,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
-  
+
   // NOTE: A more efficient method is to move the following
   //       code into the slider position callback function.
   //       Please see example 07.
-  int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);  
+  int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);
   snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-  gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);  
+  gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress1,(nPos*80.0/100.0)-15);
-    
+
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
   // Slow down updates
   delay(10);
- 
+
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
   // infinite loop. Note that interrupts are not disabled so that any debug

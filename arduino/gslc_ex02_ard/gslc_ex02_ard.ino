@@ -4,6 +4,10 @@
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 // - Example 02 (Arduino):
 //   - Accept touch input, text button
+//   - NOTE: This is the simple version of the example without
+//     optimizing for memory consumption. A "minimal"
+//     version is located in the "arduino_min" folder which includes
+//     FLASH memory optimization for reduced memory devices.
 //
 
 // ARDUINO NOTES:
@@ -56,31 +60,29 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
+
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
-  
+
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,"",1)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // -----------------------------------
   // Create page elements
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
-  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  
-  // Create Quit button with text label
-  static const char mstr1[] PROGMEM = "Quit";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){120,100,80,40},(char*)&mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
 
-  
+  // Create Quit button with text label
+  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+    (gslc_tsRect){120,100,80,40},(char*)"Quit",0,E_FONT_BTN,&CbBtnQuit);
+
+
   // -----------------------------------
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);

@@ -68,14 +68,14 @@ void UserInitEnv()
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
-#endif  
-  
+#endif
+
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1);
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
 #endif
 }
 
@@ -106,16 +106,16 @@ bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t
 bool InitOverlays(char *strPath)
 {
   gslc_tsElem*  pElem = NULL;
-  
+
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN,m_asMainElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
-  
+
   // -----------------------------------
   // Background
   strncpy(m_strImgBkgnd,strPath,MAX_PATH);
-  strncat(m_strImgBkgnd,IMG_BKGND,MAX_PATH);  
+  strncat(m_strImgBkgnd,IMG_BKGND,MAX_PATH);
   gslc_SetBkgndImage(&m_gui,gslc_GetImageFromFile(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP16));
-  
+
   // -----------------------------------
   // PAGE: MAIN
 
@@ -153,8 +153,8 @@ bool InitOverlays(char *strPath)
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
-    (gslc_tsRect){160,60,120,50},E_FONT_BTN);  
-  
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
+
   // -----------------------------------
   // PAGE: EXTRA
 
@@ -175,14 +175,14 @@ bool InitOverlays(char *strPath)
     "Data 2",0,E_FONT_TXT); nPosY += nSpaceY;
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
     "Data 3",0,E_FONT_TXT); nPosY += nSpaceY;
-  
+
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
     (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
-    (gslc_tsRect){130,120,120,50},E_FONT_BTN);    
-    
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
+
   return true;
 }
 
@@ -194,7 +194,7 @@ int main( int argc, char* args[] )
 
   // -----------------------------------
   // Initialize
-  gslc_InitDebug(&DebugOut);  
+  gslc_InitDebug(&DebugOut);
   UserInitEnv();
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
@@ -202,11 +202,11 @@ int main( int argc, char* args[] )
   // - In this example, we are loading the same font but at
   //   different point sizes. We could also refer to other
   //   font files as well.
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,FONT_DROID_SANS,12);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,12);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,FONT_DROID_SANS,10);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT_DROID_SANS,10);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,FONT_DROID_SANS,32);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT_DROID_SANS,32);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 
@@ -221,11 +221,11 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-  
+
   // Save some element references for quick access
   gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-  
+
   // -----------------------------------
   // Main event loop
 
@@ -244,10 +244,10 @@ int main( int argc, char* args[] )
 
     gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/200)%100));
 
-    
-    // Periodically call GUIslice update function    
+
+    // Periodically call GUIslice update function
     gslc_Update(&m_gui);
-    
+
   } // bQuit
 
 

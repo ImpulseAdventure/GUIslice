@@ -93,17 +93,17 @@ bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t
 bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
-  
+
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN_RAM,m_asMainElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA_RAM,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
-  
+
   // -----------------------------------
   // Background
   // - Background image from SD card disabled, uncomment to enable
   // - Ensure that ADAGFX_SD_EN is set to 1 in GUIslice_config.h
   //static const char m_strImgBkgnd[] = IMG_BKGND;
-  //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24)); 
-   
+  //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24));
+
   // -----------------------------------
   // PAGE: MAIN
 
@@ -116,13 +116,13 @@ bool InitOverlays()
     (char*)"GUIslice Demo",0,E_FONT_TITLE);
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);  
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
 
   // Create Quit button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){100,140,50,20},(char*)"Quit",0,E_FONT_BTN,&CbBtnCommon);  
+    (gslc_tsRect){100,140,50,20},(char*)"Quit",0,E_FONT_BTN,&CbBtnCommon);
 
- 
+
   // Create Extra button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
     (gslc_tsRect){170,140,50,20},(char*)"Extra",0,E_FONT_BTN,&CbBtnCommon);
@@ -130,24 +130,24 @@ bool InitOverlays()
   // Create counter
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,60,50,10},
     (char*)"Count:",0,E_FONT_TXT);
-  static char mstr1[8] = "";  
+  static char mstr1[8] = "";
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
     mstr1,sizeof(mstr1),E_FONT_TXT);
   gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
   m_pElemCnt = pElem; // Save for quick access
-  
+
 
   // Create progress bar
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,80,50,10},
     (char*)"Progress:",0,E_FONT_TXT);
   pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access    
-    
+  m_pElemProgress = pElem; // Save for quick access
+
 
   // Add compound element
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
-    (gslc_tsRect){160,60,120,50},E_FONT_BTN);  
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -158,7 +158,7 @@ bool InitOverlays()
 
   // Create Back button with text label
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_BTN,&CbBtnCommon);    
+    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_BTN,&CbBtnCommon);
 
 
   // Create a few labels
@@ -176,9 +176,9 @@ bool InitOverlays()
     (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
   pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
-    (gslc_tsRect){130,120,120,50},E_FONT_BTN);    
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
-    
+
   return true;
 }
 
@@ -189,21 +189,21 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
+
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,"",1)) { return; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,"",1)) { return; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,"",1)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create page elements
   InitOverlays();
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-  
+
   m_bQuit = false;
 }
 
@@ -214,7 +214,7 @@ void loop()
   // Save some element references for easy access
   gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-    
+
   m_nCount++;
 
   // Perform drawing updates
@@ -225,13 +225,13 @@ void loop()
   gslc_ElemSetTxtStr(pElemCnt,acTxt);
 
   gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
-    
+
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
   // Slow down updates
   delay(100);
-  
+
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
   // infinite loop. Note that interrupts are not disabled so that any debug

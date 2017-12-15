@@ -41,14 +41,14 @@ void UserInitEnv()
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
-#endif  
-  
+#endif
+
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1);
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
 #endif
 }
 
@@ -60,12 +60,12 @@ int main( int argc, char* args[] )
   gslc_tsElem*  pElem = NULL;
 
   // Initialize
-  gslc_InitDebug(&DebugOut);  
+  gslc_InitDebug(&DebugOut);
   UserInitEnv();
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { exit(1); }
 
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
-  
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
@@ -76,12 +76,12 @@ int main( int argc, char* args[] )
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // Periodically call GUIslice update function    
+  // Periodically call GUIslice update function
   gslc_Update(&m_gui);
-  
+
   // Main code here...
   sleep(2);
-  
+
   // Close down display
   gslc_Quit(&m_gui);
 

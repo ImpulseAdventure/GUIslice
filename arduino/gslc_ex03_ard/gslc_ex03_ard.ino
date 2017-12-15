@@ -59,9 +59,9 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 bool InitOverlays()
 {
   gslc_tsElem*  pElem = NULL;
-  
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
-  
+
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
@@ -82,16 +82,16 @@ bool InitOverlays()
 void setup()
 {
   // Initialize debug output
-  Serial.begin(9600);  
+  Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
 
   // Initialize
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }  
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }
 
   // Create the graphic elements
-  InitOverlays(); 
-  
+  InitOverlays();
+
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
@@ -102,7 +102,7 @@ void loop()
 {
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
-    
+
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
   // infinite loop. Note that interrupts are not disabled so that any debug
@@ -111,6 +111,6 @@ void loop()
     gslc_Quit(&m_gui);
     while (1) { }
   }
-  
+
 }
 

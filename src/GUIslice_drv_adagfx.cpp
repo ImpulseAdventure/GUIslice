@@ -316,10 +316,15 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 // Font handling Functions
 // -----------------------------------------------------------------------
 
-void* gslc_DrvFontAdd(const char* acFontName,uint16_t nFontSz)
+const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
-  // Nothing required to load, so return
-  return NULL;
+  // Arduino mode currently only supports font definitions from memory
+  if (eFontRefType != GSLC_FONTREF_PTR) {
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - Arduino only supports memory-based fonts\n","");
+    return NULL;
+  }
+  // Return pointer to Adafruit-GFX GFXfont structure
+  return pvFontRef;
 }
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
@@ -327,25 +332,16 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
+        int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
+  m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
-  //int16_t   nDummyX,nDummyY;
-  //m_disp.getTextBounds((char*)pStr,0,0,&nDummyX,&nDummyY,pnTxtSzW,pnTxtSzH);
-  // TODO: FIXME: getTextBounds seems to return bad value.
-  //       Would also need to handle pStr in PROGMEM
+  m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
 
-  // Workaround uses the dimensions of default default font in Adafruit-GFX library
-  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-    nTxtLen = strlen(pStr);
-  } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
-    nTxtLen = strlen_P(pStr);
-  }
-  *pnTxtSzW = (nTxtLen*6*nTxtScale);
-  *pnTxtSzH = 8*nTxtScale;
   return true;
 }
 
@@ -353,6 +349,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);

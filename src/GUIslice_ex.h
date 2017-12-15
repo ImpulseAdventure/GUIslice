@@ -44,7 +44,7 @@ extern "C" {
 #endif // __cplusplus
 
 // Extended element enumerations
-  
+
 /// Extended Element types
 typedef enum {
     // Extended elements:
@@ -54,16 +54,16 @@ typedef enum {
     GSLC_TYPEX_SLIDER,      ///< Slider extended element
     GSLC_TYPEX_SELNUM,      ///< SelNum extended element
     GSLC_TYPEX_TEXTBOX,     ///< Textbox extended element
-    GSLC_TYPEX_GRAPH,       ///< Graph extended element            
+    GSLC_TYPEX_GRAPH,       ///< Graph extended element
 } gslc_teTypeExtend;
-  
-  
+
+
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
 
-  
-  
+
+
 // ============================================================================
 // Extended Element: Gauge
 // ============================================================================
@@ -72,7 +72,7 @@ typedef enum {
 typedef enum {
     GSLCX_GAUGE_STYLE_PROG_BAR,  ///< Progress bar
     GSLCX_GAUGE_STYLE_RADIAL,    ///< Radial indicator
-    GSLCX_GAUGE_STYLE_RAMP,      ///< Ramp indicator            
+    GSLCX_GAUGE_STYLE_RAMP,      ///< Ramp indicator
 } gslc_teXGaugeStyle;
 
 /// Extended data for Gauge element
@@ -80,13 +80,13 @@ typedef struct {
   // Range config
   int16_t             nMin;           ///< Minimum control value
   int16_t             nMax;           ///< Maximum control value
-  
+
   // Current value
   int16_t             nVal;           ///< Current control value
   // Previous value
   int16_t             nValLast;       ///< Last value
-  bool                bValLastValid;  ///< Last value valid? 
-  
+  bool                bValLastValid;  ///< Last value valid?
+
   // Appearance config
   gslc_teXGaugeStyle  nStyle;         ///< Gauge sub-type
   gslc_tsColor        colGauge;       ///< Color of gauge fill bar
@@ -98,7 +98,7 @@ typedef struct {
   uint16_t            nIndicLen;      ///< Indicator length
   uint16_t            nIndicTip;      ///< Size of tip at end of indicator
   bool                bIndicFill;     ///< Fill the indicator if true
-  
+
 } gslc_tsXGauge;
 
 
@@ -188,7 +188,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
 /// - Setting bFlip reverses the default fill direction
 /// - Default fill direction for horizontal gauges: left-to-right
 /// - Default fill direction for vertical gauges: bottom-to-top
-/// 
+///
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  bFlip:       If set, reverse direction of fill from default
 ///
@@ -433,7 +433,7 @@ int gslc_ElemXSliderGetPos(gslc_tsElem* pElem);
 
 ///
 /// Set a Slider element's current position
-/// 
+///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nPos:        New position value
@@ -493,7 +493,7 @@ typedef struct {
 
   // Core functionality for SelNum
   int16_t             nCounter;       ///< Counter for demo purposes
-   
+
   // Internal sub-element members
   gslc_tsCollect      sCollect;       ///< Collection management for sub-elements
   gslc_tsElemRef      asElemRef[4];   ///< Storage for sub-element references
@@ -606,12 +606,12 @@ typedef struct {
   char*                       pBuf;         ///< Ptr to the text buffer (circular buffer))
   uint8_t                     nMargin;      ///< Margin for text area within element rect
   bool                        bWrapEn;      ///< Enable for line wrapping
-  
+
   uint16_t                    nBufRows;     ///< Number of rows in buffer
   uint16_t                    nBufCols;     ///< Number of columns in buffer
   bool                        bScrollEn;    ///< Enable for scrollbar
   uint16_t                    nScrollPos;   ///< Current scrollbar position
-  
+
   // Precalculated params
   uint8_t                     nChSizeX;     ///< Width of characters (pixels)
   uint8_t                     nChSizeY;     ///< Height of characters (pixels)
@@ -747,17 +747,17 @@ typedef struct {
   uint8_t                   nMargin;        ///< Margin for graph area within element rect
   gslc_tsColor              colGraph;       ///< Color of the graph
   gslc_teXGraphStyle        eStyle;         ///< Style of the graph
-  
+
   uint16_t                  nBufMax;        ///< Maximum number of points in buffer
   bool                      bScrollEn;      ///< Enable for scrollbar
   uint16_t                  nScrollPos;     ///< Current scrollbar position
-  
+
   uint16_t                  nWndHeight;     ///< Visible window height
   uint16_t                  nWndWidth;      ///< Visible window width
   int16_t                   nPlotValMax;    ///< Visible window maximum value
   int16_t                   nPlotValMin;    ///< Visible window minimum value
   uint16_t                  nPlotIndMax;    ///< Number of data points to show in window
-  
+
   // Current status
   uint16_t                  nBufCnt;        ///< Number of points in buffer
   uint16_t                  nPlotIndStart;  ///< First row of current window
@@ -788,7 +788,7 @@ gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 
 ///
 /// Set the graph's additional drawing characteristics
-/// 
+///
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  eStyle:      Drawing style for the graph
 /// \param[in]  nMargin:     Margin to provide around graph area inside frame
@@ -800,7 +800,7 @@ void gslc_ElemXGraphSetStyle(gslc_tsElem* pElem,
 
 ///
 /// Set the graph's drawing range
-/// 
+///
 /// \param[in]  pElem:       Pointer to Element
 /// \param[in]  nYMin:       Minimum Y value to draw
 /// \param[in]  nYMax:       Maximum Y value to draw

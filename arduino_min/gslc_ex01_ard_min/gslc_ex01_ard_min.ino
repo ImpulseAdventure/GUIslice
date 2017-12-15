@@ -37,14 +37,14 @@ void setup()
 
   // Initialize debug output
   Serial.begin(9600);
-  gslc_InitDebug(&DebugOut);  
+  gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-  
-  // Initialize
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }  
 
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);  
-  
+  // Initialize
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,NULL,0)) { return; }
+
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
+
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
@@ -55,12 +55,12 @@ void setup()
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // Periodically call GUIslice update function    
+  // Periodically call GUIslice update function
   gslc_Update(&m_gui);
-  
+
   // Main code here...
   delay(2000);
-  
+
   // Close down display
   gslc_Quit(&m_gui);
 }

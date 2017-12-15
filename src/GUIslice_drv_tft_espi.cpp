@@ -74,9 +74,13 @@ TFT_eSPI m_disp = TFT_eSPI();
   #if (ADATOUCH_I2C_HW) // Use I2C
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
-    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
+    // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
+    //       instead of the GUIslice ADATOUCH_PIN_CS.
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
-    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
+    // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
+    //       instead of the GUIslice ADATOUCH_PIN_CS.
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
@@ -227,10 +231,15 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 // Font handling Functions
 // -----------------------------------------------------------------------
 
-void* gslc_DrvFontAdd(const char* acFontName,uint16_t nFontSz)
+const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
-  // Nothing required to load, so return
-  return NULL;
+  // Arduino mode currently only supports font definitions from memory
+  if (eFontRefType != GSLC_FONTREF_PTR) {
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - Arduino only supports memory-based fonts\n","");
+    return NULL;
+  }
+  // Return pointer to Adafruit-GFX GFXfont structure
+  return pvFontRef;
 }
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
@@ -238,25 +247,26 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
-bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
+bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
+        int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtLen   = 0;
-  uint16_t  nTxtScale = pFont->nSize;
-  m_disp.setTextSize(nTxtScale);
-
-  //int16_t   nDummyX,nDummyY;
-  //m_disp.getTextBounds((char*)pStr,0,0,&nDummyX,&nDummyY,pnTxtSzW,pnTxtSzH);
-  // TODO: FIXME: getTextBounds seems to return bad value.
-  //       Would also need to handle pStr in PROGMEM
-
-  // Workaround uses the dimensions of default default font in Adafruit-GFX library
-  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-    nTxtLen = strlen(pStr);
-  } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
-    nTxtLen = strlen_P(pStr);
+  uint16_t  nTxtLen    = 0;
+  uint16_t  nTxtHeight = 0;
+  uint16_t  nTxtScale  = pFont->nSize;
+  // TFT_eSPI font API differs from Adafruit-GFX's setFont() API
+  if (pFont->pvFont == NULL) {
+    m_disp.setTextFont(1);
+  } else {
+    m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
   }
-  *pnTxtSzW = (nTxtLen*6*nTxtScale);
-  *pnTxtSzH = 8;
+  m_disp.setTextSize(nTxtScale);
+  nTxtLen = m_disp.textWidth((char*)pStr);
+  nTxtHeight = m_disp.fontHeight(1); // Use freefont "textfont" value
+  *pnTxtX = 0;  // Unused
+  *pnTxtY = 0;  // Unused
+  *pnTxtSzW = nTxtLen;
+  *pnTxtSzH = nTxtHeight;
+
   return true;
 }
 
@@ -265,17 +275,20 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   m_disp.setTextColor(nColRaw);
-  m_disp.setCursor(nTxtX,nTxtY);
+  // m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
     // String in SRAM; can access buffer directly
-    m_disp.println(pStr);
+    // m_disp.println(pStr);
+    m_disp.drawString(pStr,nTxtX,nTxtY);
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
     // String in PROGMEM (flash); must access via pgm_* calls
-    char ch;
+    char    ch;
+    int     nXOffset = 0;
     while ((ch = pgm_read_byte(pStr++))) {
-      m_disp.print(ch);
+      // m_disp.print(ch);
+      nXOffset += m_disp.drawChar(ch,nTxtX+nXOffset,nTxtY);
     }
     m_disp.println();
   }

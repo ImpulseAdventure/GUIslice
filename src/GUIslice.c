@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.1    (2017/09/01)
+// - Version 0.9.2    (2017/12/14)
 // =======================================================================
 //
 // The MIT License
@@ -58,7 +58,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9.1"
+#define GUISLICE_VER "0.9.2"
 
 
 // ========================================================================
@@ -1258,18 +1258,20 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
 // Font Functions
 // -----------------------------------------------------------------------
 
-bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,const char* acFontName,uint16_t nFontSz)
+bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefType,
+    const void* pvFontRef,uint16_t nFontSz)
 {
   if (pGui->nFontCnt+1 > (pGui->nFontMax)) {
     GSLC_DEBUG_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
     return false;
   } else {
     // Fetch a font resource from the driver
-    void* pvFont = gslc_DrvFontAdd(acFontName,nFontSz);
+    const void* pvFont = gslc_DrvFontAdd(eFontRefType,pvFontRef,nFontSz);
 
-    pGui->asFont[pGui->nFontCnt].pvFont = pvFont;
-    pGui->asFont[pGui->nFontCnt].nId    = nFontId;
-    pGui->asFont[pGui->nFontCnt].nSize  = nFontSz;
+    pGui->asFont[pGui->nFontCnt].eFontRefType = eFontRefType;
+    pGui->asFont[pGui->nFontCnt].pvFont       = pvFont;
+    pGui->asFont[pGui->nFontCnt].nId          = nFontId;
+    pGui->asFont[pGui->nFontCnt].nSize        = nFontSz;
     pGui->nFontCnt++;
     return true;
   }
@@ -1979,8 +1981,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
     gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
 
     // Fetch the size of the text to allow for justification
+    int16_t       nTxtOffsetX,nTxtOffsetY;
     uint16_t      nTxtSzW,nTxtSzH;
-    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,&nTxtSzW,&nTxtSzH);
+    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
 
     // Calculate the text alignment
     int16_t       nTxtX,nTxtY;
@@ -1995,8 +1998,14 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
     else if (pElem->eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
     else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
 
+
+    // Now correct for offset from text bounds
+    nTxtX += nTxtOffsetX;
+    nTxtY -= nTxtOffsetY;
+
     // Call the driver text rendering routine
     gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt);
+
 
 #else
     // No text support in driver, so skip
@@ -2990,9 +2999,10 @@ void gslc_ResetFont(gslc_tsFont* pFont)
     GSLC_DEBUG_PRINT("ERROR: ResetFont(%s) called with NULL ptr\n","");
     return;
   }
-  pFont->nId    = GSLC_FONT_NONE;
-  pFont->pvFont = NULL;
-  pFont->nSize  = 0;
+  pFont->nId            = GSLC_FONT_NONE;
+  pFont->eFontRefType   = GSLC_FONTREF_FNAME;
+  pFont->pvFont         = NULL;
+  pFont->nSize          = 0;
 }
 
 

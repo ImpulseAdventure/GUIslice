@@ -2,9 +2,8 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 09 (LINUX):
-//     Demonstrate radial and ramp controls
-//     NOTE: The ramp control is still beta and subject to change
+// - Example 12 (LINUX):
+//     Thermostat example
 //
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
@@ -18,8 +17,39 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
-      E_RADIAL,E_RAMP,E_SLIDER,E_ELEM_TXT_COUNT};
+      E_SLIDER,E_ELEM_TXT_COUNT,
+      E_ELEM_GRAPH,E_SCROLLBAR};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
+
+// Color palette
+#define COL_PRIM_LT2  (gslc_tsColor) {0xFF,0x63,0x63}
+#define COL_PRIM_LT1  (gslc_tsColor) {0xFF,0x39,0x39}
+#define COL_PRIM      (gslc_tsColor) {0xFF,0x00,0x00}
+#define COL_PRIM_DK1  (gslc_tsColor) {0xC5,0x00,0x00}
+#define COL_PRIM_DK2  (gslc_tsColor) {0x9B,0x00,0x00}
+#define COL_SEC1_LT2  (gslc_tsColor) {0xFF,0xAA,0x63}
+#define COL_SEC1_LT1  (gslc_tsColor) {0xFF,0x93,0x39}
+#define COL_SEC1      (gslc_tsColor) {0xFF,0x74,0x00}
+#define COL_SEC1_DK1  (gslc_tsColor) {0xC5,0x59,0x00}
+#define COL_SEC1_DK2  (gslc_tsColor) {0x9B,0x46,0x00}
+#define COL_SEC2_LT2  (gslc_tsColor) {0x46,0xB2,0xB2}
+#define COL_SEC2_LT1  (gslc_tsColor) {0x24,0x9F,0x9F}
+#define COL_SEC2      (gslc_tsColor) {0x00,0x99,0x99}
+#define COL_SEC2_DK1  (gslc_tsColor) {0x00,0x76,0x76}
+#define COL_SEC2_DK2  (gslc_tsColor) {0x00,0x5D,0x5D}
+#define COL_COMP_LT2  (gslc_tsColor) {0x54,0xD9,0x54}
+#define COL_COMP_LT1  (gslc_tsColor) {0x2E,0xCF,0x2E}
+#define COL_COMP      (gslc_tsColor) {0x00,0xCC,0x00}
+#define COL_COMP_DK1  (gslc_tsColor) {0x00,0x9E,0x00}
+#define COL_COMP_DK2  (gslc_tsColor) {0x00,0x7C,0x00}
+
+#define COLSEL_BKGND      (gslc_tsColor) {0x20,0x20,0x20}
+#define COLSEL_MAIN_TXT   (gslc_tsColor) {0x90,0x90,0x90}
+
+#define COLSEL_BTN_FILL
+#define COLSEL_BTN_GLOW
+#define COLSEL_BTN_TXT    
+
 
 bool      m_bQuit = false;
 
@@ -29,7 +59,7 @@ unsigned  m_nCount = 0;
 // Instantiate the GUI
 #define MAX_PAGE            1
 #define MAX_FONT            3
-#define MAX_ELEM_PG_MAIN    8
+#define MAX_ELEM_PG_MAIN    9
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -38,9 +68,12 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXRadial,m_sXRamp;
 gslc_tsXSlider              m_sXSlider;
+gslc_tsXSlider              m_sXSliderGraph;
 
+#define GRAPH_ROWS          200
+gslc_tsXGraph               m_sGraph;
+uint16_t                    m_anGraphBuf[GRAPH_ROWS];
 
 // Configure environment variables suitable for display
 // - These may need modification to match your system
@@ -56,16 +89,16 @@ void UserInitEnv()
   setenv((char*)"FRAMEBUFFER",GSLC_DEV_FB,1);
   setenv((char*)"SDL_FBDEV",GSLC_DEV_FB,1);
   setenv((char*)"SDL_VIDEODRIVER",GSLC_DEV_VID_DRV,1);
-#endif
+#endif  
 
 #if defined(DRV_TOUCH_TSLIB)
   setenv((char*)"TSLIB_FBDEVICE",GSLC_DEV_FB,1);
-  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1);
+  setenv((char*)"TSLIB_TSDEVICE",GSLC_DEV_TOUCH,1); 
   setenv((char*)"TSLIB_CALIBFILE",(char*)"/etc/pointercal",1);
   setenv((char*)"TSLIB_CONFFILE",(char*)"/etc/ts.conf",1);
-  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);
+  setenv((char*)"TSLIB_PLUGINDIR",(char*)"/usr/local/lib/ts",1);  
 #endif
-
+   
 }
 
 // Define debug message function
@@ -81,31 +114,38 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 }
 
 
-bool CbSlideRadial(void* pvGui,void* pvElem,int16_t nPos)
+bool CbControls(void* pvGui,void* pvElem,int16_t nPos)
 {
   gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);
-
-  char    acTxt[8];
-  int16_t nVal;
-
-  // Fetch the new RGB component from the slider
+  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);  
+  
+  char            acTxt[20];
+  int16_t         nVal;
+  gslc_tsElem*    pElemTmp = NULL;
+  
+  // Handle various controls
   switch (pElem->nId) {
-    case E_SLIDER:
+    case E_SCROLLBAR:
+      // Fetch the scrollbar value
       nVal = gslc_ElemXSliderGetPos(pElem);
-
-      // Link slider to the radial control
-      gslc_tsElem* pElemRad = gslc_PageFindElemById(pGui,E_PG_MAIN,E_RADIAL);
-      gslc_ElemXGaugeUpdate(pElemRad,nVal);
-
-      // Link slider to the ramp control
-      gslc_tsElem* pElemRamp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_RAMP);
-      gslc_ElemXGaugeUpdate(pElemRamp,nVal);
-
+      // Update the graph scroll position
+      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH);
+      gslc_ElemXGraphScrollSet(pElemTmp,nVal,100);
+      break;
+      
+    case E_SLIDER:
+      // Fetch the slider position
+      nVal = gslc_ElemXSliderGetPos(pElem); 
+            
       // Link slider to the numerical display
-      snprintf(acTxt,8,"%u",nVal);
-      gslc_tsElem* pElemCnt = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-      gslc_ElemSetTxtStr(pElemCnt,acTxt);
+      snprintf(acTxt,20,"%u",nVal);
+      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);      
+      gslc_ElemSetTxtStr(pElemTmp,acTxt);
+      
+      // Link slider to insertion of values into graph
+      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH); 
+      gslc_ElemXGraphAdd(pElemTmp,nVal);
+
       break;
 
     default:
@@ -120,52 +160,59 @@ bool InitOverlays()
   gslc_tsElem*  pElem = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
-
+  
   // Background flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
-    "Directional",0,E_FONT_TITLE);
+    "Textbox",0,E_FONT_TITLE);
   gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
   pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
-    "Directional",0,E_FONT_TITLE);
+    "Textbox",0,E_FONT_TITLE);
   gslc_ElemSetTxtCol(pElem,(gslc_tsColor){128,128,240});
   gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
   gslc_ElemSetFillEn(pElem,false);
-
+    
   // Create background box
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXRadial,
-          (gslc_tsRect){210,140,80,80},0,100,0,GSLC_COL_YELLOW,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXGaugeSetStyle(pElem,GSLCX_GAUGE_STYLE_RADIAL);
-  gslc_ElemXGaugeSetIndicator(pElem,GSLC_COL_YELLOW,30,3,true);
-  gslc_ElemXGaugeSetTicks(pElem,GSLC_COL_GRAY_LT1,8,5);
-
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_RAMP,E_PG_MAIN,&m_sXRamp,
-          (gslc_tsRect){80,140,100,80},0,100,50,GSLC_COL_YELLOW,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXGaugeSetStyle(pElem,GSLCX_GAUGE_STYLE_RAMP);
-
+  // Example horizontal slider
   pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);
   gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlideRadial);
+  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);    
 
+  // Text to show slider value
   pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
-    "",0,E_FONT_TXT);
-
+    "",0,E_FONT_TXT); 
+  
+  
+  // Create wrapping box for graph and scrollbar
+  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,124});
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  
+  // Create graph
+  pElem = gslc_ElemXGraphCreate(&m_gui,E_ELEM_GRAPH,E_PG_MAIN,
+    &m_sGraph,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(uint16_t*)&m_anGraphBuf,
+        GRAPH_ROWS);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);  
+ 
+  // Create vertical scrollbar for graph
+  pElem = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderGraph,
+        (gslc_tsRect){200,85,20,120},0,100,100,5,true);
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetPosFunc(pElem,&CbControls); 
+  
+  // Quit button
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,60,50,30},"QUIT",0,E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-
+  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);    
+  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);  
 
   return true;
 }
@@ -174,13 +221,13 @@ bool InitOverlays()
 int main( int argc, char* args[] )
 {
   bool                bOk = true;
-
+  
   // -----------------------------------
   // Initialize
   gslc_InitDebug(&DebugOut);
   UserInitEnv();
-  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
-
+  if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }  
+  
   // Load Fonts
   // - Normally we would select a number of different fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,14);
@@ -196,11 +243,36 @@ int main( int argc, char* args[] )
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
-
+  
+  // Insert some text
+  gslc_tsElem* pElemGraph = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_GRAPH); 
+/* //xxx
+  gslc_ElemXTextboxAdd(pElemTextbox,"Hi there!\n");
+  gslc_ElemXTextboxAdd(pElemTextbox,"Status: ");
+  gslc_ElemXTextboxColSet(pElemTextbox,GSLC_COL_RED);
+  gslc_ElemXTextboxAdd(pElemTextbox,"FAIL\n");  
+  gslc_ElemXTextboxColReset(pElemTextbox);
+  gslc_ElemXTextboxAdd(pElemTextbox,"Long line here that might wrap\n");
+  gslc_ElemXTextboxAdd(pElemTextbox,"Goodbye...\n");  
+*/
+  
+  uint16_t  nCnt = 0;  
+  for (nCnt=0;nCnt<GRAPH_ROWS;nCnt++) {
+    gslc_ElemXGraphAdd(pElemGraph,nCnt/2);
+    //printf("DBG: Fill [%3u]=%3u\n",nCnt,nCnt/2);  //xxx
+  }
+  
   // -----------------------------------
   // Main event loop
+
   while (!m_bQuit) {
     gslc_Update(&m_gui);
+    
+    usleep(50);
+    nCnt++;
+    if ((nCnt % 500) == 0) {
+      gslc_ElemXGraphAdd(pElemGraph,(nCnt/250)%100);
+    }
   }
 
   // -----------------------------------
