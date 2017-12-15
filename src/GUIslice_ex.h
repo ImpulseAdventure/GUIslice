@@ -777,7 +777,7 @@ typedef struct {
 /// \param[in]  nFontId:     Font ID to use for graph area
 /// \param[in]  pBuf:        Ptr to data buffer (already allocated)
 ///                          with size (nBufMax) int16_t
-/// \param[in]  nBufMax:     Maximum number of points in buffer
+/// \param[in]  nBufRows:    Maximum number of points in buffer
 /// \param[in]  colGraph:    Color of the graph
 ///
 /// \return Element pointer or NULL if failure
