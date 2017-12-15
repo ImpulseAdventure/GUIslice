@@ -24,7 +24,7 @@
 #include <Adafruit_GFX.h>
 
 // To demonstrate additional fonts, uncomment the following line:
-#define USE_EXTRA_FONTS
+//#define USE_EXTRA_FONTS
 
 #ifdef USE_EXTRA_FONTS
   // Note that these files are located within the Adafruit-GFX library folder:
