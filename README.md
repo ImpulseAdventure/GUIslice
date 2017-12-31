@@ -3,7 +3,7 @@ GUIslice library
 A lightweight GUI framework suitable for embedded displays
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
-- [Release notes] (https://github.com/ImpulseAdventure/GUIslice/releases)
+- [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
 
 
 - Pure C library, no dynamic memory allocation
@@ -11,7 +11,7 @@ A lightweight GUI framework suitable for embedded displays
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX, TFT_eSPI
 - Typical target: Raspberry Pi, Arduino, ESP8266 / NodeMCU, Cortex M0 (Feather M0), LINUX, Beaglebone Black
-- Typical displays: PiTFT, Waveshare, Adafruit TFT 2.2" / 2.8" / 1.44', OLED 0.96", 4D Cape
+- Typical displays: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
 - Supports touchscreen control
 - No GUIslice installation -- just add include files and go!
 - LINUX Dependencies: sdl, sdl-ttf, optional: tslib
