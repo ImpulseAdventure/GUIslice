@@ -732,7 +732,6 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   return true;
 }
 
-
 // Confirm that TOUCH_CS has been defined otherwise the
 // m_disp.getTouch() call won't be defined in TFT_eSPI
 #if defined(DRV_TOUCH_TFT_ESPI)
@@ -750,16 +749,35 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
   }
 
   // Use TFT_eSPI for touch events
-  bool        bPressed = false;
+  uint8_t     bPressed = 0;
   uint16_t    nX=0;
   uint16_t    nY=0;
+  int16_t     nOutputX, nOutputY;
 
   bPressed = m_disp.getTouch(&nX,&nY);
+  
+  // Perform any requested swapping of input axes
+  if( pGui->nSwapXY ) {
+    nOutputX = (int16_t)nY;
+    nOutputY = (int16_t)nX;
+  } else {
+    nOutputX = (int16_t)nX;
+    nOutputY = (int16_t)nY;
+  }
+  
+  // Perform any requested output axis flipping
+  if( pGui->nFlipX ) {
+    nOutputX = pGui->nDispW - 1 - nOutputX;
+  }
+  if( pGui->nFlipY ) {
+    nOutputY = pGui->nDispH - 1 - nOutputY;
+  }
 
   // Assign coordinates
-  *pnX = (int16_t)nX;
-  *pnY = (int16_t)nY;
-  if (bPressed) {
+  *pnX = (int16_t)nOutputX;
+  *pnY = (int16_t)nOutputY;
+  
+  if (bPressed > 0) {
     *pnPress = 1;
   } else {
     *pnPress = 0;
