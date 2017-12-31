@@ -270,6 +270,12 @@ extern "C" {
 #define ADATOUCH_FLIP_X   0
 #define ADATOUCH_FLIP_Y   1
 
+// Define the maximum number of touch events that are handled
+// per gslc_Update() call. Normally this can be set to 1 but certain
+// displays may require a greater value (eg. 30) in order to increase
+// responsiveness of the touch functionality.
+#define GSLC_TOUCH_MAX_EVT    1
+
 // -----------------------------------------------------------------------------------------
 
 

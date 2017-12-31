@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.2    (2017/12/14)
+// - Version 0.9.2    (2017/12/30)
 // =======================================================================
 //
 // The MIT License
@@ -346,6 +346,8 @@ void gslc_Update(gslc_tsGui* pGui)
   //   lagging responsiveness from the controls.
   // - Instead, we drain the even queue before proceeding on to the
   //   display update, giving rise to a much more responsive GUI.
+  //   The maximum number of touch events that can be handled per
+  //   main loop is defined by the GSLC_TOUCH_MAX_EVT config param.
   // - Note that SDL2 may synchronize the RenderPresent call to
   //   the VSYNC, which will effectively insert a delay into the
   //   gslc_PageRedrawGo() call below. It might be possible to
@@ -372,7 +374,7 @@ void gslc_Update(gslc_tsGui* pGui)
     }
 
     // Should we stop handling events?
-    if ((!bTouchEvent) || (nNumEvts >= GSLC_MAX_EVT)) {
+    if ((!bTouchEvent) || (nNumEvts >= GSLC_TOUCH_MAX_EVT)) {
       bDoneEvts = true;
     }
   } while (!bDoneEvts);

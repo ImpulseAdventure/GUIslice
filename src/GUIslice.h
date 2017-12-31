@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.2    (2017/12/14)
+// - Version 0.9.2    (2017/12/30)
 // =======================================================================
 //
 // The MIT License
@@ -279,9 +279,6 @@ typedef enum {
 } gslc_teFontRefType;
 
 
-// Define the maximum number of touch events that are handled
-// per gslc_Update() call.
-#define GSLC_MAX_EVT    30
 
 /// Element reference flags: Describes characteristics of an element
 /// - Primarily used to support relocation of elements to Flash memory (PROGMEM)

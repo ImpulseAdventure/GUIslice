@@ -31,3 +31,12 @@
 # Debug files
 *.dSYM/
 *.su
+
+# NetBeans files
+nbproject/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+/Makefile
