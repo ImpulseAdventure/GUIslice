@@ -59,15 +59,17 @@ extern "C" {
 
 #define DRV_HAS_DRAW_POINT          1 ///< Support gslc_DrvDrawPoint()
 
-  #define DRV_HAS_DRAW_POINTS         0 ///< Support gslc_DrvDrawPoints()
-  #define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
-  #define DRV_HAS_DRAW_RECT_FRAME     1 ///< Support gslc_DrvDrawFrameRect()
-  #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
-  #define DRV_HAS_DRAW_CIRCLE_FRAME   1 ///< Support gslc_DrvDrawFrameCircle()
-  #define DRV_HAS_DRAW_CIRCLE_FILL    1 ///< Support gslc_DrvDrawFillCircle()
-  #define DRV_HAS_DRAW_TRI_FRAME      1 ///< Support gslc_DrvDrawFrameTriangle()
-  #define DRV_HAS_DRAW_TRI_FILL       1 ///< Support gslc_DrvDrawFillTriangle()
-  #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
+#define DRV_HAS_DRAW_POINTS         0 ///< Support gslc_DrvDrawPoints()
+#define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
+#define DRV_HAS_DRAW_RECT_FRAME     1 ///< Support gslc_DrvDrawFrameRect()
+#define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
+#define DRV_HAS_DRAW_CIRCLE_FRAME   1 ///< Support gslc_DrvDrawFrameCircle()
+#define DRV_HAS_DRAW_CIRCLE_FILL    1 ///< Support gslc_DrvDrawFillCircle()
+#define DRV_HAS_DRAW_TRI_FRAME      1 ///< Support gslc_DrvDrawFrameTriangle()
+#define DRV_HAS_DRAW_TRI_FILL       1 ///< Support gslc_DrvDrawFillTriangle()
+#define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
+
+#define DRV_OVERRIDE_TXT_ALIGN      1 ///< Driver provides text alignment
 
 // =======================================================================
 // Driver-specific members
@@ -278,6 +280,24 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 ///
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt);
 
+///
+/// Draw a text string in a bounding box using the specified alignment
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nX0:         X coordinate of top-left of bounding box
+/// \param[in]  nY0:         Y coordinate of top-left of bounding box
+/// \param[in]  nX1:         X coordinate of bot-right of bounding box
+/// \param[in]  nY1:         Y coordinate of bot-right of bounding box
+/// \param[in]  eTxtAlign:   Alignment mode]
+/// \param[in]  pFont:       Ptr to Font
+/// \param[in]  pStr:        String to display
+/// \param[in]  eTxtFlags:   Flags associated with text string
+/// \param[in]  colTxt:      Color to draw text
+///
+/// \return true if success, false if failure
+///
+bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
+        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt);
 
 // -----------------------------------------------------------------------
 // Screen Management Functions

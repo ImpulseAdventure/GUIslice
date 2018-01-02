@@ -247,6 +247,11 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
+
+// NOTE: Please see the comments associated with gslc_DrvDrawTxt().
+//       In summary, DrvGetTxtSize() is not able to gather the complete
+//       text sizing information from TFT_eSPI as the APIs are not available.
+//
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
@@ -270,6 +275,56 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 }
 
+bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
+        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
+{
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  uint16_t nTxtScale = pFont->nSize;
+  m_disp.setTextColor(nColRaw);
+  // TFT_eSPI font API differs from Adafruit-GFX's setFont() API
+  if (pFont->pvFont == NULL) {
+    m_disp.setTextFont(1);
+  } else {
+    m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
+  }
+  m_disp.setTextSize(nTxtScale);
+
+  // Default to mid-mid datum
+  int8_t  nDatum = MC_DATUM;
+  int16_t nTxtX = nX0 + (nX1-nX0)/2;
+  int16_t nTxtY = nY0 + (nY1-nY0)/2;
+
+  // Override the datum depending on alignment mode
+  switch(eTxtAlign) {
+    case GSLC_ALIGN_TOP_LEFT:   nDatum = TL_DATUM; nTxtX = nX0; nTxtY = nY0; break;
+    case GSLC_ALIGN_TOP_MID:    nDatum = TC_DATUM; nTxtY = nY0; break;
+    case GSLC_ALIGN_TOP_RIGHT:  nDatum = TR_DATUM; nTxtX = nX1; nTxtY = nY0; break;
+    case GSLC_ALIGN_MID_LEFT:   nDatum = ML_DATUM; nTxtX = nX0; break;
+    case GSLC_ALIGN_MID_MID:    nDatum = MC_DATUM; break;
+    case GSLC_ALIGN_MID_RIGHT:  nDatum = MR_DATUM; nTxtX = nX1; break;
+    case GSLC_ALIGN_BOT_LEFT:   nDatum = BL_DATUM; nTxtX = nX0; nTxtY = nY1; break;
+    case GSLC_ALIGN_BOT_MID:    nDatum = BC_DATUM; nTxtY = nY1; break;
+    case GSLC_ALIGN_BOT_RIGHT:  nDatum = BR_DATUM; nTxtX = nX1; nTxtY = nY1; break;
+    default:                    nDatum = MC_DATUM; break;
+  }
+  m_disp.setTextDatum(nDatum);
+
+  m_disp.drawString(pStr,nTxtX,nTxtY);
+}
+
+// NOTE: As TFT_eSPI performs some complex logic in determining the font
+//       baseline and associated adjustments and these are not provided
+//       via an API, calling DrvGetTxtSize() is insufficient to determine
+//       the appropriate position corrections required (eg. when centering
+//       text). Therefore, DrvDrawTxt() will not result in proper text
+//       alignment in all cases. Instead, it is recommended that
+//       DrvDrawTxtAlign() is used instead, which will depend on the datum
+//       adjustment code within TFT_eSPI. This mode of operation is
+//       selected by default in GUIslice_drv_tft_espi.h by setting
+//       DRV_OVERRIDE_TXT_ALGIN to 1.
+
+// This method is not recommended for use with TFT_eSPI. DrvDrawTxtAlign()
+// should be used instead.
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
   uint16_t nTxtScale = pFont->nSize;
@@ -755,7 +810,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
   int16_t     nOutputX, nOutputY;
 
   bPressed = m_disp.getTouch(&nX,&nY);
-  
+
   // Perform any requested swapping of input axes
   if( pGui->nSwapXY ) {
     nOutputX = (int16_t)nY;
@@ -764,7 +819,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
     nOutputX = (int16_t)nX;
     nOutputY = (int16_t)nY;
   }
-  
+
   // Perform any requested output axis flipping
   if( pGui->nFlipX ) {
     nOutputX = pGui->nDispW - 1 - nOutputX;
@@ -776,7 +831,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
   // Assign coordinates
   *pnX = (int16_t)nOutputX;
   *pnY = (int16_t)nOutputY;
-  
+
   if (bPressed > 0) {
     *pnPress = 1;
   } else {

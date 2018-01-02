@@ -95,7 +95,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   #if defined( DRV_DISP_ADAGFX ) || defined( DRV_DISP_TFT_ESPI )
     pGui->nRotation		= ADAGFX_ROTATE;
-	pGui->nSwapXY		= ADATOUCH_SWAP_XY;
+    pGui->nSwapXY		= ADATOUCH_SWAP_XY;
     pGui->nFlipX		= ADATOUCH_FLIP_X;
     pGui->nFlipY		= ADATOUCH_FLIP_Y;
   #endif
@@ -1982,6 +1982,34 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
     // Determine the text color
     gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
 
+
+    // Determine if GUIslice or driver should perform text alignment
+    // - Generally, GUIslice provides the text alignment functionality
+    //   by querying the display driver for the dimensions of the text
+    //   to be rendered.
+    // - Some drivers (such as TFT_eSPI) perform more complex logic
+    //   associated with the text alignment and hence GUIslice will
+    //   defer to the driver to handle the positioning. In that case
+    //   the bounding box and alignment mode is provided to the driver.
+#if (DRV_OVERRIDE_TXT_ALIGN)
+
+    // GUIslice will allow the driver to perform the text alignment
+    // calculations.
+
+    // Provide bounding box and alignment flag to driver to calculate
+    int16_t nX0 = nElemX + nMargin;
+    int16_t nY0 = nElemY + nMargin;
+    int16_t nX1 = nX0 + nElemW;
+    int16_t nY1 = nY0 + nElemH;
+    gslc_DrvDrawTxtAlign(pGui,nX0,nY0,nX1,nY1,pElem->eTxtAlign,pElem->pTxtFont,
+            pElem->pStrBuf,pElem->eTxtFlags,colTxt);
+
+#else // DRV_OVERRIDE_TXT_ALIGN
+
+    // GUIslice will ask the driver for the text dimensions and calculate
+    // the appropriate positioning to support the requested text
+    // alignment mode.
+
     // Fetch the size of the text to allow for justification
     int16_t       nTxtOffsetX,nTxtOffsetY;
     uint16_t      nTxtSzW,nTxtSzH;
@@ -2000,18 +2028,20 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
     else if (pElem->eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
     else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
 
-
     // Now correct for offset from text bounds
+    // - This is used by the driver (such as Adafruit-GFX) to provide an
+    //   adjustment for baseline height, etc.
     nTxtX += nTxtOffsetX;
     nTxtY -= nTxtOffsetY;
 
     // Call the driver text rendering routine
     gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt);
 
+#endif // DRV_OVERRIDE_TXT_ALIGN
 
-#else
+#else // DRV_HAS_DRAW_TEXT
     // No text support in driver, so skip
-#endif
+#endif // DRV_HAS_DRAW_TEXT
   }
 
   // Mark the element as no longer requiring redraw

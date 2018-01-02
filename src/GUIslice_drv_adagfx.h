@@ -58,15 +58,17 @@ extern "C" {
 
 #define DRV_HAS_DRAW_POINT          1 ///< Support gslc_DrvDrawPoint()
 
-  #define DRV_HAS_DRAW_POINTS         0 ///< Support gslc_DrvDrawPoints()
-  #define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
-  #define DRV_HAS_DRAW_RECT_FRAME     1 ///< Support gslc_DrvDrawFrameRect()
-  #define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
-  #define DRV_HAS_DRAW_CIRCLE_FRAME   1 ///< Support gslc_DrvDrawFrameCircle()
-  #define DRV_HAS_DRAW_CIRCLE_FILL    1 ///< Support gslc_DrvDrawFillCircle()
-  #define DRV_HAS_DRAW_TRI_FRAME      1 ///< Support gslc_DrvDrawFrameTriangle()
-  #define DRV_HAS_DRAW_TRI_FILL       1 ///< Support gslc_DrvDrawFillTriangle()
-  #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
+#define DRV_HAS_DRAW_POINTS         0 ///< Support gslc_DrvDrawPoints()
+#define DRV_HAS_DRAW_LINE           1 ///< Support gslc_DrvDrawLine()
+#define DRV_HAS_DRAW_RECT_FRAME     1 ///< Support gslc_DrvDrawFrameRect()
+#define DRV_HAS_DRAW_RECT_FILL      1 ///< Support gslc_DrvDrawFillRect()
+#define DRV_HAS_DRAW_CIRCLE_FRAME   1 ///< Support gslc_DrvDrawFrameCircle()
+#define DRV_HAS_DRAW_CIRCLE_FILL    1 ///< Support gslc_DrvDrawFillCircle()
+#define DRV_HAS_DRAW_TRI_FRAME      1 ///< Support gslc_DrvDrawFrameTriangle()
+#define DRV_HAS_DRAW_TRI_FILL       1 ///< Support gslc_DrvDrawFillTriangle()
+#define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
+
+#define DRV_OVERRIDE_TXT_ALIGN      0 ///< Driver provides text alignment
 
 // =======================================================================
 // Driver-specific members

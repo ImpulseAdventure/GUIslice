@@ -94,6 +94,8 @@ extern "C" {
   #define DRV_HAS_DRAW_TEXT           1 ///< Support gslc_DrvDrawTxt()
 #endif
 
+#define DRV_OVERRIDE_TXT_ALIGN      0 ///< Driver provides text alignment
+
 // =======================================================================
 // Driver-specific members
 // =======================================================================
