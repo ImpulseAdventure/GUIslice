@@ -87,6 +87,10 @@ TFT_eSPI m_disp = TFT_eSPI();
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_TFT_ESPI)
+    // Define the XPT2046 calibration data
+    uint16_t m_anCalData[5] = TFT_ESPI_TOUCH_CALIB;
+// ------------------------------------------------------------------------
 #endif // DRV_TOUCH_ADA_*
 
 
@@ -779,6 +783,11 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   }
 
   // Perform any driver-specific touchscreen init here
+
+  // Initialize the touch calibration data
+  #if defined(DRV_TOUCH_TFT_ESPI)
+  m_disp.setTouch(m_anCalData);
+  #endif
 
   // NOTE: TFT_eSPI constructor already initializes the touch
   // driver if TOUCH_CS is defined in the TFT_eSPI library's "User_Setup.h"

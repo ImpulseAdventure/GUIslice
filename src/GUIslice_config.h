@@ -259,6 +259,11 @@ extern "C" {
   // Note that TFT_eSPI's "User_Setup" should define TOUCH_CS
   #define DRV_TOUCH_IN_DISP   // Use the display driver (TFT_eSPI) for touch events
 
+  // Define the XPT2046 touch driver calibration values
+  // - The following are some example defaults, but they should be updated
+  //   to match your specific touch device.
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+
 #endif // DRV_TOUCH_*
 
 // Define any Touch Axis Swapping and Flipping
