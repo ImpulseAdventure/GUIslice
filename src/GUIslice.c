@@ -1999,8 +1999,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
     // Provide bounding box and alignment flag to driver to calculate
     int16_t nX0 = nElemX + nMargin;
     int16_t nY0 = nElemY + nMargin;
-    int16_t nX1 = nX0 + nElemW;
-    int16_t nY1 = nY0 + nElemH;
+    int16_t nX1 = nX0 + nElemW - 2*nMargin;
+    int16_t nY1 = nY0 + nElemH - 2*nMargin;
+
     gslc_DrvDrawTxtAlign(pGui,nX0,nY0,nX1,nY1,pElem->eTxtAlign,pElem->pTxtFont,
             pElem->pStrBuf,pElem->eTxtFlags,colTxt);
 
