@@ -141,7 +141,8 @@ extern "C" {
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
   #define ADAGFX_PIN_RST   11   // Display Reset
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
-
+  #define ADAGFX_PIN_WR     A1
+  #define ADAGFX_PIN_RD     A0
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
   // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
