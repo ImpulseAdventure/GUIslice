@@ -63,6 +63,7 @@ extern "C" {
 #define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
 //#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
+//#define DRV_TOUCH_ADA_SIMPLE    // Arduino: Use Adafruit Touchscreen
 //#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
 
 
@@ -127,6 +128,7 @@ extern "C" {
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
   #define DRV_DISP_ADAGFX_ILI9341
+//#define DRV_DISP_ADAGFX_ILI9341_8BIT
   //#define DRV_DISP_ADAGFX_ST7735
   //#define DRV_DISP_ADAGFX_SSD1306
   //#define DRV_DISP_ADAGFX_HX8357
@@ -139,7 +141,8 @@ extern "C" {
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
   #define ADAGFX_PIN_RST   11   // Display Reset
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
-
+  #define ADAGFX_PIN_WR     A1
+  #define ADAGFX_PIN_RD     A0
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
   // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
@@ -253,6 +256,12 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // Define sensitivity coefficient (capacitive touch)
   #define ADATOUCH_SENSITIVITY  40
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+#define ADATOUCH_X_MIN 100
+#define ADATOUCH_Y_MIN 150
+#define ADATOUCH_X_MAX 900
+#define ADATOUCH_Y_MAX 900
+  
 
 #elif defined(DRV_TOUCH_TFT_ESPI)
   // The TFT_eSPI display library also includes support for XPT2046 touch controller
