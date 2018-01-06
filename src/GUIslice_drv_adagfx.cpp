@@ -55,6 +55,12 @@
     #include <SD.h>   // Include support for SD card access
   #endif
   #include <SPI.h>
+#elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+  #include <Adafruit_TFTLCD.h>
+  #if (ADAGFX_SD_EN)
+    #include <SD.h>   // Include support for SD card access
+  #endif
+  #include <SPI.h>
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #include <Adafruit_SSD1306.h>
   // TODO: Select either SPI or I2C. For now, assume SPI
@@ -79,6 +85,9 @@
 #elif defined(DRV_TOUCH_ADA_FT6206)
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
+#elif defined(DRV_TOUCH_ADA_SIMPLE )
+#include <stdint.h>
+#include <TouchScreen.h>
 #endif
 
 
@@ -95,7 +104,15 @@ extern "C" {
   #else
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
+    // ------------------------------------------------------------------------
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
 
+#define LCD_CS A3 // Chip Select goes to Analog 3
+#define LCD_CD A2 // Command/Data goes to Analog 2
+#define LCD_WR A1 // LCD Write goes to Analog 1
+#define LCD_RD A0 // LCD Read goes to Analog 0
+#define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
+    Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
@@ -139,6 +156,12 @@ extern "C" {
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_SIMPLE )
+#define YP A2  // must be an analog pin, use "An" notation!
+#define XM A3  // must be an analog pin, use "An" notation!
+#define YM 44   // can be a digital pin
+#define XP 45  // can be a digital pin
+    TouchScreen m_touch = TouchScreen(XP, YP, XM, YM, 300);
 #endif // DRV_TOUCH_ADA_*
 
 
@@ -176,6 +199,14 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = ILI9341_TFTHEIGHT;
       pGui->nDispH = ILI9341_TFTWIDTH;
+#elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+      uint16_t identifier = m_disp.readID();
+  m_disp.begin(identifier);
+  // Rotate display from native portrait orientation to landscape
+  // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
+  m_disp.setRotation(1);
+  pGui->nDispW = ILI9341_TFTHEIGHT;
+  pGui->nDispH = ILI9341_TFTWIDTH;
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -834,6 +865,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
+#elif defined(DRV_TOUCH_ADA_SIMPLE )
+
+      return true;
   #else
     // ERROR: Unsupported driver mode
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
@@ -930,6 +964,33 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   }
 
   // ----------------------------------------------------------------
+#elif  defined(DRV_TOUCH_ADA_SIMPLE)
+  TSPoint p = m_touch.getPoint();
+  pinMode(XM, OUTPUT);
+  pinMode(YP, OUTPUT);
+
+  if (p.z > 10 && p.z < 1000) {
+
+          nRawX=p.x;
+          nRawY=p.y;
+	  nRawPress=p.x;
+          m_nLastRawX = nRawX;
+          m_nLastRawY = nRawY;
+          m_nLastRawPress = nRawPress;
+          m_bLastTouched = true;
+          bValid = true;}
+  else {
+     if (!m_bLastTouched) {
+       // Wasn't touched before; do nothing
+     } else {
+       // Touch release
+       // Indicate old coordinate but with pressure=0
+       m_nLastRawPress = 0;
+       m_bLastTouched = false;
+       bValid = true;
+     }
+  }
+
   #endif // DRV_TOUCH_*
 
 
@@ -960,7 +1021,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610)
+    #if defined(DRV_TOUCH_ADA_STMPE610)||defined(DRV_TOUCH_ADA_SIMPLE)
       // Perform constraining to input boundaries
       nInputX = constrain(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
       nInputY = constrain(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
