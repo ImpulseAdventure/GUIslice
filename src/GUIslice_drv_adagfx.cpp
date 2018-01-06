@@ -107,12 +107,7 @@ extern "C" {
     // ------------------------------------------------------------------------
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
 
-#define LCD_CS A3 // Chip Select goes to Analog 3
-#define LCD_CD A2 // Command/Data goes to Analog 2
-#define LCD_WR A1 // LCD Write goes to Analog 1
-#define LCD_RD A0 // LCD Read goes to Analog 0
-#define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
-    Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+    Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
