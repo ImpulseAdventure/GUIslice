@@ -12,10 +12,11 @@ A lightweight GUI framework suitable for embedded displays
 - Platform-independent GUI core currently supports: SDL1.2, SDL2.0, Adafruit-GFX, TFT_eSPI
 - Typical target: Raspberry Pi, Arduino, ESP8266 / NodeMCU, Cortex M0 (Feather M0), LINUX, Beaglebone Black
 - Typical displays: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
-- Supports touchscreen control
+- Display drivers include: ILI9341, ST7735, SSD1306, HX8357
+- Touchscreen control including: STMPE610, FT6206, XPT2046, tslib
 - No GUIslice installation -- just add include files and go!
 - LINUX Dependencies: sdl, sdl-ttf, optional: tslib
-- Arduino Dependencies: TFT_eSPI or Adafruit-GFX plus display (eg. ILI9341) / touch driver library (eg. STMPE610)
+- Arduino Dependencies: TFT_eSPI or Adafruit-GFX plus display / touch driver libraries
 
 
 
