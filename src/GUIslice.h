@@ -39,14 +39,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
+  
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <inttypes.h>
 
-
+  
 // -----------------------------------------------------------------------
 // Configuration
 // -----------------------------------------------------------------------
@@ -65,11 +65,12 @@ typedef int16_t (*GSLC_CB_DEBUG_OUT)(char ch);
 extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
 
 
+
 // -----------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------
 #define GSLC_2PI  6.28318530718
-
+  
 // -----------------------------------------------------------------------
 // Enumerations
 // -----------------------------------------------------------------------
@@ -82,7 +83,7 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
   /// - Specifying GSLC_ID_AUTO to ElemCreate() requests that
   ///   GUIslice auto-assign an ID value for the Element. These
   ///   auto-assigned values will begin at GSLC_ID_AUTO_BASE.
-  /// - Negative Element ID values are reserved
+  /// - Negative Element ID values are reserved 
   typedef enum {
     // Public usage
     GSLC_ID_USER_BASE       = 0,      ///< Starting Element ID for user assignments
@@ -91,7 +92,7 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_ID_TEMP,                     ///< ID for Temporary Element
     // Internal usage
     GSLC_ID_AUTO_BASE       = 16384,  ///< Starting Element ID to start auto-assignment
-                                      ///< (when GSLC_ID_AUTO is specified)
+                                      ///< (when GSLC_ID_AUTO is specified)            
   } gslc_teElemId;
 
 
@@ -100,7 +101,7 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
   ///   reference a specific page of elements.
   /// - Application code can assign arbitrary Page ID values
   ///   in the range of 0...16383
-  /// - Negative Page ID values are reserved
+  /// - Negative Page ID values are reserved   
   typedef enum {
     // Public usage
     GSLC_PAGE_USER_BASE     = 0,      ///< Starting Page ID for user assignments
@@ -108,7 +109,7 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
   } gslc_tePageId;
 
-
+  
   /// Group ID enumerations
   typedef enum {
     // Public usage
@@ -116,20 +117,20 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     // Internal usage
     GSLC_GROUP_ID_NONE      = -6999,  ///< No Group ID has been assigned
   } gslc_teGroupId;
-
+  
   /// Font ID enumerations
   /// - The Font ID is the primary means for user code to
   ///   reference a specific font.
   /// - Application code can assign arbitrary Font ID values
   ///   in the range of 0...16383
-  /// - Negative Font ID values are reserved
+  /// - Negative Font ID values are reserved    
   typedef enum {
     // Public usage
     GSLC_FONT_USER_BASE     = 0,      ///< Starting Font ID for user assignments
     GSLC_FONT_NONE          = -4999,  ///< No Font ID has been assigned
   } gslc_teFontId;
-
-
+  
+  
   /// Element Index enumerations
   /// - The Element Index is used for internal purposes as an offset
   //    into the GUI's array of elements
@@ -149,7 +150,7 @@ typedef enum {
     GSLC_TYPE_TXT,          ///< Text label element type
     GSLC_TYPE_BOX,          ///< Box / frame element type
     GSLC_TYPE_LINE,         ///< Line element type
-
+    
     /// Base value for extended type enumerations
     GSLC_TYPE_BASE_EXTEND = 0x1000
 } gslc_teTypeCore;
@@ -223,7 +224,7 @@ typedef enum {
 /// Touch event type for element touch tracking
 typedef enum {
   GSLC_TOUCH_NONE       = 0,                                ///< No touch event active
-
+          
   // Touch state
   GSLC_TOUCH_DOWN       = (1<<4),                           ///< Touch event (down)
   GSLC_TOUCH_MOVE       = (1<<5),                           ///< Touch event (move)
@@ -288,8 +289,12 @@ typedef enum {
   GSLC_ELEMREF_SRC_RAM     = (1<<0),   ///< Element is stored in RAM (internal element array)
   GSLC_ELEMREF_SRC_PROG    = (2<<0),   ///< Element is stored in program memory
                                        ///< (PROGMEM, read-only, external to element array)
+  GSLC_ELEMREF_DRAW_PROG    = (1<<4),   ///< Element base is stored in PROGMEM but content is in RAM
+
   // Mask values for bitfield comparisons
   GSLC_ELEMREF_SRC         = (7<<0),   ///< Mask for Source flags
+  GSLC_ELEMREF_SRC_DRAW_MASK         = (7<<4),   ///< Mask for Source flags
+
 } gslc_teElemRefFlags;
 
 
@@ -302,11 +307,11 @@ typedef enum {
   GSLC_IMGREF_SRC_RAM     = (3<<0),   ///< Image is stored in RAM
   GSLC_IMGREF_SRC_PROG    = (4<<0),   ///< Image is stored in program memory (PROGMEM)
   // Define image types
-
+          
   GSLC_IMGREF_FMT_BMP24   = (1<<4),   ///< Image format is BMP (24-bit)
   GSLC_IMGREF_FMT_BMP16   = (2<<4),   ///< Image format is BMP (16-bit RGB565)
   GSLC_IMGREF_FMT_RAW1    = (3<<4),   ///< Image format is raw monochrome (1-bit)
-
+          
   // Mask values for bitfield comparisons
   GSLC_IMGREF_SRC         = (7<<0),   ///< Mask for Source flags
   GSLC_IMGREF_FMT         = (7<<4),   ///< Mask for Format flags
@@ -351,7 +356,7 @@ typedef struct gslc_tsEvent gslc_tsEvent;
 
 /// Callback function for element drawing
 typedef bool (*GSLC_CB_EVENT)(void* pvGui,gslc_tsEvent sEvent);
-
+        
 /// Callback function for element drawing
 typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 
@@ -443,11 +448,11 @@ typedef struct gslc_tsElem {
   int16_t             nType;            ///< Element type enumeration
   gslc_tsRect         rElem;            ///< Rect region containing element
   int16_t             nGroup;           ///< Group ID that the element belongs to
-
+  
   // Behavior settings
   bool                bGlowEn;          ///< Enable glowing visual state
   bool                bClickEn;         ///< Element accepts touch events
-
+ 
 
   // Style
   bool                bFrameEn;         ///< Element is drawn with frame
@@ -455,31 +460,31 @@ typedef struct gslc_tsElem {
                                         ///< This is also used during redraw to determine
                                         ///< if elements underneath are visible and must
                                         ///< be redrawn as well.
-
+  
   gslc_tsColor        colElemFrame;     ///< Color for frame
   gslc_tsColor        colElemFill;      ///< Color for background fill
-  gslc_tsColor        colElemFrameGlow; ///< Color to use for frame when glowing
+  gslc_tsColor        colElemFrameGlow; ///< Color to use for frame when glowing  
   gslc_tsColor        colElemFillGlow;  ///< Color to use for fill when glowing
 
   gslc_tsImgRef       sImgRefNorm;      ///< Image reference to draw (normal)
   gslc_tsImgRef       sImgRefGlow;      ///< Image reference to draw (glowing)
-
+  
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
   /// redraw as well. Primary usage is in compound
   /// elements.
-  gslc_tsElem*        pElemParent;
-
+  gslc_tsElem*        pElemParent;  
+  
   // Text handling
 #if (GSLC_LOCAL_STR)
   char                pStrBuf[GSLC_LOCAL_STR_LEN];  ///< Text string to overlay
 #else
   char*               pStrBuf;          ///< Ptr to text string buffer to overlay
-#endif
+#endif  
   uint8_t             nStrBufMax;       ///< Size of string buffer
   gslc_teTxtFlags     eTxtFlags;        ///< Flags associated with text buffer
 
-
+  
   gslc_tsColor        colElemText;      ///< Color of overlay text
   gslc_tsColor        colElemTextGlow;  ///< Color of overlay text when glowing
   int8_t              eTxtAlign;        ///< Alignment of overlay text
@@ -488,14 +493,14 @@ typedef struct gslc_tsElem {
 
   // Extended data elements
   void*               pXData;           ///< Ptr to extended data structure
-
+  
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for event tree (draw,touch,tick)
-
+  
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for custom drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
-
+  
   // Current status
   gslc_teRedrawType   eRedraw;          ///< Type of redraw requested for element
   bool                bGlowing;         ///< Element is currently glowing
@@ -518,16 +523,16 @@ typedef struct {
   uint16_t              nElemMax;         ///< Maximum number of elements to allocate (in RAM)
   uint16_t              nElemCnt;         ///< Number of elements allocated
   int16_t               nElemAutoIdNext;  ///< Next Element ID for auto-assignment
-
+  
   gslc_tsElemRef*       asElemRef;        ///< Array of element references
   uint16_t              nElemRefMax;      ///< Maximum number of element references to allocate
   uint16_t              nElemRefCnt;      ///< Number of element references allocated
-
+  
   gslc_tsElem*          pElemTracked;     ///< Element currently being touch-tracked (NULL for none)
-
+  
   // Callback functions
-  GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events
-
+  GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events  
+  
 } gslc_tsCollect;
 
 
@@ -540,16 +545,16 @@ typedef struct {
 typedef struct {
 
   gslc_tsCollect      sCollect;             ///< Collection of elements on page
-
+  
   int8_t              nPageId;              ///< Page identifier
-
+  
   // Redraw
   bool                bPageNeedRedraw;      ///< Page require a redraw
   bool                bPageNeedFlip;        ///< Screen requires a page flip
-
+  
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events
-
+  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events   
+  
 } gslc_tsPage;
 
 
@@ -568,13 +573,13 @@ typedef struct {
     uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
     uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
   #endif
-
+  
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
   uint8_t             nFontMax;         ///< Maximum number of fonts to allocate
   uint8_t             nFontCnt;         ///< Number of fonts allocated
 
   gslc_tsElem         sElemTmp;         ///< Temporary element
-
+  gslc_tsElem         sElemTmpProg;         ///< Temporary element
   int16_t             nTouchLastX;      ///< Last touch event X coord
   int16_t             nTouchLastY;      ///< Last touch event Y coord
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
@@ -586,25 +591,25 @@ typedef struct {
                                         ///< If false, entire page is redrawn when any
                                         ///< element has been updated prior to next
                                         ///< page redraw command.
-
+  
   // Primary surface definitions
   gslc_tsImgRef       sImgRefBkgnd;     ///< Image reference for background
-
+  
   uint8_t             nFrameRateCnt;    ///< Diagnostic frame rate count
   uint8_t             nFrameRateStart;  ///< Diagnostic frame rate timestamp
-
-
+  
+  
   // Pages
   gslc_tsPage*        asPage;           ///< Array of pages
   uint8_t             nPageMax;         ///< Maximum number of pages
   uint8_t             nPageCnt;         ///< Current page index
-
+  
   gslc_tsPage*        pCurPage;         ///< Currently active page
   gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
-
+  
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
-
+  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events 
+  
 } gslc_tsGui;
 
 
@@ -659,7 +664,7 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc);
 /// Optimized printf routine for GUIslice debug/error output
 /// - Only supports '%s','%d','%u' tokens
 /// - Calls on the output function configured in gslc_InitDebug()
-///
+/// 
 /// \param[in]  pFmt:      Format string to use for printing
 /// \param[in]  ...:       Variable parameter list
 ///
@@ -1168,7 +1173,7 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 /// \param[in]  sEvent:      Event data structure
 ///
 /// \return true if success, false if fail
-///
+/// 
 bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 
 ///
@@ -1578,7 +1583,7 @@ void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal);
 /// \return none
 ///
 void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags);
-
+void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr);
 
 ///
 /// Update the Font selected for an Element's text
@@ -1607,7 +1612,7 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
 /// \param[in]  pElem:       Pointer to Element
 ///
 /// \return Redraw status
-///
+/// 
 gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsElem* pElem);
 
 ///
@@ -1667,7 +1672,7 @@ bool gslc_ElemGetGlow(gslc_tsElem* pElem);
 /// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
 ///
 /// \return none
-///
+/// 
 void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb);
 
 
@@ -1700,7 +1705,7 @@ void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb);
 /// Determine if a coordinate is inside of an element
 /// - This routine is useful in determining if a touch
 ///   coordinate is inside of a button.
-///
+/// 
 /// \param[in]  pElem:        Element used for boundary test
 /// \param[in]  nX:           X coordinate to test
 /// \param[in]  nY:           Y coordinate to test
@@ -1723,7 +1728,7 @@ bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int16_t nX,int16_t nY,bool bOnlyClick
 /// \param[in]  sEvent:      Event data structure
 ///
 /// \return true if success, false if fail
-///
+/// 
 bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent);
 
 
@@ -1768,7 +1773,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 ///                           it is stored in RAM or Flash (PROGMEM).
 ///
 /// \return none
-///
+/// 
 void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax,
         gslc_tsElemRef* asElemRef,uint16_t nElemRefMax);
 
@@ -1786,7 +1791,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 ///
 /// \return Pointer to the element in the collection that has been added
 ///         or NULL if there was an error
-///
+/// 
 gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
 
 
@@ -1807,7 +1812,7 @@ bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect);
 ///
 /// \return Pointer to the element in the collection that was found
 ///         or NULL if no matches found
-///
+/// 
 gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId);
 
 
@@ -1821,8 +1826,8 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId);
 ///
 /// \return Pointer to the element in the collection that was found
 ///         or NULL if no matches found
-///
-gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
+/// 
+gslc_tsElem* gslc_CollectFindElemFromCoord(void * pvGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
 
 
 /// Allocate the next available Element ID in a collection
@@ -1830,7 +1835,7 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int16_t nX, 
 /// \param[in]  pCollect:     Pointer to the collection
 ///
 /// \return Element ID that is reserved for use
-///
+/// 
 int gslc_CollectGetNextId(gslc_tsCollect* pCollect);
 
 
@@ -1879,7 +1884,7 @@ void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent);
 /// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
 ///
 /// \return none
-///
+/// 
 void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
 
 ///
@@ -1889,7 +1894,7 @@ void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
 /// \param[in]  sEvent:      Event data structure
 ///
 /// \return true if success, false if fail
-///
+/// 
 bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
 
 
@@ -2003,7 +2008,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int
 ///                          or is located in Flash/PROGMEM).
 ///
 /// \return Pointer to Element or NULL if fail
-///
+/// 
 gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
 
 
@@ -2072,9 +2077,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
 /// pages, collections and elements. Also frees
 /// up any fonts.
 /// - Called by gslc_Quit()
-///
+/// 
 /// \param[in]  pGui:         Pointer to GUI
-///
+/// 
 /// \return none
 ///
 void gslc_GuiDestruct(gslc_tsGui* pGui);
@@ -2082,27 +2087,27 @@ void gslc_GuiDestruct(gslc_tsGui* pGui);
 
 ///
 /// Free up any members associated with a page
-///
+/// 
 /// \param[in]  pPage:        Pointer to Page
-///
+/// 
 /// \return none
 ///
 void gslc_PageDestruct(gslc_tsPage* pPage);
 
 ///
 /// Free up any members associated with an element collection
-///
+/// 
 /// \param[in]  pCollect:     Pointer to collection
-///
+/// 
 /// \return none
 ///
 void gslc_CollectDestruct(gslc_tsCollect* pCollect);
 
 ///
 /// Free up any members associated with an element
-///
+/// 
 /// \param[in]  pElem:        Pointer to element
-///
+/// 
 /// \return none
 ///
 void gslc_ElemDestruct(gslc_tsElem* pElem);
@@ -2142,8 +2147,8 @@ void gslc_ResetFont(gslc_tsFont* pFont);
 ///
 void gslc_ResetElem(gslc_tsElem* pElem);
 
-
-
+bool gslc_ElemForceDrawP(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
+void gslc_ElemSetRedrawP(gslc_tsElem* pElem, bool eRedraw);
 // ------------------------------------------------------------------------
 // General purpose macros
 // ------------------------------------------------------------------------
@@ -2171,7 +2176,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
             if (DEBUG_ERR) {                                    \
               gslc_DebugPrintf(PSTR(sFmt),__VA_ARGS__);         \
             }                                                   \
-          } while (0)
+          } while (0)  
 #else
   // Debug print macro for CPUs that don't support PROGMEM (Flash)
   #define GSLC_DEBUG_PRINT(sFmt, ...)                           \
@@ -2179,7 +2184,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
             if (DEBUG_ERR) {                                    \
               gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
             }                                                   \
-          } while (0)
+          } while (0)  
 #endif
 
 
@@ -2246,6 +2251,37 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 ///
 
 #if (GSLC_USE_PROGMEM)
+#define gslc_ElemCreateTxtBtn_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
+  static const char str##nElemId[] PROGMEM = strTxt;              \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_BTN,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,false,true,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)str##nElemId,                                        \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                           \
+	  (void*)extraData,                                                       \
+      NULL,                                                       \
+	  NULL,                                                       \
+	  callFunc,                                                       \
+      NULL,                                                       \
+      GSLC_REDRAW_NONE,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+
+
 
 #define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
@@ -2278,7 +2314,37 @@ void gslc_ResetElem(gslc_tsElem* pElem);
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
 
 
-#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn) \
+
+#define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPE_TXT,                                              \
+	  (gslc_tsRect){nX,nY,nW,nH},                                  \
+      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)strTxt,                                        \
+      strLength,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),  \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                           \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      GSLC_REDRAW_NONE,                                                      \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+
+#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,drawFunc) \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       true,                                                       \
@@ -2299,7 +2365,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      NULL,                                                       \
+      drawFunc,                                                       \
       NULL,                                                       \
       NULL,                                                       \
       GSLC_REDRAW_NONE,                                                      \
@@ -2370,7 +2436,6 @@ void gslc_ResetElem(gslc_tsElem* pElem);
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
 
 #endif // GSLC_USE_PROGMEM
-
 
 #ifdef __cplusplus
 }
