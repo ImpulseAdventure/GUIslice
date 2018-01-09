@@ -47,15 +47,15 @@ extern "C" {
 #endif // __cplusplus
 
 // -----------------------------------------------------------------------------------------
-  
+
 // Specify the graphics driver library
 // - Uncomment one of the following graphics drivers
 //#define DRV_DISP_SDL1                // LINUX: SDL 1.2 library
 //#define DRV_DISP_SDL2              // LINUX: SDL 2.0 library
 #define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
 //#define DRV_DISP_TFT_ESPI          // Arduino: Bodmer/TFT_eSPI library
-  
-  
+
+
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
 //#define DRV_TOUCH_NONE          // No touchscreen support
@@ -69,9 +69,9 @@ extern "C" {
 
 // -----------------------------------------------------------------------------------------
 
-// Graphics display driver-specific additional configuration  
+// Graphics display driver-specific additional configuration
 #if defined(DRV_DISP_SDL1)
-  // Define default device paths for framebuffer & touchscreen  
+  // Define default device paths for framebuffer & touchscreen
   #define GSLC_DEV_FB       "/dev/fb1"
   #define GSLC_DEV_TOUCH    "/dev/input/touchscreen"
   #define GSLC_DEV_VID_DRV  "fbcon"
@@ -81,11 +81,11 @@ extern "C" {
 
   // Show SDL mouse (1 to show, 0 to hide)
   #define DRV_SDL_MOUSE_SHOW 0
-  
+
   #define GSLC_LOCAL_STR      1
   #define GSLC_USE_FLOAT      1
 
-    
+
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
 
@@ -97,14 +97,14 @@ extern "C" {
   // - To use SDL2.0 with hardware acceleration with such displays,
   //   use fb0 as the target and then run fbcp to mirror fb0 to fb1
   #define GSLC_DEV_FB       "/dev/fb0"
-  #define GSLC_DEV_TOUCH    ""  
+  #define GSLC_DEV_TOUCH    ""
   #define GSLC_DEV_VID_DRV  "x11"
 
   // Show SDL mouse (1 to show, 0 to hide)
   #define DRV_SDL_MOUSE_SHOW 0
   // Enable hardware acceleration
   #define DRV_SDL_RENDER_ACCEL 1
-  
+
   #define GSLC_LOCAL_STR      1
   #define GSLC_USE_FLOAT      1
 
@@ -113,7 +113,7 @@ extern "C" {
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
 
 
-#elif defined(DRV_DISP_ADAGFX)  
+#elif defined(DRV_DISP_ADAGFX)
 
   #define GSLC_DEV_TOUCH ""   // No device path used
 
@@ -122,7 +122,7 @@ extern "C" {
 
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
-  
+
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
@@ -132,7 +132,7 @@ extern "C" {
  // #define DRV_DISP_ADAGFX_SSD1306
   //#define DRV_DISP_ADAGFX_HX8357
 
-  
+
   // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
@@ -154,7 +154,7 @@ extern "C" {
   #define ADAGFX_PIN_MOSI
   #define ADAGFX_PIN_MISO
   #define ADAGFX_PIN_CLK
-  
+
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
@@ -162,7 +162,7 @@ extern "C" {
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
   #define ADAGFX_SD_EN    0
-  
+
   // Define buffer size for loading images from SD
   // - A larger buffer will be faster but at the cost of RAM
   #define ADAGFX_SD_BUFFPIXEL   50
@@ -176,8 +176,8 @@ extern "C" {
   //   as well to ensure that the touch screen orientation matches the display rotation
   #define ADAGFX_ROTATE     1
 
-  
-#elif defined(DRV_DISP_TFT_ESPI)  
+
+#elif defined(DRV_DISP_TFT_ESPI)
 
   // NOTE: When using the TFT_eSPI library, there are additional
   //       library-specific configuration files that may need
@@ -189,7 +189,7 @@ extern "C" {
 
   // NOTE: To avoid potential SPI conflicts, it is recommended
   //       that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
-  
+
   #define GSLC_DEV_TOUCH ""   // No device path used
 
   #define GSLC_LOCAL_STR      0
@@ -197,7 +197,7 @@ extern "C" {
 
   // Error reporting
   #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
-  
+
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
@@ -210,7 +210,7 @@ extern "C" {
   // Enable support for clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
   #define ADAGFX_CLIP 1
-  
+
   // Set Default rotation
   // - Note that if you change this you will likely have to change ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y
   //   as well to ensure that the touch screen orientation matches the display rotation
@@ -221,10 +221,10 @@ extern "C" {
 
 // -----------------------------------------------------------------------------------------
 
-// Touch Driver-specific additional configuration  
+// Touch Driver-specific additional configuration
 #if defined(DRV_TOUCH_SDL)
   #define DRV_TOUCH_IN_DISP   // Use the display driver (SDL) for touch events
-  
+
 #elif defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by setting one of the following to 1
@@ -249,7 +249,7 @@ extern "C" {
   #define ADATOUCH_X_MAX 3800
   #define ADATOUCH_Y_MAX 3700
 
- 
+
 
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // Define sensitivity coefficient (capacitive touch)
@@ -259,7 +259,7 @@ extern "C" {
 #define ADATOUCH_Y_MIN 150
 #define ADATOUCH_X_MAX 900
 #define ADATOUCH_Y_MAX 900
-  
+
 
 #elif defined(DRV_TOUCH_TFT_ESPI)
   // The TFT_eSPI display library also includes support for XPT2046 touch controller
@@ -281,7 +281,7 @@ extern "C" {
 #define ADATOUCH_SWAP_XY  1
 #define ADATOUCH_FLIP_X   0
 #define ADATOUCH_FLIP_Y   1
-  
+
 // Define the maximum number of touch events that are handled
 // per gslc_Update() call. Normally this can be set to 1 but certain
 // displays may require a greater value (eg. 30) in order to increase

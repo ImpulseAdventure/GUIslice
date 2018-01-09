@@ -100,7 +100,7 @@ extern "C" {
 
 
 // ------------------------------------------------------------------------
-#if defined(DRV_DISP_ADAGFX_ILI9341) 
+#if defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
   #else
@@ -135,23 +135,23 @@ Adafruit_SSD1306 m_disp(OLED_RESET);
   #else
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
-    
+
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
 
 
 
 // ------------------------------------------------------------------------
-#if defined(DRV_TOUCH_ADA_STMPE610) 
+#if defined(DRV_TOUCH_ADA_STMPE610)
   #if (ADATOUCH_I2C_HW) // Use I2C
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
-    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);   
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #endif
 // ------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_ADA_FT6206) 
+#elif defined(DRV_TOUCH_ADA_FT6206)
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
@@ -179,7 +179,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   // Report any debug info if enabled
   #if defined(DBG_DRIVER)
   // TODO
-  #endif  
+  #endif
 
   // Initialize any library-specific members
   if (pGui->pvDriver) {
@@ -192,7 +192,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     pGui->bRedrawPartialEn = true;
 
     #if defined(DRV_DISP_ADAGFX_ILI9341)
-      m_disp.begin();      
+      m_disp.begin();
 
       uint8_t x = m_disp.readcommand8(ILI9341_RDMODE);
       x = m_disp.readcommand8(ILI9341_RDMADCTL);
@@ -220,26 +220,26 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
       pGui->nDispW = SSD1306_LCDWIDTH;
       pGui->nDispH = SSD1306_LCDHEIGHT;
-      
+
     #elif defined(DRV_DISP_ADAGFX_ST7735)
       m_disp.initR(INITR_144GREENTAB);  // 1.44"
       //m_disp.initR(INITR_BLACKTAB);     // 1.8" [TODO]
       pGui->nDispW = m_disp.width();
       pGui->nDispH = m_disp.height();
     #elif defined(DRV_DISP_ADAGFX_HX8357)
-      m_disp.begin(HX8357D);      
+      m_disp.begin(HX8357D);
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
       m_disp.setRotation(1);
       pGui->nDispW = HX8357_TFTHEIGHT;
       pGui->nDispH = HX8357_TFTWIDTH;
-      
+
     #endif
 
     // Defaults for clipping region
     gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
     gslc_DrvSetClipRect(pGui,&rClipRect);
-      
+
     // Initialize SD card usage
     #if (ADAGFX_SD_EN)
     if (!SD.begin(ADAGFX_PIN_SDCS)) {
@@ -247,8 +247,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       return false;
     }
     #endif
-    
-  }  
+
+  }
   return true;
 }
 
@@ -270,7 +270,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   if (sImgRef.eImgFlags == GSLC_IMGREF_NONE) {
     return NULL;
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
-    return NULL;  // No image preload done  
+    return NULL;  // No image preload done
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     return NULL;  // No image preload done
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
@@ -293,8 +293,8 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvSetBkgndImage(%s) failed\n","");
     return false;
-  }      
-  
+  }
+
   return true;
 }
 
@@ -322,7 +322,7 @@ bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
 {
   // This driver doesn't preload the image to memory,
   // so we just save the reference for loading upon render
-  pElem->sImgRefGlow = sImgRef;  
+  pElem->sImgRefGlow = sImgRef;
   return true; // TODO
 }
 
@@ -373,7 +373,7 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtLen   = 0;  
+  uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
@@ -381,7 +381,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   //m_disp.getTextBounds((char*)pStr,0,0,&nDummyX,&nDummyY,pnTxtSzW,pnTxtSzH);
   // TODO: FIXME: getTextBounds seems to return bad value.
   //       Would also need to handle pStr in PROGMEM
-  
+
   // Workaround uses the dimensions of default default font in Adafruit-GFX library
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
 
@@ -403,7 +403,7 @@ m_disp.setFont();
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
-  uint16_t nTxtScale = pFont->nSize;  
+  uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
@@ -419,7 +419,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.print(ch);
     }
     m_disp.println();
- 
+
   }
  m_disp.setFont();
   return true;
@@ -441,24 +441,24 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
     m_disp.display();
 
     // TODO: Might need to call m_disp.clearDisplay() now?
-    
+
   #endif
 }
 
 
 // -----------------------------------------------------------------------
 // Graphics Primitives Functions
-// -----------------------------------------------------------------------  
+// -----------------------------------------------------------------------
 
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
 #if (ADAGFX_CLIP)
   // Perform clipping
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipPt(&pDriver->rClipRect,nX,nY)) { return true; }
 #endif
-  
+
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawPixel(nX,nY,nColRaw);
   return true;
@@ -474,11 +474,11 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
 #if (ADAGFX_CLIP)
   // Perform clipping
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
-  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }
 #endif
-  
-  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
+
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   return true;
 }
@@ -487,11 +487,11 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
 #if (ADAGFX_CLIP)
   // Perform clipping
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
-  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }    
-#endif  
-  
-  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }
+#endif
+
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   return true;
 }
@@ -500,10 +500,10 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol)
 {
 #if (ADAGFX_CLIP)
-  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);  
-  if (!gslc_ClipLine(&pDriver->rClipRect,&nX0,&nY0,&nX1,&nY1)) { return true; }      
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  if (!gslc_ClipLine(&pDriver->rClipRect,&nX0,&nY0,&nX1,&nY1)) { return true; }
 #endif
-  
+
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
   return true;
@@ -514,8 +514,8 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
 #if (ADAGFX_CLIP)
   // TODO
 #endif
-  
-  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);  
+
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawCircle(nMidX,nMidY,nRadius,nColRaw);
   return true;
 }
@@ -525,7 +525,7 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 #if (ADAGFX_CLIP)
   // TODO
 #endif
-  
+
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillCircle(nMidX,nMidY,nRadius,nColRaw);
   return true;
@@ -538,7 +538,7 @@ bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 #if (ADAGFX_CLIP)
   // TODO
 #endif
-  
+
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
   return true;
@@ -550,10 +550,10 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 #if (ADAGFX_CLIP)
   // TODO
 #endif
-  
+
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
-  return true;   
+  return true;
 }
 
 
@@ -584,7 +584,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
   const unsigned char*  bmap_base = bitmap;
   int16_t         w,h;
   gslc_tsColor    nCol;
-  
+
   // Read header
   w       = ( (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++) ) << 8;
   w      |= ( (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++) ) << 0;
@@ -594,7 +594,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
   nCol.g  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   nCol.b  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   bmap_base++;
-  
+
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t nByte;
 
@@ -612,7 +612,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
         gslc_DrvDrawPoint(pGui,x+i,y+j,nCol);
       }
     }
-  }   
+  }
 }
 // ----- REFERENCE CODE end
 
@@ -661,7 +661,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   uint32_t pos = 0, startTime = millis();
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
- 
+
   //Serial.println();
   //Serial.print("Loading image '");
   //Serial.print(filename);
@@ -753,7 +753,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
             if (bDrawBit) {
               gslc_DrvDrawPoint(pGui,x+col,y+row,nCol);
             }
-            
+
           } // end pixel
         } // end scanline
         //Serial.print("Loaded in ");
@@ -772,16 +772,16 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
-{ 
+{
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
   if (sImgRef.eImgFlags == GSLC_IMGREF_NONE) {
     return true;  // Nothing to do
-    
+
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
     return false; // Not supported
-    
+
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from SRAM
@@ -790,8 +790,8 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       return true;
     } else {
       return false; // TODO: not yet supported
-    }    
-    
+    }
+
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     // TODO: Probably need to fix this to work with PROGMEM,
     //       but check (GSLC_USE_PROGMEM) first
@@ -801,18 +801,18 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // Draw a monochrome bitmap from program memory
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
-      return true;      
+      return true;
     } else {
       return false; // TODO: not yet supported
     }
-    
+
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     // Load image from SD media
     #if (ADAGFX_SD_EN)
       if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
         // 24-bit Bitmap
-        gslc_DrvDrawBmp24FromSD(pGui,sImgRef.pFname,nDstX,nDstY);   
-        return true; 
+        gslc_DrvDrawBmp24FromSD(pGui,sImgRef.pFname,nDstX,nDstY);
+        return true;
       } else {
         // Unsupported format
         return false;
@@ -821,7 +821,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // SD card access not enabled
       return false;
     #endif
-    
+
   } else {
     // Unsupported source
     return false;
@@ -836,7 +836,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-    
+
     // Check to see if an image has been assigned to the background
     if (pGui->sImgRefBkgnd.eImgFlags == GSLC_IMGREF_NONE) {
 	  // No image assigned, so assume flat color background
@@ -859,7 +859,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 // -----------------------------------------------------------------------
 // Touch Functions (via display driver)
-// -----------------------------------------------------------------------  
+// -----------------------------------------------------------------------
 
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
@@ -927,12 +927,12 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   static int16_t  m_nLastRawY     = 0;
   static uint16_t m_nLastRawPress = 0;
   static bool     m_bLastTouched  = false;
-  
+
   bool bValid = false;  // Indicate a touch event to GUIslice core?
-  
+
   // ----------------------------------------------------------------
-  #if defined(DRV_TOUCH_ADA_STMPE610)    
-  
+  #if defined(DRV_TOUCH_ADA_STMPE610)
+
   if (m_touch.touched()) {
 
     if (m_touch.bufferEmpty()) {
@@ -949,11 +949,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
         m_bLastTouched = true;
         bValid = true;
       }
-   
+
     }
     // Clear interrupts
     m_touch.writeRegister8(STMPE_INT_STA, 0xFF);
-    
+
   } else {
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
@@ -962,17 +962,17 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
       m_bLastTouched = false;
-      bValid = true;      
+      bValid = true;
     }
     // Flush the FIFO
     while (!m_touch.bufferEmpty()) {
       m_touch.readData(&nRawX,&nRawY,&nRawPress);
     }
   }
-  
+
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_ADA_FT6206)
-  
+
   if (m_touch.touched()) {
     TS_Point ptTouch = m_touch.getPoint();
     m_nLastRawX = ptTouch.x;
@@ -980,7 +980,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     m_nLastRawPress = 255;  // Select arbitrary non-zero value
     m_bLastTouched = true;
     bValid = true;
-    
+
   } else {
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
@@ -989,13 +989,13 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
       m_bLastTouched = false;
-      bValid = true;      
+      bValid = true;
     }
   }
 
   // ----------------------------------------------------------------
 #elif  defined(DRV_TOUCH_ADA_SIMPLE)
- 
+
   TSPoint p = m_touch.getPoint();
 
   pinMode(XM, OUTPUT);
@@ -1026,7 +1026,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
   #endif // DRV_TOUCH_*
 
-  
+
   // If an event was detected, signal it back to GUIslice
   if (bValid) {
 
@@ -1060,7 +1060,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       nInputY = constrain(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
       // Perform scaling from input to output
       nOutputX = map(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,nDispOutMaxX);
-      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);    
+      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);
     #else
       // No scaling from input to output
       nOutputX = nInputX;
@@ -1078,19 +1078,19 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     // Final assignment
     *pnX      = nOutputX;
     *pnY      = nOutputY;
-    *pnPress  = m_nLastRawPress;    
+    *pnPress  = m_nLastRawPress;
 
     // Print output for debug
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
-    #endif  
-  
-       
+    #endif
+
+
     // Return with indication of new value
     return true;
   }
-    
+
   // No new value
   return false;
 }
@@ -1143,22 +1143,22 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
 uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
-  
+
   #if defined(DRV_DISP_ADAGFX_ILI) ||defined(DRV_DISP_ADAGFX_ILI9341)||defined(DRV_DISP_ADAGFX_ILI9341_8BIT)|| defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // RGB565
     nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
     nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
     nColRaw |= (((nCol.b & 0xF8) >> 3) <<  0); // Mask: 0000 0000 0001 1111
-  
+
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     if ((nCol.r == 0) && (nCol.g == 0) && (nCol.b == 0)) { // GSLC_COL_BLACK
       nColRaw = 0;  // BLACK
     } else {
       nColRaw = 1;  // WHITE
     }
-    
+
   #endif // DRV_DISP_ADAGFX_*
-  
+
   return nColRaw;
 }
 
