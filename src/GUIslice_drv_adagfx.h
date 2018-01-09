@@ -153,7 +153,7 @@ void gslc_DrvDestruct(gslc_tsGui* pGui);
 ///
 void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 
-void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y, const unsigned char *bitmap,bool bProgMem);
+
 ///
 /// Configure the background to use a bitmap image
 /// - The background is used when redrawing the entire page
@@ -252,6 +252,8 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui);
 /// \param[in]  pFont:       Ptr to Font structure
 /// \param[in]  pStr:        String to display
 /// \param[in]  eTxtFlags:   Flags associated with text string
+/// \param[out] pnTxtX:      Ptr to offset X of text
+/// \param[out] pnTxtY:      Ptr to offset Y of text
 /// \param[out] pnTxtSzW:    Ptr to width of text
 /// \param[out] pnTxtSzH:    Ptr to height of text
 ///
@@ -435,6 +437,23 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 ///
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef);
 
+
+///
+/// Draw a monochrome bitmap from a memory array
+/// - Draw from the bitmap buffer using the foreground color
+///   defined in the header (unset bits are transparent)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nDstX:       Destination X coord for copy
+/// \param[in]  nDstY:       Destination Y coord for copy
+/// \param[in]  bitmap:      Pointer to bitmap buffer
+/// \param[in]  bProgMem:    Bitmap is stored in Flash if true, RAM otherwise
+///
+/// \return none
+///
+void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y, const unsigned char *bitmap,bool bProgMem);
+
+
 ///
 /// Copy the background image to destination screen
 ///
@@ -459,7 +478,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 /// \return true if successful
 ///
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
-void gslc_SleepOn();
+
 
 ///
 /// Get the last touch event from the SDL_Event handler

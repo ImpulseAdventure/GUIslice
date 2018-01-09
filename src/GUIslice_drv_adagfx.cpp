@@ -28,10 +28,6 @@
 //
 // =======================================================================
 
-// Other contributions:
-// - 2017/08/29: Added Adafruit HX8357 support. [by ALittleSlow]
-
-// =======================================================================
 
 // Compiler guard for requested driver
 #include "GUIslice_config.h" // Sets DRV_DISP_*
@@ -47,9 +43,7 @@
 #include <stdio.h>
 
 #include <Adafruit_GFX.h>
-
 #include <gfxfont.h>
-
 
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #include <Adafruit_ILI9341.h>
@@ -88,8 +82,8 @@
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
 #elif defined(DRV_TOUCH_ADA_SIMPLE )
-#include <stdint.h>
-#include <TouchScreen.h>
+  #include <stdint.h>
+  #include <TouchScreen.h>
 #endif
 
 
@@ -102,22 +96,21 @@ extern "C" {
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
-    Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
+    Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
-    // ------------------------------------------------------------------------
-    #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
 
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+  Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 
-    Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
-#define OLED_RESET 4
-Adafruit_SSD1306 m_disp(OLED_RESET);
+    Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RESET, ADAGFX_PIN_CS);
   #endif
 
 // ------------------------------------------------------------------------
@@ -156,11 +149,12 @@ Adafruit_SSD1306 m_disp(OLED_RESET);
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE )
-#define YP A2  // must be an analog pin, use "An" notation!
-#define XM A3  // must be an analog pin, use "An" notation!
-#define YM 44   // can be a digital pin
-#define XP 45  // can be a digital pin
-    TouchScreen m_touch = TouchScreen(XP, YP, XM, YM, 300);
+  // TODO: Should these be configurable in GUIslice_config.h?
+  #define YP A2   // Must be an analog pin, use "An" notation!
+  #define XM A3   // Must be an analog pin, use "An" notation!
+  #define YM 44   // Can be a digital pin
+  #define XP 45   // Can be a digital pin
+  TouchScreen m_touch = TouchScreen(XP, YP, XM, YM, 300);
 #endif // DRV_TOUCH_ADA_*
 
 
@@ -196,25 +190,22 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
       uint8_t x = m_disp.readcommand8(ILI9341_RDMODE);
       x = m_disp.readcommand8(ILI9341_RDMADCTL);
+      x = m_disp.readcommand8(ILI9341_RDPIXFMT);
+      x = m_disp.readcommand8(ILI9341_RDIMGFMT);
+      x = m_disp.readcommand8(ILI9341_RDSELFDIAG);
 
-       x = m_disp.readcommand8(ILI9341_RDPIXFMT);
-
-       x = m_disp.readcommand8(ILI9341_RDIMGFMT);
-
-       x = m_disp.readcommand8(ILI9341_RDSELFDIAG);
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
-      m_disp.setRotation(1);
+      m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = ILI9341_TFTHEIGHT;
       pGui->nDispH = ILI9341_TFTWIDTH;
-#elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
-  m_disp.begin(identifier);
-  // Rotate display from native portrait orientation to landscape
-  // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
-  m_disp.setRotation(1);
-  pGui->nDispW = TFTHEIGHT;
-  pGui->nDispH = TFTWIDTH;
+      m_disp.begin(identifier);
+      m_disp.setRotation( pGui->nRotation );
+      pGui->nDispW = TFTHEIGHT;
+      pGui->nDispH = TFTWIDTH;
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -226,11 +217,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       //m_disp.initR(INITR_BLACKTAB);     // 1.8" [TODO]
       pGui->nDispW = m_disp.width();
       pGui->nDispH = m_disp.height();
+
     #elif defined(DRV_DISP_ADAGFX_HX8357)
       m_disp.begin(HX8357D);
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
-      m_disp.setRotation(1);
+      m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = HX8357_TFTHEIGHT;
       pGui->nDispH = HX8357_TFTWIDTH;
 
@@ -375,14 +367,10 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 {
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
+  int16_t   nDummyX,nDummyY;
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
-  int16_t   nDummyX,nDummyY;
-  //m_disp.getTextBounds((char*)pStr,0,0,&nDummyX,&nDummyY,pnTxtSzW,pnTxtSzH);
-  // TODO: FIXME: getTextBounds seems to return bad value.
-  //       Would also need to handle pStr in PROGMEM
 
-  // Workaround uses the dimensions of default default font in Adafruit-GFX library
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
 
 
@@ -397,7 +385,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 
   }
-m_disp.setFont();
+  m_disp.setFont();
   return true;
 }
 
@@ -409,6 +397,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
+
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
     // String in SRAM; can access buffer directly
     m_disp.println(pStr);
@@ -419,9 +408,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.print(ch);
     }
     m_disp.println();
-
   }
- m_disp.setFont();
+   m_disp.setFont();
   return true;
 }
 
@@ -796,8 +784,6 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     // TODO: Probably need to fix this to work with PROGMEM,
     //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
-
-
       // Draw a monochrome bitmap from program memory
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
@@ -828,10 +814,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   }
 }
 
-void gslc_SleepOn()
-{
-	//m_disp.SleepOn();
-	}
+
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {
   if (pGui->pvDriver) {
@@ -878,7 +861,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206)||defined(DRV_TOUCH_ADA_SIMPLE)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -895,9 +878,8 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
-#elif defined(DRV_TOUCH_ADA_SIMPLE )
-
-      return true;
+  #elif defined(DRV_TOUCH_ADA_SIMPLE)
+    return true;
   #else
     // ERROR: Unsupported driver mode
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
@@ -994,34 +976,33 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   }
 
   // ----------------------------------------------------------------
-#elif  defined(DRV_TOUCH_ADA_SIMPLE)
+  #elif defined(DRV_TOUCH_ADA_SIMPLE)
 
   TSPoint p = m_touch.getPoint();
 
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-
   if (p.z > 10 && p.z < 1000) {
 
-          nRawX=p.x;
-          nRawY=p.y;
-	  nRawPress=p.x;
-          m_nLastRawX = nRawX;
-          m_nLastRawY = nRawY;
-          m_nLastRawPress = nRawPress;
-          m_bLastTouched = true;
-          bValid = true;}
+    nRawX=p.x;
+    nRawY=p.y;
+	nRawPress=p.x;
+    m_nLastRawX = nRawX;
+    m_nLastRawY = nRawY;
+    m_nLastRawPress = nRawPress;
+    m_bLastTouched = true;
+    bValid = true;}
   else {
-     if (!m_bLastTouched) {
-       // Wasn't touched before; do nothing
-     } else {
-       // Touch release
-       // Indicate old coordinate but with pressure=0
-       m_nLastRawPress = 0;
-       m_bLastTouched = false;
-       bValid = true;
-     }
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+    }
   }
 
   #endif // DRV_TOUCH_*
@@ -1054,7 +1035,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610)||defined(DRV_TOUCH_ADA_SIMPLE)
+    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE)
       // Perform constraining to input boundaries
       nInputX = constrain(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
       nInputY = constrain(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
@@ -1144,7 +1125,7 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
 
-  #if defined(DRV_DISP_ADAGFX_ILI) ||defined(DRV_DISP_ADAGFX_ILI9341)||defined(DRV_DISP_ADAGFX_ILI9341_8BIT)|| defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // RGB565
     nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
     nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
@@ -1167,4 +1148,3 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #endif // __cplusplus
 
 #endif // Compiler guard for requested driver
-
