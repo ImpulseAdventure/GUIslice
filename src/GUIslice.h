@@ -2306,27 +2306,29 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 ///
 
 
-/// \def gslc_ElemCreateTxtBtn_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData)
+/// \def gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData)
 ///
 /// Create a text button element
 ///
-/// \param[in]  pGui:       Pointer to GUI
-/// \param[in]  nElemId:    Unique element ID to assign
-/// \param[in]  nPage:      Page ID to attach element to
-/// \param[in]  nX:         X coordinate of element
-/// \param[in]  nY:         Y coordinate of element
-/// \param[in]  nW:         Width of element
-/// \param[in]  nH:         Height of element
-/// \param[in]  strTxt:     Text string to display
-/// \param[in]  pFont:      Pointer to font resource
-/// \param[in]  colTxt:     Color for the text
-/// \param[in]  colFrame:   Color for the frame
-/// \param[in]  colFill:    Color for the fill
-/// \param[in]  nAlignTxt:  Text alignment
-/// \param[in]  bFrameEn:   True if framed, false otherwise
-/// \param[in]  bFillEn:    True if filled, false otherwise
-/// \param[in]  callFunc:   Callback function for button press
-/// \param[in]  extraData:  Ptr to extended data structure
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nElemId:      Unique element ID to assign
+/// \param[in]  nPage:        Page ID to attach element to
+/// \param[in]  nX:           X coordinate of element
+/// \param[in]  nY:           Y coordinate of element
+/// \param[in]  nW:           Width of element
+/// \param[in]  nH:           Height of element
+/// \param[in]  strTxt:       Text string to display
+/// \param[in]  pFont:        Pointer to font resource
+/// \param[in]  colTxt:       Color for the text
+/// \param[in]  colFrame:     Color for the frame
+/// \param[in]  colFill:      Color for the fill
+/// \param[in]  colFrameGlow: Color for the frame when glowing
+/// \param[in]  colFillGlow:  Color for the fill when glowing
+/// \param[in]  nAlignTxt:    Text alignment
+/// \param[in]  bFrameEn:     True if framed, false otherwise
+/// \param[in]  bFillEn:      True if filled, false otherwise
+/// \param[in]  callFunc:     Callback function for button press
+/// \param[in]  extraData:    Ptr to extended data structure
 ///
 
 
@@ -2422,15 +2424,15 @@ void gslc_ResetElem(gslc_tsElem* pElem);
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
 
-#define gslc_ElemCreateTxtBtn_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
+#define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       true,                                                       \
       GSLC_TYPE_BTN,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,true,bFrameEn,bFillEn,            \
-      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      GSLC_GROUP_ID_NONE,false,true,bFrameEn,bFillEn,             \
+      colFrame,colFill,colFrameGlow,colFillGlow,                  \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       NULL,                                                       \
@@ -2441,13 +2443,13 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
-      pFont,                                           \
-	  (void*)extraData,                                                       \
+      pFont,                                                      \
+      (void*)extraData,                                           \
       NULL,                                                       \
-	  NULL,                                                       \
-	  callFunc,                                                       \
       NULL,                                                       \
-      GSLC_REDRAW_NONE,                                                      \
+      callFunc,                                                   \
+      NULL,                                                       \
+      GSLC_REDRAW_NONE,                                           \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
@@ -2481,13 +2483,13 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      GSLC_REDRAW_NONE,                                                      \
+      GSLC_REDRAW_NONE,                                           \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
 
 
-#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn) \
+#define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,drawFunc) \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
       true,                                                       \
@@ -2508,10 +2510,10 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
+      drawFunc,                                                   \
       NULL,                                                       \
       NULL,                                                       \
-      NULL,                                                       \
-      GSLC_REDRAW_NONE,                                                      \
+      GSLC_REDRAW_NONE,                                           \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);

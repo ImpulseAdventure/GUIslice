@@ -3207,7 +3207,6 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 
 
 // Search internal element array for one with a particular ID
-// - NOTE: Only elements in RAM are searched (not PROGMEM)
 gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
 {
   if (pCollect == NULL) {
@@ -3217,6 +3216,7 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
   uint16_t      nInd;
+
   if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
     GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
@@ -3228,23 +3228,32 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
     // Fetch the element pointer from the reference array
     pElem = pCollect->asElemRef[nInd].pElem;
 
-    // Handle special case of flash-based elements
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
-
+      // Search element in Flash
+      #if (GSLC_USE_PROGMEM)
       (gslc_tsElem*)memcpy_P(&tempFind,pElem,sizeof(gslc_tsElem));
-      //GSLC_DEBUG_PRINT("FINDING S:%u D:%u at %u from %uOF %u\n",nElemId,tempFind.nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
+      //GSLC_DEBUG_PRINT("SEARCHING S:%4u PRG D:%4u at %u from %4u RefInd=%u\n",nElemId,tempFind.nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
       if (tempFind.nId == nElemId) {
+        //GSLC_DEBUG_PRINT("FOUND     S:%4u PRG D:%4u\n",nElemId,tempFind.nId);
+        pFoundElem = pElem;
+        break;
+      }
+      #endif
+    } else if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
+      // Search element in RAM
+      //GSLC_DEBUG_PRINT("SEARCHING S:%4u RAM D:%4u at %u from %4u RefInd=%u\n",nElemId,pElem->nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
+      if (pElem->nId == nElemId) {
+        //GSLC_DEBUG_PRINT("FOUND     S:%4u RAM D:%4u\n",nElemId,pElem->nId);
         pFoundElem = pElem;
         break;
       }
     }
 
-
-    if (pElem->nId == nElemId) {
-      pFoundElem = pElem;
-      break;
-    }
   }
+  if (pFoundElem == NULL) {
+    //GSLC_DEBUG_PRINT("NOT FOUND S:%4u\n",nElemId);
+  }
+
   return pFoundElem;
 }
 
@@ -3282,6 +3291,7 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(void* pvGui,gslc_tsCollect* pCollect,
 
     // Handle special case of Flash elements
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
+      #if (GSLC_USE_PROGMEM)
       pElem = (gslc_tsElem*) memcpy_P(&pElemTmp,pElem,sizeof(gslc_tsElem));
       //pElem=&pElemTmp;
 
@@ -3293,6 +3303,7 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(void* pvGui,gslc_tsCollect* pCollect,
 
         break;
       }
+      #endif
 
     // Handle typical case of RAM elements
     } else if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
