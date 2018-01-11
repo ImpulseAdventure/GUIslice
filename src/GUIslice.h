@@ -1840,7 +1840,7 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId);
 /// - A match is found if the element is "clickable" (bClickEn=true)
 ///   and the coordinate falls within the element's bounds (rElem).
 ///
-/// \param[in]  pvGui:        Void pointer to GUI
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  nX:           Absolute X coordinate to use for search
 /// \param[in]  nY:           Absolute Y coordinate to use for search
@@ -1848,7 +1848,22 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId);
 /// \return Pointer to the element in the collection that was found
 ///         or NULL if no matches found
 ///
-gslc_tsElem* gslc_CollectFindElemFromCoord(void* pvGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
+gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
+
+
+///
+/// UNUSED
+/// Find an element reference from an element pointer
+/// - This could potentially be used when handling an element
+///   handler needs to access state that is stored in the
+///   element reference array.
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElem:        Ptr to the element to find
+///
+/// \return Pointer to the element reference
+///
+gslc_tsElemRef* gslc_CollectFindRefFromElem(gslc_tsCollect* pCollect,gslc_tsElem* pElem);
 
 
 /// Allocate the next available Element ID in a collection
@@ -2431,7 +2446,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       true,                                                       \
       GSLC_TYPE_BTN,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,true,bFrameEn,bFillEn,             \
+      GSLC_GROUP_ID_NONE,true,true,bFrameEn,bFillEn,             \
       colFrame,colFill,colFrameGlow,colFillGlow,                  \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \

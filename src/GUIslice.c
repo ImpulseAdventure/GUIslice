@@ -2201,8 +2201,7 @@ void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
     temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
     gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
 
-	// gslc_PageRedrawGo(pGui);
-
+    // gslc_PageRedrawGo(pGui);
   }
 
 }
@@ -2439,9 +2438,15 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
   gslc_tsElem*  pTrackedOld = NULL;
   gslc_tsElem*  pTrackedNew = NULL;
+  bool          bGlowingOld = false;
 
   // Fetch the item currently being tracked (if any)
   pTrackedOld = gslc_CollectGetElemTracked(pCollect);
+
+  // Fetch current glowing state
+  if (pTrackedOld != NULL) {
+    bGlowingOld = pTrackedOld->bGlowing;
+  }
 
   // Reset the in-tracked flag
   bool  bInTracked = false;
@@ -2473,6 +2478,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
       // Start glow on new element
       gslc_ElemSetGlow(pTrackedNew,true);
 
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedNew->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedNew->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedNew,GSLC_REDRAW_FULL);
+        }
+      }
+
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
@@ -2502,6 +2519,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
       // Clear glow state
       gslc_ElemSetGlow(pTrackedOld,false);
+
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedOld->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
+        }
+      }
 
     }
 
@@ -2536,6 +2565,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
         // Ensure it is glowing
         gslc_ElemSetGlow(pTrackedOld,true);
+      }
+
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedOld->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
+        }
       }
 
     }
@@ -3205,6 +3246,32 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
   }
 }
 
+// UNUSED
+// Determine the Element Reference from the Element
+// - This is used temporarily to assist in migrating element state from
+//   the element structure to the element reference structure. Later,
+//   it is hoped that the element reference can be passed to the routines
+//   that are making changes to the element state.
+gslc_tsElemRef* gslc_CollectFindRefFromElem(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
+{
+  if (pCollect == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: CollectFindRefFromElem(%s) called with NULL ptr\n","");
+    return NULL;
+  }
+  gslc_tsElem*  pElemCur = NULL;
+
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsElemRef* pFoundElemRef = NULL;
+
+  for (int nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
+    pElemRef = &pCollect->asElemRef[nInd];
+    pElemCur = pCollect->asElemRef[nInd].pElem;
+    if (pElem == pElemCur) {
+      pFoundElemRef = pElemRef;
+    }
+  }
+  return pFoundElemRef;
+}
 
 // Search internal element array for one with a particular ID
 gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
@@ -3275,14 +3342,13 @@ void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
 }
 
 // Find an element index in a collection from a coordinate
-gslc_tsElem* gslc_CollectFindElemFromCoord(void* pvGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
+gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
 {
   uint16_t      nInd;
   bool          bFound = false;
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
-  gslc_tsElem   pElemTmp;
-  gslc_tsGui*   pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElem   sElemTmp;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
@@ -3292,14 +3358,20 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(void* pvGui,gslc_tsCollect* pCollect,
     // Handle special case of Flash elements
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
       #if (GSLC_USE_PROGMEM)
-      pElem = (gslc_tsElem*) memcpy_P(&pElemTmp,pElem,sizeof(gslc_tsElem));
-      //pElem=&pElemTmp;
+      pElem = (gslc_tsElem*) memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
+      //pElem=&sElemTmp;
 
-      bFound = gslc_ElemOwnsCoord(&pElemTmp,nX,nY,true);
+      bFound = gslc_ElemOwnsCoord(&sElemTmp,nX,nY,true);
       if (bFound) {
 
-        pGui->sElemTmpProg=pElemTmp;
-        pFoundElem=&pGui->sElemTmpProg;
+        // If the coordinates match a Flash element, then
+        // save a copy of the Flash element into the GUI placeholder element
+        pGui->sElemTmpProg = sElemTmp;
+
+        // Return a pointer to the GUI placeholder element so that
+        // future mutator functions can work with RAM element instead
+        // of Flash.
+        pFoundElem = &pGui->sElemTmpProg;
 
         break;
       }

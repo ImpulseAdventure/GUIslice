@@ -5,10 +5,6 @@
 // - Example 07 (Arduino):
 //   - Sliders with dynamic color control and position callback
 //   - Demonstrates the use of ElemCreate*_P() functions
-//   - Also demonstrates the use of ElemCreateBtnTxt_P()
-//     NOTE: this is a alpha-test version of the flash-based
-//     button implementation. Although the buttons work, the
-//     highlight (glowing) state is not implemented yet.
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -25,7 +21,7 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
-      E_SLIDER_R,E_SLIDER_G,E_SLIDER_B,E_ELEM_BTN_KITCHEN};
+      E_SLIDER_R,E_SLIDER_G,E_SLIDER_B,E_ELEM_BTN_ROOM};
 enum {E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
@@ -149,33 +145,16 @@ bool InitOverlays()
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   // Create Quit button with text label
-  #if 0 // Put button in flash
-  static const char mstr2[] PROGMEM = "SAVE";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},(char*)mstr2,strlen_P(mstr2),E_FONT_TXT,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  #else
-  gslc_ElemCreateTxtBtn_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[0],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
-  #endif
 
   // Create dummy selector
   gslc_ElemCreateTxt_P(&m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",&m_asFont[0],
           GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  #if 0 // Put button in flash
-  static const char mstr4[] PROGMEM = "Kitchen...";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_KITCHEN,E_PG_MAIN,
-    (gslc_tsRect){140,65,80,20},(char*)mstr4,strlen_P(mstr4),E_FONT_TXT,NULL);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  #else
-  gslc_ElemCreateTxtBtn_P(&m_gui,E_ELEM_BTN_KITCHEN,E_PG_MAIN,140,65,80,20,"Kitchen...",&m_asFont[0],
+  // Create room button
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_ROOM,E_PG_MAIN,140,65,80,20,"Kitchen...",&m_asFont[0],
     GSLC_COL_WHITE,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,NULL,NULL);
-  #endif
 
   // Create sliders
   // - Define element arrangement
