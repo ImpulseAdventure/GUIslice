@@ -2,12 +2,15 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 05 (Arduino):
+// - Example 05 (Arduino): [minimum RAM version]
 //   - Multiple page handling
 //   - Background image
 //   - Compound elements
 //   - Demonstrates the use of ElemCreate*_P() functions
-//     NOTE: This sketch requires CPUs with >2KB of RAM
+//     These RAM-reduced examples take advantage of the internal
+//     Flash storage (via PROGMEM).
+//   - NOTE: This sketch requires moderate program storage in Flash.
+//     As a result, it may not run on basic Arduino devices (eg. ATmega328)
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -47,8 +50,8 @@ unsigned  m_nCount = 0;
 #define MAX_ELEM_PG_MAIN        9                                         // # Elems total on Main page
 #define MAX_ELEM_PG_EXTRA       7                                         // # Elems total on Extra page
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   4                                       // # Elems in Flash
-  #define MAX_ELEM_PG_EXTRA_PROG  4                                       // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   7                                       // # Elems in Flash
+  #define MAX_ELEM_PG_EXTRA_PROG  5                                       // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                       // # Elems in Flash
   #define MAX_ELEM_PG_EXTRA_PROG  0                                       // # Elems in Flash
@@ -116,33 +119,30 @@ bool InitOverlays()
   // PAGE: MAIN
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
 
   // Create title
   gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",&m_asFont[2], // E_FONT_TITLE
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 
   // Create Quit button with text label
-  static const char mstr2[] PROGMEM = "Quit";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){100,140,50,20},(char*)mstr2,strlen_P(mstr2),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,100,140,50,20,"Quit",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
+
 
 
   // Create Extra button with text label
-  static const char mstr3[] PROGMEM = "Extra";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (gslc_tsRect){170,140,50,20},(char*)mstr3,strlen_P(mstr3),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,170,140,50,20,"Extra",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
+
 
   // Create counter
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,40,60,50,10,"Count",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  static char mstr5[8] = "";  // Placeholder for counter
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,50,10},
-    mstr5,8,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
-  m_pElemCnt = pElem; // Save for quick access
+
+  static char mstr5[8] = "????";  // Placeholder for counter
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,100,60,50,10,mstr5,8,&m_asFont[1], // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
 
   // Create progress bar
@@ -161,14 +161,11 @@ bool InitOverlays()
   // PAGE: EXTRA
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
 
   // Create Back button with text label
-  static const char mstr7[] PROGMEM = "Back";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_tsRect){50,170,50,20},(char*)mstr7,strlen_P(mstr7),E_FONT_BTN,&CbBtnCommon);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,50,170,50,20,"Back",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
 
   // Create a few labels
   gslc_ElemCreateTxt_P(&m_gui,201,E_PG_EXTRA,60,50,50,10,"Data 1",&m_asFont[1], // E_FONT_TXT
@@ -228,11 +225,8 @@ void loop()
   m_nCount++;
 
   // Perform drawing updates
-  // - Note: we can make the updates conditional on the active
-  //   page by checking gslc_GetPageCur() first.
-
   snprintf(acTxt,MAX_STR,"%u",m_nCount);
-  gslc_ElemSetTxtStr(pElemCnt,acTxt);
+  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
 
   gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
 
