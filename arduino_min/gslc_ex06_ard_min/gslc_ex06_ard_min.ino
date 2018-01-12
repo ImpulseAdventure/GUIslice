@@ -56,7 +56,7 @@ float     m_fCoordZ = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          19                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   16                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   17                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -251,8 +251,7 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,20,170,50,10,"Control:",&m_asFont[1],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_tsRect){80,170,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,170,20,20,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,110,170,50,10,"Enable",&m_asFont[1],
           GSLC_COL_GRAY_LT1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
