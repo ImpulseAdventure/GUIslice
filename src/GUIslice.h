@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.3    (2018/01/08)
+// - Version 0.9.3    (2018/01/11)
 // =======================================================================
 //
 // The MIT License
@@ -1563,7 +1563,7 @@ void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin);
 void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr);
 
 ///
-/// Update the text string associated with an flash-based Element ID
+/// Update the text string associated with a flash-based Element by ptr
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElem:       Pointer to Element
@@ -1572,6 +1572,19 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr);
 /// \return none
 ///
 void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr);
+
+///
+/// Update the text string associated with a flash-based Element by its
+/// Page ID and Element ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nPageId:      Page ID to search
+/// \param[in]  nElemId:      Element ID to search
+/// \param[in]  pStr:        String to copy into element
+///
+/// \return none
+///
+void gslc_ElemSetTxtStrP1(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr);
 
 ///
 /// Update the text string color associated with an Element ID
@@ -2446,7 +2459,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       true,                                                       \
       GSLC_TYPE_BTN,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,true,true,bFrameEn,bFillEn,             \
+      GSLC_GROUP_ID_NONE,true,true,bFrameEn,bFillEn,              \
       colFrame,colFill,colFrameGlow,colFillGlow,                  \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \

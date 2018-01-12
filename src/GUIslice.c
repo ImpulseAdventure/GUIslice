@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.3    (2018/01/08)
+// - Version 0.9.3    (2018/01/11)
 // =======================================================================
 //
 // The MIT License
@@ -58,7 +58,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9.2"
+#define GUISLICE_VER "0.9.3"
 
 
 // ========================================================================
@@ -2175,6 +2175,7 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 }
 
 // Set the text string associated with a flash-based text element
+// indexed by element pointer
 // - This routine will copy the string from flash to a temporary
 //   element and then force a redraw
 void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
@@ -2199,10 +2200,69 @@ void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
   if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1)) {
     strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
     temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
+
+    // FIXME: Since we are going to force a redraw, ensure that the
+    // element is on the active page
     gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
 
     // gslc_PageRedrawGo(pGui);
   }
+
+}
+
+// Set the text string associated with a flash-based text element
+// indexed by Page ID and Element ID
+// - This routine will copy the string from flash to a temporary
+//   element and then force a redraw
+void gslc_ElemSetTxtStrP1(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr)
+{
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1(%s) called with NULL ptr\n","");
+    return;
+  }
+  // Fetch the element
+  gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1() could not find element (%u) on page (%u)\n",nPageId,nElemId);
+    return;
+  }
+
+  // Since we are going to force a redraw, ensure that the
+  // element is on the active page
+  
+  // FIXME: We should still update the external string value
+  // even when it isn't on the current page, otherwise the new
+  // value may not be drawn when the page is swapped and a
+  // full redraw occurs.
+  
+  if (gslc_GetPageCur(pGui) != nPageId) {
+    return;
+  }
+
+  // Copy element from Flash to RAM temporary element
+  gslc_tsElem temp;
+  (gslc_tsElem*)memcpy_P(&temp,pElem,sizeof(gslc_tsElem));
+
+  // Check for read-only status (in case the string was
+  // defined in Flash/PROGMEM)
+  if (temp.nStrBufMax == 0) {
+    // String was read-only, so abort now
+    return;
+  }
+
+  // To avoid unnecessary redraw / flicker, only a change in
+  // the text content will drive a redraw
+  if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1) == 0) {
+    // No change, so abort
+    return;
+  }
+
+  // Copy new string to RAM temporary element
+  strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
+  temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
+
+  // Force a redraw
+  gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
 
 }
 
