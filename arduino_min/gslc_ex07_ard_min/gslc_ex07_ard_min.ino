@@ -2,9 +2,11 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 07 (Arduino):
+// - Example 07 (Arduino): [minimum RAM version]
 //   - Sliders with dynamic color control and position callback
-//   - Demonstrates the use of ElemCreate*_P() functions
+//   - Demonstrates the use of ElemCreate*_P() functions.
+//     These RAM-reduced examples take advantage of the internal
+//     Flash storage (via PROGMEM).
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -21,7 +23,7 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
-      E_SLIDER_R,E_SLIDER_G,E_SLIDER_B};
+      E_SLIDER_R,E_SLIDER_G,E_SLIDER_B,E_ELEM_BTN_ROOM};
 enum {E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
@@ -40,7 +42,7 @@ unsigned  m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          17                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   11                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   13                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -132,36 +134,31 @@ bool InitOverlays()
 
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
 
   // Create dividers
-  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
-  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL);
 
 
   // Create color box
+  // - This element is created in RAM instead of Flash as we want
+  //   dynamic control over its color fill
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   // Create Quit button with text label
-  static const char mstr2[] PROGMEM = "SAVE";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},(char*)mstr2,strlen_P(mstr2),E_FONT_TXT,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
 
   // Create dummy selector
   gslc_ElemCreateTxt_P(&m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",&m_asFont[0],
           GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  static const char mstr4[] PROGMEM = "Kitchen...";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
-    (gslc_tsRect){140,65,80,20},(char*)mstr4,strlen_P(mstr4),E_FONT_TXT,NULL);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  // Create room button
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_ROOM,E_PG_MAIN,140,65,80,20,"Kitchen...",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,NULL,NULL);
 
   // Create sliders
   // - Define element arrangement
@@ -262,4 +259,3 @@ void loop()
     while (1) { }
   }
 }
-

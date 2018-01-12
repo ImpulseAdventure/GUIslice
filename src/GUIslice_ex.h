@@ -847,6 +847,71 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 
 // ============================================================================
 
+// ------------------------------------------------------------------------
+// Read-only element macros
+// ------------------------------------------------------------------------
+
+// Macro initializers for Read-Only Elements in Flash/PROGMEM
+//
+
+
+/// \def gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,bRadio,nStyle,colCheck,bChecked)
+///
+/// Create a Checkbox Element in Flash
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Unique element ID to assign
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  nX:          X coordinate of element
+/// \param[in]  nY:          Y coordinate of element
+/// \param[in]  nW:          Width of element
+/// \param[in]  nH:          Height of element
+/// \param[in]  bRadio:      Radio-button functionality if true
+/// \param[in]  nStyle:      Drawing style for checkbox / radio button
+/// \param[in]  colCheck:    Color for inner fill when checked
+/// \param[in]  bChecked:    Default state
+///
+/// \return none
+///
+
+#ifdef GSLC_USE_PROGMEM
+
+#define gslc_ElemXCheckboxCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,bRadio_,nStyle_,colCheck_,bChecked_) \
+  static gslc_tsXCheckbox sCheckbox##nElemId;                     \
+  sCheckbox##nElemId.pGui = pGui_;                                \
+  sCheckbox##nElemId.bRadio = bRadio_;                            \
+  sCheckbox##nElemId.bChecked = bChecked_;                        \
+  sCheckbox##nElemId.colCheck = colCheck_;                        \
+  sCheckbox##nElemId.nStyle = nStyle_;                            \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      true,                                                       \
+      GSLC_TYPEX_CHECKBOX,                                        \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,true,true,false,true,                    \
+      GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sCheckbox##nElemId),                               \
+      NULL,                                                       \
+      &gslc_ElemXCheckboxDraw,                                    \
+      &gslc_ElemXCheckboxTouch,                                   \
+      NULL,                                                       \
+      GSLC_REDRAW_NONE,                                           \
+      false,                                                      \
+  };                                                              \
+  gslc_ElemAdd(pGui_,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+
+#endif
 
 #ifdef __cplusplus
 }

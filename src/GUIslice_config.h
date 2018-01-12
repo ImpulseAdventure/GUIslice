@@ -31,9 +31,6 @@
 //
 // =======================================================================
 
-// Other contributions:
-// - 2017/08/29: Added Adafruit HX8357 support. [by ALittleSlow]
-
 // =======================================================================
 // User Configuration
 // - This file can be modified by the user to match the
@@ -64,7 +61,7 @@ extern "C" {
 //#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
 //#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
-
+//#define DRV_TOUCH_ADA_SIMPLE    // Arduino: Use Adafruit Touchscreen
 
 
 // -----------------------------------------------------------------------------------------
@@ -127,6 +124,7 @@ extern "C" {
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
   #define DRV_DISP_ADAGFX_ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9341_8BIT
   //#define DRV_DISP_ADAGFX_ST7735
   //#define DRV_DISP_ADAGFX_SSD1306
   //#define DRV_DISP_ADAGFX_HX8357
@@ -139,6 +137,8 @@ extern "C" {
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
   #define ADAGFX_PIN_RST   11   // Display Reset
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
+  #define ADAGFX_PIN_WR    A1  // Display write pin (for parallel displays)
+  #define ADAGFX_PIN_RD    A0  // Display read pin (for parallel displays)
 
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
@@ -163,7 +163,7 @@ extern "C" {
 
   // Define buffer size for loading images from SD
   // - A larger buffer will be faster but at the cost of RAM
-  #define ADAGFX_SD_BUFFPIXEL   20
+  #define ADAGFX_SD_BUFFPIXEL   50
 
   // Enable support for clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
@@ -253,6 +253,17 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // Define sensitivity coefficient (capacitive touch)
   #define ADATOUCH_SENSITIVITY  40
+
+
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+  // Calibration values for touch display
+  // - These values may need to be updated to match your display
+  // - Typically used in resistive displays
+  #define ADATOUCH_X_MIN 100
+  #define ADATOUCH_Y_MIN 150
+  #define ADATOUCH_X_MAX 900
+  #define ADATOUCH_Y_MAX 900
+
 
 #elif defined(DRV_TOUCH_TFT_ESPI)
   // The TFT_eSPI display library also includes support for XPT2046 touch controller

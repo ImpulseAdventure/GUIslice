@@ -2,9 +2,13 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 04 (Arduino): Dynamic content
+// - Example 04 (Arduino): Dynamic content [minimum RAM version]
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - Demonstrates the use of ElemCreate*_P() functions
+//     These RAM-reduced examples take advantage of the internal
+//     Flash storage (via PROGMEM).
+//   - NOTE: This sketch requires moderate program storage in Flash.
+//     As a result, it may not run on basic Arduino devices (eg. ATmega328)
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -43,7 +47,7 @@ unsigned    m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          15                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   6                                         // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   10                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -95,22 +99,19 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
 
   // Create Quit button with text label
-  static const char mstr1[] PROGMEM = "Quit";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){160,80,80,40},(char*)mstr1,strlen_P(mstr1),E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,160,80,80,40,"Quit",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
+
 
   // Create counter
   gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,20,60,50,10,"Count:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   static char mstr3[8] = ""; // Provide space for large counter value
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
-    mstr3,8,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
-  m_pElemCnt = pElem; // Save for quick access
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,80,60,50,10,mstr3,8,&m_asFont[1], // E_FONT_TXT
+          GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Create progress bar (horizontal)
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1], // E_FONT_TXT
@@ -129,9 +130,8 @@ bool InitOverlays()
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
-
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  
   // Create radio 1
   gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
@@ -153,9 +153,8 @@ bool InitOverlays()
           5,(gslc_tsColor){64,64,64});
   m_pElemSlider = pElem; // Save for quick access
   static char mstr8[15] = "Slider: ???"; // Provide space for counter value
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
-    mstr8,15,E_FONT_TXT);
-  m_pElemSliderTxt = pElem; // Save for quick access
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,160,160,80,20,mstr8,15,&m_asFont[1], // E_FONT_TXT
+          GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   return true;
 }
@@ -196,7 +195,7 @@ void loop()
 
   // Update elements on active page
   snprintf(acTxt,MAX_STR,"%u",m_nCount/5);
-  gslc_ElemSetTxtStr(m_pElemCnt,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
 
@@ -205,7 +204,7 @@ void loop()
   //       Please see example 07.
   int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);
   snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-  gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress1,(nPos*80.0/100.0)-15);
 
@@ -224,4 +223,5 @@ void loop()
     while (1) { }
   }
 }
+
 

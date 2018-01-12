@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.2    (2018/01/01)
+// - Version 0.9.3    (2018/01/11)
 // =======================================================================
 //
 // The MIT License
@@ -58,7 +58,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9.2"
+#define GUISLICE_VER "0.9.3"
 
 
 // ========================================================================
@@ -1820,6 +1820,9 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemTracked),eTouch,nRelX,nRelY);
       }
+      else
+      {
+}
 
       break;
 
@@ -1934,7 +1937,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  gslc_DrawFrameRect(pGui,sElem.rElem,GSLC_COL_GRAY_DK);
+  gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   #else
   if (pElem->bFrameEn) {
     gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
@@ -2051,6 +2054,12 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   return true;
 }
 
+// Draw a flash-based element to the active display
+bool gslc_ElemForceDrawP(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
+{	gslc_tsElem sElemTmp;
+	(gslc_tsElem*)memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
+	return gslc_ElemDrawByRef(pGui,&sElemTmp,GSLC_REDRAW_FULL);
+}
 
 // ------------------------------------------------------------------------
 // Element Update Functions
@@ -2157,11 +2166,104 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
 
   // To avoid unnecessary redraw / flicker, only a change in
   // the text content will drive a redraw
+
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
     strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
     pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
     gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
   }
+}
+
+// Set the text string associated with a flash-based text element
+// indexed by element pointer
+// - This routine will copy the string from flash to a temporary
+//   element and then force a redraw
+void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP(%s) called with NULL ptr\n","");
+    return;
+  }
+  gslc_tsElem temp;
+  (gslc_tsElem*)memcpy_P(&temp,pElem,sizeof(gslc_tsElem));
+
+  // Check for read-only status (in case the string was
+  // defined in Flash/PROGMEM)
+  if (temp.nStrBufMax == 0) {
+    // String was read-only, so abort now
+    return;
+  }
+
+  // To avoid unnecessary redraw / flicker, only a change in
+  // the text content will drive a redraw
+
+  if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1)) {
+    strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
+    temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
+
+    // FIXME: Since we are going to force a redraw, ensure that the
+    // element is on the active page
+    gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
+
+    // gslc_PageRedrawGo(pGui);
+  }
+
+}
+
+// Set the text string associated with a flash-based text element
+// indexed by Page ID and Element ID
+// - This routine will copy the string from flash to a temporary
+//   element and then force a redraw
+void gslc_ElemSetTxtStr_P(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr)
+{
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1(%s) called with NULL ptr\n","");
+    return;
+  }
+  // Fetch the element
+  gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1() could not find element (%u) on page (%u)\n",nPageId,nElemId);
+    return;
+  }
+
+  // Since we are going to force a redraw, ensure that the
+  // element is on the active page
+  
+  // FIXME: We should still update the external string value
+  // even when it isn't on the current page, otherwise the new
+  // value may not be drawn when the page is swapped and a
+  // full redraw occurs.
+  
+  if (gslc_GetPageCur(pGui) != nPageId) {
+    return;
+  }
+
+  // Copy element from Flash to RAM temporary element
+  gslc_tsElem temp;
+  (gslc_tsElem*)memcpy_P(&temp,pElem,sizeof(gslc_tsElem));
+
+  // Check for read-only status (in case the string was
+  // defined in Flash/PROGMEM)
+  if (temp.nStrBufMax == 0) {
+    // String was read-only, so abort now
+    return;
+  }
+
+  // To avoid unnecessary redraw / flicker, only a change in
+  // the text content will drive a redraw
+  if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1) == 0) {
+    // No change, so abort
+    return;
+  }
+
+  // Copy new string to RAM temporary element
+  strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
+  temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
+
+  // Force a redraw
+  gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
+
 }
 
 void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
@@ -2396,9 +2498,15 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
   gslc_tsElem*  pTrackedOld = NULL;
   gslc_tsElem*  pTrackedNew = NULL;
+  bool          bGlowingOld = false;
 
   // Fetch the item currently being tracked (if any)
   pTrackedOld = gslc_CollectGetElemTracked(pCollect);
+
+  // Fetch current glowing state
+  if (pTrackedOld != NULL) {
+    bGlowingOld = pTrackedOld->bGlowing;
+  }
 
   // Reset the in-tracked flag
   bool  bInTracked = false;
@@ -2416,7 +2524,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     }
 
     // Determine the new element to start tracking
-    pTrackedNew = gslc_CollectFindElemFromCoord(pCollect,nX,nY);
+    pTrackedNew = gslc_CollectFindElemFromCoord(pGui,pCollect,nX,nY);
 
     if (pTrackedNew == NULL) {
       // Didn't find an element, so clear the tracking reference
@@ -2429,6 +2537,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
       // Start glow on new element
       gslc_ElemSetGlow(pTrackedNew,true);
+
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedNew->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedNew->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedNew,GSLC_REDRAW_FULL);
+        }
+      }
 
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
@@ -2459,6 +2579,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
       // Clear glow state
       gslc_ElemSetGlow(pTrackedOld,false);
+
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedOld->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
+        }
+      }
 
     }
 
@@ -2493,6 +2625,18 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
         // Ensure it is glowing
         gslc_ElemSetGlow(pTrackedOld,true);
+      }
+
+      // Special handling for Flash-based buttons
+      // - If tracked element is in Flash, then force redraw
+      // - For now, this is done by comparing the currently-tracked
+      //   element against the last Flash element that was found
+      //   in the CollectFindElemFromCoord() search.
+      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
+        // Only update if changed glowing state
+        if (pTrackedOld->bGlowing != bGlowingOld) {
+          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
+        }
       }
 
     }
@@ -3162,9 +3306,34 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
   }
 }
 
+// UNUSED
+// Determine the Element Reference from the Element
+// - This is used temporarily to assist in migrating element state from
+//   the element structure to the element reference structure. Later,
+//   it is hoped that the element reference can be passed to the routines
+//   that are making changes to the element state.
+gslc_tsElemRef* gslc_CollectFindRefFromElem(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
+{
+  if (pCollect == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: CollectFindRefFromElem(%s) called with NULL ptr\n","");
+    return NULL;
+  }
+  gslc_tsElem*  pElemCur = NULL;
+
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsElemRef* pFoundElemRef = NULL;
+
+  for (int nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
+    pElemRef = &pCollect->asElemRef[nInd];
+    pElemCur = pCollect->asElemRef[nInd].pElem;
+    if (pElem == pElemCur) {
+      pFoundElemRef = pElemRef;
+    }
+  }
+  return pFoundElemRef;
+}
 
 // Search internal element array for one with a particular ID
-// - NOTE: Only elements in RAM are searched (not PROGMEM)
 gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
 {
   if (pCollect == NULL) {
@@ -3174,25 +3343,44 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
   uint16_t      nInd;
+
   if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
     GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
     return NULL;
   }
-
+  gslc_tsElem tempFind;
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM are searched
-    if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
-      continue;
-    }
     // Fetch the element pointer from the reference array
     pElem = pCollect->asElemRef[nInd].pElem;
-    if (pElem->nId == nElemId) {
-      pFoundElem = pElem;
-      break;
+
+    if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
+      // Search element in Flash
+      #if (GSLC_USE_PROGMEM)
+      (gslc_tsElem*)memcpy_P(&tempFind,pElem,sizeof(gslc_tsElem));
+      //GSLC_DEBUG_PRINT("SEARCHING S:%4u PRG D:%4u at %u from %4u RefInd=%u\n",nElemId,tempFind.nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
+      if (tempFind.nId == nElemId) {
+        //GSLC_DEBUG_PRINT("FOUND     S:%4u PRG D:%4u\n",nElemId,tempFind.nId);
+        pFoundElem = pElem;
+        break;
+      }
+      #endif
+    } else if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
+      // Search element in RAM
+      //GSLC_DEBUG_PRINT("SEARCHING S:%4u RAM D:%4u at %u from %4u RefInd=%u\n",nElemId,pElem->nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
+      if (pElem->nId == nElemId) {
+        //GSLC_DEBUG_PRINT("FOUND     S:%4u RAM D:%4u\n",nElemId,pElem->nId);
+        pFoundElem = pElem;
+        break;
+      }
     }
+
   }
+  if (pFoundElem == NULL) {
+    //GSLC_DEBUG_PRINT("NOT FOUND S:%4u\n",nElemId);
+  }
+
   return pFoundElem;
 }
 
@@ -3214,20 +3402,47 @@ void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
 }
 
 // Find an element index in a collection from a coordinate
-gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
+gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
 {
   uint16_t      nInd;
   bool          bFound = false;
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
+  gslc_tsElem   sElemTmp;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM are searched
-    if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
-      continue;
-    }
+
     pElem = pCollect->asElemRef[nInd].pElem;
+
+    // Handle special case of Flash elements
+    if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
+      #if (GSLC_USE_PROGMEM)
+      pElem = (gslc_tsElem*) memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
+      //pElem=&sElemTmp;
+
+      bFound = gslc_ElemOwnsCoord(&sElemTmp,nX,nY,true);
+      if (bFound) {
+
+        // If the coordinates match a Flash element, then
+        // save a copy of the Flash element into the GUI placeholder element
+        pGui->sElemTmpProg = sElemTmp;
+
+        // Return a pointer to the GUI placeholder element so that
+        // future mutator functions can work with RAM element instead
+        // of Flash.
+        pFoundElem = &pGui->sElemTmpProg;
+
+        break;
+      }
+      #endif
+
+    // Handle typical case of RAM elements
+    } else if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
+      continue;
+
+    }
+
     bFound = gslc_ElemOwnsCoord(pElem,nX,nY,true);
     if (bFound) {
       pFoundElem = pElem;
