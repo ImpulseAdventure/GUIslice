@@ -226,7 +226,7 @@ void loop()
 
   // Perform drawing updates
   snprintf(acTxt,MAX_STR,"%u",m_nCount);
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
 
   gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
 

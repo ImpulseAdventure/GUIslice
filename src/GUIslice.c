@@ -2214,7 +2214,7 @@ void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
 // indexed by Page ID and Element ID
 // - This routine will copy the string from flash to a temporary
 //   element and then force a redraw
-void gslc_ElemSetTxtStrP1(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr)
+void gslc_ElemSetTxtStr_P(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr)
 {
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1(%s) called with NULL ptr\n","");

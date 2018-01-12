@@ -1584,7 +1584,7 @@ void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr);
 ///
 /// \return none
 ///
-void gslc_ElemSetTxtStrP1(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr);
+void gslc_ElemSetTxtStr_P(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr);
 
 ///
 /// Update the text string color associated with an Element ID

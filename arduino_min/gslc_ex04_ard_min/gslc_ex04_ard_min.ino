@@ -195,7 +195,7 @@ void loop()
 
   // Update elements on active page
   snprintf(acTxt,MAX_STR,"%u",m_nCount/5);
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
 
@@ -204,7 +204,7 @@ void loop()
   //       Please see example 07.
   int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);
   snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER,acTxt);
 
   gslc_ElemXGaugeUpdate(m_pElemProgress1,(nPos*80.0/100.0)-15);
 

@@ -321,16 +321,16 @@ void loop()
   // Perform any immediate updates on active page
   snprintf(acTxt,MAX_STR,"%u",m_nCount);
   //gslc_ElemSetTxtStr(m_pElemCount,acTxt);
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
 
   // By default, Arduino sprintf() doesn't include floating point
   // support, so we're just going to display integers
   snprintf(acTxt,MAX_STR,"%4d",(int16_t)(m_fCoordX-50));
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_DATAX,acTxt);
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_DATAX,acTxt);
   snprintf(acTxt,MAX_STR,"%4d",(int16_t)(m_fCoordY-50));
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_DATAY,acTxt);  
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_DATAY,acTxt);  
   snprintf(acTxt,MAX_STR,"%4d",(int16_t)(m_fCoordZ));
-  gslc_ElemSetTxtStrP1(&m_gui,E_PG_MAIN,E_ELEM_DATAZ,acTxt);    
+  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_DATAZ,acTxt);    
 
   gslc_ElemXGaugeUpdate(m_pElemProgress,50+50*sin(m_nCount/5.0));
 
