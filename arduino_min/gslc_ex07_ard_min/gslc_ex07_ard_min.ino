@@ -2,9 +2,11 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 07 (Arduino):
+// - Example 07 (Arduino): [minimum RAM version]
 //   - Sliders with dynamic color control and position callback
-//   - Demonstrates the use of ElemCreate*_P() functions
+//   - Demonstrates the use of ElemCreate*_P() functions.
+//     These RAM-reduced examples take advantage of the internal
+//     Flash storage (via PROGMEM).
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -140,6 +142,8 @@ bool InitOverlays()
 
 
   // Create color box
+  // - This element is created in RAM instead of Flash as we want
+  //   dynamic control over its color fill
   pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
   gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
