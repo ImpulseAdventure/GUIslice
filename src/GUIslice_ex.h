@@ -876,7 +876,9 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 
 #ifdef GSLC_USE_PROGMEM
 
-#define gslc_ElemXCheckboxCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,bRadio_,nStyle_,colCheck_,bChecked_) \
+#define gslc_ElemXCheckboxCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXCheckbox sCheckbox##nElemId;                     \
   sCheckbox##nElemId.pGui = pGui_;                                \
   sCheckbox##nElemId.bRadio = bRadio_;                            \
@@ -885,10 +887,10 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
   sCheckbox##nElemId.nStyle = nStyle_;                            \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPEX_CHECKBOX,                                        \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,true,true,false,true,                    \
+      nGroup,                                                     \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \

@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.3    (2018/01/11)
+// - Version 0.9.3    (2018/01/13)
 // =======================================================================
 //
 // The MIT License
@@ -80,8 +80,6 @@ char* gslc_GetVer(gslc_tsGui* pGui)
 {
   return (char*)GUISLICE_VER;
 }
-
-
 
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
 {
@@ -1452,7 +1450,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
       // still warrant full page redraw.
       if (pGui->bRedrawPartialEn) {
         // Is the element transparent?
-        if (!pElem->bFillEn) {
+        if (!(pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN)) {
           bRedrawFullPage = true;
         }
       } else {
@@ -1628,7 +1626,7 @@ gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,g
   sElem.colElemFrameGlow  = GSLC_COL_BLACK;
   sElem.colElemText       = GSLC_COL_YELLOW;
   sElem.colElemTextGlow   = GSLC_COL_YELLOW;
-  sElem.bFillEn           = true;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.eTxtAlign         = GSLC_ALIGN_MID_LEFT;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
@@ -1659,10 +1657,10 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
   sElem.colElemText       = GSLC_COL_WHITE;
   sElem.colElemTextGlow   = GSLC_COL_WHITE;
-  sElem.bFrameEn          = true;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = true;
-  sElem.bGlowEn           = true;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
@@ -1685,10 +1683,10 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
   sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
   sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
-  sElem.bFrameEn          = false;
-  sElem.bFillEn           = false;
-  sElem.bClickEn          = true;
-  sElem.bGlowEn           = true;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
   gslc_ElemSetImage(pGui,&sElem,sImgRef,sImgRefSel);
   if (nPage != GSLC_PAGE_NONE) {
@@ -1711,8 +1709,8 @@ gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,g
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_GRAY;
-  sElem.bFillEn           = true;
-  sElem.bFrameEn          = true;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElem;
@@ -1736,8 +1734,8 @@ gslc_tsElem* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   // For line elements, we will draw it with the "fill" color
   sElem.colElemFill       = GSLC_COL_GRAY;
   sElem.colElemFillGlow   = GSLC_COL_GRAY;
-  sElem.bFillEn           = false;  // Disable boundary box fill
-  sElem.bFrameEn          = false;  // Disable boundary box frame
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FILL_EN;   // Disable boundary box fill
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;  // Disable boundary box frame
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElem;
@@ -1754,9 +1752,9 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.bFrameEn        = false;
-  sElem.bFillEn         = false;
-  sElem.bClickEn        = false;
+  sElem.nFeatures      &= ~GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures      &= ~GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures      &= ~GSLC_ELEM_FEA_CLICK_EN;
   gslc_ElemSetImage(pGui,&sElem,sImgRef,sImgRef);
   if (nPage != GSLC_PAGE_NONE) {
     pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
@@ -1820,10 +1818,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemTracked),eTouch,nRelX,nRelY);
       }
-      else
-      {
-}
-
       break;
 
     case GSLC_EVT_TICK:
@@ -1901,7 +1895,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   nElemY    = pElem->rElem.y;
   nElemW    = pElem->rElem.w;
   nElemH    = pElem->rElem.h;
-  bGlowEn   = pElem->bGlowEn;     // Does the element support glow state?
+  bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
   bGlowing  = pElem->bGlowing;    // Element should be glowing (if enabled)
   bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
 
@@ -1915,11 +1909,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   // - If both fill and frame are enabled then contract
   //   the fill region slightly so that we don't overdraw
   //   the frame (prevent unnecessary flicker).
-  if (pElem->bFillEn && pElem->bFrameEn) {
+  if ((pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) && (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN)) {
     rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
   }
   // - This also changes the fill color if selected and glow state is enabled
-  if (pElem->bFillEn) {
+  if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
       gslc_DrawFillRect(pGui,rElemInner,pElem->colElemFillGlow);
     } else {
@@ -1939,7 +1933,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   // For debug purposes, draw a frame around every element
   gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   #else
-  if (pElem->bFrameEn) {
+  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
     gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
   }
   #endif
@@ -2056,9 +2050,10 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
 
 // Draw a flash-based element to the active display
 bool gslc_ElemForceDrawP(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
-{	gslc_tsElem sElemTmp;
-	(gslc_tsElem*)memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
-	return gslc_ElemDrawByRef(pGui,&sElemTmp,GSLC_REDRAW_FULL);
+{
+  gslc_tsElem sElemTmp;
+  (gslc_tsElem*)memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
+  return gslc_ElemDrawByRef(pGui,&sElemTmp,GSLC_REDRAW_FULL);
 }
 
 // ------------------------------------------------------------------------
@@ -2071,7 +2066,11 @@ void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
     GSLC_DEBUG_PRINT("ERROR: ElemSetFillEn(%s) called with NULL ptr\n","");
     return;
   }
-  pElem->bFillEn          = bFillEn;
+  if (bFillEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_FILL_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_FILL_EN;
+  }
   gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
@@ -2082,7 +2081,11 @@ void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
     GSLC_DEBUG_PRINT("ERROR: ElemSetFrameEn(%s) called with NULL ptr\n","");
     return;
   }
-  pElem->bFrameEn         = bFrameEn;
+  if (bFrameEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
+  }
   gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
@@ -2095,7 +2098,7 @@ void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFi
   }
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
-  pElem->colElemFillGlow      = colFillGlow;
+  pElem->colElemFillGlow  = colFillGlow;
   gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
@@ -2229,12 +2232,12 @@ void gslc_ElemSetTxtStr_P(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const
 
   // Since we are going to force a redraw, ensure that the
   // element is on the active page
-  
+
   // FIXME: We should still update the external string value
   // even when it isn't on the current page, otherwise the new
   // value may not be drawn when the page is swapped and a
   // full redraw occurs.
-  
+
   if (gslc_GetPageCur(pGui) != nPageId) {
     return;
   }
@@ -2354,7 +2357,7 @@ void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
     GSLC_DEBUG_PRINT("ERROR: ElemSetGlow(%s) called with NULL ptr\n","");
     return;
   }
-  // TODO: Should also check for change in bGlowEn
+  // FIXME: Should also check for change in bGlowEn
   bool  bGlowingOld = pElem->bGlowing;
   pElem->bGlowing         = bGlowing;
   if (bGlowing != bGlowingOld) {
@@ -2377,7 +2380,11 @@ void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
     GSLC_DEBUG_PRINT("ERROR: ElemSetGlowEn(%s) called with NULL ptr\n","");
     return;
   }
-  pElem->bGlowEn         = bGlowEn;
+  if (bGlowEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_GLOW_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;
+  }
   gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
 }
 
@@ -2387,7 +2394,7 @@ bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
     GSLC_DEBUG_PRINT("ERROR: ElemGetGlowEn(%s) called with NULL ptr\n","");
     return false;
   }
-  return pElem->bGlowEn;
+  return pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN;
 }
 
 void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
@@ -2401,15 +2408,10 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   // nType
   // rElem
   pElemDest->nGroup           = pElemSrc->nGroup;
-  // bValid
-  pElemDest->bGlowEn          = pElemSrc->bGlowEn;
+  pElemDest->nFeatures        = pElemSrc->nFeatures;
   pElemDest->bGlowing         = pElemSrc->bGlowing;
   pElemDest->sImgRefNorm      = pElemSrc->sImgRefNorm;
   pElemDest->sImgRefGlow      = pElemSrc->sImgRefGlow;
-
-  pElemDest->bClickEn         = pElemSrc->bClickEn;
-  pElemDest->bFrameEn         = pElemSrc->bFrameEn;
-  pElemDest->bFillEn          = pElemSrc->bFillEn;
 
   pElemDest->colElemFill      = pElemSrc->colElemFill;
   pElemDest->colElemFillGlow  = pElemSrc->colElemFillGlow;
@@ -2477,7 +2479,7 @@ bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int16_t nX,int16_t nY,bool bOnlyClick
     GSLC_DEBUG_PRINT("ERROR: ElemOwnsCoord(%s) called with NULL ptr\n","");
     return false;
   }
-  if (bOnlyClickEn && !pElem->bClickEn) {
+  if (bOnlyClickEn && !(pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) ) {
     return false;
   }
   return gslc_IsInRect(nX,nY,pElem->rElem);
@@ -2866,7 +2868,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   //   - Alternately, include pGui in parameters to gslc_ElemXCheckboxToggleState().
 
   // If the element creation was successful, then set the valid flag
-  sElem.bValid          = true;
+  sElem.nFeatures      |= GSLC_ELEM_FEA_VALID;
 
   return sElem;
 }
@@ -3128,18 +3130,19 @@ void gslc_ResetElem(gslc_tsElem* pElem)
     GSLC_DEBUG_PRINT("ERROR: ResetElem(%s) called with NULL ptr\n","");
     return;
   }
-  pElem->bValid           = false;
+  pElem->nFeatures        = GSLC_ELEM_FEA_NONE;
+  pElem->nFeatures       &= ~GSLC_ELEM_FEA_VALID; // Init with Valid=false
+  pElem->nFeatures       &= ~GSLC_ELEM_FEA_CLICK_EN;
+  pElem->nFeatures       &= ~GSLC_ELEM_FEA_GLOW_EN;
+  pElem->nFeatures       &= ~GSLC_ELEM_FEA_FRAME_EN;
+  pElem->nFeatures       &= ~GSLC_ELEM_FEA_FILL_EN;
   pElem->nId              = GSLC_ID_NONE;
   pElem->nType            = GSLC_TYPE_BOX;
   pElem->nGroup           = GSLC_GROUP_ID_NONE;
   pElem->rElem            = (gslc_tsRect){0,0,0,0};
-  pElem->bGlowEn          = false;
   pElem->bGlowing         = false;
   pElem->sImgRefNorm      = gslc_ResetImage();
   pElem->sImgRefGlow      = gslc_ResetImage();
-  pElem->bClickEn         = false;
-  pElem->bFrameEn         = false;
-  pElem->bFillEn          = false;
   pElem->eRedraw          = GSLC_REDRAW_FULL;
   pElem->colElemFrame     = GSLC_COL_WHITE;
   pElem->colElemFill      = GSLC_COL_WHITE;
@@ -3198,6 +3201,8 @@ void gslc_ElemDestruct(gslc_tsElem* pElem)
     gslc_DrvImageDestruct(pElem->sImgRefGlow.pvImgRaw);
     pElem->sImgRefGlow = gslc_ResetImage();
   }
+
+  // TODO: Mark Element valid as false?
 
   // TODO: Add callback function so that
   // we can support additional closure actions

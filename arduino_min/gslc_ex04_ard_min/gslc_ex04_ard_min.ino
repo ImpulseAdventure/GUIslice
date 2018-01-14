@@ -130,8 +130,9 @@ bool InitOverlays()
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
-  
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,GSLC_GROUP_ID_NONE,
+          false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+
   // Create radio 1
   gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);

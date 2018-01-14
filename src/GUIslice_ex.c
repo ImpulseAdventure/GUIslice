@@ -84,9 +84,10 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_GAUGE,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.bFrameEn          = true;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = false;          // Element is not "clickable"
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_CLICK_EN;  // Element is not "clickable"
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
   pXData->nMin            = nMin;
   pXData->nMax            = nMax;
@@ -678,10 +679,10 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_CHECKBOX,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.bFrameEn          = false;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = true;
-  sElem.bGlowEn           = true;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.bGlowing          = false;
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
@@ -764,9 +765,32 @@ gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   return pFoundElem;
 }
 
+// Helper routine for gslc_ElemXCheckboxSetState()
+// - Updates the checkbox/radio control's state but does
+//   not touch any other controls in the group
+void gslc_ElemXCheckboxSetStateHelp(gslc_tsElem* pElem,bool bChecked)
+{
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxSetStateHelp(%s) called with NULL ptr\n","");
+    return;
+  }
+  gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
+
+  // Update our data element
+  bool  bCheckedOld = pCheckbox->bChecked;
+  pCheckbox->bChecked = bChecked;
+
+  // Element needs redraw
+  if (bChecked != bCheckedOld) {
+    // Only need an incremental redraw
+    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
+  }
+
+}
 
 
-// Update the checkbox control's current state
+// Update the checkbox/radio control's state. If it is a radio button
+// then also update the state of all other buttons in the group.
 void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
 {
   if (pElem == NULL) {
@@ -788,13 +812,18 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
     int16_t           nCurInd;
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
+    gslc_tsElemRef*   pCurElemRef = NULL;
     int16_t           nCurType;
     int16_t           nCurGroup;
 
     // We use the GUI pointer for access to other elements
-    for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
+    // FIXME: Need to fix to work with elements in Flash
+    for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemRefCnt;nCurInd++) {
       // Fetch extended data
-      pCurElem      = &pGui->pCurPageCollect->asElem[nCurInd];
+      pCurElemRef   = &pGui->pCurPageCollect->asElemRef[nCurInd];
+      pCurElem      = pCurElemRef->pElem;
+
+      // FIXME: Handle pCurElemRef->eElemFlags
       nCurId        = pCurElem->nId;
       nCurType      = pCurElem->nType;
 
@@ -816,23 +845,14 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked)
       }
 
       // Deselect all other elements
-      gslc_ElemXCheckboxSetState(pCurElem,false);
+      gslc_ElemXCheckboxSetStateHelp(pCurElem,false);
 
     } // nInd
 
   } // bRadio
 
-
-  // Update our data element
-  bool  bCheckedOld = pCheckbox->bChecked;
-  pCheckbox->bChecked = bChecked;
-
-  // Element needs redraw
-  if (bChecked != bCheckedOld) {
-    // Only need an incremental redraw
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_INC);
-  }
-
+  // Set the state of the current element
+  gslc_ElemXCheckboxSetStateHelp(pElem,bChecked);
 }
 
 // Toggle the checkbox control's state
@@ -883,7 +903,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 
   bool                    bChecked  = pCheckbox->bChecked;
   gslc_teXCheckboxStyle   nStyle    = pCheckbox->nStyle;
-  bool                    bGlow     = pElem->bGlowEn && pElem->bGlowing;
+  bool                    bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && pElem->bGlowing;
 
   // Draw the background
   gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
@@ -1031,10 +1051,10 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SLIDER,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.bFrameEn          = false;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = true;
-  sElem.bGlowEn           = true;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.bGlowing          = false;
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
   pXData->nPosMin         = nPosMin;
@@ -1170,7 +1190,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
     return false;
   }
 
-  bool            bGlow     = pElem->bGlowEn && pElem->bGlowing;
+  bool            bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && pElem->bGlowing;
   int16_t         nPos      = pSlider->nPos;
   int16_t         nPosMin   = pSlider->nPosMin;
   int16_t         nPosMax   = pSlider->nPosMax;
@@ -1395,10 +1415,10 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 
   // Initialize composite element
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SELNUM,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.bFrameEn        = true;
-  sElem.bFillEn         = true;
-  sElem.bClickEn        = true;
-  sElem.bGlowEn         = false;  // Don't need to glow the outer element
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
   sElem.bGlowing        = false;
   sElem.nGroup          = GSLC_GROUP_ID_NONE;
 
@@ -1513,7 +1533,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
-  bool          bGlow = pElem->bGlowEn && pElem->bGlowing;
+  bool          bGlow = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && pElem->bGlowing;
 
   // Fetch the element's extended data structure
   gslc_tsXSelNum* pSelNum;
@@ -1718,10 +1738,10 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_TEXTBOX,rElem,NULL,0,nFontId);
-  sElem.bFrameEn          = true;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = false;
-  sElem.bGlowEn           = false;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;
   sElem.bGlowing          = false;
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
@@ -1988,8 +2008,8 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
     return false;
   }
 
-  bool     bGlow     = pElem->bGlowEn && pElem->bGlowing;
-  bool     bFrameEn  = pElem->bFrameEn;
+  bool     bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && pElem->bGlowing;
+  bool     bFrameEn  = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
 
 
   // Draw the frame
@@ -2123,10 +2143,10 @@ gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   gslc_tsElem   sElem;
   gslc_tsElem*  pElem = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_GRAPH,rElem,NULL,0,nFontId);
-  sElem.bFrameEn          = true;
-  sElem.bFillEn           = true;
-  sElem.bClickEn          = false;
-  sElem.bGlowEn           = false;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;
   sElem.bGlowing          = false;
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
@@ -2298,9 +2318,8 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
     return false;
   }
 
-  bool     bGlow     = pElem->bGlowEn && pElem->bGlowing;
-  bool     bFrameEn  = pElem->bFrameEn;
-
+  bool     bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && pElem->bGlowing;
+  bool     bFrameEn  = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
 
   // Draw the frame
   if (eRedraw == GSLC_REDRAW_FULL) {
