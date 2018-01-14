@@ -6,7 +6,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.9.3    (2018/01/11)
+// - Version 0.9.3    (2018/01/13)
 // =======================================================================
 //
 // The MIT License
@@ -154,7 +154,16 @@ typedef enum {
     GSLC_TYPE_BASE_EXTEND = 0x1000
 } gslc_teTypeCore;
 
-// Element text alignment
+/// Element features type
+#define GSLC_ELEM_FEA_VALID     0x80      ///< Element record is valid
+#define GSLC_ELEM_FEA_CLICK_EN  0x08      ///< Element accepts touch presses
+#define GSLC_ELEM_FEA_GLOW_EN   0x04      ///< Element supports glowing state
+#define GSLC_ELEM_FEA_FRAME_EN  0x02      ///< Element is drawn with a frame
+#define GSLC_ELEM_FEA_FILL_EN   0x01      ///< Element is drawn with a fill
+#define GSLC_ELEM_FEA_NONE      0x00      ///< Element default (no features set))
+
+
+/// Element text alignment
 #define GSLC_ALIGNV_TOP       0x10                                ///< Vertical align to top
 #define GSLC_ALIGNV_MID       0x20                                ///< Vertical align to middle
 #define GSLC_ALIGNV_BOT       0x40                                ///< Vertical align to bottom
@@ -172,7 +181,7 @@ typedef enum {
 #define GSLC_ALIGN_BOT_RIGHT  GSLC_ALIGNH_RIGHT | GSLC_ALIGNV_BOT ///< Align to bottom-right
 
 
-// Basic color definition
+/// Basic color definition
 #define GSLC_COL_RED_DK4    (gslc_tsColor) {128,  0,  0}   ///< Red (dark4)
 #define GSLC_COL_RED_DK3    (gslc_tsColor) {160,  0,  0}   ///< Red (dark3)
 #define GSLC_COL_RED_DK2    (gslc_tsColor) {192,  0,  0}   ///< Red (dark2)
@@ -442,23 +451,11 @@ typedef struct {
 typedef struct gslc_tsElem {
 
   int16_t             nId;              ///< Element ID specified by user
-  bool                bValid;           ///< Element was created properly
+  uint8_t             nFeatures;        ///< Element feature vector (appearance/behavior))
 
   int16_t             nType;            ///< Element type enumeration
   gslc_tsRect         rElem;            ///< Rect region containing element
   int16_t             nGroup;           ///< Group ID that the element belongs to
-
-  // Behavior settings
-  bool                bGlowEn;          ///< Enable glowing visual state
-  bool                bClickEn;         ///< Element accepts touch events
-
-
-  // Style
-  bool                bFrameEn;         ///< Element is drawn with frame
-  bool                bFillEn;          ///< Element is drawn with inner fill.
-                                        ///< This is also used during redraw to determine
-                                        ///< if elements underneath are visible and must
-                                        ///< be redrawn as well.
 
   gslc_tsColor        colElemFrame;     ///< Color for frame
   gslc_tsColor        colElemFill;      ///< Color for background fill
@@ -2364,12 +2361,14 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 #define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_TXT,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -2381,13 +2380,13 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
-      pFont,                                           \
+      pFont,                                                      \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      GSLC_REDRAW_NONE,                                                      \
+      GSLC_REDRAW_NONE,                                           \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
@@ -2395,41 +2394,45 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_TXT,                                              \
-	  (gslc_tsRect){nX,nY,nW,nH},                                  \
-      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+	  (gslc_tsRect){nX,nY,nW,nH},                             \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       NULL,                                                       \
-      (char*)strTxt,                                        \
-      strLength,                                                          \
-      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),  \
+      (char*)strTxt,                                              \
+      strLength,                                                  \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),   \
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
-      pFont,                                           \
+      pFont,                                                      \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
-      GSLC_REDRAW_NONE,                                                      \
+      GSLC_REDRAW_NONE,                                           \
       false,                                                      \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,drawFunc) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_BOX,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -2454,12 +2457,15 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_GLOW_EN |              \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_BTN,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,true,true,bFrameEn,bFillEn,              \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,colFrameGlow,colFillGlow,                  \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -2486,14 +2492,16 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 #else
 
-#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn,nFeatures) \
   static const char str##nElemId[] = strTxt;                      \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_TXT,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -2518,12 +2526,14 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,drawFunc) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
-      true,                                                       \
+      nFeatures##nElemId,                                         \
       GSLC_TYPE_BOX,                                              \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      GSLC_GROUP_ID_NONE,false,false,bFrameEn,bFillEn,            \
+      GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
