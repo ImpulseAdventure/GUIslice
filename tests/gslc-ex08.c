@@ -263,7 +263,7 @@ bool InitOverlays(char *strBasePath)
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P2,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"93.5",0,E_FONT_BTN,NULL);
   gslc_ElemSetStyleFrom(pElemSrc,pElem);
-  gslc_ElemSetGlow(pElem,true); //xxx HACK: Show selected
+  gslc_ElemSetGlow(&m_gui,pElemRef,true); //xxx HACK: Show selected
   nCtrlY += (nCtrlH + nCtrlGapH);
 
   pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P3,E_PG_MAIN,

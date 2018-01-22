@@ -75,17 +75,19 @@ gslc_tsXSelNum              m_sXSelNum[3];
 #define MAX_STR             8
 
   // Save some element pointers for quick access
-  gslc_tsElem*  m_pElemCnt = NULL;
-  gslc_tsElem*  m_pElemProgress = NULL;
+  gslc_tsElemRef*  m_pElemCnt = NULL;
+  gslc_tsElemRef*  m_pElemProgress = NULL;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
 // - Show example of common callback function
-bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
-  gslc_tsElem* pElem = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
   int16_t nElemId = pElem->nId;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     if (nElemId == E_ELEM_BTN_QUIT) {
@@ -103,7 +105,7 @@ bool CbBtnCommon(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t
 // Create the default elements on each page
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN_RAM,m_asMainElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA_RAM,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
@@ -119,7 +121,7 @@ bool InitOverlays()
   // PAGE: MAIN
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create title
   gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",&m_asFont[2], // E_FONT_TITLE
@@ -148,20 +150,20 @@ bool InitOverlays()
   // Create progress bar
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,40,80,50,10,"Progress",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
+  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access
+  m_pElemProgress = pElemRef; // Save for quick access
 
 
   // Add compound element
-  pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
     (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create Back button with text label
   gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,50,170,50,20,"Back",&m_asFont[0],
@@ -176,10 +178,10 @@ bool InitOverlays()
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Add compound element
-  pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
     (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
-  pElem = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
     (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
 
@@ -219,16 +221,16 @@ void loop()
   char              acTxt[MAX_STR];
 
   // Save some element references for easy access
-  gslc_tsElem*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-  gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  gslc_tsElemRef*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  gslc_tsElemRef*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
 
   m_nCount++;
 
   // Perform drawing updates
   snprintf(acTxt,MAX_STR,"%u",m_nCount);
-  gslc_ElemSetTxtStr_P(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT,acTxt);
+  gslc_ElemSetTxtStr(&m_gui,pElemCnt,acTxt);
 
-  gslc_ElemXGaugeUpdate(pElemProgress,((m_nCount/2)%100));
+  gslc_ElemXGaugeUpdate(&m_gui,pElemProgress,((m_nCount/2)%100));
 
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);

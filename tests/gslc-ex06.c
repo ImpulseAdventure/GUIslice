@@ -90,13 +90,14 @@ static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 // - The scanner implements a custom element that replaces
 //   the Box element type with a custom rendering function.
 // - Clipping region is updated temporarily during this draw
-bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
+bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   int nInd;
 
   // Typecast the parameters to match the GUI and element types
-  gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElem*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Create shorthand variables for the origin
   uint16_t  nX = pElem->rElem.x + m_nOriginX;
@@ -131,7 +132,7 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
 
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
 
   return true;
 }
@@ -142,8 +143,9 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 //   origin of the view which will shift the display
 bool CbTickScanner(void* pvGui,void* pvScope)
 {
-  //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
-  gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvScope);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
   m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
@@ -155,13 +157,13 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 
   return true;
 }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;

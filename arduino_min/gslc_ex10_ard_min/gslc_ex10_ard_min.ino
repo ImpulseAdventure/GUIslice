@@ -40,7 +40,7 @@ unsigned  m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          7                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   1                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   2                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -64,13 +64,13 @@ char                        m_acTextboxBuf[TBOX_ROWS*TBOX_COLS];
 #define MAX_STR             15
 
   // Save some element references for quick access
-  gslc_tsElem*  m_pElemTextbox        = NULL;
+  gslc_tsElemRef*  m_pElemTextbox        = NULL;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Quit button callback
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -78,38 +78,39 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
   return true;
 }
 
-bool CbControls(void* pvGui,void* pvElem,int16_t nPos)
+bool CbControls(void* pvGui,void* pvElemRef,int16_t nPos)
 {
-  gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   char            acTxt[20];
   int16_t         nVal;
-  gslc_tsElem*    pElemTmp = NULL;
+  gslc_tsElemRef* pElemTmp = NULL;
 
   // Handle various controls
   switch (pElem->nId) {
     case E_SCROLLBAR:
       // Fetch the scrollbar value
-      nVal = gslc_ElemXSliderGetPos(pElem);
+      nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
       // Update the textbox scroll position
       pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
-      gslc_ElemXTextboxScrollSet(pElemTmp,nVal,100);
+      gslc_ElemXTextboxScrollSet(pGui,pElemTmp,nVal,100);
       break;
 
     case E_SLIDER:
       // Fetch the slider position
-      nVal = gslc_ElemXSliderGetPos(pElem);
+      nVal = gslc_ElemXSliderGetPos(&m_gui,pElemRef);
 
       // Link slider to the numerical display
       snprintf(acTxt,20,(char*)"%u",nVal);
       pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-      gslc_ElemSetTxtStr(pElemTmp,acTxt);
+      gslc_ElemSetTxtStr(pGui,pElemTmp,acTxt);
 
       // Link slider to insertion of text into textbox
       pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
       snprintf(acTxt,20,(char*)"Slider=%3u\n",nVal);
-      gslc_ElemXTextboxAdd(pElemTmp,acTxt);
+      gslc_ElemXTextboxAdd(pGui,pElemTmp,acTxt);
 
       break;
 
@@ -122,7 +123,7 @@ bool CbControls(void* pvGui,void* pvElem,int16_t nPos)
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -141,45 +142,41 @@ bool InitOverlays()
 */
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Example horizontal slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
   // Text to show slider value
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
     (char*)"",0,E_FONT_TXT);
 
 
   // Create wrapping box for textbox and scrollbar
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,124});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,124});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create textbox
-  pElem = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
+  pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
     &m_sTextbox,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(char*)&m_acTextboxBuf,
         TBOX_ROWS,TBOX_COLS);
-  gslc_ElemXTextboxWrapSet(pElem,true);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
-  m_pElemTextbox = pElem;
+  gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,true);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
+  m_pElemTextbox = pElemRef;
 
   // Create vertical scrollbar for textbox
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderText,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderText,
         (gslc_tsRect){200,85,20,120},0,100,100,5,true);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
   // Quit button
-  static const char mstr1[] PROGMEM = "Quit";
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},(char*)mstr1,strlen_P(mstr1),E_FONT_TXT,&CbBtnQuit);
-  gslc_ElemSetTxtMem(pElem,GSLC_TXT_MEM_PROG);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"Quit",&m_asFont[0],
+    GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
 
   return true;
 }
@@ -211,16 +208,16 @@ void setup()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
   // Insert some text
-  gslc_tsElem* pElemTextbox = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TEXTBOX);
+  gslc_tsElemRef* pElemTextbox = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TEXTBOX);
 
-  gslc_ElemXTextboxAdd(pElemTextbox,(char*)"Hi!\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Hi!\n");
 
-  gslc_ElemXTextboxColSet(pElemTextbox,GSLC_COL_RED);
-  gslc_ElemXTextboxAdd(pElemTextbox,(char*)"RED");
-  gslc_ElemXTextboxColReset(pElemTextbox);
-  gslc_ElemXTextboxAdd(pElemTextbox,(char*)"\n");
-  gslc_ElemXTextboxAdd(pElemTextbox,(char*)"Long line here that might wrap\n");
-  gslc_ElemXTextboxAdd(pElemTextbox,(char*)"Goodbye...\n");
+  gslc_ElemXTextboxColSet(&m_gui,pElemTextbox,GSLC_COL_RED);
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED");
+  gslc_ElemXTextboxColReset(&m_gui,pElemTextbox);
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Long line here that might wrap\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Goodbye...\n");
 
   m_bQuit = false;
   return;
@@ -235,7 +232,7 @@ void loop()
 
     if ((m_nCount % 5000) == 0) {
       snprintf(acTxt,MAX_STR,"%u\n",m_nCount);
-      gslc_ElemXTextboxAdd(m_pElemTextbox,acTxt);
+      gslc_ElemXTextboxAdd(&m_gui,m_pElemTextbox,acTxt);
     }
 
   // Periodically call GUIslice update function
