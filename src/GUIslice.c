@@ -53,6 +53,8 @@
 
 #if (GSLC_USE_PROGMEM)
 #include <avr/pgmspace.h>   // For memcpy_P()
+#else
+#define memcpy_P        memcpy
 #endif
 
 #include <stdarg.h>         // For va_*
