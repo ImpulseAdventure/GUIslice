@@ -47,7 +47,7 @@ unsigned    m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          16                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   14                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   16                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -59,10 +59,6 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
-
-gslc_tsXGauge               m_sXGauge,m_sXGauge1;
-gslc_tsXCheckbox            m_asXCheck[3];
-gslc_tsXSlider              m_sXSlider;
 
 
 #define MAX_STR             15
@@ -115,16 +111,16 @@ bool InitOverlays()
   // Create progress bar (horizontal)
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
-    (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElemRef; // Save for quick access
+  gslc_ElemXGaugeCreate_P(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,80,80,50,10,
+    0,100,0,GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_GREEN,false);
+  m_pElemProgress = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
-    (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  m_pElemProgress1 = pElemRef; // Save for quick access
+  gslc_ElemXGaugeCreate_P(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,280,80,10,100,
+    -25,75,-15,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_RED,true);
+  m_pElemProgress1 = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);
 
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
@@ -145,11 +141,10 @@ bool InitOverlays()
           true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
 
   // Create slider
-  gslc_tsColor colTick = (gslc_tsColor){64,64,64};
-  gslc_tsColor colTrim = (gslc_tsColor){0,0,128};
   gslc_ElemXSliderCreate_P(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,160,140,100,20,
-    false,5,0,100,10,5,colTick,true,colTrim,60,NULL);
+    0,100,60,5,false,GSLC_COL_GRAY,GSLC_COL_BLACK);
   m_pElemSlider = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER); // Save for quick access
+  gslc_ElemXSliderSetStyle(&m_gui,m_pElemSlider,true,(gslc_tsColor){0,0,128},10,5,(gslc_tsColor){64,64,64});
 
 
   gslc_ElemCreateTxt_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,160,160,60,20,"Slider:",&m_asFont[1], // E_FONT_TXT

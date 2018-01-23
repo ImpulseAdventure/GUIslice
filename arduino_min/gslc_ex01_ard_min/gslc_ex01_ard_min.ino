@@ -23,7 +23,6 @@ enum {E_ELEM_BOX};
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-//xxx #define MAX_ELEM_PG_MAIN    1
 
 // Define the maximum number of elements per page
 // - To enable the same code to run on devices that support storing

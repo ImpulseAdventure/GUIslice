@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
 //
-// - Version 0.10.0   (2018/01/21)
+// - Version 0.10.0   (2018/01/22)
 // =======================================================================
 //
 // The MIT License
@@ -2932,15 +2932,8 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 }
 
 
-// Helper function for gslc_ElemAdd()
-// - When adding elements stored internal to GUI element array (bExternal=false), this
-//   routine copies the content of pElem to the collection element array so
-//   that the pointer can be released after the call.
-// - When adding elements stored external to GUI element array (bExternal=true), this
-//   routine does not perform a copy, but saves a copy of the pointer instead.
-//   Therefore, in this mode, pElem must point to a static variable.
-/* //xxx
-gslc_tsElem* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
+
+gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: CollectElemAdd(%s) called with NULL ptr\n","");
@@ -2962,66 +2955,6 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
       GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u)\n",pCollect->nElemMax);
-      return NULL;
-    }
-
-    // Copy the element to the internal array
-    // - This performs a copy so that we can discard the element
-    //   pointer after the call is complete
-    nElemInd = pCollect->nElemCnt;
-    pCollect->asElem[nElemInd] = *pElem;
-    pCollect->nElemCnt++;
-
-    // Add a reference
-    // - Pointer (pElem) links to an item of internal element array
-    nElemRefInd = pCollect->nElemRefCnt;
-    pCollect->asElemRef[nElemRefInd].eElemFlags = eFlags;
-    pCollect->asElemRef[nElemRefInd].pElem = &(pCollect->asElem[nElemInd]);
-    pCollect->nElemRefCnt++;
-    return pCollect->asElemRef[nElemRefInd].pElem;
-
-  } else {
-    // External reference
-    // - Pointer (pElem) links to an external variable (must be declared statically)
-    // - Provide option for either RAM or PROGMEM pointer
-    // - TODO: Support other flags
-
-    // Add a reference
-    nElemInd = pCollect->nElemRefCnt;
-    pCollect->asElemRef[nElemInd].eElemFlags = eFlags;
-    pCollect->asElemRef[nElemInd].pElem = (gslc_tsElem*)pElem;  // Typecast to drop const modifier
-    pCollect->nElemRefCnt++;
-    // NULL is returned to ensure that we don't attempt to dereference
-
-    return NULL;
-  }
-
-}
-*/
-
-//xxx
-gslc_tsElemRef* gslc_CollectElemRefAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
-{
-  if ((pCollect == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemRefAdd(%s) called with NULL ptr\n","");
-    return NULL;
-  }
-
-  if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemRefAdd() too many element references (max=%u)\n",pCollect->nElemRefMax);
-    return NULL;
-  }
-
-  // Is the element an external reference?
-  // - If no, add to internal element array (asElem) and add a reference
-  // - If yes, add a reference
-  uint16_t nElemInd;
-  uint16_t nElemRefInd;
-  if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
-
-    // Ensure we have enough space in internal element array
-    if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG_PRINT("ERROR: CollectElemRefAdd() too many RAM elements (max=%u)\n",pCollect->nElemMax);
       return NULL;
     }
 
@@ -3111,7 +3044,7 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
   }
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
-  gslc_tsElemRef* pElemRefAdd = gslc_CollectElemRefAdd(pGui,pCollect,pElem,eFlags);
+  gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
   return pElemRefAdd;
 }
 

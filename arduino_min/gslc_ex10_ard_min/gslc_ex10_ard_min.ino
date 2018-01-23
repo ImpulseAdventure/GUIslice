@@ -2,8 +2,13 @@
 // GUIslice Library Examples
 // - Calvin Hass
 // - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 10 (Arduino):
+// - Example 10 (Arduino): [minimum RAM version]
 //     Demonstrate textbox controls
+//   - Demonstrates the use of ElemCreate*_P() functions
+//     These RAM-reduced examples take advantage of the internal
+//     Flash storage (via PROGMEM).
+//   - NOTE: This sketch requires moderate program storage in Flash.
+//     As a result, it may not run on basic Arduino devices (eg. ATmega328)
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -40,7 +45,7 @@ unsigned  m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          7                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   2                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   6                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -52,9 +57,6 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];   // Storage for all elements in RAM
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References for all elements in GUI
-
-gslc_tsXSlider              m_sXSlider;
-gslc_tsXSlider              m_sXSliderText;
 
 #define TBOX_ROWS           15
 #define TBOX_COLS           12
@@ -145,20 +147,20 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Example horizontal slider
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
-          (gslc_tsRect){20,60,140,20},0,100,50,5,false);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER,E_PG_MAIN,20,60,140,20,
+    0,100,50,5,false,GSLC_COL_GREEN,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
   // Text to show slider value
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
-    (char*)"",0,E_FONT_TXT);
+  static char mstr_cnt[8] = ""; // Provide space for large counter value
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,180,60,40,20,mstr_cnt,8,&m_asFont[0], // E_FONT_TXT
+          GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
 
   // Create wrapping box for textbox and scrollbar
-  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,124});
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemCreateBox_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,18,83,203,124,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create textbox
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
@@ -169,9 +171,9 @@ bool InitOverlays()
   m_pElemTextbox = pElemRef;
 
   // Create vertical scrollbar for textbox
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderText,
-        (gslc_tsRect){200,85,20,120},0,100,100,5,true);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SCROLLBAR,E_PG_MAIN,200,85,20,120,
+    0,100,100,5,true,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SCROLLBAR);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
   // Quit button

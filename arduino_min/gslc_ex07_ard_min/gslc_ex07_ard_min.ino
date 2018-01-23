@@ -42,7 +42,7 @@ unsigned  m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          17                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   13                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   16                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -54,8 +54,6 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];   // Storage for all elements in RAM
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References for all elements in GUI
-
-gslc_tsXSlider              m_sXSlider_R,m_sXSlider_G,m_sXSlider_B;
 
 // Current RGB value for color box
 // - Globals defined here for convenience so that callback
@@ -181,9 +179,9 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
-          (gslc_tsRect){nSlideX,140,nSlideW,nSlideH},0,255,m_nPosR,5,false);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_R,E_PG_MAIN,210,140,80,20,
+    0,255,255,5,false,GSLC_COL_RED,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_R);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
@@ -191,9 +189,9 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
-          (gslc_tsRect){nSlideX,170,nSlideW,nSlideH},0,255,m_nPosG,5,false);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_G,E_PG_MAIN,210,170,80,20,
+    0,255,128,5,false,GSLC_COL_GREEN,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_G);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
@@ -201,9 +199,9 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
-          (gslc_tsRect){nSlideX,200,nSlideW,nSlideH},0,255,m_nPosB,5,false);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_B,E_PG_MAIN,210,200,80,20,
+    0,255,0,5,false,GSLC_COL_BLUE,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_B);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 

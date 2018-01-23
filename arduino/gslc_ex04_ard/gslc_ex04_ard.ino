@@ -92,7 +92,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElemRef* pElemRef;  
+  gslc_tsElemRef* pElemRef;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -152,7 +152,7 @@ bool InitOverlays()
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
 
-  // Create slider 
+  // Create slider
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,(gslc_tsColor){0,0,128},10,
