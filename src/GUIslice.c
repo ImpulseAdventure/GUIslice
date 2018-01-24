@@ -1649,8 +1649,16 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
     // TODO: Optimize by checking to see if we already cached this element
     // - Can probably do this by comparing the bValid and nId
+    #if (GSLC_USE_PROGMEM)
     memcpy_P(&pGui->sElemTmpProg,pElem,sizeof(gslc_tsElem));
     pElem = &pGui->sElemTmpProg;
+    #else
+    // We are running on device that doesn't support PROGMEM
+    // yet the element is marked as being in Flash (SRC_PROG).
+    // An example device using this mode is Cortex-M0.
+    // In that case, we don't need to perform the explicit
+    // copy from Flash to the temporary RAM element.
+    #endif
   }
   return pElem;
 }
