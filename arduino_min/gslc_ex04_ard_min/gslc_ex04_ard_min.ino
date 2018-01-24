@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 04 (Arduino): Dynamic content [minimum RAM version]
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - Demonstrates the use of ElemCreate*_P() functions

@@ -4,9 +4,10 @@
 // =======================================================================
 // GUIslice library
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/01/22)
+// - Version 0.10.0   (2018/01/24)
 // =======================================================================
 //
 // The MIT License

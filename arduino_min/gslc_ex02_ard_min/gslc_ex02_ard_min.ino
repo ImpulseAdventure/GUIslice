@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 02 (Arduino): [minimum RAM version]
 //   - Accept touch input, text button
 //   - Demonstrates the use of ElemCreate*_P() functions.

@@ -1,7 +1,8 @@
 // =======================================================================
 // GUIslice library (driver layer for bodmer/TFT_eSPI)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // =======================================================================
 //
 // The MIT License

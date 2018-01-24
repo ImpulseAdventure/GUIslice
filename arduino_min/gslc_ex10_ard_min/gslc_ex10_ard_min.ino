@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 10 (Arduino): [minimum RAM version]
 //     Demonstrate textbox controls
 //   - Demonstrates the use of ElemCreate*_P() functions

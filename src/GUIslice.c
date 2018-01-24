@@ -1,9 +1,10 @@
 // =======================================================================
 // GUIslice library
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/01/22)
+// - Version 0.10.0   (2018/01/24)
 // =======================================================================
 //
 // The MIT License
@@ -30,10 +31,6 @@
 //
 // =======================================================================
 
-// Other contributions:
-// - [2017/08/29]: Added Adafruit HX8357 support. Only change was to conditionally exclude time.h [by ALittleSlow]
-
-// =======================================================================
 
 // GUIslice library
 #include "GUIslice_config.h"
@@ -58,7 +55,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9.3"
+#define GUISLICE_VER "0.10.0"
 
 
 // ========================================================================

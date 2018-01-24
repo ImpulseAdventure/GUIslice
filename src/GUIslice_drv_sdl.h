@@ -4,7 +4,8 @@
 // =======================================================================
 // GUIslice library (driver layer for SDL 1.2 & 2.0)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // =======================================================================
 //
 // The MIT License

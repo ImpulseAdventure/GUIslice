@@ -4,7 +4,8 @@
 //
 // GUIslice sample SDL test for SDL1.2
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 //
 // This program is a simple test to ensure that the SDL
 // library is installed correctly. If everything is
