@@ -407,7 +407,6 @@ typedef struct gslc_tsColor {
   uint8_t r;      ///< RGB red value
   uint8_t g;      ///< RGB green value
   uint8_t b;      ///< RGB blue value
-  uint8_t unused; ///< Unused value to pad structure
 } gslc_tsColor;
 
 /// Event structure
