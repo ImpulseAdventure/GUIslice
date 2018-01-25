@@ -791,6 +791,9 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
   void* pImage = pGui->sImgRefBkgnd.pvImgRaw;
   if (pImage == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawBkgnd(%s) with NULL pvImgRaw\n","");
+
+    // Since the image load failed, resort to black background
+    gslc_DrvSetBkgndColor(pGui,GSLC_COL_BLACK);
     return;
   }
 
