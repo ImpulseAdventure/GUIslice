@@ -65,7 +65,7 @@ void UserInitEnv()
 static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -76,7 +76,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // - strPath: Path to executable passed in to locate resource files
 bool InitOverlays(const char *strPath)
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -84,8 +84,8 @@ bool InitOverlays(const char *strPath)
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with image label
   // - Extra code to demonstrate path generation based on location of executable
@@ -93,7 +93,7 @@ bool InitOverlays(const char *strPath)
   strncat(m_strImgQuit,IMG_BTN_QUIT,MAX_PATH);
   strncpy(m_strImgQuitSel,strPath,MAX_PATH);
   strncat(m_strImgQuitSel,IMG_BTN_QUIT_SEL,MAX_PATH);
-  pElem = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){258,70,32,32},
+  pElemRef = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){258,70,32,32},
           gslc_GetImageFromFile(m_strImgQuit,GSLC_IMGREF_FMT_BMP16),
           gslc_GetImageFromFile(m_strImgQuitSel,GSLC_IMGREF_FMT_BMP16),
           &CbBtnQuit);

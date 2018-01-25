@@ -76,7 +76,7 @@ void UserInitEnv()
 static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 
 // Quit button callback
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -85,37 +85,38 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 }
 
 
-bool CbControls(void* pvGui,void* pvElem,int16_t nPos)
+bool CbControls(void* pvGui,void* pvElemRef,int16_t nPos)
 {
-  gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*       pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef*   pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*      pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   char            acTxt[20];
   int16_t         nVal;
-  gslc_tsElem*    pElemTmp = NULL;
+  gslc_tsElemRef* pElemRefTmp = NULL;
 
   // Handle various controls
   switch (pElem->nId) {
     case E_SCROLLBAR:
       // Fetch the scrollbar value
-      nVal = gslc_ElemXSliderGetPos(pElem);
+      nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
       // Update the graph scroll position
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH);
-      gslc_ElemXGraphScrollSet(pElemTmp,nVal,100);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH);
+      gslc_ElemXGraphScrollSet(pGui,pElemRefTmp,nVal,100);
       break;
 
     case E_SLIDER:
       // Fetch the slider position
-      nVal = gslc_ElemXSliderGetPos(pElem);
+      nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
 
       // Link slider to the numerical display
       snprintf(acTxt,20,"%u",nVal);
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-      gslc_ElemSetTxtStr(pElemTmp,acTxt);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+      gslc_ElemSetTxtStr(pGui,pElemRefTmp,acTxt);
 
       // Link slider to insertion of values into graph
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH);
-      gslc_ElemXGraphAdd(pElemTmp,nVal);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_GRAPH);
+      gslc_ElemXGraphAdd(pGui,pElemRefTmp,nVal);
 
       break;
 
@@ -128,7 +129,7 @@ bool CbControls(void* pvGui,void* pvElem,int16_t nPos)
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -136,67 +137,67 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
     "Graph",0,E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetFillEn(pElem,false);
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){32,32,60});
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
     "Graph",0,E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){128,128,240});
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetFillEn(pElem,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){128,128,240});
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Example horizontal slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
   // Text to show slider value
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,40,20},
     "",0,E_FONT_TXT);
 
 
   // Create wrapping box for graph and scrollbar
 #if 0
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,180+20+3,120+4});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,180+20+3,120+4});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
 #else
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,180+3,120+20+3});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,180+3,120+20+3});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
 #endif
 
   // Create graph
-  pElem = gslc_ElemXGraphCreate(&m_gui,E_ELEM_GRAPH,E_PG_MAIN,
+  pElemRef = gslc_ElemXGraphCreate(&m_gui,E_ELEM_GRAPH,E_PG_MAIN,
     &m_sGraph,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(int16_t*)&m_anGraphBuf,
         GRAPH_ROWS,GSLC_COL_ORANGE);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
 
 #if 0
   // Create vertical scrollbar for graph
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderGraph,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderGraph,
         (gslc_tsRect){200,85,20,120},0,100,100,5,true);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 #else
   // Create horizontal scrollbar for graph
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderGraph,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderGraph,
         (gslc_tsRect){20,205,180,20},0,100,100,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbControls);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 #endif
 
   // Quit button
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,60,50,30},"QUIT",0,E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
 
   return true;
 }
@@ -230,10 +231,10 @@ int main( int argc, char* args[] )
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
   // Insert some initial values into the graph
-  uint16_t     nCnt = 0;
-  gslc_tsElem* pElemGraph = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_GRAPH);
+  uint16_t        nCnt = 0;
+  gslc_tsElemRef* pElemGraph = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_GRAPH);
   for (nCnt=0;nCnt<GRAPH_ROWS;nCnt++) {
-    gslc_ElemXGraphAdd(pElemGraph,nCnt/2);
+    gslc_ElemXGraphAdd(&m_gui,pElemGraph,nCnt/2);
   }
 
   // -----------------------------------
@@ -246,7 +247,7 @@ int main( int argc, char* args[] )
     usleep(50);
     nCnt++;
     if ((nCnt % 500) == 0) {
-      gslc_ElemXGraphAdd(pElemGraph,(nCnt/250)%100);
+      gslc_ElemXGraphAdd(&m_gui,pElemGraph,(nCnt/250)%100);
     }
   }
 
