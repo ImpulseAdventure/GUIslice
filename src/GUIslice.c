@@ -182,11 +182,11 @@ void gslc_DebugPrintf(const char* pFmt, ...)
 {
   if (g_pfDebugOut) {
 
-    char*    pStr;
+    char*    pStr=NULL;
     unsigned nMaxDivisor;
-    unsigned nNumRemain;
-    bool     bNumStart,bNumNeg;
-    unsigned nNumDivisor;
+    unsigned nNumRemain=0;
+    bool     bNumStart=false,bNumNeg=false;
+    unsigned nNumDivisor=1;
     uint16_t nFmtInd=0;
     char     cFmt,cOut;
 
@@ -711,9 +711,8 @@ int16_t gslc_sinFX(int16_t n64Ang)
 // Cosine function with optional lookup table
 int16_t gslc_cosFX(int16_t n64Ang)
 {
-  int16_t   nRetValS;
-
 #if (GSLC_USE_FLOAT)
+  int16_t   nRetValS;
   // Use floating-point math library function
 
   // Calculate angle in radians
@@ -3356,7 +3355,6 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
     GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
     return NULL;
   }
-  gslc_tsElem tempFind;
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
     // Fetch the element pointer from the reference array
@@ -3365,6 +3363,7 @@ gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
       // Search element in Flash
       #if (GSLC_USE_PROGMEM)
+      gslc_tsElem tempFind;
       (gslc_tsElem*)memcpy_P(&tempFind,pElem,sizeof(gslc_tsElem));
       //GSLC_DEBUG_PRINT("SEARCHING S:%4u PRG D:%4u at %u from %4u RefInd=%u\n",nElemId,tempFind.nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
       if (tempFind.nId == nElemId) {
@@ -3415,7 +3414,6 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCol
   bool          bFound = false;
   gslc_tsElem*  pElem = NULL;
   gslc_tsElem*  pFoundElem = NULL;
-  gslc_tsElem   sElemTmp;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
@@ -3425,6 +3423,7 @@ gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCol
     // Handle special case of Flash elements
     if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
       #if (GSLC_USE_PROGMEM)
+      gslc_tsElem   sElemTmp;
       pElem = (gslc_tsElem*) memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
       //pElem=&sElemTmp;
 
