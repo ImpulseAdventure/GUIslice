@@ -2357,15 +2357,12 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // - ie. we only want to invalidate the parent element
   //   containers, but we don't want to reset their status
 
-  // FIXME: Determine best way to find parent of ElemRef
   // - This functionality is only used in the case of compound
   //   elements (eg. XSelNum).
-  // - We would like to avoid storing an extra pointer (parent) in
-  //   the ElemRef array.
-  // - For now, disabled functionality until ideal solution found.
-  //if (pElem->pElemParent != NULL) {
-  //  gslc_ElemSetRedraw(pElem->pElemParent,eRedraw); // FIXME to use ElemRef
-  //}
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElem->pElemRefParent != NULL) {
+    gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
+  }
 }
 
 gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -2462,7 +2459,7 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 
   // eRedraw
 
-  pElemDest->pElemParent      = pElemSrc->pElemParent;
+  pElemDest->pElemRefParent   = pElemSrc->pElemRefParent;
 
   // Don't copy over the text strings
   //  pStrBuf[GSLC_LOCAL_STR_LEN]
@@ -2947,9 +2944,21 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
     return NULL;
   }
 
-  // Is the element an external reference?
-  // - If no, add to internal element array (asElem) and add a reference
-  // - If yes, add a reference
+
+  // If the element is stored in RAM:
+  // - Copy the element into the internal RAM element array (asElem)
+  // - Create an entry in the element reference array (asElemRef) that points
+  //   to the internal RAM element array.
+  // - Since a copy has been made of the input element, the caller can
+  //   discard/reuse the pointer (pElem) after the call.
+  //
+  // If the element is stored in FLASH:
+  // - Save the element pointer (pElem) into the element reference
+  //   array (asElemRef).
+  // - Since the input pointer (pElem) has been recorded, the caller must
+  //   not discard/reuse the pointer. It should be defined as a static
+  //   variable.
+
   uint16_t nElemInd;
   uint16_t nElemRefInd;
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
@@ -2974,24 +2983,19 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
     pCollect->asElemRef[nElemRefInd].pElem = &(pCollect->asElem[nElemInd]);
     pCollect->nElemRefCnt++;
 
-    return &(pCollect->asElemRef[nElemRefInd]);
-
   } else {
     // External reference
-    // - Pointer (pElem) links to an external variable (must be declared statically)
-    // - Provide option for either RAM or PROGMEM pointer
-    // - TODO: Support other flags
+    // - Pointer (pElem) links to an element stored in FLASH (must be declared statically)
 
     // Add a reference
-    nElemInd = pCollect->nElemRefCnt;
-    pCollect->asElemRef[nElemInd].eElemFlags = eFlags;
-    pCollect->asElemRef[nElemInd].pElem = (gslc_tsElem*)pElem;  // Typecast to drop const modifier
+    nElemRefInd = pCollect->nElemRefCnt;
+    pCollect->asElemRef[nElemRefInd].eElemFlags = eFlags;
+    pCollect->asElemRef[nElemRefInd].pElem = (gslc_tsElem*)pElem;  // Typecast to drop const modifier
     pCollect->nElemRefCnt++;
-    // NULL is returned to ensure that we don't attempt to dereference
-
-    return NULL;
   }
 
+  // Return the new element reference
+  return &(pCollect->asElemRef[nElemRefInd]);
 }
 
 bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
@@ -3153,7 +3157,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
 
-  pElem->pElemParent      = NULL;
+  pElem->pElemRefParent   = NULL;
 
 }
 
@@ -3375,23 +3379,23 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
 
 // Go through all elements in a collection and set the parent
 // element pointer.
-/* FIXME: Only used gslc_ElemXSelNumCreate. Intend to replace
- * parent pointer with marking of "child" elements instead.
-void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent)
+void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent)
 {
-  gslc_tsElem*  pElem = NULL;
-  uint16_t      nInd;
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsElem*    pElem = NULL;
+  uint16_t        nInd;
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM are updated
+    // NOTE: Only elements in RAM are updated
+    // TODO: Error handling if we attempt to modify FLASH-based element
     if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
       continue;
     }
-    pElem = pCollect->asElemRef[nInd].pElem;
-    pElem->pElemParent = pElemParent;
+    pElemRef = &pCollect->asElemRef[nInd];
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+    pElem->pElemRefParent = pElemRefParent;
   }
 }
-*/
 
 void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
 {

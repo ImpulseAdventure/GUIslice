@@ -445,6 +445,13 @@ typedef struct {
   void*                 pvImgRaw;   ///< Ptr to raw output image data (for pre-loaded images)
 } gslc_tsImgRef;
 
+
+/// Element reference structure
+typedef struct {
+  gslc_tsElem*          pElem;      ///< Pointer to element in memory [RAM,FLASH]
+  gslc_teElemRefFlags   eElemFlags; ///< Element reference flags
+} gslc_tsElemRef;
+
 ///
 /// Element Struct
 /// - Represents a single graphic element in the GUIslice environment
@@ -476,7 +483,7 @@ typedef struct gslc_tsElem {
   /// to notify parent elements that they require
   /// redraw as well. Primary usage is in compound
   /// elements.
-  gslc_tsElem*        pElemParent;
+  gslc_tsElemRef*     pElemRefParent;
 
   // Text handling
 #if (GSLC_LOCAL_STR)
@@ -505,11 +512,7 @@ typedef struct gslc_tsElem {
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
 } gslc_tsElem;
 
-/// Element reference structure
-typedef struct {
-  gslc_tsElem*          pElem;      ///< Pointer to element in memory [RAM,FLASH]
-  gslc_teElemRefFlags   eElemFlags; ///< Element reference flags
-} gslc_tsElemRef;
+
 
 
 /// Element collection struct
@@ -1894,12 +1897,12 @@ void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_t
 ///   a sub-element should cause the parent (compound element) to be redrawn
 ///   as well.)
 ///
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  pElemParent:  Ptr to element that is the parent
+/// \param[in]  pCollect:       Pointer to the collection
+/// \param[in]  pElemRefParent: Ptr to element reference that is the parent
 ///
 /// \return none
 ///
-void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem* pElemParent);
+void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent);
 
 
 // ------------------------------------------------------------------------

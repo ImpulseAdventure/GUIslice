@@ -1428,12 +1428,7 @@ static const int16_t  SELNUM_ID_TXT     = 102;
 gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId)
 {
-  //FIXME: NOTE: The SelNum example has been disabled while the APIs
-  //       are under redevelopment. Updates are required to handle
-  //       element references instead of elements.
-  return NULL;
 
-#if 0 // FIXME
   if ((pGui == NULL) || (pXData == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
     return NULL;
@@ -1447,7 +1442,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
-  sElem.nGroup          = GSLC_GROUP_ID_NONE;
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;
 
   pXData->nCounter      = 0;
 
@@ -1486,9 +1481,9 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   // - The element IDs assigned to the sub-elements are
   //   arbitrary (with local scope in the compound element),
   //   so they don't need to be unique globally across the GUI.
-  gslc_tsElem*    pElemTmp  = NULL;
-  gslc_tsElem*    pElem     = NULL;
-  gslc_tsElemRef* pElemRef  = NULL;
+  gslc_tsElemRef* pElemRefTmp   = NULL;
+  gslc_tsElem*    pElemTmp      = NULL;
+  gslc_tsElemRef* pElemRef      = NULL;
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.
@@ -1496,40 +1491,43 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   int16_t nOffsetY = rElem.y;
 
   #if (GSLC_LOCAL_STR)
-  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},"+",0,nFontId,&gslc_ElemXSelNumClick);
   #else
   strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
-  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},pXData->acElemTxt[0],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
   #endif
-  gslc_ElemSetCol(pGui,pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
-  gslc_ElemSetTxtCol(pGui,pElemTmp,GSLC_COL_WHITE);
-  pElem = gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
+  gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
+  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
   #if (GSLC_LOCAL_STR)
-  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},"-",0,nFontId,&gslc_ElemXSelNumClick);
   #else
   strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
-  pElemTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},pXData->acElemTxt[1],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
   #endif
-  gslc_ElemSetCol(pGui,pElemTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
-  gslc_ElemSetTxtCol(pGui,pElemTmp,GSLC_COL_WHITE);
-  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
+  gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
+  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
   #if (GSLC_LOCAL_STR)
-  pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},"0",0,nFontId);
   #else
   strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
-  pElemTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
+  pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif
-  pElem = gslc_CollectElemAdd(&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
 
 
   // Now proceed to add the compound element to the page
@@ -1540,13 +1538,20 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
     // of redrawing from low-level elements to the top
     gslc_CollectSetParent(pGui,&pXData->sCollect,pElemRef);
 
-    return pElem;
+    return pElemRef;
   } else {
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) Compound elements inside compound elements not supported\n","");
+    return NULL;
+
+    // TODO: For now, disable compound elements within
+    // compound elements. If we want to enable this, we
+    // would probably use the temporary element reference
+    // the GUI.
     // Save as temporary element for further processing
-    pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    //pGui->sElemTmp = sElem;   // Need fixing
+    //return &(pGui->sElemTmp); // Need fixing
   }
-#endif
+
 }
 
 
@@ -1575,7 +1580,10 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   }
 
   // Draw the compound element fill (background)
-  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+  // - Should only need to do this in full redraw
+  if (eRedraw == GSLC_REDRAW_FULL) {
+    gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+  }
 
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
@@ -1638,8 +1646,8 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
 // - The code here will generally represent the core
 //   functionality of the compound element and any communication
 //   between sub-elements.
-// - pvElem is a void pointer to the element being tracked. From
-//   the pElemParent member we can get the parent/compound element
+// - pvElemRef is a void pointer to the element ref being tracked. From
+//   the pElemRefParent member we can get the parent/compound element
 //   data structures.
 bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
@@ -1654,13 +1662,14 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
 
   // Fetch the parent of the clicked element which is the compound
   // element itself. This enables us to access the extra control data.
-  gslc_tsElem*    pElemParent = pElem->pElemParent;
-  if (pElemParent == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) parent Elem ptr NULL\n","");
+  gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
+  if (pElemRefParent == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) parent ElemRef ptr NULL\n","");
     return false;
   }
 
-  gslc_tsXSelNum* pSelNum   = (gslc_tsXSelNum*)(pElemParent->pXData);
+  gslc_tsElem*    pElemParent = gslc_GetElemFromRef(pGui,pElemRefParent);
+  gslc_tsXSelNum* pSelNum     = (gslc_tsXSelNum*)(pElemParent->pXData);
   if (pSelNum == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
     return false;
@@ -1674,7 +1683,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
 
     // Get the tracked element ID
     gslc_tsElemRef* pElemRefTracked = pSelNum->sCollect.pElemRefTracked;
-    gslc_tsElem* pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
+    gslc_tsElem*    pElemTracked    = gslc_GetElemFromRef(pGui,pElemRefTracked);
     int nSubElemId = pElemTracked->nId;
 
     if (nSubElemId == SELNUM_ID_BTN_INC) {
