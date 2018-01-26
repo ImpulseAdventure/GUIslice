@@ -373,18 +373,13 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   m_disp.setTextSize(nTxtScale);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-
-
-     m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
-
+    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
     nTxtLen = strlen_P(pStr);
-    char tempStr[nTxtLen+1]={0};
-
-    strncpy_P(tempStr, pStr,nTxtLen);
+    char tempStr[nTxtLen+1];
+    strncpy_P(tempStr,pStr,nTxtLen);
+    tempStr[nTxtLen] = '\0';  // Force termination
     m_disp.getTextBounds(tempStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
-
-
   }
   m_disp.setFont();
   return true;

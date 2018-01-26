@@ -896,7 +896,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 ///
 
 
-/// \def gslc_ElemXGaugeCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,
+/// \def gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
 ///      nMin,nMax,nVal,colFrame,colFill,colGauge,bVert)
 ///
 /// Create a Gauge Element in Flash
@@ -923,7 +923,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 
 #ifdef GSLC_USE_PROGMEM
 
-#define gslc_ElemXCheckboxCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
+#define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXCheckbox sCheckbox##nElemId;                     \
@@ -955,10 +955,11 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       &gslc_ElemXCheckboxTouch,                                   \
       NULL,                                                       \
   };                                                              \
-  gslc_ElemAdd(pGui_,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
 
 
-#define gslc_ElemXSliderCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH, \
+#define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
     nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
@@ -998,10 +999,11 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       &gslc_ElemXSliderTouch,                                     \
       NULL,                                                       \
   };                                                              \
-  gslc_ElemAdd(pGui_,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
 
 
-#define gslc_ElemXGaugeCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,\
+#define gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
     nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
@@ -1045,8 +1047,137 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       NULL,                                                       \
       NULL,                                                       \
   };                                                              \
-  gslc_ElemAdd(pGui_,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
 
+#else
+
+#define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXCheckbox sCheckbox##nElemId;                     \
+  sCheckbox##nElemId.bRadio = bRadio_;                            \
+  sCheckbox##nElemId.bChecked = bChecked_;                        \
+  sCheckbox##nElemId.colCheck = colCheck_;                        \
+  sCheckbox##nElemId.nStyle = nStyle_;                            \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_CHECKBOX,                                        \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      nGroup,                                                     \
+      GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sCheckbox##nElemId),                               \
+      NULL,                                                       \
+      &gslc_ElemXCheckboxDraw,                                    \
+      &gslc_ElemXCheckboxTouch,                                   \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
+    nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXSlider sSlider##nElemId;                         \
+  sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.nThumbSz = nThumbSz_;                          \
+  sSlider##nElemId.nPosMin = nPosMin_;                            \
+  sSlider##nElemId.nPosMax = nPosMax_;                            \
+  sSlider##nElemId.nTickDiv = 0;                                  \
+  sSlider##nElemId.nTickLen = 0;                                  \
+  sSlider##nElemId.colTick = GSLC_COL_WHITE;                      \
+  sSlider##nElemId.bTrim = false;                                 \
+  sSlider##nElemId.colTrim = GSLC_COL_BLACK;                      \
+  sSlider##nElemId.nPos = nPos_;                                  \
+  sSlider##nElemId.pfuncXPos = NULL;                              \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_SLIDER,                                          \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sSlider##nElemId),                                 \
+      NULL,                                                       \
+      &gslc_ElemXSliderDraw,                                      \
+      &gslc_ElemXSliderTouch,                                     \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
+    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXGauge sGauge##nElemId;                           \
+  sGauge##nElemId.nMin = nMin_;                                   \
+  sGauge##nElemId.nMax = nMax_;                                   \
+  sGauge##nElemId.nVal = nVal_;                                   \
+  sGauge##nElemId.nValLast = nVal_;                               \
+  sGauge##nElemId.bValLastValid = false;                          \
+  sGauge##nElemId.nStyle = GSLCX_GAUGE_STYLE_PROG_BAR;            \
+  sGauge##nElemId.colGauge = colGauge_;                           \
+  sGauge##nElemId.colTick = GSLC_COL_GRAY;                        \
+  sGauge##nElemId.nTickCnt = 8;                                   \
+  sGauge##nElemId.nTickLen = 5;                                   \
+  sGauge##nElemId.bVert = bVert_;                                 \
+  sGauge##nElemId.bFlip = false;                                  \
+  sGauge##nElemId.nIndicLen = 10;                                 \
+  sGauge##nElemId.nIndicTip = 3;                                  \
+  sGauge##nElemId.bIndicFill = false;                             \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_GAUGE,                                           \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sGauge##nElemId),                                  \
+      NULL,                                                       \
+      &gslc_ElemXGaugeDraw,                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
 
 #endif
 

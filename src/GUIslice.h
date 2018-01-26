@@ -2363,8 +2363,6 @@ void gslc_ResetElem(gslc_tsElem* pElem);
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
 
 
-
-
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
@@ -2460,10 +2458,9 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 
 
-
 #else
 
-#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn,nFeatures) \
+#define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const char str##nElemId[] = strTxt;                      \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
@@ -2479,6 +2476,37 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       (char*)str##nElemId,                                        \
       0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                                      \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_TXT,                                              \
+	  (gslc_tsRect){nX,nY,nW,nH},                             \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)strTxt,                                              \
+      strLength,                                                  \
       (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),   \
       colTxt,                                                     \
       colTxt,                                                     \
@@ -2491,7 +2519,8 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       NULL,                                                       \
   };                                                              \
-  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
@@ -2521,7 +2550,42 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       pfuncXTick,                                                 \
   };                                                              \
-  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_RAM);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+
+#define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
+  static const char str##nElemId[] = strTxt;                      \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_GLOW_EN |              \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_BTN,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame,colFill,colFrameGlow,colFillGlow,                  \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)str##nElemId,                                        \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      colTxt,                                                     \
+      colTxt,                                                     \
+      nAlignTxt,                                                  \
+      0,                                                          \
+      pFont,                                                      \
+      (void*)extraData,                                           \
+      NULL,                                                       \
+      NULL,                                                       \
+      callFunc,                                                   \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+
+
 
 #endif // GSLC_USE_PROGMEM
 
