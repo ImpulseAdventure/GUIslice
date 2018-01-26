@@ -1427,21 +1427,18 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
   int               nInd;
   gslc_tsElem*      pElem = NULL;
+  gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
 
   // Only work on current page
   pCollect = pGui->pCurPageCollect;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM need to be checked for changes
-    // FIXME: This is no longer true
-    pElem = pCollect->asElemRef[nInd].pElem;
-    //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pCollect->asElemRef[nInd].pElem->nId,
+    pElemRef = &pCollect->asElemRef[nInd];
+    gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+    //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
     //        (eFlags & GSLC_ELEMREF_REDRAW_MASK),eFlags,pElem->nFeatures);
-    if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
-      continue;
-    }
     if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) != GSLC_ELEMREF_REDRAW_NONE) {
 
       // Determine if entire page requires redraw
