@@ -31,8 +31,8 @@
   memory consumption for Arduino devices considerably. Stay tuned!*
 - The baseline Arduino (**ATmega328P**) devices have very limited SRAM memory (2KB SRAM, 32KB FLASH).
   Therefore, it is important that GUI elements are stored in FLASH whenever possible. A set of
-  examples that demonstrate this method are located in `arduino_min`.
-  The examples in `arduino` don't use the FLASH optimizations and are less likely
+  examples that demonstrate this method are located in `\arduino_min`.
+  The examples in `\arduino` don't use the FLASH optimizations and are less likely
   to run on these limited devices.
 - Other Arduino variants and devices such as **ATmega2560** (8KB SRAM, 256KB FLASH), **ESP8266**, **Node-MCU**,
   **Feather M0**, etc. tend to work much better as there is far more SRAM and FLASH available.
