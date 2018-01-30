@@ -12,6 +12,7 @@
 //     Flash storage (via PROGMEM).
 //   - NOTE: This sketch requires moderate program storage in Flash.
 //     As a result, it may not run on basic Arduino devices (eg. ATmega328)
+//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections

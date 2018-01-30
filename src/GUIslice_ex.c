@@ -122,12 +122,14 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -739,12 +741,14 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1122,12 +1126,14 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1445,7 +1451,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 }
 
 
-
+#ifdef GSLC_FEATURE_COMPOUND
 // ============================================================================
 // Extended Element: SelNum
 // - SelNum (Select Number) element demonstrates a simple up/down counter
@@ -1810,7 +1816,7 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   return true;
 
 }
-
+#endif // GSLC_FEATURE_COMPOUND
 
 // ============================================================================
 
@@ -1889,12 +1895,14 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -2297,12 +2305,14 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 

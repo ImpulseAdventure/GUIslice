@@ -12,6 +12,7 @@
 //     run on Arduino devices with limited memory. A "minimal"
 //     version is located in the "arduino_min" folder which includes
 //     FLASH memory optimization for reduced memory devices.
+//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections

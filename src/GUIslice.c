@@ -121,7 +121,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   }
 
   // Initialize temporary element
+#ifdef GSLC_FEATURE_COMPOUND
   gslc_ResetElem(&(pGui->sElemTmp));
+#endif
 
 
   // Last touch event
@@ -1735,12 +1737,14 @@ gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1771,12 +1775,14 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1801,12 +1807,14 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1825,12 +1833,14 @@ gslc_tsElemRef* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1852,12 +1862,14 @@ gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1877,12 +1889,14 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
+#ifdef GSLC_FEATURE_COMPOUND
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -2418,6 +2432,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     pElemRef->eElemFlags = eFlags;
   }
 
+#ifdef GSLC_FEATURE_COMPOUND
   // Now propagate up the element hierarchy
   // (eg. in case of compound elements)
 
@@ -2431,6 +2446,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   if (pElem->pElemRefParent != NULL) {
     gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
   }
+#endif
 }
 
 gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -2532,8 +2548,9 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   pElemDest->colElemFrameGlow = pElemSrc->colElemFrameGlow;
 
   // eRedraw
-
+#ifdef GLSC_COMPOUND
   pElemDest->pElemRefParent   = pElemSrc->pElemRefParent;
+#endif
 
   // Don't copy over the text strings
   //  pStrBuf[GSLC_LOCAL_STR_LEN]
@@ -2851,12 +2868,14 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 // NOTE: nId is a positive ID specified by the user or
 //       GSLC_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
+#ifdef GSLC_FEATURE_COMPOUND
 // NOTE: When we are creating sub-elements within a compound element,
 //       we usually pass nPageId=GSLC_PAGE_NONE. In this mode we
 //       won't add the element to any page, but just create the
 //       element struct. However, in this mode we can't support
 //       auto-generated IDs since we don't know which IDs will
 //       be taken when we finally create the compound element.
+#endif
 gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   int16_t nType,gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId)
 {
@@ -2876,12 +2895,14 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   // If we are going to be adding the element to a page then we
   // perform some additional checks
   if (nPageId == GSLC_PAGE_NONE) {
+#ifdef GSLC_FEATURE_COMPOUND
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
     if (nElemId == GSLC_ID_AUTO) {
       GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
       return sElem;
     }
+#endif
   } else {
     // Look up the targeted page to ensure that we check its
     // collection for collision with other IDs (or assign the
@@ -3132,6 +3153,12 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
     return NULL;
   }
 
+  if (nPageId == GSLC_PAGE_NONE) {
+    // No page ID was provided, so skip add
+    GSLC_DEBUG_PRINT("ERROR: ElemAdd(%s) with PAGE_NONE\n","");
+    return NULL;
+  }
+
   // Fetch the page containing the item
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
@@ -3248,8 +3275,9 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
-
+#ifdef GLSC_COMPOUND
   pElem->pElemRefParent   = NULL;
+#endif
 
 }
 
@@ -3476,6 +3504,7 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
 }
 
 
+#ifdef GSLC_FEATURE_COMPOUND
 // Go through all elements in a collection and set the parent
 // element pointer.
 void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent)
@@ -3495,6 +3524,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
     pElem->pElemRefParent = pElemRefParent;
   }
 }
+#endif
 
 void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
 {

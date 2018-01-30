@@ -492,11 +492,16 @@ typedef struct gslc_tsElem {
   gslc_tsImgRef       sImgRefNorm;      ///< Image reference to draw (normal)
   gslc_tsImgRef       sImgRefGlow;      ///< Image reference to draw (glowing)
 
+  //#ifdef GSLC_FEATURE_COMPOUND
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
   /// redraw as well. Primary usage is in compound
   /// elements.
+  /// NOTE: Although this field is only used in GLSC_COMPOUND mode, it
+  ///       is not wrapped in an #ifdef because the ElemCreate*_P()
+  ///       function macros currently initialize this field.
   gslc_tsElemRef*     pElemRefParent;
+  //#endif
 
   // Text handling
 #if (GSLC_LOCAL_STR)
@@ -592,9 +597,11 @@ typedef struct {
   uint8_t             nFontMax;         ///< Maximum number of fonts to allocate
   uint8_t             nFontCnt;         ///< Number of fonts allocated
 
+#ifdef GSLC_FEATURE_COMPOUND
   gslc_tsElem         sElemTmp;         ///< Temporary element
-
   gslc_tsElemRef      sElemRefTmp;      ///< Temporary element reference
+#endif
+
   gslc_tsElem         sElemTmpProg;     ///< Temporary element for Flash compatibility
   int16_t             nTouchLastX;      ///< Last touch event X coord
   int16_t             nTouchLastY;      ///< Last touch event Y coord

@@ -7,6 +7,7 @@
 //     Multiple page handling
 //     Background image
 //     Compound elements
+// - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //
 
 #include "GUIslice.h"

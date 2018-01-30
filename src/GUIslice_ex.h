@@ -53,7 +53,9 @@ typedef enum {
             = GSLC_TYPE_BASE_EXTEND,  // Continue from gslc_teTypeBase enum range
     GSLC_TYPEX_CHECKBOX,    ///< Checkbox extended element
     GSLC_TYPEX_SLIDER,      ///< Slider extended element
+#ifdef GSLC_FEATURE_COMPOUND
     GSLC_TYPEX_SELNUM,      ///< SelNum extended element
+#endif
     GSLC_TYPEX_TEXTBOX,     ///< Textbox extended element
     GSLC_TYPEX_GRAPH,       ///< Graph extended element
 } gslc_teTypeExtend;
@@ -477,6 +479,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
+#ifdef GSLC_FEATURE_COMPOUND
 // ============================================================================
 // Extended Element: SelNum (Number Selector)
 // - Demonstration of a compound element consisting of
@@ -586,7 +589,7 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
-
+#endif // GLSC_COMPOUND
 
 // ============================================================================
 // Extended Element: Textbox
