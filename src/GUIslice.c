@@ -191,11 +191,11 @@ void gslc_DebugPrintf(const char* pFmt, ...)
 {
   if (g_pfDebugOut) {
 
-    char*    pStr;
+    char*    pStr=NULL;
     unsigned nMaxDivisor;
-    unsigned nNumRemain;
-    bool     bNumStart,bNumNeg;
-    unsigned nNumDivisor;
+    unsigned nNumRemain=0;
+    bool     bNumStart=false,bNumNeg=false;
+    unsigned nNumDivisor=1;
     uint16_t nFmtInd=0;
     char     cFmt,cOut;
 
@@ -750,9 +750,8 @@ int16_t gslc_sinFX(int16_t n64Ang)
 // Cosine function with optional lookup table
 int16_t gslc_cosFX(int16_t n64Ang)
 {
-  int16_t   nRetValS;
-
 #if (GSLC_USE_FLOAT)
+  int16_t   nRetValS;
   // Use floating-point math library function
 
   // Calculate angle in radians

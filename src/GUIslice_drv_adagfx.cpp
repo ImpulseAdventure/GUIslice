@@ -189,11 +189,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #if defined(DRV_DISP_ADAGFX_ILI9341)
       m_disp.begin();
 
-      uint8_t x = m_disp.readcommand8(ILI9341_RDMODE);
-      x = m_disp.readcommand8(ILI9341_RDMADCTL);
-      x = m_disp.readcommand8(ILI9341_RDPIXFMT);
-      x = m_disp.readcommand8(ILI9341_RDIMGFMT);
-      x = m_disp.readcommand8(ILI9341_RDSELFDIAG);
+      m_disp.readcommand8(ILI9341_RDMODE);
+      m_disp.readcommand8(ILI9341_RDMADCTL);
+      m_disp.readcommand8(ILI9341_RDPIXFMT);
+      m_disp.readcommand8(ILI9341_RDIMGFMT);
+      m_disp.readcommand8(ILI9341_RDSELFDIAG);
 
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
@@ -271,6 +271,7 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     return NULL;  // No image preload done
   }
+  return NULL;
 }
 
 
@@ -368,7 +369,6 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 {
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
-  int16_t   nDummyX,nDummyY;
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
@@ -580,7 +580,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
   bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t nByte;
+  uint8_t nByte=0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
