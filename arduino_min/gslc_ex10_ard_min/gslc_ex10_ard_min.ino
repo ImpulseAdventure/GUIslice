@@ -164,6 +164,7 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,18,83,203,124,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create textbox
+  // - NOTE: XTextbox does not have a FLASH-based version yet (ElemXTextboxCreate_P)
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
     &m_sTextbox,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(char*)&m_acTextboxBuf,
         TBOX_ROWS,TBOX_COLS);

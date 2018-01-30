@@ -6,6 +6,8 @@
 // - Example 09 (LINUX):
 //     Demonstrate radial and ramp controls
 //     NOTE: The ramp control is still beta and subject to change
+//     NOTE: The radial control is disabled by default, but can
+//           be enabled by GSLC_FEATURE_XGAUGE_RADIAL
 //
 #include "GUIslice.h"
 #include "GUIslice_ex.h"

@@ -223,7 +223,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 ///
 bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
 
-
+#ifdef GSLC_FEATURE_XGAUGE_RADIAL
 ///
 /// Helper function to draw a gauge with style: radial
 /// - Called from gslc_ElemXGaugeDraw()
@@ -235,7 +235,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
-
+#endif
 
 ///
 /// Helper function to draw a gauge with style: ramp
@@ -1085,7 +1085,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
@@ -1129,7 +1129,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
@@ -1177,7 +1177,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 #endif
 

@@ -66,6 +66,13 @@ extern "C" {
 
 
 // -----------------------------------------------------------------------------------------
+// Enable of optional features
+// - Comment these out to reduce library memory
+
+//#define GSLC_FEATURE_XGAUGE_RADIAL  // XGauge control with radial support
+//#define GSLC_FEATURE_XGAUGE_RAMP    // XGauge control with ramp support
+
+// -----------------------------------------------------------------------------------------
 
 // Graphics display driver-specific additional configuration
 #if defined(DRV_DISP_SDL1)
@@ -119,7 +126,7 @@ extern "C" {
   #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
 
   // Error reporting
-  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
+  #define DEBUG_ERR   0       // Enable error message reporting (requires more memory)
 
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the

@@ -46,6 +46,14 @@
 #endif
 
 // ----------------------------------------------------------------------------
+// Error Messages
+// ----------------------------------------------------------------------------
+
+extern const char GSLC_PMEM ERRSTR_NULL[];
+extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
+
+
+// ----------------------------------------------------------------------------
 // Extended element definitions
 // ----------------------------------------------------------------------------
 //
@@ -79,7 +87,8 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -126,7 +135,8 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 void gslc_ElemXGaugeSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teXGaugeStyle nStyle)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetStyle(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetStyle";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -143,7 +153,8 @@ void gslc_ElemXGaugeSetIndicator(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_
     uint16_t nIndicLen,uint16_t nIndicTip,bool bIndicFill)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetIndicator(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetIndicator";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -162,7 +173,8 @@ void gslc_ElemXGaugeSetIndicator(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_
 void gslc_ElemXGaugeSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colTick,uint16_t nTickCnt,uint16_t nTickLen)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetTicks(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetTicks";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -181,7 +193,8 @@ void gslc_ElemXGaugeSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 void gslc_ElemXGaugeUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeUpdate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeUpdate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -210,7 +223,8 @@ void gslc_ElemXGaugeUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVa
 void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetFlip";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -236,7 +250,8 @@ void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip
 bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -258,10 +273,14 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
       gslc_ElemXGaugeDrawProgressBar(pGui,pElemRef,eRedraw);
       break;
     case GSLCX_GAUGE_STYLE_RADIAL:
+#ifdef GSLC_FEATURE_XGAUGE_RADIAL
       gslc_ElemXGaugeDrawRadial(pGui,pElemRef,eRedraw);
+#endif
       break;
     case GSLCX_GAUGE_STYLE_RAMP:
+#ifdef GSLC_FEATURE_XGAUGE_RAMP
       gslc_ElemXGaugeDrawRamp(pGui,pElemRef,eRedraw);
+#endif
       break;
     default:
       // ERROR
@@ -439,6 +458,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   return true;
 }
 
+#ifdef GSLC_FEATURE_XGAUGE_RADIAL
 void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nArrowLen,uint16_t nArrowSz,int16_t n64Ang,bool bFill,gslc_tsColor colFrame)
 {
   int16_t   nTipX,nTipY;
@@ -546,8 +566,9 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_te
 
   return true;
 }
+#endif // GSLC_FEATURE_XGAUGE_RADIAL
 
-
+#ifdef GSLC_FEATURE_XGAUGE_RAMP
 bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw)
 {
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -666,7 +687,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRe
 
   return true;
 }
-
+#endif // GLSC_FEATURE_XGAUGE_RAMP
 
 
 // ============================================================================
@@ -684,7 +705,8 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
   gslc_tsColor colCheck,bool bChecked)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -747,7 +769,8 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   gslc_tsElemRef*     pFoundElemRef = NULL;
 
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemRefXCheckboxFindChecked(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxFindChecked";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
@@ -783,7 +806,8 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemRefXCheckboxSetStateHelp(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetStateHelp";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -807,7 +831,8 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
 void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemRefXCheckboxSetState(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetState";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -875,7 +900,8 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
 void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemRefXCheckboxToggleState(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxToggleState";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // Update the data element
@@ -894,7 +920,8 @@ void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -979,7 +1006,8 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
 bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*           pGui = NULL;
@@ -1058,7 +1086,8 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   uint16_t nThumbSz,bool bVert)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -1107,7 +1136,8 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         int16_t nTickLen,gslc_tsColor colTick)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetStyle(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderSetStyle";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -1126,7 +1156,8 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderGetPos(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderGetPos";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -1139,7 +1170,8 @@ int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos)
 {
   if ((pGui == NULL) || (pElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetPos(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderSetPos";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -1178,7 +1210,8 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
 void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XSLIDER_POS funcCb)
 {
   if ((pElemRef == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderSetPosFunc(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderSetPosFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -1194,7 +1227,8 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
 bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -1332,7 +1366,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSliderTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*           pGui = NULL;
@@ -1430,7 +1465,8 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 {
 
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem sElem;
@@ -1561,7 +1597,8 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -1612,7 +1649,8 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
 {
   if ((pGui == NULL) || (pSelNum == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumGetCounter(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumGetCounter";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
   return pSelNum->nCounter;
@@ -1622,7 +1660,8 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
 void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t nCount)
 {
   if (pSelNum == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumSetCounter(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumSetCounter";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pSelNum->nCounter = nCount;
@@ -1652,7 +1691,8 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
 bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumClick";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
@@ -1709,7 +1749,8 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
 bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*           pGui = NULL;
@@ -1778,7 +1819,8 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
     uint16_t nBufRows,uint16_t nBufCols)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -1860,7 +1902,8 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxReset(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxReset";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsXTextbox*  pBox;
@@ -2041,7 +2084,8 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
 bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -2186,7 +2230,8 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   uint16_t nBufMax,gslc_tsColor colGraph)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGraphCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGraphCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -2353,7 +2398,8 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
 bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGraphDraw(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGraphDraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types

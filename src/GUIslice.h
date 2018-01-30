@@ -53,6 +53,15 @@ extern "C" {
 // -----------------------------------------------------------------------
 #include "GUIslice_config.h"  // Import user configuration
 
+// Provide an alias for PROGMEM so that we can disable
+// it on devices that don't use it when defining constant
+// strings in FLASH memory.
+#if (GSLC_USE_PROGMEM)
+  #define GSLC_PMEM PROGMEM
+#else
+  #define GSLC_PMEM
+#endif
+
 
 // -----------------------------------------------------------------------
 // Globals
@@ -295,10 +304,15 @@ typedef enum {
 typedef enum {
   GSLC_ELEMREF_NONE        = 0,       ///< No element defined
   // Define element sources
-  GSLC_ELEMREF_SRC_RAM     = (1<<0),  ///< Element is stored in RAM (internal element array)
-  GSLC_ELEMREF_SRC_PROG    = (2<<0),  ///< Element is stored in program memory
-                                      ///< (PROGMEM, read-only, external to element array)
-  GSLC_ELEMREF_DRAW_PROG   = (1<<2),  ///< Element base is stored in PROGMEM but content is in RAM
+  GSLC_ELEMREF_SRC_RAM     = (1<<0),  ///< Element is read/write
+                                      ///< Stored in RAM (internal element array))
+                                      ///< Access directly
+  GSLC_ELEMREF_SRC_PROG    = (2<<0),  ///< Element is read-only / const
+                                      ///< Stored in FLASH (external to element array)
+                                      ///< Access via PROGMEM
+  GSLC_ELEMREF_SRC_CONST   = (3<<0),  ///< Element is read-only / const
+                                      ///< Stored in FLASH (external to element array)
+                                      ///< Access directly
   // Element State
   GSLC_ELEMREF_REDRAW_NONE = (0<<4),  ///< No redraw requested
   GSLC_ELEMREF_REDRAW_FULL = (1<<4),  ///< Full redraw of element requested
@@ -308,7 +322,6 @@ typedef enum {
 
   // Mask values for bitfield comparisons
   GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags
-  GSLC_ELEMREF_DRAW_MASK      = (3<<2),   ///< Mask for Draw flags
   GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags
 
 } gslc_teElemRefFlags;
@@ -2218,7 +2231,12 @@ void gslc_ResetElem(gslc_tsElem* pElem);
           } while (0)
 #endif
 
-
+  #define GSLC_DEBUG_PRINT_CONST(sFmt, ...)                     \
+          do {                                                  \
+            if (DEBUG_ERR) {                                    \
+              gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
+            }                                                   \
+          } while (0)
 
 // ------------------------------------------------------------------------
 // Read-only element macros
@@ -2479,7 +2497,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       (char*)str##nElemId,                                        \
       0,                                                          \
-      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),  \
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
@@ -2492,7 +2510,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
@@ -2523,7 +2541,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
@@ -2554,7 +2572,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       pfuncXTick,                                                 \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] = strTxt;                      \
@@ -2573,7 +2591,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
       (char*)str##nElemId,                                        \
       0,                                                          \
-      (gslc_teTxtFlags)(GSLC_TXT_MEM_PROG | GSLC_TXT_ALLOC_EXT),  \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),  \
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
@@ -2586,8 +2604,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL));
-
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #endif // GSLC_USE_PROGMEM

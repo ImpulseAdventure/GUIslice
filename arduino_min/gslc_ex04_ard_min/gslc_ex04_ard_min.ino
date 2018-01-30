@@ -201,6 +201,7 @@ void loop()
 
   gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress,((m_nCount/1)%100));
 
+
   // NOTE: A more efficient method is to move the following
   //       code into the slider position callback function.
   //       Please see example 07.
