@@ -30,7 +30,8 @@
 // =======================================================================
 
 // Compiler guard for requested driver
-#include "GUIslice_config.h" // Sets DRV_DISP_*
+#if defined (__AVR__) || defined(ARDUINO_SAMD_ZERO) || defined(ESP8266)
+#include "GUIslice_config_ard.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_TFT_ESPI)
 
 // =======================================================================
@@ -1100,3 +1101,4 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #endif // __cplusplus
 
 #endif // Compiler guard for requested driver
+#endif // Arduino variants

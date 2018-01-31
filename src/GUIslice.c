@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/01/24)
+// - Version 0.10.0   (2018/01/31)
 // =======================================================================
 //
 // The MIT License
@@ -33,7 +33,16 @@
 
 
 // GUIslice library
-#include "GUIslice_config.h"
+
+// Import user configuration depending on device type
+#if defined(__linux__)
+#include "GUIslice_config_linux.h"
+#elif defined (__AVR__) || defined(ARDUINO_SAMD_ZERO) || defined(ESP8266)
+#include "GUIslice_config_ard.h"
+#else
+#error "Unknown device platform"
+#endif
+
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
