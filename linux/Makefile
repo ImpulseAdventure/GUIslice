@@ -1,5 +1,5 @@
 ##
-## Makefile for GUIslice library
+## Makefile for GUIslice library - LINUX
 ## - Calvin Hass
 ## - https://www.impulseadventure.com/elec/guislice-gui.html
 ## - https://github.com/ImpulseAdventure/GUIslice
@@ -14,7 +14,7 @@ INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 LDFLAGS = -L/usr/local/lib
 
-GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config.h
+GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config_linux.h
 
 # ---------------------------------------------------------------------------
 # Define compiler flags for GUIslice
