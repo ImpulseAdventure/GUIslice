@@ -146,7 +146,7 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 {
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvScope);
-  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
+  //gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
   m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
