@@ -383,10 +383,6 @@ void gslc_Update(gslc_tsGui* pGui)
   uint16_t  nTouchPress = 0;
   bool      bTouchEvent = true;
 
-  gslc_tsPage*    pCurPage  = pGui->pCurPage;
-  gslc_tsCollect* pCollect  = &pCurPage->sCollect;
-  gslc_tsElemRef* pTmpRef   = &pCollect->asElemRef[0];
-
   // Handle touchscreen presses
   // - We clear the event queue here so that we don't fall behind
   // - In the time it takes to update the display, several mouse /
@@ -1926,7 +1922,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
   void*               pvScope           = sEvent.pvScope;
   gslc_tsElemRef*     pElemRef          = NULL;
   gslc_tsElemRef*     pElemRefTracked   = NULL;
-  gslc_teElemRefFlags eFlags;
   gslc_tsElem*        pElem             = NULL;
   gslc_tsElem*        pElemTracked      = NULL;
   gslc_tsEventTouch*  pTouchRec         = NULL;
@@ -1939,7 +1934,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
-      eFlags = pElemRef->eElemFlags;
 
       // Determine if redraw is needed
       gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
@@ -1979,7 +1973,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_TICK:
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
-      eFlags = pElemRef->eElemFlags;
 
       // Since we are going to use the callback within the element
       // we need to ensure it is cached in RAM first
@@ -2473,6 +2466,8 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
     case GSLC_ELEMREF_REDRAW_INC:
       return GSLC_REDRAW_INC;
   }
+  // Should not reach here
+  return GSLC_REDRAW_NONE;
 }
 
 
@@ -2645,15 +2640,9 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
   gslc_tsElemRef*   pTrackedRefOld = NULL;
   gslc_tsElemRef*   pTrackedRefNew = NULL;
-  bool              bGlowingOld = false;
 
   // Fetch the item currently being tracked (if any)
   pTrackedRefOld = gslc_CollectGetElemRefTracked(pGui,pCollect);
-
-  // Fetch current glowing state
-  if (pTrackedRefOld != NULL) {
-    bGlowingOld = gslc_ElemGetGlow(pGui,pTrackedRefOld);
-  }
 
   // Reset the in-tracked flag
   bool  bInTracked = false;
@@ -3025,8 +3014,6 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 
     for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
       pElemRef = &(pCollect->asElemRef[nInd]);
-      // Fetch the element pointer from the reference array
-      gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
 
       // Copy event so we can modify it in the loop
       gslc_tsEvent sEventNew = sEvent;
@@ -3134,8 +3121,6 @@ bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
   bool            bCollectRedraw = false;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-
     // Fetch the element pointer from the reference array
     pSubElemRef = &(pCollect->asElemRef[nInd]);
     if (gslc_ElemGetRedraw(pGui,pSubElemRef) != GSLC_REDRAW_NONE) {
@@ -3283,7 +3268,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
-#ifdef GLSC_COMPOUND
+#ifdef GSLC_FEATURE_COMPOUND
   pElem->pElemRefParent   = NULL;
 #endif
 
@@ -3454,7 +3439,6 @@ gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pColle
   }
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
     // Fetch the element pointer from the reference array
     pElemRef = &(pCollect->asElemRef[nInd]);
     pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -3492,10 +3476,7 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
   uint16_t              nInd;
   bool                  bFound = false;
   gslc_tsElemRef*       pElemRef = NULL;
-  gslc_tsElem*          pElem = NULL;
   gslc_tsElemRef*       pFoundElemRef = NULL;
-  gslc_teElemRefFlags   eFlags;
-  gslc_tsElem           sElemTmp;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     pElemRef  = &(pCollect->asElemRef[nInd]);
