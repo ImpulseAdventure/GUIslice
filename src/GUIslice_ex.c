@@ -122,7 +122,7 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -275,12 +275,12 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
       gslc_ElemXGaugeDrawProgressBar(pGui,pElemRef,eRedraw);
       break;
     case GSLCX_GAUGE_STYLE_RADIAL:
-#ifdef GSLC_FEATURE_XGAUGE_RADIAL
+#if (GSLC_FEATURE_XGAUGE_RADIAL)
       gslc_ElemXGaugeDrawRadial(pGui,pElemRef,eRedraw);
 #endif
       break;
     case GSLCX_GAUGE_STYLE_RAMP:
-#ifdef GSLC_FEATURE_XGAUGE_RAMP
+#if (GSLC_FEATURE_XGAUGE_RAMP)
       gslc_ElemXGaugeDrawRamp(pGui,pElemRef,eRedraw);
 #endif
       break;
@@ -460,7 +460,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   return true;
 }
 
-#ifdef GSLC_FEATURE_XGAUGE_RADIAL
+#if (GSLC_FEATURE_XGAUGE_RAMP)
 void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nArrowLen,uint16_t nArrowSz,int16_t n64Ang,bool bFill,gslc_tsColor colFrame)
 {
   int16_t   nTipX,nTipY;
@@ -741,7 +741,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1126,7 +1126,7 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1451,7 +1451,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 }
 
 
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
 // ============================================================================
 // Extended Element: SelNum
 // - SelNum (Select Number) element demonstrates a simple up/down counter
@@ -1895,7 +1895,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -2305,7 +2305,7 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;

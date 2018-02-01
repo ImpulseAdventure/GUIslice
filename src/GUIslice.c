@@ -130,7 +130,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   }
 
   // Initialize temporary element
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   gslc_ResetElem(&(pGui->sElemTmp));
 #endif
 
@@ -1741,7 +1741,7 @@ gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1779,7 +1779,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1811,7 +1811,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1837,7 +1837,7 @@ gslc_tsElemRef* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1866,7 +1866,7 @@ gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -1893,7 +1893,7 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
     return pElemRef;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
@@ -2433,7 +2433,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     pElemRef->eElemFlags = eFlags;
   }
 
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   // Now propagate up the element hierarchy
   // (eg. in case of compound elements)
 
@@ -2865,7 +2865,7 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 // NOTE: nId is a positive ID specified by the user or
 //       GSLC_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
 // NOTE: When we are creating sub-elements within a compound element,
 //       we usually pass nPageId=GSLC_PAGE_NONE. In this mode we
 //       won't add the element to any page, but just create the
@@ -2892,7 +2892,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   // If we are going to be adding the element to a page then we
   // perform some additional checks
   if (nPageId == GSLC_PAGE_NONE) {
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
     if (nElemId == GSLC_ID_AUTO) {
@@ -3268,7 +3268,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   pElem->pElemRefParent   = NULL;
 #endif
 
@@ -3493,7 +3493,7 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
 }
 
 
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
 // Go through all elements in a collection and set the parent
 // element pointer.
 void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent)

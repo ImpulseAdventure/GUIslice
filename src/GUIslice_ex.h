@@ -53,7 +53,7 @@ typedef enum {
             = GSLC_TYPE_BASE_EXTEND,  // Continue from gslc_teTypeBase enum range
     GSLC_TYPEX_CHECKBOX,    ///< Checkbox extended element
     GSLC_TYPEX_SLIDER,      ///< Slider extended element
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
     GSLC_TYPEX_SELNUM,      ///< SelNum extended element
 #endif
     GSLC_TYPEX_TEXTBOX,     ///< Textbox extended element
@@ -225,7 +225,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 ///
 bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
 
-#ifdef GSLC_FEATURE_XGAUGE_RADIAL
+#if (GSLC_FEATURE_XGAUGE_RADIAL)
 ///
 /// Helper function to draw a gauge with style: radial
 /// - Called from gslc_ElemXGaugeDraw()
@@ -239,6 +239,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
 bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
 #endif
 
+#if (GSLC_FEATURE_XGAUGE_RAMP)
 ///
 /// Helper function to draw a gauge with style: ramp
 /// - Called from gslc_ElemXGaugeDraw()
@@ -250,6 +251,7 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_te
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
+#endif
 
 // ============================================================================
 // Extended Element: Checkbox
@@ -479,7 +481,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
-#ifdef GSLC_FEATURE_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
 // ============================================================================
 // Extended Element: SelNum (Number Selector)
 // - Demonstration of a compound element consisting of

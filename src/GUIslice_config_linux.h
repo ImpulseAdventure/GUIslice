@@ -63,13 +63,13 @@ extern "C" {
 
 // -----------------------------------------------------------------------------------------
 // Enable of optional features
-// - Comment/uncomment these as necessary. For memory-constrained
-//   devices such as Arduino, it is best to leave commented out
-//   unless they are used.
+// - For memory constrained devices such as Arduino, it is best to
+//   set the following features to 0 (to disable) unless they are
+//   required.
 
-#define GSLC_FEATURE_COMPOUND       // Compound elements (eg. XSelNum)
-#define GSLC_FEATURE_XGAUGE_RADIAL  // XGauge control with radial support
-#define GSLC_FEATURE_XGAUGE_RAMP    // XGauge control with ramp support
+#define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
+#define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
+#define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
 
 // -----------------------------------------------------------------------------------------
 
