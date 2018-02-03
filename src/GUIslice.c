@@ -383,6 +383,11 @@ void gslc_Quit(gslc_tsGui* pGui)
 void gslc_Update(gslc_tsGui* pGui)
 {
   #if !defined(DRV_TOUCH_NONE)
+
+  // ---------------------------------------------
+  // Touch handling
+  // ---------------------------------------------
+
   int16_t   nTouchX = 0;
   int16_t   nTouchY = 0;
   uint16_t  nTouchPress = 0;
@@ -428,7 +433,10 @@ void gslc_Update(gslc_tsGui* pGui)
       bDoneEvts = true;
     }
   } while (!bDoneEvts);
+
   #endif // !DRV_TOUCH_NONE
+
+  // ---------------------------------------------
 
   // Issue a timer tick to all pages
   uint8_t nPageInd;
@@ -2634,6 +2642,7 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
   return gslc_IsInRect(nX,nY,pElem->rElem);
 }
 
+#if !defined(DRV_TOUCH_NONE)
 
 // ------------------------------------------------------------------------
 // Tracking Functions
@@ -2641,10 +2650,6 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
 
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
-#if defined(DRV_TOUCH_NONE)
-  return;
-#else
-
   // Fetch the data members of the touch event
   int16_t       nX      = pEventTouch->nX;
   int16_t       nY      = pEventTouch->nY;
@@ -2754,7 +2759,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     }
 
   }
-#endif // !DRV_TOUCH_NONE
+
 }
 
 
@@ -2762,10 +2767,6 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 // and dispatching to the touch event handler for the page
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
-#if defined(DRV_TOUCH_NONE)
-  return;
-#else
-
   if ((pGui == NULL) || (pPage == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -2813,7 +2814,6 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   pGui->nTouchLastX      = nX;
   pGui->nTouchLastY      = nY;
   pGui->nTouchLastPress  = nPress;
-#endif // !DRV_TOUCH_NONE
 }
 
 
@@ -2824,10 +2824,6 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 
 bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 {
-#if defined(DRV_TOUCH_NONE)
-  return false;
-#else
-
   bool bOk;
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "InitTouch";
@@ -2853,16 +2849,11 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
     GSLC_DEBUG_PRINT("ERROR: InitTouch() failed in touch driver init\n",0);
   }
   return bOk;
-#endif // !DRV_TOUCH_NONE
 }
 
 
 bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 {
-#if defined(DRV_TOUCH_NONE)
-  return false;
-#else
-
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "GetTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -2881,9 +2872,9 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 #endif
 
   return false;
-#endif // !DRV_TOUCH_NONE
 }
 
+#endif // !DRV_TOUCH_NONE
 
 // ------------------------------------------------------------------------
 // Private Functions
@@ -3031,11 +3022,15 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
   // Handle any collection-based events first
   // ...
   if (sEvent.eType == GSLC_EVT_TOUCH) {
+    #if defined(DRV_TOUCH_NONE)
+    return false;
+    #else
     // TOUCH is passed to CollectTouch which determines the element
     // in the collection that should receive the event
     gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
     gslc_CollectTouch(pGui,pCollect,pEventTouch);
     return true;
+    #endif  // !DRV_TOUCH_NONE
 
   } else if ( (sEvent.eType == GSLC_EVT_DRAW) || (sEvent.eType == GSLC_EVT_TICK) ) {
     // DRAW and TICK are propagated down to all elements in collection

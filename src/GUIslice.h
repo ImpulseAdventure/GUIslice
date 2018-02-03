@@ -1960,6 +1960,8 @@ void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_
 bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
 
 
+#if !defined(DRV_TOUCH_NONE)
+
 /// Handle touch events within the element collection
 ///
 /// \param[in]  pGui:         Pointer to the GUI
@@ -2023,7 +2025,7 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
 ///
 bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress);
 
-
+#endif // !DRV_TOUCH_NONE
 
 // ------------------------------------------------------------------------
 // Private Functions
