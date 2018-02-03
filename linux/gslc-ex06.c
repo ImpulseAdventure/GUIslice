@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 06 (LINUX):
 //     Example of clipping plus draw and tick callback function
 //
@@ -90,13 +91,14 @@ static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 // - The scanner implements a custom element that replaces
 //   the Box element type with a custom rendering function.
 // - Clipping region is updated temporarily during this draw
-bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
+bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   int nInd;
 
   // Typecast the parameters to match the GUI and element types
-  gslc_tsGui*   pGui  = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*  pElem = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Create shorthand variables for the origin
   uint16_t  nX = pElem->rElem.x + m_nOriginX;
@@ -131,7 +133,7 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
 
   // Clear the redraw flag
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
 
   return true;
 }
@@ -142,8 +144,9 @@ bool CbDrawScanner(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw)
 //   origin of the view which will shift the display
 bool CbTickScanner(void* pvGui,void* pvScope)
 {
-  //gslc_tsGui*  pGui  = (gslc_tsGui*)(pvGui);
-  gslc_tsElem* pElem = (gslc_tsElem*)(pvScope);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvScope);
+  //gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   m_fCoordX = 50+25.0*(sin(m_nCount/250.0));
   m_fCoordY = 50+15.0*(cos(m_nCount/175.0));
@@ -155,13 +158,13 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 
   // Manually mark the scanner element as needing redraw
   // since we have shifted its relative coordinates (via origin)
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 
   return true;
 }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -173,7 +176,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // - strPath: Path to executable passed in to locate resource files
 bool InitOverlays(char *strPath)
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -184,87 +187,87 @@ bool InitOverlays(char *strPath)
   // - Extra code to demonstrate path generation based on location of executable
   strncpy(m_strImgLogo,strPath,MAX_PATH);
   strncat(m_strImgLogo,IMG_LOGO,MAX_PATH);
-  pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
+  pElemRef = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
     gslc_GetImageFromFile(m_strImgLogo,GSLC_IMGREF_FMT_BMP16));
 
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){40,210,50,20},"QUIT",0,E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     "Searches:",0,E_FONT_TXT);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     "",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
 
   // Create progress bar
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",0,E_FONT_TXT);
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
+  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){80,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
 
   // Create other labels
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,100,50,10},
     "Coord X:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,50,10},
     "",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,120,50,10},
     "Coord Y:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,50,10},
     "",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,140,50,10},
     "Coord Z:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,50,10},
     "",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,170,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,170,50,10},
     "Control:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_ORANGE);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
 
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,170,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){110,170,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){110,170,50,10},
     "Enable",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT1);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){120,210,170,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){120,210,170,20},
     "Example of GUIslice C library",0,E_FONT_BTN);
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_LEFT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_RED_LT2);
-  gslc_ElemSetFillEn(pElem,false);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_LEFT);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED_LT2);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   // --------------------------------------------------------------------------
   // Create scanner
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190-1-2,75-1-12,100+2+4,100+2+10+4});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190-1-2,75-1-12,100+2+4,100+2+10+4});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,75-11,100,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,75-11,100,10},
     "SCANNER",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_DK2);
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK2);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
 
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_tsRect){190-1,75-1,100+2,100+2});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_SCAN,E_PG_MAIN,(gslc_tsRect){190-1,75-1,100+2,100+2});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK);
   // Set the callback function to handle all drawing for the element
-  gslc_ElemSetDrawFunc(pElem,&CbDrawScanner);
+  gslc_ElemSetDrawFunc(&m_gui,pElemRef,&CbDrawScanner);
   // Set the callback function to update content automatically
-  gslc_ElemSetTickFunc(pElem,&CbTickScanner);
+  gslc_ElemSetTickFunc(&m_gui,pElemRef,&CbTickScanner);
 
   // --------------------------------------------------------------------------
 
@@ -297,11 +300,11 @@ int main( int argc, char* args[] )
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
   // Save some element references for quick access
-  gslc_tsElem*  pElemCount      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-  gslc_tsElem*  pElemDataX      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAX);
-  gslc_tsElem*  pElemDataY      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAY);
-  gslc_tsElem*  pElemDataZ      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAZ);
-  gslc_tsElem*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
+  gslc_tsElemRef*  pElemCount      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+  gslc_tsElemRef*  pElemDataX      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAX);
+  gslc_tsElemRef*  pElemDataY      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAY);
+  gslc_tsElemRef*  pElemDataZ      = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_DATAZ);
+  gslc_tsElemRef*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
 
   // -----------------------------------
   // Main event loop
@@ -316,17 +319,17 @@ int main( int argc, char* args[] )
 
     // Perform any immediate updates on active page
     snprintf(acTxt,MAX_STR,"%u",m_nCount);
-    gslc_ElemSetTxtStr(pElemCount,acTxt);
+    gslc_ElemSetTxtStr(&m_gui,pElemCount,acTxt);
 
     snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordX-50);
-    gslc_ElemSetTxtStr(pElemDataX,acTxt);
+    gslc_ElemSetTxtStr(&m_gui,pElemDataX,acTxt);
     snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordY-50);
-    gslc_ElemSetTxtStr(pElemDataY,acTxt);
+    gslc_ElemSetTxtStr(&m_gui,pElemDataY,acTxt);
     snprintf(acTxt,MAX_STR,"%4.2f",m_fCoordZ);
-    gslc_ElemSetTxtStr(pElemDataZ,acTxt);
-    gslc_ElemSetTxtCol(pElemDataZ,(m_fCoordY>50)?GSLC_COL_GREEN_LT2:GSLC_COL_RED_DK2);
+    gslc_ElemSetTxtStr(&m_gui,pElemDataZ,acTxt);
+    gslc_ElemSetTxtCol(&m_gui,pElemDataZ,(m_fCoordY>50)?GSLC_COL_GREEN_LT2:GSLC_COL_RED_DK2);
 
-    gslc_ElemXGaugeUpdate(pElemProgress,50+50*sin(m_nCount/500.0));
+    gslc_ElemXGaugeUpdate(&m_gui,pElemProgress,50+50*sin(m_nCount/500.0));
 
     // -----------------------------------------------
 

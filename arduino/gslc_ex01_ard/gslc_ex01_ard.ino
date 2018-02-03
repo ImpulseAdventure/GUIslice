@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 01 (Arduino):
 //   - Display a box
 //   - No touchscreen required
@@ -33,7 +34,7 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 void setup()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   // Initialize debug output
   Serial.begin(9600);
@@ -49,8 +50,8 @@ void setup()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create page elements
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);

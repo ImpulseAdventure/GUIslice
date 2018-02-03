@@ -1,7 +1,8 @@
 ##
-## Makefile for GUIslice library
+## Makefile for GUIslice library - LINUX
 ## - Calvin Hass
-## - http://www.impulseadventure.com/elec/guislice-gui.html
+## - https://www.impulseadventure.com/elec/guislice-gui.html
+## - https://github.com/ImpulseAdventure/GUIslice
 ##
 ## NOTE: This Makefile handles both SDL1.2 and SDL2 compilation.
 ##       A simpler Makefile can be used if this flexibility is
@@ -13,7 +14,7 @@ INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 LDFLAGS = -L/usr/local/lib
 
-GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config.h
+GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config_linux.h
 
 # ---------------------------------------------------------------------------
 # Define compiler flags for GUIslice
@@ -81,7 +82,7 @@ OBJ = $(SRC:.c=.o)
 BINS = $(SRC:.c=)
 
 all: $(BINS)
- 
+
 clean:
 	@echo "Cleaning directory..."
 	$(RM) $(BINS)
@@ -94,7 +95,7 @@ test-sdl1: test-sdl1.c
 test-sdl2: test-sdl2.c
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ test-sdl2.c $(LDFLAGS) -lSDL2
-	
+
 gslc-ex01: gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src

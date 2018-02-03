@@ -1,8 +1,9 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
-// - Example 08: Radio control
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
+// - Example 08: Radio station tuner
 //
 
 #include "GUIslice.h"
@@ -76,7 +77,7 @@ void UserInitEnv()
 }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -87,87 +88,78 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // Create page elements
 bool InitOverlays(char *strBasePath)
 {
-  gslc_tsElem*  pElem = NULL;
-  gslc_tsElem*  pElemSrc = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
+  gslc_tsElemRef*  pElemRefSrc = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   // Background gradient
   strncpy(m_strImgGradBack,strBasePath,MAX_PATH);
   strncat(m_strImgGradBack,IMG_GRAD_BACK,MAX_PATH);
-  gslc_SetBkgndImage(&m_gui,gslc_GetImageFromFile(&m_gui,m_strImgGradBack,GSLC_IMGREF_FMT_BMP16));
+  gslc_SetBkgndImage(&m_gui,gslc_GetImageFromFile(m_strImgGradBack,GSLC_IMGREF_FMT_BMP16));
 
   // Top & Bottom gradient bars
   strncpy(m_strImgGradBarTop,strBasePath,MAX_PATH);
   strncat(m_strImgGradBarTop,IMG_GRADBAR_TOP,MAX_PATH);
-  pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,28},
-          gslc_GetImageFromFile(&m_gui,m_strImgGradBarTop,GSLC_IMGREF_FMT_BMP16));
+  pElemRef = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,28},
+          gslc_GetImageFromFile(m_strImgGradBarTop,GSLC_IMGREF_FMT_BMP16));
 
   strncpy(m_strImgGradBarBot,strBasePath,MAX_PATH);
   strncat(m_strImgGradBarBot,IMG_GRADBAR_BOT,MAX_PATH);
-  pElem = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,240-28,320,28},
-          gslc_GetImageFromFile(&m_gui,m_strImgGradBarBot,GSLC_IMGREF_FMT_BMP16));
+  pElemRef = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,240-28,320,28},
+          gslc_GetImageFromFile(m_strImgGradBarBot,GSLC_IMGREF_FMT_BMP16));
 
   // Status bar
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,28,320,20});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLACK,(gslc_tsColor){59,58,120},GSLC_COL_BLACK);
-  gslc_ElemSetFrameEn(pElem,false);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,28,320,20});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLACK,(gslc_tsColor){59,58,120},GSLC_COL_BLACK);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,28,50,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,28,50,20},
           "RADIO",0,E_FONT_HEAD);
-  gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetFrameEn(pElem,false);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
 
   // Create Quit button with text label
-#if(1)
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,28,50,20},"QUIT",0,E_FONT_BTN,&CbBtnQuit);
-    //xxx (gslc_tsRect){250,28,50,20},"",E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetFrameEn(pElem,false);
-  gslc_ElemSetGlowEn(pElem,true);
-  //xxx gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_LT1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_RED);
-  gslc_ElemSetGlowCol(pElem,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_COL_WHITE);
-#else
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,28,50,20},"QUIT",0,E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-#endif
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
+  gslc_ElemSetGlowEn(&m_gui,pElemRef,true);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED);
+  gslc_ElemSetGlowCol(&m_gui,pElemRef,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_COL_WHITE);
+
 
   // Currently playing background
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,57,177,85});
-  gslc_ElemSetCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){59,58,120},GSLC_COL_BLACK);
-  gslc_ElemSetFrameEn(pElem,true);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,57,177,85});
+  gslc_ElemSetCol(&m_gui,pElemRef,(gslc_tsColor){181,200,245},(gslc_tsColor){59,58,120},GSLC_COL_BLACK);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
 
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,80,177,1});
-  gslc_ElemSetCol(pElem,GSLC_COL_BLACK,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
-  gslc_ElemSetFrameEn(pElem,false);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,80,177,1});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLACK,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,57,177,80-57},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,57,177,80-57},
           "Now Playing",0,E_FONT_HEAD);
-  gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetFrameEn(pElem,false);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_BLUE_LT3);
-  gslc_ElemSetTxtMargin(pElem,5);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT3);
+  gslc_ElemSetTxtMargin(&m_gui,pElemRef,5);
 
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,80,177,85-(80-57)},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){9,80,177,85-(80-57)},
           "93.5 FM",0,E_FONT_TITLE);
-  gslc_ElemSetFillEn(pElem,false);
-  gslc_ElemSetFrameEn(pElem,false);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
 
   // Presets background
-  pElem = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,57,117,115});
-  //xxx gslc_ElemSetCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){59,58,120},GSLC_COL_BLACK);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK);
-  gslc_ElemSetFrameEn(pElem,true);
-  gslc_ElemSetFillEn(pElem,false);
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){190,57,117,115});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   // Control buttons
   int nCtrlStartY = 148;
@@ -183,55 +175,51 @@ bool InitOverlays(char *strBasePath)
   nCtrlY = nCtrlStartY;
 
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN1,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN1,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"<<",0,E_FONT_BTN,NULL);
-  //xxx gslc_ElemSetCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){59,58,120},(gslc_tsColor){0,0,224});
-  //xxx gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  //xxx gslc_ElemSetGlowCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){0,0,224},GSLC_COL_YELLOW);
-
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  gslc_ElemSetGlowCol(pElem,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK1,GSLC_COL_YELLOW);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  gslc_ElemSetGlowCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK1,GSLC_COL_YELLOW);
 
   nCtrlX += (nCtrlW + nCtrlGapW);
-  pElemSrc = pElem;
+  pElemRefSrc = pElemRef;
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN2,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN2,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"BAND",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN3,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN3,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},">>",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
   nCtrlX = nCtrlStartX;
   nCtrlY += (nCtrlH + nCtrlGapH);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN4,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN4,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"Search",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN5,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN5,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"EQ",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN6,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN6,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"Bal",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN7,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN7,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"Source",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN8,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN8,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"Connect",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlX += (nCtrlW + nCtrlGapW);
 
   // Preset Buttons
@@ -243,42 +231,36 @@ bool InitOverlays(char *strBasePath)
   nCtrlX = nCtrlStartX;
   nCtrlY = nCtrlStartY;
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P1,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P1,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"88.1",0,E_FONT_BTN,NULL);
-  gslc_ElemSetFrameEn(pElem,false);
-  //xxx gslc_ElemSetCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){59,58,120},(gslc_tsColor){0,0,224});
-
-  //xxx gslc_ElemSetCol(pElem,(gslc_tsColor){120,129,182},(gslc_tsColor){59,58,120},(gslc_tsColor){0,0,224});
-  //xxx gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  //xxx gslc_ElemSetGlowCol(pElem,(gslc_tsColor){181,200,245},(gslc_tsColor){0,0,224},GSLC_COL_YELLOW);
-
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
-  gslc_ElemSetGlowCol(pElem,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK1,GSLC_COL_YELLOW);
+  gslc_ElemSetFrameEn(&m_gui,pElemRef,false);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  gslc_ElemSetGlowCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT4,GSLC_COL_BLUE_DK1,GSLC_COL_YELLOW);
 
 
   nCtrlY += (nCtrlH + nCtrlGapH);
-  pElemSrc = pElem;
+  pElemRefSrc = pElemRef;
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P2,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P2,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"93.5",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
-  gslc_ElemSetGlow(pElem,true); //xxx HACK: Show selected
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
+  gslc_ElemSetGlow(&m_gui,pElemRef,true); //xxx HACK: Show selected
   nCtrlY += (nCtrlH + nCtrlGapH);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P3,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P3,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"97.3",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlY += (nCtrlH + nCtrlGapH);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P4,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P4,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"102.7",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlY += (nCtrlH + nCtrlGapH);
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P5,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_P5,E_PG_MAIN,
     (gslc_tsRect){nCtrlX,nCtrlY,nCtrlW,nCtrlH},"105.9",0,E_FONT_BTN,NULL);
-  gslc_ElemSetStyleFrom(pElemSrc,pElem);
+  gslc_ElemSetStyleFrom(&m_gui,pElemRefSrc,pElemRef);
   nCtrlY += (nCtrlH + nCtrlGapH);
 
   return true;

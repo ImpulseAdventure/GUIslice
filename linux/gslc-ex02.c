@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 02: Accept touch input, text button
 //
 
@@ -61,7 +62,7 @@ void UserInitEnv()
 static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -71,8 +72,8 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 
 int main( int argc, char* args[] )
 {
-  bool          bOk = true;
-  gslc_tsElem*  pElem = NULL;
+  bool              bOk = true;
+  gslc_tsElemRef*   pElemRef = NULL;
 
   // -----------------------------------
   // Initialize
@@ -93,11 +94,11 @@ int main( int argc, char* args[] )
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){120,100,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------

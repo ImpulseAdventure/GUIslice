@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 02 (Arduino): [minimum RAM version]
 //   - Accept touch input, text button
 //   - Demonstrates the use of ElemCreate*_P() functions.
@@ -55,7 +56,7 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References 
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -66,7 +67,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 void setup()
 {
   bool          bOk = true;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   // Initialize debug output
   Serial.begin(9600);
@@ -87,7 +88,7 @@ void setup()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,E_ELEM_BOX,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,E_ELEM_BOX,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create Quit button with text label
   gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,120,100,80,40,"Quit",&m_asFont[0],

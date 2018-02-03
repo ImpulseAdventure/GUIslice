@@ -1,9 +1,10 @@
 // =======================================================================
 // GUIslice library
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.9.3    (2018/01/13)
+// - Version 0.10.0   (2018/02/03)
 // =======================================================================
 //
 // The MIT License
@@ -30,13 +31,20 @@
 //
 // =======================================================================
 
-// Other contributions:
-// - [2017/08/29]: Added Adafruit HX8357 support. Only change was to conditionally exclude time.h [by ALittleSlow]
-
-// =======================================================================
 
 // GUIslice library
-#include "GUIslice_config.h"
+
+// Import user configuration depending on device type
+#if defined(__linux__)
+  #include "GUIslice_config_linux.h"
+#elif defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
+  #include "GUIslice_config_ard.h"
+#elif defined(ESP8266) || defined(ESP32)
+  #include "GUIslice_config_esp.h"
+#else
+  #error "Unknown device platform"
+#endif
+
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
@@ -52,15 +60,13 @@
 #endif
 
 #if (GSLC_USE_PROGMEM)
-#include <avr/pgmspace.h>   // For memcpy_P()
-#else
-#define memcpy_P        memcpy
+  #include <avr/pgmspace.h>   // For memcpy_P()
 #endif
 
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.9.3"
+#define GUISLICE_VER "0.10.0"
 
 
 // ========================================================================
@@ -73,6 +79,16 @@ GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
 
 // Forward declaration for trigonometric lookup table
 extern uint16_t  m_nLUTSinF0X16[257];
+
+
+// ------------------------------------------------------------------------
+// Error Strings
+// - These strings are generally stored in FLASH memory if possible
+// ------------------------------------------------------------------------
+
+const char GSLC_PMEM ERRSTR_NULL[]      = "ERROR: %z() called with NULL ptr\n";
+const char GSLC_PMEM ERRSTR_PXD_NULL[]  = "ERROR: %z() pXData NULL\n";
+
 
 // ------------------------------------------------------------------------
 // General Functions
@@ -94,7 +110,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nDispDepth      = 0;
 
   #if defined( DRV_DISP_ADAGFX ) || defined( DRV_DISP_TFT_ESPI )
-    pGui->nRotation		= ADAGFX_ROTATE;
+    pGui->nRotation		= GSLC_ROTATE;
     pGui->nSwapXY		= ADATOUCH_SWAP_XY;
     pGui->nFlipX		= ADATOUCH_FLIP_X;
     pGui->nFlipY		= ADATOUCH_FLIP_Y;
@@ -116,7 +132,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   }
 
   // Initialize temporary element
+#if (GSLC_FEATURE_COMPOUND)
   gslc_ResetElem(&(pGui->sElemTmp));
+#endif
 
 
   // Last touch event
@@ -143,7 +161,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   // Initialize the display and touch drivers
   if (bOk) { bOk &= gslc_DrvInit(pGui); }
+  #if !defined(DRV_TOUCH_NONE)
   if (bOk) { bOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH); }
+  #endif
 
   if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
   return bOk;
@@ -161,16 +181,18 @@ typedef enum {
   GSLC_DEBUG_PRINT_NORM,
   GSLC_DEBUG_PRINT_TOKEN,
   GSLC_DEBUG_PRINT_UINT16,
-  GSLC_DEBUG_PRINT_STR
+  GSLC_DEBUG_PRINT_STR,
+  GSLC_DEBUG_PRINT_STR_P
 } gslc_teDebugPrintState;
 
 // A lightweight printf() routine that calls user function for
 // character output (enabling redirection to Serial). Only
 // supports the following tokens:
-// - %u (16-bit unsigned int) [see NOTE]
-// - %d (16-bit signed int)
-// - %s (null-terminated string)
-// This routine also supports format strings located in Flash
+// - %u (16-bit unsigned int in RAM) [see NOTE]
+// - %d (16-bit signed int in RAM)
+// - %s (null-terminated string in RAM)
+// - %z (null-terminated string in FLASH)
+// Format strings are expected to be in FLASH if GSLC_USE_PROGMEM enabled
 // NOTE:
 // - Due to the way variadic arguments are passed, we can't pass uint16_t on Arduino
 //   as the parameters are promoted to "int" (ie. int16_t). Passing a value over 32767
@@ -249,6 +271,10 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         } else if (cFmt == 's') {
           nState = GSLC_DEBUG_PRINT_STR;
           pStr = va_arg(vlist,char*);
+
+        } else if (cFmt == 'z') {
+          nState = GSLC_DEBUG_PRINT_STR_P;
+          pStr = va_arg(vlist,char*);
         } else {
           // ERROR
         }
@@ -260,6 +286,21 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           (g_pfDebugOut)(cOut);
           pStr++;
         }
+        nState = GSLC_DEBUG_PRINT_NORM;
+        // Don't advance format string index
+
+      } else if (nState == GSLC_DEBUG_PRINT_STR_P) {
+        do {
+          #if (GSLC_USE_PROGMEM)
+          cOut = pgm_read_byte(pStr);
+          #else
+          cOut = *pStr;
+          #endif
+          if (cOut != 0) {
+            (g_pfDebugOut)(cOut);
+            pStr++;
+          }
+        } while (cOut != 0);
         nState = GSLC_DEBUG_PRINT_NORM;
         // Don't advance format string index
 
@@ -324,6 +365,14 @@ void gslc_DebugPrintf(const char* pFmt, ...)
 
 }
 
+// ------------------------------------------------------------------------
+// Error strings
+// ------------------------------------------------------------------------
+extern const char ERRSTR_NULL[];
+
+// ------------------------------------------------------------------------
+
+
 void gslc_Quit(gslc_tsGui* pGui)
 {
   // Close all elements and fonts
@@ -333,6 +382,12 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
+  #if !defined(DRV_TOUCH_NONE)
+
+  // ---------------------------------------------
+  // Touch handling
+  // ---------------------------------------------
+
   int16_t   nTouchX = 0;
   int16_t   nTouchY = 0;
   uint16_t  nTouchPress = 0;
@@ -379,12 +434,16 @@ void gslc_Update(gslc_tsGui* pGui)
     }
   } while (!bDoneEvts);
 
+  #endif // !DRV_TOUCH_NONE
+
+  // ---------------------------------------------
+
   // Issue a timer tick to all pages
   uint8_t nPageInd;
   gslc_tsPage* pPage = NULL;
   for (nPageInd=0;nPageInd<pGui->nPageCnt;nPageInd++) {
     pPage = &pGui->asPage[nPageInd];
-    gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TICK,0,(void*)pPage,NULL);
+    gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TICK,0,(void*)pPage,NULL);
     gslc_PageEvent(pGui,sEvent);
   }
 
@@ -404,10 +463,9 @@ void gslc_Update(gslc_tsGui* pGui)
   }
   #endif
 
-
 }
 
-gslc_tsEvent  gslc_EventCreate(gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData)
+gslc_tsEvent  gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData)
 {
   gslc_tsEvent      sEvent;
   sEvent.eType      = eType;
@@ -433,7 +491,7 @@ bool gslc_IsInRect(int16_t nSelX,int16_t nSelY,gslc_tsRect rRect)
   }
 }
 
-bool gslc_IsInWH(gslc_tsGui* pGui,int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight)
+bool gslc_IsInWH(int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight)
 {
   if ( (nSelX >= 0) && (nSelX <= nWidth-1) &&
      (nSelY >= 0) && (nSelY <= nHeight-1) ) {
@@ -612,14 +670,14 @@ gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt)
 gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
 {
   gslc_tsImgRef sImgRef;
-#if (ADAGFX_SD_EN)
+#if (GSLC_SD_EN)
   sImgRef.eImgFlags = GSLC_IMGREF_SRC_SD | (GSLC_IMGREF_FMT & eFmt);
   sImgRef.pFname    = pFname;
   sImgRef.pImgBuf   = NULL;
   sImgRef.pvImgRaw  = NULL;
 #else
   // TODO: Change message to also handle non-Arduino output
-  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:ADAGFX_SD_EN=0\n","");
+  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
   sImgRef.eImgFlags = GSLC_IMGREF_NONE;
 #endif
   return sImgRef;
@@ -1301,7 +1359,8 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId)
 bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageEvent(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "PageEvent";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   //gslc_tsGui*       pGui        = (gslc_tsGui*)(pvGui);
@@ -1428,20 +1487,19 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
   int               nInd;
   gslc_tsElem*      pElem = NULL;
+  gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
 
   // Only work on current page
   pCollect = pGui->pCurPageCollect;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM need to be checked for changes
-    if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
-      continue;
-    }
-    pElem = pCollect->asElemRef[nInd].pElem;
-
-    if (pElem->eRedraw != GSLC_REDRAW_NONE) {
+    pElemRef = &pCollect->asElemRef[nInd];
+    gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+    //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
+    //        (eFlags & GSLC_ELEMREF_REDRAW_MASK),eFlags,pElem->nFeatures);
+    if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) != GSLC_ELEMREF_REDRAW_NONE) {
 
       // Determine if entire page requires redraw
       bool  bRedrawFullPage = false;
@@ -1506,7 +1564,7 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   // TODO: Handle GSLC_EVTSUB_DRAW_NEEDED
   uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
   void* pvData = (void*)(pGui->pCurPage);
-  gslc_tsEvent  sEvent = gslc_EventCreate(GSLC_EVT_DRAW,nSubType,pvData,NULL);
+  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
   gslc_PageEvent(pGui,sEvent);
 
 
@@ -1574,10 +1632,10 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId)
   return pFoundPage;
 }
 
-gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
+gslc_tsElemRef* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 {
-  gslc_tsPage*  pPage = NULL;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsPage*    pPage = NULL;
+  gslc_tsElemRef* pElemRef = NULL;
 
   // Get the page
   pPage = gslc_PageFindById(pGui,nPageId);
@@ -1585,16 +1643,16 @@ gslc_tsElem* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nEle
     GSLC_DEBUG_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
     return NULL;
   }
-  // Find the element in the page's element collection
-  pElem = gslc_CollectFindElemById(&pPage->sCollect,nElemId);
-  return pElem;
+  // Find the element reference in the page's element collection
+  pElemRef = gslc_CollectFindElemById(pGui,&pPage->sCollect,nElemId);
+  return pElemRef;
 }
 
-
-void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
+void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
 {
   if ((pPage == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: PageSetEventFunc() called with NULL ptr\n",0);
+    static const char GSLC_PMEM FUNCSTR[] = "PageSetEventFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pPage->pfuncXEvent       = funcCb;
@@ -1605,9 +1663,74 @@ void gslc_PageSetEventFunc(gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
 // ------------------------------------------------------------------------
 
 
-int gslc_ElemGetId(gslc_tsElem* pElem)
+int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   return pElem->nId;
+}
+
+
+// Get a flag from an element reference
+// Note that the flag remains aligned to the position within the flags bitfield
+uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask)
+{
+  if (!pElemRef) {
+    static const char GSLC_PMEM FUNCSTR[] = "GetElemRefFlag";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return 0;
+  }
+  return pElemRef->eElemFlags & nFlagMask;
+}
+
+// Set a flag in an element reference
+// Note that the nFlagVal must be aligned to the nFlagMask
+void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal)
+{
+  if (!pElemRef) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetElemRefFlag";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  uint8_t nCurFlags = pElemRef->eElemFlags;
+  uint8_t nNewFlags = (nCurFlags & ~nFlagMask) | nFlagVal;
+  pElemRef->eElemFlags = nNewFlags;
+}
+
+// Returns a pointer to an element from an element reference
+// - Handle caching from FLASH if element is accessed via PROGMEM
+gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  if (!pElemRef) {
+    static const char GSLC_PMEM FUNCSTR[] = "GetElemFromRef";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return NULL;
+  }
+  gslc_teElemRefFlags eFlags  = pElemRef->eElemFlags;
+  gslc_tsElem*        pElem   = pElemRef->pElem;
+
+  // If the element is in FLASH and requires PROGMEM to access
+  // then cache it locally and return a pointer to the global
+  // temporary element instead so that further accesses can
+  // be direct.
+  if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
+    // TODO: Optimize by checking to see if we already cached this element
+    // - Can probably do this by comparing the bValid and nId
+    #if (GSLC_USE_PROGMEM)
+    memcpy_P(&pGui->sElemTmpProg,pElem,sizeof(gslc_tsElem));
+    pElem = &pGui->sElemTmpProg;
+    #endif
+  } else if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_CONST) {
+    // We are running on device that may support FLASH storage
+    // simply by using a const declaration. No special
+    // PROGMEM access mechanism is required, therefore it is
+    // not necessary to copy to the temporary RAM element.
+    // An example device using this mode is Cortex-M0.
+    // No explicit copy from FLASH is required.
+  } else {
+    // SRC_ELEMREF_SRC_RAM
+    // No copy required
+  }
+  return pElem;
 }
 
 
@@ -1615,11 +1738,11 @@ int gslc_ElemGetId(gslc_tsElem* pElem)
 // Element Creation Functions
 // ------------------------------------------------------------------------
 
-gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem,
+gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem,
   char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem       sElem;
+  gslc_tsElemRef*   pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_TXT,rElem,pStrBuf,nStrBufMax,nFontId);
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
@@ -1630,20 +1753,24 @@ gslc_tsElem* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,g
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.eTxtAlign         = GSLC_ALIGN_MID_LEFT;
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
-gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId,GSLC_CB_TOUCH cbTouch)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem     sElem;
+  gslc_tsElemRef* pElemRef = NULL;
 
   // Ensure the Font has been defined
   if (gslc_FontGet(pGui,nFontId) == NULL) {
@@ -1664,21 +1791,24 @@ gslc_tsElem* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
-
-gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsRect rElem,gslc_tsImgRef sImgRef,gslc_tsImgRef sImgRefSel,GSLC_CB_TOUCH cbTouch)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem     sElem;
+  gslc_tsElemRef* pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
@@ -1689,22 +1819,28 @@ gslc_tsElem* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
-  gslc_ElemSetImage(pGui,&sElem,sImgRef,sImgRefSel);
+  // Update the normal and glowing images
+  gslc_DrvSetElemImageNorm(pGui,&sElem,sImgRef);
+  gslc_DrvSetElemImageGlow(pGui,&sElem,sImgRefSel);
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
 
-gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem)
+gslc_tsElemRef* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,gslc_tsRect rElem)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem     sElem;
+  gslc_tsElemRef* pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
@@ -1713,20 +1849,24 @@ gslc_tsElem* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,g
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
-gslc_tsElem* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1)
+gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
-  gslc_tsRect   rRect;
+  gslc_tsElem     sElem;
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsRect     rRect;
   rRect.x = nX0;
   rRect.y = nY0;
   rRect.w = nX1 - nX0 + 1;
@@ -1738,32 +1878,43 @@ gslc_tsElem* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FILL_EN;   // Disable boundary box fill
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;  // Disable boundary box frame
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
-gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsRect rElem,gslc_tsImgRef sImgRef)
 {
-  gslc_tsElem   sElem;
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElem     sElem;
+  gslc_tsElemRef* pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.nFeatures      &= ~GSLC_ELEM_FEA_FRAME_EN;
   sElem.nFeatures      &= ~GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures      &= ~GSLC_ELEM_FEA_CLICK_EN;
-  gslc_ElemSetImage(pGui,&sElem,sImgRef,sImgRef);
+  // Update the normal and glowing images
+  gslc_DrvSetElemImageNorm(pGui,&sElem,sImgRef);
+  gslc_DrvSetElemImageGlow(pGui,&sElem,sImgRef);
+
   if (nPage != GSLC_PAGE_NONE) {
-    pElem = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
-    return pElem;
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    return pElemRef;
+#if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
-    return &(pGui->sElemTmp);
+    pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    return &(pGui->sElemRefTmp);
+#endif
   }
 }
 
@@ -1776,29 +1927,35 @@ gslc_tsElem* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
 bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemEvent(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemEvent";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
-  gslc_tsGui*         pGui          = (gslc_tsGui*)(pvGui);
-  void*               pvData        = sEvent.pvData;
-  void*               pvScope       = sEvent.pvScope;
-  gslc_tsElem*        pElem         = NULL;
-  gslc_tsElem*        pElemTracked  = NULL;
-  gslc_tsEventTouch*  pTouchRec     = NULL;
+  gslc_tsGui*         pGui              = (gslc_tsGui*)(pvGui);
+  void*               pvData            = sEvent.pvData;
+  void*               pvScope           = sEvent.pvScope;
+  gslc_tsElemRef*     pElemRef          = NULL;
+  gslc_tsElemRef*     pElemRefTracked   = NULL;
+  gslc_tsElem*        pElem             = NULL;
+  gslc_tsElem*        pElemTracked      = NULL;
+  gslc_tsEventTouch*  pTouchRec         = NULL;
   int                 nRelX,nRelY;
   gslc_teTouch        eTouch;
-  GSLC_CB_TOUCH       pfuncXTouch   = NULL;
+  GSLC_CB_TOUCH       pfuncXTouch       = NULL;
+  GSLC_CB_TICK        pfuncXTick        = NULL;
 
   switch(sEvent.eType) {
     case GSLC_EVT_DRAW:
       // Fetch the parameters
-      pElem = (gslc_tsElem*)(pvScope);
+      pElemRef = (gslc_tsElemRef*)(pvScope);
 
-      // If redraw needed, call the function that invokes the callback
+      // Determine if redraw is needed
+      gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
+
       if (sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) {
-        return gslc_ElemDrawByRef(pGui,pElem,GSLC_REDRAW_FULL);
-      } else if (pElem->eRedraw != GSLC_REDRAW_NONE) {
-        return gslc_ElemDrawByRef(pGui,pElem,pElem->eRedraw);
+        return gslc_ElemDrawByRef(pGui,pElemRef,GSLC_REDRAW_FULL);
+      } else if (eRedraw != GSLC_REDRAW_NONE) {
+        return gslc_ElemDrawByRef(pGui,pElemRef,eRedraw);
       } else {
         // No redraw needed
         return true;
@@ -1806,29 +1963,42 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       break;
 
     case GSLC_EVT_TOUCH:
+      #if !defined(DRV_TOUCH_NONE)
       // Fetch the parameters
+      pElemRef = (gslc_tsElemRef*)(pvScope);
       pTouchRec = (gslc_tsEventTouch*)(pvData);
-      pElemTracked = (gslc_tsElem*)(pvScope);
+      pElemRefTracked = pElemRef;
+      pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
       nRelX = pTouchRec->nX - pElemTracked->rElem.x;
       nRelY = pTouchRec->nY - pElemTracked->rElem.y;
       eTouch = pTouchRec->eTouch;
+
+      // Since we are going to use the callback within the element
+      // we need to ensure it is cached in RAM first
+      pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
       pfuncXTouch = pElemTracked->pfuncXTouch;
 
       // Invoke the callback function
       if (pfuncXTouch != NULL) {
         // Pass in the relative position from corner of element region
-        (*pfuncXTouch)(pvGui,(void*)(pElemTracked),eTouch,nRelX,nRelY);
+        (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
+      #endif // !DRV_TOUCH_NONE
       break;
 
     case GSLC_EVT_TICK:
       // Fetch the parameters
-      pElem = (gslc_tsElem*)(pvScope);
+      pElemRef = (gslc_tsElemRef*)(pvScope);
+
+      // Since we are going to use the callback within the element
+      // we need to ensure it is cached in RAM first
+      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+      pfuncXTick = pElem->pfuncXTick;
 
       // Invoke the callback function
-      if (pElem->pfuncXTick != NULL) {
+      if (pfuncXTick != NULL) {
         // TODO: Confirm that tick functions want pvScope
-        (*pElem->pfuncXTick)(pvGui,(void*)(pElem));
+        (*pfuncXTick)(pvGui,(void*)(pElemRef));
         return true;
       }
       break;
@@ -1850,25 +2020,28 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 //   drawing callbacks
 void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 {
-  gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
-  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)pElem,NULL);
+  gslc_tsElemRef* pElemRef = gslc_PageFindElemById(pGui,nPageId,nElemId);
+  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)pElemRef,NULL);
   gslc_ElemEvent(pGui,sEvent);
 }
 
 // Draw an element to the active display
 // - Element is referenced by an element pointer
 // - TODO: Handle GSLC_TYPE_BKGND
-bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
+bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw)
 {
   if (eRedraw == GSLC_REDRAW_NONE) {
     // No redraw to do
     return true;
   }
 
-  if ((pGui == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemDrawByRef(%s) called with NULL ptr\n","");
+  if ((pGui == NULL) || (pElemRef == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemDrawByRef";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
+
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // --------------------------------------------------------------------------
   // Custom drawing
@@ -1880,7 +2053,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   // - Note that the end of the callback function is expected
   //   to clear the redraw flag
   if (pElem->pfuncXDraw != NULL) {
-    (*pElem->pfuncXDraw)((void*)(pGui),(void*)(pElem),eRedraw);
+    (*pElem->pfuncXDraw)((void*)(pGui),(void*)(pElemRef),eRedraw);
     return true;
   }
 
@@ -1897,7 +2070,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   nElemW    = pElem->rElem.w;
   nElemH    = pElem->rElem.h;
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
-  bGlowing  = pElem->bGlowing;    // Element should be glowing (if enabled)
+  bGlowing  = gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
 
 
@@ -2044,122 +2217,133 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eR
   }
 
   // Mark the element as no longer requiring redraw
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_NONE);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
 
   return true;
 }
 
-// Draw a flash-based element to the active display
-bool gslc_ElemForceDrawP(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
-{
-  gslc_tsElem sElemTmp;
-  (gslc_tsElem*)memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
-  return gslc_ElemDrawByRef(pGui,&sElemTmp,GSLC_REDRAW_FULL);
-}
 
 // ------------------------------------------------------------------------
 // Element Update Functions
 // ------------------------------------------------------------------------
 
-void gslc_ElemSetFillEn(gslc_tsElem* pElem,bool bFillEn)
+void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetFillEn(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetFillEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (bFillEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_FILL_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_FILL_EN;
   }
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
 
-void gslc_ElemSetFrameEn(gslc_tsElem* pElem,bool bFrameEn)
+void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetFrameEn(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetFrameEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (bFrameEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
   }
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
 
-void gslc_ElemSetCol(gslc_tsElem* pElem,gslc_tsColor colFrame,gslc_tsColor colFill,gslc_tsColor colFillGlow)
+void gslc_ElemSetCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colFrame,gslc_tsColor colFill,gslc_tsColor colFillGlow)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetCol(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetCol";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
   pElem->colElemFillGlow  = colFillGlow;
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetGlowCol(gslc_tsElem* pElem,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
+void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetColGlow(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlowCol";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->colElemFrameGlow   = colFrameGlow;
   pElem->colElemFillGlow    = colFillGlow;
   pElem->colElemTextGlow    = colTxtGlow;
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetGroup(gslc_tsElem* pElem,int nGroupId)
+void gslc_ElemSetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nGroupId)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetGroup(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGroup";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->nGroup           = nGroupId;
 }
 
-int gslc_ElemGetGroup(gslc_tsElem* pElem)
+int gslc_ElemGetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemGetGroup(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetGroup";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return GSLC_GROUP_ID_NONE;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   return pElem->nGroup;
 }
 
 
-void gslc_ElemSetTxtAlign(gslc_tsElem* pElem,unsigned nAlign)
+void gslc_ElemSetTxtAlign(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nAlign)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtAlign(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtAlign";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->eTxtAlign        = nAlign;
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetTxtMargin(gslc_tsElem* pElem,unsigned nMargin)
+void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nMargin)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMargin(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtMargin";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->nTxtMargin        = nMargin;
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
+void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pStr)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStr(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtStr";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Check for read-only status (in case the string was
   // defined in Flash/PROGMEM)
@@ -2174,122 +2358,34 @@ void gslc_ElemSetTxtStr(gslc_tsElem* pElem,const char* pStr)
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
     strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
     pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 }
 
-// Set the text string associated with a flash-based text element
-// indexed by element pointer
-// - This routine will copy the string from flash to a temporary
-//   element and then force a redraw
-void gslc_ElemSetTxtStrP(gslc_tsGui* pGui,gslc_tsElem* pElem,const char* pStr)
+void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colVal)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtCol";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  gslc_tsElem temp;
-  (gslc_tsElem*)memcpy_P(&temp,pElem,sizeof(gslc_tsElem));
-
-  // Check for read-only status (in case the string was
-  // defined in Flash/PROGMEM)
-  if (temp.nStrBufMax == 0) {
-    // String was read-only, so abort now
-    return;
-  }
-
-  // To avoid unnecessary redraw / flicker, only a change in
-  // the text content will drive a redraw
-
-  if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1)) {
-    strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
-    temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
-
-    // FIXME: Since we are going to force a redraw, ensure that the
-    // element is on the active page
-    gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
-
-    // gslc_PageRedrawGo(pGui);
-  }
-
-}
-
-// Set the text string associated with a flash-based text element
-// indexed by Page ID and Element ID
-// - This routine will copy the string from flash to a temporary
-//   element and then force a redraw
-void gslc_ElemSetTxtStr_P(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId,const char* pStr)
-{
-  if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1(%s) called with NULL ptr\n","");
-    return;
-  }
-  // Fetch the element
-  gslc_tsElem* pElem = gslc_PageFindElemById(pGui,nPageId,nElemId);
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtStrP1() could not find element (%u) on page (%u)\n",nPageId,nElemId);
-    return;
-  }
-
-  // Since we are going to force a redraw, ensure that the
-  // element is on the active page
-
-  // FIXME: We should still update the external string value
-  // even when it isn't on the current page, otherwise the new
-  // value may not be drawn when the page is swapped and a
-  // full redraw occurs.
-
-  if (gslc_GetPageCur(pGui) != nPageId) {
-    return;
-  }
-
-  // Copy element from Flash to RAM temporary element
-  gslc_tsElem temp;
-  (gslc_tsElem*)memcpy_P(&temp,pElem,sizeof(gslc_tsElem));
-
-  // Check for read-only status (in case the string was
-  // defined in Flash/PROGMEM)
-  if (temp.nStrBufMax == 0) {
-    // String was read-only, so abort now
-    return;
-  }
-
-  // To avoid unnecessary redraw / flicker, only a change in
-  // the text content will drive a redraw
-  if (strncmp(temp.pStrBuf,pStr,temp.nStrBufMax-1) == 0) {
-    // No change, so abort
-    return;
-  }
-
-  // Copy new string to RAM temporary element
-  strncpy(temp.pStrBuf,pStr,temp.nStrBufMax-1);
-  temp.pStrBuf[temp.nStrBufMax-1] = '\0';  // Force termination
-
-  // Force a redraw
-  gslc_ElemForceDrawP(pGui,pElem,GSLC_REDRAW_FULL);
-
-}
-
-void gslc_ElemSetTxtCol(gslc_tsElem* pElem,gslc_tsColor colVal)
-{
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtCol(%s) called with NULL ptr\n","");
-    return;
-  }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (!gslc_ColorEqual(pElem->colElemText, colVal) ||
       !gslc_ColorEqual(pElem->colElemTextGlow, colVal)) {
     pElem->colElemText      = colVal;
     pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 }
 
-void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
+void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMem(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtMem";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (GSLC_LOCAL_STR) {
     if ((eFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
       // ERROR: Unsupported mode
@@ -2303,21 +2399,39 @@ void gslc_ElemSetTxtMem(gslc_tsElem* pElem,gslc_teTxtFlags eFlags)
   pElem->eTxtFlags = (eFlagsCur & ~GSLC_TXT_MEM) | (eFlags & GSLC_TXT_MEM);
 }
 
-void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElem* pElem,int nFontId)
+void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nFontId)
 {
-  if ((pGui == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemUpdateFont(%s) called with NULL ptr\n","");
+  if ((pGui == NULL) || (pElemRef == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemUpdateFont";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->pTxtFont = gslc_FontGet(pGui,nFontId);
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
+
+void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetRedraw(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetRedraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
+  }
+
+  // Update the redraw flag
+  gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+  switch (eRedraw) {
+    case GSLC_REDRAW_NONE:
+      eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_NONE;
+      break;
+    case GSLC_REDRAW_FULL:
+      eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_FULL;
+      break;
+    case GSLC_REDRAW_INC:
+      eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_INC;
+      break;
   }
 
   // Handle request for update of redraw state
@@ -2325,92 +2439,125 @@ void gslc_ElemSetRedraw(gslc_tsElem* pElem,gslc_teRedrawType eRedraw)
   //   case wherein we are currently pending a full redraw
   //   but an incremental redraw has been requested. In that
   //   case we leave the full redraw request pending.
-  if ((eRedraw == GSLC_REDRAW_INC) && (pElem->eRedraw == GSLC_REDRAW_FULL)) {
-    // Don't update redraw state; leave it as full redraw pending
+  if (eRedraw == GSLC_REDRAW_INC) {
+    if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) == GSLC_ELEMREF_REDRAW_FULL) {
+      // Don't update redraw state; leave it as full redraw pending
+    } else {
+      pElemRef->eElemFlags = eFlags;
+    }
   } else {
-    pElem->eRedraw = eRedraw;
+    pElemRef->eElemFlags = eFlags;
   }
 
-
+#if (GSLC_FEATURE_COMPOUND)
   // Now propagate up the element hierarchy
   // (eg. in case of compound elements)
 
   // TODO: Perhaps we need to qualify this with bRedraw=true?
   // - ie. we only want to invalidate the parent element
   //   containers, but we don't want to reset their status
-  if (pElem->pElemParent != NULL) {
-    gslc_ElemSetRedraw(pElem->pElemParent,eRedraw);
+
+  // - This functionality is only used in the case of compound
+  //   elements (eg. XSelNum).
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElem->pElemRefParent != NULL) {
+    gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
   }
+#endif
 }
 
-gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsElem* pElem)
+gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemGetRedraw(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetRedraw";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return GSLC_REDRAW_NONE;
   }
-  return pElem->eRedraw;
+  gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+  switch (eFlags & GSLC_ELEMREF_REDRAW_MASK) {
+    case GSLC_ELEMREF_REDRAW_NONE:
+      return GSLC_REDRAW_NONE;
+    case GSLC_ELEMREF_REDRAW_FULL:
+      return GSLC_REDRAW_FULL;
+    case GSLC_ELEMREF_REDRAW_INC:
+      return GSLC_REDRAW_INC;
+  }
+  // Should not reach here
+  return GSLC_REDRAW_NONE;
 }
 
-void gslc_ElemSetGlow(gslc_tsElem* pElem,bool bGlowing)
+
+void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetGlow(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlow";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // FIXME: Should also check for change in bGlowEn
-  bool  bGlowingOld = pElem->bGlowing;
-  pElem->bGlowing         = bGlowing;
+  bool bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
+  gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING,(bGlowing)?GSLC_ELEMREF_GLOWING:0);
+
   if (bGlowing != bGlowingOld) {
-    gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 }
 
-bool gslc_ElemGetGlow(gslc_tsElem* pElem)
+bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemGetGlow(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetGlow";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
-  return pElem->bGlowing;
+  return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING);
 }
 
-void gslc_ElemSetGlowEn(gslc_tsElem* pElem,bool bGlowEn)
+
+void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetGlowEn(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlowEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (bGlowEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_GLOW_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;
   }
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-bool gslc_ElemGetGlowEn(gslc_tsElem* pElem)
+bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemGetGlowEn(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetGlowEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   return pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN;
 }
 
-void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
+void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest)
 {
-  if ((pElemSrc == NULL) || (pElemDest == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetStyleFrom(%s) called with NULL ptr\n","");
+  if ((pElemRefSrc == NULL) || (pElemRefDest == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetStyleFrom";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElemSrc  = gslc_GetElemFromRef(pGui,pElemRefSrc);
+  gslc_tsElem*  pElemDest = gslc_GetElemFromRef(pGui,pElemRefDest);
+
+  // TODO: Check ElemRef SRC type for compatibility
 
   // nId
   // nType
   // rElem
   pElemDest->nGroup           = pElemSrc->nGroup;
   pElemDest->nFeatures        = pElemSrc->nFeatures;
-  pElemDest->bGlowing         = pElemSrc->bGlowing;
   pElemDest->sImgRefNorm      = pElemSrc->sImgRefNorm;
   pElemDest->sImgRefGlow      = pElemSrc->sImgRefGlow;
 
@@ -2420,8 +2567,9 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   pElemDest->colElemFrameGlow = pElemSrc->colElemFrameGlow;
 
   // eRedraw
-
-  pElemDest->pElemParent      = pElemSrc->pElemParent;
+#ifdef GLSC_COMPOUND
+  pElemDest->pElemRefParent   = pElemSrc->pElemRefParent;
+#endif
 
   // Don't copy over the text strings
   //  pStrBuf[GSLC_LOCAL_STR_LEN]
@@ -2442,55 +2590,63 @@ void gslc_ElemSetStyleFrom(gslc_tsElem* pElemSrc,gslc_tsElem* pElemDest)
   pElemDest->pfuncXTouch      = pElemSrc->pfuncXTouch;
   pElemDest->pfuncXTick       = pElemSrc->pfuncXTick;
 
-  gslc_ElemSetRedraw(pElemDest,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRefDest,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetEventFunc(gslc_tsElem* pElem,GSLC_CB_EVENT funcCb)
+void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb)
 {
-  if ((pElem == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetEventFunc(%s) called with NULL ptr\n","");
+  if ((pElemRef == NULL) || (funcCb == NULL)) {;
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetEventFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->pfuncXEvent       = funcCb;
 }
 
 
-void gslc_ElemSetDrawFunc(gslc_tsElem* pElem,GSLC_CB_DRAW funcCb)
+void gslc_ElemSetDrawFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_DRAW funcCb)
 {
-  if ((pElem == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetDrawFunc(%s) called with NULL ptr\n","");
+  if ((pElemRef == NULL) || (funcCb == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetDrawFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  pElem->pfuncXDraw       = funcCb;
-  gslc_ElemSetRedraw(pElem,GSLC_REDRAW_FULL);
+  gslc_tsElem* pElem    = gslc_GetElemFromRef(pGui,pElemRef);
+  pElem->pfuncXDraw     = funcCb;
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemSetTickFunc(gslc_tsElem* pElem,GSLC_CB_TICK funcCb)
+void gslc_ElemSetTickFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_TICK funcCb)
 {
-  if ((pElem == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetTickFunc(%s) called with NULL ptr\n","");
+  if ((pElemRef == NULL) || (funcCb == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTickFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  gslc_tsElem* pElem      = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->pfuncXTick       = funcCb;
 }
 
-bool gslc_ElemOwnsCoord(gslc_tsElem* pElem,int16_t nX,int16_t nY,bool bOnlyClickEn)
+bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int16_t nY,bool bOnlyClickEn)
 {
-  if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemOwnsCoord(%s) called with NULL ptr\n","");
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemOwnsCoord";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (bOnlyClickEn && !(pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) ) {
     return false;
   }
   return gslc_IsInRect(nX,nY,pElem->rElem);
 }
 
+#if !defined(DRV_TOUCH_NONE)
 
 // ------------------------------------------------------------------------
 // Tracking Functions
 // ------------------------------------------------------------------------
-
 
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
@@ -2499,17 +2655,11 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
   int16_t       nY      = pEventTouch->nY;
   gslc_teTouch  eTouch  = pEventTouch->eTouch;
 
-  gslc_tsElem*  pTrackedOld = NULL;
-  gslc_tsElem*  pTrackedNew = NULL;
-  bool          bGlowingOld = false;
+  gslc_tsElemRef*   pTrackedRefOld = NULL;
+  gslc_tsElemRef*   pTrackedRefNew = NULL;
 
   // Fetch the item currently being tracked (if any)
-  pTrackedOld = gslc_CollectGetElemTracked(pCollect);
-
-  // Fetch current glowing state
-  if (pTrackedOld != NULL) {
-    bGlowingOld = pTrackedOld->bGlowing;
-  }
+  pTrackedRefOld = gslc_CollectGetElemRefTracked(pGui,pCollect);
 
   // Reset the in-tracked flag
   bool  bInTracked = false;
@@ -2522,42 +2672,30 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // End glow on previously tracked element (if any)
     // - We shouldn't really enter a "Touch Down" event
     //   with an element still marked as being tracked
-    if (pTrackedOld != NULL) {
-      gslc_ElemSetGlow(pTrackedOld,false);
+    if (pTrackedRefOld != NULL) {
+      gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
     }
 
     // Determine the new element to start tracking
-    pTrackedNew = gslc_CollectFindElemFromCoord(pGui,pCollect,nX,nY);
+    pTrackedRefNew = gslc_CollectFindElemFromCoord(pGui,pCollect,nX,nY);
 
-    if (pTrackedNew == NULL) {
+    if (pTrackedRefNew == NULL) {
       // Didn't find an element, so clear the tracking reference
-      gslc_CollectSetElemTracked(pCollect,NULL);
+      gslc_CollectSetElemTracked(pGui,pCollect,NULL);
     } else {
       // Found an element, so mark it as being the tracked element
 
       // Set the new tracked element reference
-      gslc_CollectSetElemTracked(pCollect,pTrackedNew);
+      gslc_CollectSetElemTracked(pGui,pCollect,pTrackedRefNew);
 
       // Start glow on new element
-      gslc_ElemSetGlow(pTrackedNew,true);
-
-      // Special handling for Flash-based buttons
-      // - If tracked element is in Flash, then force redraw
-      // - For now, this is done by comparing the currently-tracked
-      //   element against the last Flash element that was found
-      //   in the CollectFindElemFromCoord() search.
-      if (pTrackedNew->nId == pGui->sElemTmpProg.nId) {
-        // Only update if changed glowing state
-        if (pTrackedNew->bGlowing != bGlowingOld) {
-          gslc_ElemDrawByRef(pGui,pTrackedNew,GSLC_REDRAW_FULL);
-        }
-      }
+      gslc_ElemSetGlow(pGui,pTrackedRefNew,true);
 
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
       eTouch = GSLC_TOUCH_DOWN_IN;
-      gslc_ElemSendEventTouch(pGui,pTrackedNew,eTouch,nX,nY);
+      gslc_ElemSendEventTouch(pGui,pTrackedRefNew,eTouch,nX,nY);
 
     }
 
@@ -2566,39 +2704,27 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // Touch Up Event
     // ---------------------------------
 
-    if (pTrackedOld != NULL) {
+    if (pTrackedRefOld != NULL) {
       // Are we still over tracked element?
-      bInTracked = gslc_ElemOwnsCoord(pTrackedOld,nX,nY,true);
+      bInTracked = gslc_ElemOwnsCoord(pGui,pTrackedRefOld,nX,nY,true);
 
       if (!bInTracked) {
         // Released not over tracked element
         eTouch = GSLC_TOUCH_UP_OUT;
-        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
+        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
       } else {
         // Notify original tracked element for optional custom handling
         eTouch = GSLC_TOUCH_UP_IN;
-        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
+        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
       }
 
       // Clear glow state
-      gslc_ElemSetGlow(pTrackedOld,false);
-
-      // Special handling for Flash-based buttons
-      // - If tracked element is in Flash, then force redraw
-      // - For now, this is done by comparing the currently-tracked
-      //   element against the last Flash element that was found
-      //   in the CollectFindElemFromCoord() search.
-      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
-        // Only update if changed glowing state
-        if (pTrackedOld->bGlowing != bGlowingOld) {
-          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
-        }
-      }
+      gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
 
     }
 
     // Clear the element tracking state
-    gslc_CollectSetElemTracked(pCollect,NULL);
+    gslc_CollectSetElemTracked(pGui,pCollect,NULL);
 
   } else if (eTouch == GSLC_TOUCH_MOVE) {
     // ---------------------------------
@@ -2606,45 +2732,34 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
 
     // Determine if we are still over tracked element
-    if (pTrackedOld != NULL) {
-      bInTracked = gslc_ElemOwnsCoord(pTrackedOld,nX,nY,true);
+    if (pTrackedRefOld != NULL) {
+      bInTracked = gslc_ElemOwnsCoord(pGui,pTrackedRefOld,nX,nY,true);
 
       if (!bInTracked) {
 
         // Not currently over tracked element
         // - Notify tracked element that we moved out of it
         eTouch = GSLC_TOUCH_MOVE_OUT;
-        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
+        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
         // Ensure the tracked element is no longer glowing
-        if (pTrackedOld) {
-          gslc_ElemSetGlow(pTrackedOld,false);
+        if (pTrackedRefOld) {
+          gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
         }
       } else {
         // We are still over tracked element
         // - Notify tracked element
         eTouch = GSLC_TOUCH_MOVE_IN;
-        gslc_ElemSendEventTouch(pGui,pTrackedOld,eTouch,nX,nY);
+        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
         // Ensure it is glowing
-        gslc_ElemSetGlow(pTrackedOld,true);
-      }
-
-      // Special handling for Flash-based buttons
-      // - If tracked element is in Flash, then force redraw
-      // - For now, this is done by comparing the currently-tracked
-      //   element against the last Flash element that was found
-      //   in the CollectFindElemFromCoord() search.
-      if (pTrackedOld->nId == pGui->sElemTmpProg.nId) {
-        // Only update if changed glowing state
-        if (pTrackedOld->bGlowing != bGlowingOld) {
-          gslc_ElemDrawByRef(pGui,pTrackedOld,GSLC_REDRAW_FULL);
-        }
+        gslc_ElemSetGlow(pGui,pTrackedRefOld,true);
       }
 
     }
 
   }
+
 }
 
 
@@ -2653,7 +2768,8 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
   if ((pGui == NULL) || (pPage == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: TrackTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -2690,7 +2806,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   sEventTouch.nX            = nX;
   sEventTouch.nY            = nY;
   void* pvData = (void*)(&sEventTouch);
-  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
   gslc_PageEvent(pGui,sEvent);
 
 
@@ -2710,7 +2826,8 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 {
   bool bOk;
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: InitTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "InitTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -2738,7 +2855,8 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 {
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetTouch(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "GetTouch";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -2756,6 +2874,7 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
   return false;
 }
 
+#endif // !DRV_TOUCH_NONE
 
 // ------------------------------------------------------------------------
 // Private Functions
@@ -2765,12 +2884,14 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 // NOTE: nId is a positive ID specified by the user or
 //       GSLC_ID_AUTO if the user wants an auto-generated ID
 //       (which will be assigned in Element nId)
+#if (GSLC_FEATURE_COMPOUND)
 // NOTE: When we are creating sub-elements within a compound element,
 //       we usually pass nPageId=GSLC_PAGE_NONE. In this mode we
 //       won't add the element to any page, but just create the
 //       element struct. However, in this mode we can't support
 //       auto-generated IDs since we don't know which IDs will
 //       be taken when we finally create the compound element.
+#endif
 gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   int16_t nType,gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId)
 {
@@ -2779,7 +2900,8 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   gslc_ResetElem(&sElem);
 
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return sElem;
   }
 
@@ -2789,12 +2911,14 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   // If we are going to be adding the element to a page then we
   // perform some additional checks
   if (nPageId == GSLC_PAGE_NONE) {
+#if (GSLC_FEATURE_COMPOUND)
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
     if (nElemId == GSLC_ID_AUTO) {
       GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
       return sElem;
     }
+#endif
   } else {
     // Look up the targeted page to ensure that we check its
     // collection for collision with other IDs (or assign the
@@ -2809,7 +2933,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     // Validate the user-supplied ID
     if (nElemId == GSLC_ID_AUTO) {
       // Get next auto-generated ID
-      nElemId = gslc_CollectGetNextId(pCollect);
+      nElemId = gslc_CollectGetNextId(pGui,pCollect);
     } else {
       // Ensure the ID is positive
       if (nElemId < 0) {
@@ -2817,7 +2941,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
         return sElem;
       }
       // Ensure the ID isn't already taken
-      if (gslc_CollectFindElemById(pCollect,nElemId) != NULL) {
+      if (gslc_CollectFindElemById(pGui,pCollect,nElemId) != NULL) {
         GSLC_DEBUG_PRINT("ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
         return sElem;
       }
@@ -2829,7 +2953,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   sElem.nId             = nElemId;
   sElem.rElem           = rElem;
   sElem.nType           = nType;
-  gslc_ElemUpdateFont(pGui,&sElem,nFontId);
+  sElem.pTxtFont        = gslc_FontGet(pGui,nFontId);
 
   // Initialize the local string buffer (if enabled via GSLC_LOCAL_STR)
   // otherwise just save a copy of the external string buffer pointer
@@ -2883,7 +3007,8 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
 bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: CollectEvent(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectEvent";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
@@ -2892,44 +3017,31 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
   gslc_tsCollect* pCollect  = (gslc_tsCollect*)(pvScope);
 
   unsigned        nInd;
-  gslc_tsElem*    pElem = NULL;
+  gslc_tsElemRef* pElemRef = NULL;
 
   // Handle any collection-based events first
   // ...
   if (sEvent.eType == GSLC_EVT_TOUCH) {
+    #if defined(DRV_TOUCH_NONE)
+    return false;
+    #else
     // TOUCH is passed to CollectTouch which determines the element
     // in the collection that should receive the event
     gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
     gslc_CollectTouch(pGui,pCollect,pEventTouch);
     return true;
+    #endif  // !DRV_TOUCH_NONE
 
   } else if ( (sEvent.eType == GSLC_EVT_DRAW) || (sEvent.eType == GSLC_EVT_TICK) ) {
     // DRAW and TICK are propagated down to all elements in collection
 
     for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-      gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-      // Fetch the element pointer from the reference array
-      pElem = pCollect->asElemRef[nInd].pElem;
+      pElemRef = &(pCollect->asElemRef[nInd]);
 
       // Copy event so we can modify it in the loop
       gslc_tsEvent sEventNew = sEvent;
+      sEventNew.pvScope = (void*)(pElemRef);
 
-      // If it is an external reference (eg. flash), copy to temp element
-      if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
-        #if (GSLC_USE_PROGMEM)
-        // Copy from PROGMEM to RAM
-        memcpy_P(&pGui->sElemTmp,pElem,sizeof(gslc_tsElem));
-        // Update event data reference
-        sEventNew.pvScope = (void*)(&pGui->sElemTmp);
-        #else
-        // Ignore PROGMEM and update as if RAM
-        // Update event data reference
-        sEventNew.pvScope = (void*)(pElem);
-        #endif
-      } else {
-        // Update event data reference
-        sEventNew.pvScope = (void*)(pElem);
-      }
       // Propagate the event to the element
       gslc_ElemEvent(pvGui,sEventNew);
 
@@ -2941,17 +3053,21 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 }
 
 
-// Helper function for gslc_ElemAdd()
-// - When adding elements stored internal to GUI element array (bExternal=false), this
-//   routine copies the content of pElem to the collection element array so
-//   that the pointer can be released after the call.
-// - When adding elements stored external to GUI element array (bExternal=true), this
-//   routine does not perform a copy, but saves a copy of the pointer instead.
-//   Therefore, in this mode, pElem must point to a static variable.
-gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
+// NOTE:
+// - When eFlags=GSLC_ELEMREF_SRC_RAM, the contents of pElem are copied into
+//   the internal element array so that the pointer (pElem) can be released
+//   after this call (ie. it can be an automatic variable).
+// - When eFlags=GSLC_ELEMREF_SRC_PROG, the pointer value pElem is saved
+//   into the element reference array so that the element can be fetched
+//   directly from PROGMEM (Flash) at a later time. In this mode, pElem
+//   must be a static variable.
+// - When eFlags=GSLC_ELEMREF_SRC_CONST, the same is done as for
+//   GSLC_ELEMREF_SRC_PROG except that PROGMEM is not required to access.
+gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectElemAdd";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
 
@@ -2960,16 +3076,28 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pEl
     return NULL;
   }
 
-  // Is the element an external reference?
-  // - If no, add to internal element array (asElem) and add a reference
-  // - If yes, add a reference
+
+  // If the element is stored in RAM:
+  // - Copy the element into the internal RAM element array (asElem)
+  // - Create an entry in the element reference array (asElemRef) that points
+  //   to the internal RAM element array.
+  // - Since a copy has been made of the input element, the caller can
+  //   discard/reuse the pointer (pElem) after the call.
+  //
+  // If the element is stored in FLASH:
+  // - Save the element pointer (pElem) into the element reference
+  //   array (asElemRef).
+  // - Since the input pointer (pElem) has been recorded, the caller must
+  //   not discard/reuse the pointer. It should be defined as a static
+  //   variable.
+
   uint16_t nElemInd;
   uint16_t nElemRefInd;
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
 
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG_PRINT("ERROR: CollectElemAddExt() too many RAM elements (max=%u)\n",pCollect->nElemMax);
+      GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u)\n",pCollect->nElemMax);
       return NULL;
     }
 
@@ -2986,27 +3114,23 @@ gslc_tsElem* gslc_CollectElemAdd(gslc_tsCollect* pCollect,const gslc_tsElem* pEl
     pCollect->asElemRef[nElemRefInd].eElemFlags = eFlags;
     pCollect->asElemRef[nElemRefInd].pElem = &(pCollect->asElem[nElemInd]);
     pCollect->nElemRefCnt++;
-    return pCollect->asElemRef[nElemRefInd].pElem;
+
   } else {
     // External reference
-    // - Pointer (pElem) links to an external variable (must be declared statically)
-    // - Provide option for either RAM or PROGMEM pointer
-    // - TODO: Support other flags
+    // - Pointer (pElem) links to an element stored in FLASH (must be declared statically)
 
     // Add a reference
-    nElemInd = pCollect->nElemRefCnt;
-    pCollect->asElemRef[nElemInd].eElemFlags = eFlags;
-    pCollect->asElemRef[nElemInd].pElem = (gslc_tsElem*)pElem;  // Typecast to drop const modifier
+    nElemRefInd = pCollect->nElemRefCnt;
+    pCollect->asElemRef[nElemRefInd].eElemFlags = eFlags;
+    pCollect->asElemRef[nElemRefInd].pElem = (gslc_tsElem*)pElem;  // Typecast to drop const modifier
     pCollect->nElemRefCnt++;
-    // NULL is returned to ensure that we don't attempt to dereference
-
-    return NULL;
   }
 
+  // Return the new element reference
+  return &(pCollect->asElemRef[nElemRefInd]);
 }
 
-
-bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
+bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
   if (pCollect == NULL) {
     // ERROR
@@ -3015,20 +3139,16 @@ bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
   // Determine if any sub-element in collection needs redraw
   // - This is generally used when deciding whether to redraw
   //   a compound element
-  uint16_t      nInd;
-  gslc_tsElem*  pSubElem;
-  bool          bCollectRedraw = false;
+  uint16_t        nInd;
+  gslc_tsElemRef* pSubElemRef;
+  bool            bCollectRedraw = false;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM can change, so no need to check others
-    if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
-      // Fetch the element pointer from the reference array
-      pSubElem = pCollect->asElemRef[nInd].pElem;
-      if (gslc_ElemGetRedraw(pSubElem) != GSLC_REDRAW_NONE) {
-        bCollectRedraw = true;
-        break;
-      }
+    // Fetch the element pointer from the reference array
+    pSubElemRef = &(pCollect->asElemRef[nInd]);
+    if (gslc_ElemGetRedraw(pGui,pSubElemRef) != GSLC_REDRAW_NONE) {
+      bCollectRedraw = true;
+      break;
     }
   }
 
@@ -3037,18 +3157,21 @@ bool gslc_CollectGetRedraw(gslc_tsCollect* pCollect)
 
 // Add an element to the collection associated with the page
 //
-// NOTE:
-// - When eFlags=GSLC_ELEMREF_SRC_RAM, the contents of pElem are copied into
-//   the internal element array so that the pointer (pElem) can be released
-//   after this call (ie. it can be an automatic variable).
-// - When eFlags=GSLC_ELEMREF_SRC_PROG, the pointer value pElem is saved
-//   into the element reference array so that the element can be fetched
-//   directly from PROGMEM (Flash) at a later time. In this mode, pElem
-//   must be a static variable.
-gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
+// - Depending on the GSLC_ELEMREF_SRC_* setting, CollectElemAdd()
+//   may either copy the contents of the element into the internal
+//   RAM array or else just save a copy of the pointer (which
+//   would mean that the pointer must not be invalidated).
+gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags)
 {
   if ((pGui == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemAdd(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemAdd";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return NULL;
+  }
+
+  if (nPageId == GSLC_PAGE_NONE) {
+    // No page ID was provided, so skip add
+    GSLC_DEBUG_PRINT("ERROR: ElemAdd(%s) with PAGE_NONE\n","");
     return NULL;
   }
 
@@ -3060,10 +3183,9 @@ gslc_tsElem* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gs
   }
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
-  gslc_tsElem* pElemAdd = gslc_CollectElemAdd(pCollect,pElem,eFlags);
-  return pElemAdd;
+  gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
+  return pElemRefAdd;
 }
-
 
 bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 {
@@ -3078,13 +3200,16 @@ bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 }
 
 
-void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef,
+void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef sImgRef,
   gslc_tsImgRef sImgRefSel)
 {
-  if ((pGui == NULL) || (pElem == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: ElemSetImage(%s) called with NULL ptr\n","");
+  if ((pGui == NULL) || (pElemRef == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetImage";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Update the normal and glowing images
   gslc_DrvSetElemImageNorm(pGui,pElem,sImgRef);
@@ -3109,26 +3234,30 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   return true;
 }
 
-
 // Trigger a touch event on an element
-bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElem* pElemTracked,
+bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
         gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   gslc_tsEventTouch sEventTouch;
   sEventTouch.eTouch        = eTouch;
   sEventTouch.nX            = nX;
   sEventTouch.nY            = nY;
-  gslc_tsEvent sEvent = gslc_EventCreate(GSLC_EVT_TOUCH,0,(void*)pElemTracked,&sEventTouch);
+  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pElemRefTracked,&sEventTouch);
   gslc_ElemEvent((void*)pGui,sEvent);
   return true;
+#endif // !DRV_TOUCH_NONE
 }
-
 
 // Initialize the element struct to all zeros
 void gslc_ResetElem(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ResetElem(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ResetElem";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pElem->nFeatures        = GSLC_ELEM_FEA_NONE;
@@ -3141,10 +3270,8 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->nType            = GSLC_TYPE_BOX;
   pElem->nGroup           = GSLC_GROUP_ID_NONE;
   pElem->rElem            = (gslc_tsRect){0,0,0,0};
-  pElem->bGlowing         = false;
   pElem->sImgRefNorm      = gslc_ResetImage();
   pElem->sImgRefGlow      = gslc_ResetImage();
-  pElem->eRedraw          = GSLC_REDRAW_FULL;
   pElem->colElemFrame     = GSLC_COL_WHITE;
   pElem->colElemFill      = GSLC_COL_WHITE;
   pElem->colElemFrameGlow = GSLC_COL_WHITE;
@@ -3168,8 +3295,9 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
-
-  pElem->pElemParent      = NULL;
+#if (GSLC_FEATURE_COMPOUND)
+  pElem->pElemRefParent   = NULL;
+#endif
 
 }
 
@@ -3177,7 +3305,8 @@ void gslc_ResetElem(gslc_tsElem* pElem)
 void gslc_ResetFont(gslc_tsFont* pFont)
 {
   if (pFont == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ResetFont(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ResetFont";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pFont->nId            = GSLC_FONT_NONE;
@@ -3191,7 +3320,8 @@ void gslc_ResetFont(gslc_tsFont* pFont)
 void gslc_ElemDestruct(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemDestruct(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "ElemDestruct";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   if (pElem->sImgRefNorm.pvImgRaw != NULL) {
@@ -3213,44 +3343,48 @@ void gslc_ElemDestruct(gslc_tsElem* pElem)
 
 
 // Close down a collection
-void gslc_CollectDestruct(gslc_tsCollect* pCollect)
+void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
   if (pCollect == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: CollectDestruct(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectDestruct";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   uint16_t      nInd;
   gslc_tsElem*  pElem = NULL;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
+    gslc_tsElemRef*     pElemRef = &pCollect->asElemRef[nInd];
+    gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
     // Only elements in RAM need destruction
     if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
       continue;
     }
     // Fetch the element pointer from the reference array
-    pElem = pCollect->asElemRef[nInd].pElem;
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
     gslc_ElemDestruct(pElem);
   }
 
 }
 
 // Close down all in page
-void gslc_PageDestruct(gslc_tsPage* pPage)
+void gslc_PageDestruct(gslc_tsGui* pGui,gslc_tsPage* pPage)
 {
   if (pPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageDestruct(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "PageDestruct";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsCollect* pCollect = &pPage->sCollect;
-  gslc_CollectDestruct(pCollect);
+  gslc_CollectDestruct(pGui,pCollect);
 }
 
 // Close down all GUI members, including pages and fonts
 void gslc_GuiDestruct(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GuiDestruct(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "GuiDestruct";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // Loop through all pages in GUI
@@ -3258,7 +3392,7 @@ void gslc_GuiDestruct(gslc_tsGui* pGui)
   gslc_tsPage*  pPage = NULL;
   for (nPageInd=0;nPageInd<pGui->nPageCnt;nPageInd++) {
     pPage = &pGui->asPage[nPageInd];
-    gslc_PageDestruct(pPage);
+    gslc_PageDestruct(pGui,pPage);
   }
 
   // TODO: Consider moving into main element array
@@ -3283,7 +3417,8 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
         gslc_tsElemRef* asElemRef,uint16_t nElemRefMax)
 {
   if (pCollect == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: CollectReset(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectReset";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -3292,7 +3427,6 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 
   pCollect->nElemAutoIdNext   = GSLC_ID_AUTO_BASE;
 
-  pCollect->pElemTracked      = NULL;
   pCollect->pfuncXEvent       = NULL;
 
   // Save the pointer to the element array
@@ -3312,180 +3446,122 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
   }
 }
 
-// UNUSED
-// Determine the Element Reference from the Element
-// - This is used temporarily to assist in migrating element state from
-//   the element structure to the element reference structure. Later,
-//   it is hoped that the element reference can be passed to the routines
-//   that are making changes to the element state.
-gslc_tsElemRef* gslc_CollectFindRefFromElem(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
-{
-  if (pCollect == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: CollectFindRefFromElem(%s) called with NULL ptr\n","");
-    return NULL;
-  }
-  gslc_tsElem*  pElemCur = NULL;
-
-  gslc_tsElemRef* pElemRef = NULL;
-  gslc_tsElemRef* pFoundElemRef = NULL;
-
-  for (int nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    pElemRef = &pCollect->asElemRef[nInd];
-    pElemCur = pCollect->asElemRef[nInd].pElem;
-    if (pElem == pElemCur) {
-      pFoundElemRef = pElemRef;
-    }
-  }
-  return pFoundElemRef;
-}
-
 // Search internal element array for one with a particular ID
-gslc_tsElem* gslc_CollectFindElemById(gslc_tsCollect* pCollect,int16_t nElemId)
+gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemId)
 {
   if (pCollect == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectFindElemById";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
-  gslc_tsElem*  pElem = NULL;
-  gslc_tsElem*  pFoundElem = NULL;
-  uint16_t      nInd;
+  gslc_tsElem*      pElem = NULL;
+  gslc_tsElemRef*   pElemRef = NULL;
+  gslc_tsElemRef*   pFoundElemRef = NULL;
+  uint16_t          nInd;
 
   if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
     GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
     return NULL;
   }
-  for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Fetch the element pointer from the reference array
-    pElem = pCollect->asElemRef[nInd].pElem;
 
-    if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
-      // Search element in Flash
-      #if (GSLC_USE_PROGMEM)
-      gslc_tsElem tempFind;
-      (gslc_tsElem*)memcpy_P(&tempFind,pElem,sizeof(gslc_tsElem));
-      //GSLC_DEBUG_PRINT("SEARCHING S:%4u PRG D:%4u at %u from %4u RefInd=%u\n",nElemId,tempFind.nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
-      if (tempFind.nId == nElemId) {
-        //GSLC_DEBUG_PRINT("FOUND     S:%4u PRG D:%4u\n",nElemId,tempFind.nId);
-        pFoundElem = pElem;
-        break;
-      }
-      #endif
-    } else if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
-      // Search element in RAM
-      //GSLC_DEBUG_PRINT("SEARCHING S:%4u RAM D:%4u at %u from %4u RefInd=%u\n",nElemId,pElem->nId,(int)pElem,(int)pCollect,pCollect->nElemRefCnt);
-      if (pElem->nId == nElemId) {
-        //GSLC_DEBUG_PRINT("FOUND     S:%4u RAM D:%4u\n",nElemId,pElem->nId);
-        pFoundElem = pElem;
-        break;
-      }
+  for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
+    // Fetch the element pointer from the reference array
+    pElemRef = &(pCollect->asElemRef[nInd]);
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+
+    if (pElem->nId == nElemId) {
+      pFoundElemRef = pElemRef;
+      break;
     }
 
   }
-  if (pFoundElem == NULL) {
-    //GSLC_DEBUG_PRINT("NOT FOUND S:%4u\n",nElemId);
-  }
 
-  return pFoundElem;
+  return pFoundElemRef;
 }
 
-int gslc_CollectGetNextId(gslc_tsCollect* pCollect)
+int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
   int16_t nElemId = pCollect->nElemAutoIdNext;
   pCollect->nElemAutoIdNext++;
   return nElemId;
 }
 
-gslc_tsElem* gslc_CollectGetElemTracked(gslc_tsCollect* pCollect)
+gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
-  return pCollect->pElemTracked;
+  return pCollect->pElemRefTracked;
 }
 
-void gslc_CollectSetElemTracked(gslc_tsCollect* pCollect,gslc_tsElem* pElem)
+void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef)
 {
-  pCollect->pElemTracked = pElem;
+  pCollect->pElemRefTracked = pElemRef;
 }
 
 // Find an element index in a collection from a coordinate
-gslc_tsElem* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
+gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
 {
-  uint16_t      nInd;
-  bool          bFound = false;
-  gslc_tsElem*  pElem = NULL;
-  gslc_tsElem*  pFoundElem = NULL;
+  uint16_t              nInd;
+  bool                  bFound = false;
+  gslc_tsElemRef*       pElemRef = NULL;
+  gslc_tsElemRef*       pFoundElemRef = NULL;
 
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
+    pElemRef  = &(pCollect->asElemRef[nInd]);
 
-    pElem = pCollect->asElemRef[nInd].pElem;
-
-    // Handle special case of Flash elements
-    if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_PROG) {
-      #if (GSLC_USE_PROGMEM)
-      gslc_tsElem   sElemTmp;
-      pElem = (gslc_tsElem*) memcpy_P(&sElemTmp,pElem,sizeof(gslc_tsElem));
-      //pElem=&sElemTmp;
-
-      bFound = gslc_ElemOwnsCoord(&sElemTmp,nX,nY,true);
-      if (bFound) {
-
-        // If the coordinates match a Flash element, then
-        // save a copy of the Flash element into the GUI placeholder element
-        pGui->sElemTmpProg = sElemTmp;
-
-        // Return a pointer to the GUI placeholder element so that
-        // future mutator functions can work with RAM element instead
-        // of Flash.
-        pFoundElem = &pGui->sElemTmpProg;
-
-        break;
-      }
-      #endif
-
-    // Handle typical case of RAM elements
-    } else if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
-      continue;
-
-    }
-
-    bFound = gslc_ElemOwnsCoord(pElem,nX,nY,true);
+    bFound = gslc_ElemOwnsCoord(pGui,pElemRef,nX,nY,true);
     if (bFound) {
-      pFoundElem = pElem;
+      pFoundElemRef = pElemRef;
       // Stop searching
       break;
     }
   }
    // Return pointer or NULL if none found
-  return pFoundElem;
+  return pFoundElemRef;
 }
 
+
+#if (GSLC_FEATURE_COMPOUND)
 // Go through all elements in a collection and set the parent
 // element pointer.
-void gslc_CollectSetParent(gslc_tsCollect* pCollect,gslc_tsElem* pElemParent)
+void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent)
 {
-  gslc_tsElem*  pElem = NULL;
-  uint16_t      nInd;
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsElem*    pElem = NULL;
+  uint16_t        nInd;
   for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
     gslc_teElemRefFlags eFlags = pCollect->asElemRef[nInd].eElemFlags;
-    // Only elements in RAM are updated
+    // NOTE: Only elements in RAM are updated
+    // TODO: Error handling if we attempt to modify FLASH-based element
     if ((eFlags & GSLC_ELEMREF_SRC) != GSLC_ELEMREF_SRC_RAM) {
       continue;
     }
-    pElem = pCollect->asElemRef[nInd].pElem;
-    pElem->pElemParent = pElemParent;
+    pElemRef = &pCollect->asElemRef[nInd];
+    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+    pElem->pElemRefParent = pElemRefParent;
   }
 }
+#endif
 
-void gslc_CollectSetEventFunc(gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
+void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
 {
   if ((pCollect == NULL) || (funcCb == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectSetEventFunc(%s) called with NULL ptr\n","");
+    static const char GSLC_PMEM FUNCSTR[] = "CollectSetEventFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pCollect->pfuncXEvent       = funcCb;
 }
 
+// ============================================================================
+
+// Trigonometric lookup table for sin(x)
+// - The lookup table saves us from having to import the sin/cos
+//   functions and the associated floating point libraries. GUIslice
+//   has provided a relatively lightweight fixed-point representation
+//   using the following 16-bit LUT (8-bit index).
+// - At this point in time, the LUT is only used by GUIslice for sin/cos
+//   in supporting the XGauge Radial controls (enabled by GSLC_FEATURE_XGAUGE_RADIAL)
+// - The LUT consumes approx 514 bytes of FLASH memory
 uint16_t  m_nLUTSinF0X16[257] = {
   0x0000,0x0192,0x0324,0x04B6,0x0648,0x07DA,0x096C,0x0AFD,0x0C8F,0x0E21,0x0FB2,0x1143,0x12D5,0x1465,0x15F6,0x1787,
   0x1917,0x1AA7,0x1C37,0x1DC6,0x1F56,0x20E5,0x2273,0x2402,0x258F,0x271D,0x28AA,0x2A37,0x2BC3,0x2D4F,0x2EDB,0x3066,

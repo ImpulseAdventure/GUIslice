@@ -4,7 +4,8 @@
 // =======================================================================
 // GUIslice library (generic driver layer include)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // =======================================================================
 //
 // The MIT License
@@ -49,7 +50,7 @@ extern "C" {
 #elif defined(DRV_DISP_TFT_ESPI)
   #include "GUIslice_drv_tft_espi.h"
 #else
-  #error "Driver needs to be specified in GUIslice_config.h (DRV_DISP_*)"
+  #error "Driver needs to be specified in GUIslice_config_*.h (DRV_DISP_*)"
 #endif
 
 

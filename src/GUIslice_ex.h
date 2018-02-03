@@ -7,7 +7,8 @@
 // =======================================================================
 // GUIslice library (extensions)
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // =======================================================================
 //
 // The MIT License
@@ -52,7 +53,9 @@ typedef enum {
             = GSLC_TYPE_BASE_EXTEND,  // Continue from gslc_teTypeBase enum range
     GSLC_TYPEX_CHECKBOX,    ///< Checkbox extended element
     GSLC_TYPEX_SLIDER,      ///< Slider extended element
+#if (GSLC_FEATURE_COMPOUND)
     GSLC_TYPEX_SELNUM,      ///< SelNum extended element
+#endif
     GSLC_TYPEX_TEXTBOX,     ///< Textbox extended element
     GSLC_TYPEX_GRAPH,       ///< Graph extended element
 } gslc_teTypeExtend;
@@ -124,9 +127,9 @@ typedef struct {
 /// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
 ///                          (true = vertical, false = horizontal)
 ///
-/// \return Pointer to Element or NULL if failure
+/// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXGauge* pXData,gslc_tsRect rElem,int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert);
 
 
@@ -135,18 +138,18 @@ gslc_tsElem* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 /// - This function is used to select between one of several gauge types
 ///   (eg. progress bar, radial dial, etc.)
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nType:       Gauge style enumeration
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeSetStyle(gslc_tsElem* pElem,gslc_teXGaugeStyle nType);
+void gslc_ElemXGaugeSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teXGaugeStyle nType);
 
 
 ///
 /// Configure the appearance of the Gauge indicator
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colGauge:    Color of the indicator
 /// \param[in]  nIndicLen:   Length of the indicator
 /// \param[in]  nIndicTip:   Size of the indicator tip
@@ -154,33 +157,33 @@ void gslc_ElemXGaugeSetStyle(gslc_tsElem* pElem,gslc_teXGaugeStyle nType);
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeSetIndicator(gslc_tsElem* pElem,gslc_tsColor colGauge,
+void gslc_ElemXGaugeSetIndicator(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colGauge,
         uint16_t nIndicLen,uint16_t nIndicTip,bool bIndicFill);
 
 
 ///
 /// Configure the appearance of the Gauge ticks
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colTick:     Color of the gauge ticks
 /// \param[in]  nTickCnt:    Number of ticks to draw around / along gauge
 /// \param[in]  nTickLen:    Length of the tick marks to draw
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeSetTicks(gslc_tsElem* pElem,gslc_tsColor colTick,uint16_t nTickCnt,uint16_t nTickLen);
+void gslc_ElemXGaugeSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colTick,uint16_t nTickCnt,uint16_t nTickLen);
 
 
 ///
 /// Update a Gauge element's current value
 /// - Note that min & max values are assigned in create()
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nVal:        New value to show in gauge
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
+void gslc_ElemXGaugeUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal);
 
 
 ///
@@ -189,12 +192,12 @@ void gslc_ElemXGaugeUpdate(gslc_tsElem* pElem,int16_t nVal);
 /// - Default fill direction for horizontal gauges: left-to-right
 /// - Default fill direction for vertical gauges: bottom-to-top
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bFlip:       If set, reverse direction of fill from default
 ///
 /// \return none
 ///
-void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip);
+void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip);
 
 
 ///
@@ -207,7 +210,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsElem* pElem,bool bFlip);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -220,9 +223,9 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
 
-
+#if (GSLC_FEATURE_XGAUGE_RADIAL)
 ///
 /// Helper function to draw a gauge with style: radial
 /// - Called from gslc_ElemXGaugeDraw()
@@ -233,9 +236,10 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teR
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
+#endif
 
-
+#if (GSLC_FEATURE_XGAUGE_RAMP)
 ///
 /// Helper function to draw a gauge with style: ramp
 /// - Called from gslc_ElemXGaugeDraw()
@@ -246,7 +250,8 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedraw
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
+#endif
 
 // ============================================================================
 // Extended Element: Checkbox
@@ -261,7 +266,6 @@ typedef enum {
 
 /// Extended data for Checkbox element
 typedef struct {
-  gslc_tsGui*                 pGui;         ///< Ptr to GUI (for radio group control)
   bool                        bRadio;       ///< Radio-button operation if true
   gslc_teXCheckboxStyle       nStyle;       ///< Drawing style for element
   bool                        bChecked;     ///< Indicates if it is selected (checked)
@@ -270,7 +274,7 @@ typedef struct {
 
 
 ///
-/// Create a Checkbox Element
+/// Create a Checkbox or Radio button Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
@@ -282,9 +286,9 @@ typedef struct {
 /// \param[in]  colCheck:    Color for inner fill when checked
 /// \param[in]  bChecked:    Default state
 ///
-/// \return Element pointer or NULL if failure
+/// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXCheckbox* pXData,gslc_tsRect rElem,bool bRadio,
   gslc_teXCheckboxStyle nStyle,gslc_tsColor colCheck,bool bChecked);
 
@@ -292,22 +296,21 @@ gslc_tsElem* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 ///
 /// Get a Checkbox element's current state
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Current state
 ///
-bool gslc_ElemXCheckboxGetState(gslc_tsElem* pElem);
-
+bool gslc_ElemXCheckboxGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Set a Checkbox element's current state
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bChecked:    New state
 ///
 /// \return none
 ///
-void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked);
+void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked);
 
 ///
 /// Find the checkbox within a group that has been checked
@@ -317,43 +320,42 @@ void gslc_ElemXCheckboxSetState(gslc_tsElem* pElem,bool bChecked);
 ///
 /// \return Element Ptr or NULL if none checked
 ///
-gslc_tsElem* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId);
+gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId);
 
 ///
 /// Toggle a Checkbox element's current state
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
 ///
-void gslc_ElemXCheckboxToggleState(gslc_tsElem* pElem);
-
+void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Draw a Checkbox element on the screen
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 ///
 /// Handle touch events to Checkbox element
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
 // ============================================================================
@@ -397,9 +399,9 @@ typedef struct {
 /// \param[in]  nThumbSz:    Size of the thumb control
 /// \param[in]  bVert:       Orientation (true for vertical)
 ///
-/// \return Element pointer or NULL if failure
+/// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXSlider* pXData,gslc_tsRect rElem,int16_t nPosMin,int16_t nPosMax,int16_t nPos,
   uint16_t nThumbSz,bool bVert);
 
@@ -407,7 +409,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 ///
 /// Set a Slider element's current position
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bTrim:       Show a colored trim?
 /// \param[in]  colTrim:     Color of trim
 /// \param[in]  nTickDiv:    Number of tick divisions to show (0 for none)
@@ -416,7 +418,7 @@ gslc_tsElem* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
+void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
         int16_t nTickLen,gslc_tsColor colTick);
 
@@ -424,61 +426,62 @@ void gslc_ElemXSliderSetStyle(gslc_tsElem* pElem,
 ///
 /// Get a Slider element's current position
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Current slider position
 ///
-int gslc_ElemXSliderGetPos(gslc_tsElem* pElem);
+int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 
 ///
 /// Set a Slider element's current position
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nPos:        New position value
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElem* pElem,int16_t nPos);
+void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
 
 ///
 /// Assign the position callback function for a slider
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetPosFunc(gslc_tsElem* pElem,GSLC_CB_XSLIDER_POS funcCb);
+void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XSLIDER_POS funcCb);
 
 ///
 /// Draw a Slider element on the screen
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSliderDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 ///
 /// Handle touch events to Slider element
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSliderTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 
+#if (GSLC_FEATURE_COMPOUND)
 // ============================================================================
 // Extended Element: SelNum (Number Selector)
 // - Demonstration of a compound element consisting of
@@ -522,7 +525,7 @@ typedef struct {
 ///
 /// \return Pointer to Element or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId);
 
 
@@ -536,7 +539,7 @@ gslc_tsElem* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 
 ///
@@ -558,7 +561,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum);
 ///
 /// \return none
 ///
-void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount);
+void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t nCount);
 
 
 ///
@@ -573,7 +576,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsXSelNum* pSelNum,int16_t nCount);
 ///
 /// \return none
 ///
-bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY);
+bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY);
 
 ///
 /// Handle touch (up,down,move) events to SelNum element
@@ -587,8 +590,8 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t 
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
-
+bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+#endif // GLSC_COMPOUND
 
 // ============================================================================
 // Extended Element: Textbox
@@ -602,7 +605,6 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElem,gslc_teTouch eTouch,int16_t 
 /// Extended data for Textbox element
 typedef struct {
   // Config
-  gslc_tsGui*                 pGui;         ///< Ptr to GUI
   char*                       pBuf;         ///< Ptr to the text buffer (circular buffer))
   uint8_t                     nMargin;      ///< Margin for text area within element rect
   bool                        bWrapEn;      ///< Enable for line wrapping
@@ -642,9 +644,9 @@ typedef struct {
 /// \param[in]  nBufRows:    Number of rows in buffer
 /// \param[in]  nBufCols:    Number of columns in buffer (incl special codes)
 ///
-/// \return Element pointer or NULL if failure
+/// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXTextbox* pXData,gslc_tsRect rElem,int16_t nFontId,char* pBuf,
         uint16_t nBufRows,uint16_t nBufCols);
 
@@ -652,11 +654,11 @@ gslc_tsElem* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
 /// Reset the contents of the textbox
 /// - Clears the buffer and resets the position
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxReset(gslc_tsElem* pElem);
+void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 
 ///
@@ -669,7 +671,7 @@ void gslc_ElemXTextboxReset(gslc_tsElem* pElem);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 /// Add a text string to the textbox
 /// - If it includes a newline then the buffer will
@@ -677,54 +679,54 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
 /// - If wrap has been enabled, then a newline will
 ///   be forced
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  pTxt         Pointer to text string (null-terminated)
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxAdd(gslc_tsElem* pElem,char* pTxt);
+void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt);
 
 ///
 /// Insert a color set code into the current buffer position
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nCol:        Color to assign for next text written to textbox
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxColSet(gslc_tsElem* pElem,gslc_tsColor nCol);
+void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor nCol);
 
 ///
 /// Insert a color reset code into the current buffer position
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxColReset(gslc_tsElem* pElem);
+void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Enable or disable line wrap within textbox
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bWrapEn:     Enable line wrap if true
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxWrapSet(gslc_tsElem* pElem,bool bWrapEn);
+void gslc_ElemXTextboxWrapSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bWrapEn);
 
 
 ///
 /// Set the textbox scroll position (nScrollPos) as a fraction of
 /// nScrollMax
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nScrollPos:  New scroll position
 /// \param[in]  nScrollMax:  Maximum scroll position
 ///
 /// \return none
 ///
-void gslc_ElemXTextboxScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax);
+void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nScrollPos,uint8_t nScrollMax);
 
 
 
@@ -742,7 +744,6 @@ typedef enum {
 /// Extended data for Graph element
 typedef struct {
   // Config
-  gslc_tsGui*               pGui;           ///< Ptr to GUI
   int16_t*                  pBuf;           ///< Ptr to the data buffer (circular buffer))
   uint8_t                   nMargin;        ///< Margin for graph area within element rect
   gslc_tsColor              colGraph;       ///< Color of the graph
@@ -780,34 +781,34 @@ typedef struct {
 /// \param[in]  nBufRows:    Maximum number of points in buffer
 /// \param[in]  colGraph:    Color of the graph
 ///
-/// \return Element pointer or NULL if failure
+/// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElem* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXGraph* pXData,gslc_tsRect rElem,int16_t nFontId,int16_t* pBuf,
   uint16_t nBufRows,gslc_tsColor colGraph);
 
 ///
 /// Set the graph's additional drawing characteristics
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  eStyle:      Drawing style for the graph
 /// \param[in]  nMargin:     Margin to provide around graph area inside frame
 ///
 /// \return none
 ///
-void gslc_ElemXGraphSetStyle(gslc_tsElem* pElem,
+void gslc_ElemXGraphSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         gslc_teXGraphStyle eStyle,uint8_t nMargin);
 
 ///
 /// Set the graph's drawing range
 ///
-/// \param[in]  pElem:       Pointer to Element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nYMin:       Minimum Y value to draw
 /// \param[in]  nYMax:       Maximum Y value to draw
 ///
 /// \return none
 ///
-void gslc_ElemXGraphSetRange(gslc_tsElem* pElem,
+void gslc_ElemXGraphSetRange(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         int16_t nYMin,int16_t nYMax);
 
 ///
@@ -820,29 +821,29 @@ void gslc_ElemXGraphSetRange(gslc_tsElem* pElem,
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXGraphDraw(void* pvGui,void* pvElem,gslc_teRedrawType eRedraw);
+bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 /// Add a value to the graph at the latest position
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nVal:        Data value to add
 ///
 /// \return none
 ///
-void gslc_ElemXGraphAdd(gslc_tsElem* pElem,int16_t nVal);
+void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal);
 
 
 ///
 /// Set the graph scroll position (nScrollPos) as a fraction of
 /// nScrollMax
 ///
-/// \param[in]  pElem:       Pointer to element
+/// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nScrollPos:  New scroll position
 /// \param[in]  nScrollMax:  Maximum scroll position
 ///
 /// \return none
 ///
-void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScrollMax);
+void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nScrollPos,uint8_t nScrollMax);
 
 
 // ============================================================================
@@ -857,7 +858,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 
 /// \def gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,bRadio,nStyle,colCheck,bChecked)
 ///
-/// Create a Checkbox Element in Flash
+/// Create a Checkbox or Radio button Element in Flash
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nElemId:     Unique element ID to assign
@@ -866,6 +867,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 /// \param[in]  nY:          Y coordinate of element
 /// \param[in]  nW:          Width of element
 /// \param[in]  nH:          Height of element
+/// \param[in]  nGroup:      Group ID that radio buttons belong to (else GSLC_GROUP_NONE)
 /// \param[in]  bRadio:      Radio-button functionality if true
 /// \param[in]  nStyle:      Drawing style for checkbox / radio button
 /// \param[in]  colCheck:    Color for inner fill when checked
@@ -874,13 +876,62 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
 /// \return none
 ///
 
+
+/// \def gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
+///      nPosMin,nPosMax,nPos,nThumbSz,bVert,colFrame,colFill)
+///
+/// Create a Slider Element in Flash
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Unique element ID to assign
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  nX:          X coordinate of element
+/// \param[in]  nY:          Y coordinate of element
+/// \param[in]  nW:          Width of element
+/// \param[in]  nH:          Height of element
+/// \param[in]  nPosMin:     Minimum position value
+/// \param[in]  nPosMax:     Maximum position value
+/// \param[in]  nPos:        Starting position value
+/// \param[in]  nThumbSz:    Size of the thumb control
+/// \param[in]  bVert:       Orientation (true for vertical)
+/// \param[in]  colFrame:    Color of the element frame
+/// \param[in]  colFill:     Color of the element fill
+///
+/// \return none
+///
+
+
+/// \def gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
+///      nMin,nMax,nVal,colFrame,colFill,colGauge,bVert)
+///
+/// Create a Gauge Element in Flash
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nElemId:     Unique element ID to assign
+/// \param[in]  nPage:       Page ID to attach element to
+/// \param[in]  nX:          X coordinate of element
+/// \param[in]  nY:          Y coordinate of element
+/// \param[in]  nW:          Width of element
+/// \param[in]  nH:          Height of element
+/// \param[in]  nMin:        Minimum value of gauge for nVal comparison
+/// \param[in]  nMax:        Maximum value of gauge for nVal comparison
+/// \param[in]  nVal:        Starting value of gauge
+/// \param[in]  colFrame:    Color for the gauge frame
+/// \param[in]  colFill:     Color for the gauge background fill
+/// \param[in]  colGauge:    Color for the gauge indicator
+/// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
+///                          (true = vertical, false = horizontal)
+///
+/// \return none
+///
+
+
 #ifdef GSLC_USE_PROGMEM
 
-#define gslc_ElemXCheckboxCreate_P(pGui_,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
+#define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXCheckbox sCheckbox##nElemId;                     \
-  sCheckbox##nElemId.pGui = pGui_;                                \
   sCheckbox##nElemId.bRadio = bRadio_;                            \
   sCheckbox##nElemId.bChecked = bChecked_;                        \
   sCheckbox##nElemId.colCheck = colCheck_;                        \
@@ -908,10 +959,230 @@ void gslc_ElemXGraphScrollSet(gslc_tsElem* pElem,uint8_t nScrollPos,uint8_t nScr
       &gslc_ElemXCheckboxDraw,                                    \
       &gslc_ElemXCheckboxTouch,                                   \
       NULL,                                                       \
-      GSLC_REDRAW_NONE,                                           \
-      false,                                                      \
   };                                                              \
-  gslc_ElemAdd(pGui_,nPage,(gslc_tsElem*)&sElem##nElemId,GSLC_ELEMREF_SRC_PROG);
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
+    nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXSlider sSlider##nElemId;                         \
+  sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.nThumbSz = nThumbSz_;                          \
+  sSlider##nElemId.nPosMin = nPosMin_;                            \
+  sSlider##nElemId.nPosMax = nPosMax_;                            \
+  sSlider##nElemId.nTickDiv = 0;                                  \
+  sSlider##nElemId.nTickLen = 0;                                  \
+  sSlider##nElemId.colTick = GSLC_COL_WHITE;                      \
+  sSlider##nElemId.bTrim = false;                                 \
+  sSlider##nElemId.colTrim = GSLC_COL_BLACK;                      \
+  sSlider##nElemId.nPos = nPos_;                                  \
+  sSlider##nElemId.pfuncXPos = NULL;                              \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_SLIDER,                                          \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sSlider##nElemId),                                 \
+      NULL,                                                       \
+      &gslc_ElemXSliderDraw,                                      \
+      &gslc_ElemXSliderTouch,                                     \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
+    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXGauge sGauge##nElemId;                           \
+  sGauge##nElemId.nMin = nMin_;                                   \
+  sGauge##nElemId.nMax = nMax_;                                   \
+  sGauge##nElemId.nVal = nVal_;                                   \
+  sGauge##nElemId.nValLast = nVal_;                               \
+  sGauge##nElemId.bValLastValid = false;                          \
+  sGauge##nElemId.nStyle = GSLCX_GAUGE_STYLE_PROG_BAR;            \
+  sGauge##nElemId.colGauge = colGauge_;                           \
+  sGauge##nElemId.colTick = GSLC_COL_GRAY;                        \
+  sGauge##nElemId.nTickCnt = 8;                                   \
+  sGauge##nElemId.nTickLen = 5;                                   \
+  sGauge##nElemId.bVert = bVert_;                                 \
+  sGauge##nElemId.bFlip = false;                                  \
+  sGauge##nElemId.nIndicLen = 10;                                 \
+  sGauge##nElemId.nIndicTip = 3;                                  \
+  sGauge##nElemId.bIndicFill = false;                             \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_GAUGE,                                           \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sGauge##nElemId),                                  \
+      NULL,                                                       \
+      &gslc_ElemXGaugeDraw,                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+
+#else
+
+#define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXCheckbox sCheckbox##nElemId;                     \
+  sCheckbox##nElemId.bRadio = bRadio_;                            \
+  sCheckbox##nElemId.bChecked = bChecked_;                        \
+  sCheckbox##nElemId.colCheck = colCheck_;                        \
+  sCheckbox##nElemId.nStyle = nStyle_;                            \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_CHECKBOX,                                        \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      nGroup,                                                     \
+      GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sCheckbox##nElemId),                               \
+      NULL,                                                       \
+      &gslc_ElemXCheckboxDraw,                                    \
+      &gslc_ElemXCheckboxTouch,                                   \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
+    nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXSlider sSlider##nElemId;                         \
+  sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.nThumbSz = nThumbSz_;                          \
+  sSlider##nElemId.nPosMin = nPosMin_;                            \
+  sSlider##nElemId.nPosMax = nPosMax_;                            \
+  sSlider##nElemId.nTickDiv = 0;                                  \
+  sSlider##nElemId.nTickLen = 0;                                  \
+  sSlider##nElemId.colTick = GSLC_COL_WHITE;                      \
+  sSlider##nElemId.bTrim = false;                                 \
+  sSlider##nElemId.colTrim = GSLC_COL_BLACK;                      \
+  sSlider##nElemId.nPos = nPos_;                                  \
+  sSlider##nElemId.pfuncXPos = NULL;                              \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_SLIDER,                                          \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sSlider##nElemId),                                 \
+      NULL,                                                       \
+      &gslc_ElemXSliderDraw,                                      \
+      &gslc_ElemXSliderTouch,                                     \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+
+
+#define gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
+    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
+  static gslc_tsXGauge sGauge##nElemId;                           \
+  sGauge##nElemId.nMin = nMin_;                                   \
+  sGauge##nElemId.nMax = nMax_;                                   \
+  sGauge##nElemId.nVal = nVal_;                                   \
+  sGauge##nElemId.nValLast = nVal_;                               \
+  sGauge##nElemId.bValLastValid = false;                          \
+  sGauge##nElemId.nStyle = GSLCX_GAUGE_STYLE_PROG_BAR;            \
+  sGauge##nElemId.colGauge = colGauge_;                           \
+  sGauge##nElemId.colTick = GSLC_COL_GRAY;                        \
+  sGauge##nElemId.nTickCnt = 8;                                   \
+  sGauge##nElemId.nTickLen = 5;                                   \
+  sGauge##nElemId.bVert = bVert_;                                 \
+  sGauge##nElemId.bFlip = false;                                  \
+  sGauge##nElemId.nIndicLen = 10;                                 \
+  sGauge##nElemId.nIndicTip = 3;                                  \
+  sGauge##nElemId.bIndicFill = false;                             \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPEX_GAUGE,                                           \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame_,colFill_,colFrame_,colFill_,                      \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      (gslc_teTxtFlags)(GSLC_TXT_DEFAULT),                        \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      (void*)(&sGauge##nElemId),                                  \
+      NULL,                                                       \
+      &gslc_ElemXGaugeDraw,                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
 
 #endif
 

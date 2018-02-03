@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 03 (Arduino):
 //   - Accept touch input, graphic button
 //
@@ -10,7 +11,7 @@
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
 //   - IMPORTANT: This sketch uses graphics located on an external SD card
 //     accessed via a SPI interface. The GUIslice_config.h needs to set
-//     #define ADAGFX_SD_EN 1
+//     #define GSLC_SD_EN 1
 // - This example assumes that two image files have been created in the
 //   root of the SD card directory: "exit_n24.bmp" and "exit_g24.bmp"
 //   representing the quit button normal and glowing states. The file
@@ -58,7 +59,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -66,15 +67,15 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with image label
-  pElem = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){258,70,32,32},
+  pElemRef = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){258,70,32,32},
           gslc_GetImageFromSD(IMG_BTN_QUIT,GSLC_IMGREF_FMT_BMP24),
           gslc_GetImageFromSD(IMG_BTN_QUIT_SEL,GSLC_IMGREF_FMT_BMP24),
           &CbBtnQuit);
-  gslc_ElemSetFillEn(pElem,true); // On slow displays disable transparency to prevent full redraw
+  gslc_ElemSetFillEn(&m_gui,pElemRef,true); // On slow displays disable transparency to prevent full redraw
 
   return true;
 }

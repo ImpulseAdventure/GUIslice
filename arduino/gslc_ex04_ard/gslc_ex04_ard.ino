@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 04 (Arduino): Dynamic content
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - Provide example of additional Adafruit-GFX fonts
@@ -52,7 +53,7 @@ unsigned    m_nCount = 0;
 #define MAX_FONT                2
 
 // Define the maximum number of elements per page
-#define MAX_ELEM_PG_MAIN          15                                        // # Elems total
+#define MAX_ELEM_PG_MAIN          16                                        // # Elems total
 #define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN                          // # Elems in RAM
 
 gslc_tsGui                  m_gui;
@@ -70,11 +71,11 @@ gslc_tsXSlider              m_sXSlider;
 #define MAX_STR             15
 
   // Save some element references for quick access
-  gslc_tsElem*  m_pElemCnt        = NULL;
-  gslc_tsElem*  m_pElemProgress   = NULL;
-  gslc_tsElem*  m_pElemProgress1  = NULL;
-  gslc_tsElem*  m_pElemSlider     = NULL;
-  gslc_tsElem*  m_pElemSliderTxt  = NULL;
+  gslc_tsElemRef*  m_pElemCnt        = NULL;
+  gslc_tsElemRef*  m_pElemProgress   = NULL;
+  gslc_tsElemRef*  m_pElemProgress1  = NULL;
+  gslc_tsElemRef*  m_pElemSlider     = NULL;
+  gslc_tsElemRef*  m_pElemSliderTxt  = NULL;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
@@ -92,7 +93,7 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem;
+  gslc_tsElemRef* pElemRef;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -101,67 +102,73 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){160,80,80,40},(char*)"Quit",0,E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
     (char*)"Count:",0,E_FONT_TXT);
   static char mstr1[8] = "";
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     mstr1,sizeof(mstr1),E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_YELLOW);
-  m_pElemCnt = pElem; // Save for quick access
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_YELLOW);
+  m_pElemCnt = pElemRef; // Save for quick access
 
   // Create progress bar (horizontal)
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     (char*)"Progress:",0,E_FONT_TXT);
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress = pElem; // Save for quick access
+  m_pElemProgress = pElemRef; // Save for quick access
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElem = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  m_pElemProgress1 = pElem; // Save for quick access
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  m_pElemProgress1 = pElemRef; // Save for quick access
+
 
   // Create checkbox 1
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
     (char*)"Check1:",0,E_FONT_TXT);
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
     (char*)"Radio1:",0,E_FONT_TXT);
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
     (gslc_tsRect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
-  gslc_ElemSetGroup(pElem,E_GROUP1);
+  gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
 
   // Create radio 2
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
     (char*)"Radio2:",0,E_FONT_TXT);
-  pElem = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
-  gslc_ElemSetGroup(pElem,E_GROUP1);
+  gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
 
   // Create slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
-  gslc_ElemXSliderSetStyle(pElem,true,(gslc_tsColor){0,0,128},10,
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
-  m_pElemSlider = pElem; // Save for quick access
+  m_pElemSlider = pElemRef; // Save for quick access
 
-  static char mstr2[16] = "Slider: ???";
-  pElem = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
+
+  static char mstr2[8] = "Slider:";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,160,60,20},
     mstr2,sizeof(mstr2),E_FONT_TXT);
-  m_pElemSliderTxt = pElem; // Save for quick access
+  static char mstr3[6] = "???";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,160,40,20},
+    mstr3,sizeof(mstr3),E_FONT_TXT);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
+  m_pElemSliderTxt = pElemRef; // Save for quick access
 
   return true;
 }
@@ -204,19 +211,21 @@ void loop()
   m_nCount++;
 
   // Update elements on active page
-  snprintf(acTxt,MAX_STR,"%u",m_nCount/5);
-  gslc_ElemSetTxtStr(m_pElemCnt,acTxt);
 
-  gslc_ElemXGaugeUpdate(m_pElemProgress,((m_nCount/1)%100));
+  snprintf(acTxt,MAX_STR,"%u",m_nCount/5);
+  gslc_ElemSetTxtStr(&m_gui,m_pElemCnt,acTxt);
+
+  gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress,((m_nCount/1)%100));
 
   // NOTE: A more efficient method is to move the following
   //       code into the slider position callback function.
   //       Please see example 07.
-  int nPos = gslc_ElemXSliderGetPos(m_pElemSlider);
-  snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-  gslc_ElemSetTxtStr(m_pElemSliderTxt,acTxt);
+  int nPos = gslc_ElemXSliderGetPos(&m_gui,m_pElemSlider);
+  snprintf(acTxt,MAX_STR,"%u",nPos);
+  gslc_ElemSetTxtStr(&m_gui,m_pElemSliderTxt,acTxt);
 
-  gslc_ElemXGaugeUpdate(m_pElemProgress1,(nPos*80.0/100.0)-15);
+  gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress1,(nPos*80.0/100.0)-15);
+
 
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);

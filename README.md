@@ -26,6 +26,13 @@
 
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
 
+
+## Device Configuration
+- The following table lists a number of devices that have been tested with GUIslice
+  and the recommended configuration modes and test examples.
+  
+![guislice-devices](https://user-images.githubusercontent.com/8510097/35765285-5e7f1eb0-0875-11e8-8623-ce1bf2f3a5bf.PNG)
+  
 ## Important Note for Arduino Users ##
 - *Major changes are arriving soon in **GUIslice version 0.10**, which will reduce
   memory consumption for Arduino devices considerably. Stay tuned!*

@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 07 (Arduino): [minimum RAM version]
 //   - Sliders with dynamic color control and position callback
 //   - Demonstrates the use of ElemCreate*_P() functions.
@@ -42,7 +43,7 @@ unsigned  m_nCount = 0;
 // - This should allow both Arduino and ARM Cortex to use the same code
 #define MAX_ELEM_PG_MAIN          17                                        // # Elems total
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   13                                        // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   16                                        // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                         // # Elems in Flash
 #endif
@@ -55,8 +56,6 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];   // Storage for all elements in RAM
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References for all elements in GUI
 
-gslc_tsXSlider              m_sXSlider_R,m_sXSlider_G,m_sXSlider_B;
-
 // Current RGB value for color box
 // - Globals defined here for convenience so that callback
 //   can update R,G,B components independently
@@ -68,7 +67,7 @@ uint8_t   m_nPosB = 0;
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Quit button callback
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -81,22 +80,23 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // - Note that all three sliders use the same callback for
 //   convenience. From the element's ID we can determine which
 //   slider was updated.
-bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
+bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 {
-  gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   //gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);
 
   // Fetch the new RGB component from the slider
   switch (pElem->nId) {
     case E_SLIDER_R:
-      m_nPosR = gslc_ElemXSliderGetPos(pElem);
+      m_nPosR = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     case E_SLIDER_G:
-      m_nPosG = gslc_ElemXSliderGetPos(pElem);
+      m_nPosG = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     case E_SLIDER_B:
-      m_nPosB = gslc_ElemXSliderGetPos(pElem);
+      m_nPosB = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     default:
       break;
@@ -106,8 +106,8 @@ bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
 
   // Update the color box
-  gslc_tsElem* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
-  gslc_ElemSetCol(pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
+  gslc_tsElemRef* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
+  gslc_ElemSetCol(pGui,pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   return true;
 }
@@ -116,7 +116,7 @@ bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -134,19 +134,19 @@ bool InitOverlays()
 
 
   // Create background box
-  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create dividers
-  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL);
-  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL);
+  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL,NULL);
+  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL,NULL);
 
 
   // Create color box
   // - This element is created in RAM instead of Flash as we want
   //   dynamic control over its color fill
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   // Create Quit button with text label
   gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[0],
@@ -180,31 +180,31 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
-          (gslc_tsRect){nSlideX,140,nSlideW,nSlideH},0,255,m_nPosR,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_R,E_PG_MAIN,210,140,80,20,
+    0,255,255,5,false,GSLC_COL_RED,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_R);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
   // Static text label
   gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
-          (gslc_tsRect){nSlideX,170,nSlideW,nSlideH},0,255,m_nPosG,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_G,E_PG_MAIN,210,170,80,20,
+    0,255,128,5,false,GSLC_COL_GREEN,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_G);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
   // Static text label
   gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",&m_asFont[0],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
-          (gslc_tsRect){nSlideX,200,nSlideW,nSlideH},0,255,m_nPosB,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_B,E_PG_MAIN,210,200,80,20,
+    0,255,0,5,false,GSLC_COL_BLUE,GSLC_COL_BLACK);
+  pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SLIDER_B);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
   gslc_ElemCreateTxt_P(&m_gui,109,E_PG_MAIN,250,230,60,10,"GUIslice Example",0,
           GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_RIGHT,false,false);

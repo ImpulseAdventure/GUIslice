@@ -1,7 +1,8 @@
 //
 // GUIslice Library Examples
 // - Calvin Hass
-// - http://www.impulseadventure.com/elec/guislice-gui.html
+// - https://www.impulseadventure.com/elec/guislice-gui.html
+// - https://github.com/ImpulseAdventure/GUIslice
 // - Example 07 (LINUX):
 //     Sliders with dynamic color control and position callback
 //
@@ -89,22 +90,23 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // - Note that all three sliders use the same callback for
 //   convenience. From the element's ID we can determine which
 //   slider was updated.
-bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
+bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 {
-  gslc_tsGui*     pGui    = (gslc_tsGui*)(pvGui);
-  gslc_tsElem*    pElem   = (gslc_tsElem*)(pvElem);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   //gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);
 
   // Fetch the new RGB component from the slider
   switch (pElem->nId) {
     case E_SLIDER_R:
-      m_nPosR = gslc_ElemXSliderGetPos(pElem);
+      m_nPosR = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     case E_SLIDER_G:
-      m_nPosG = gslc_ElemXSliderGetPos(pElem);
+      m_nPosG = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     case E_SLIDER_B:
-      m_nPosB = gslc_ElemXSliderGetPos(pElem);
+      m_nPosB = gslc_ElemXSliderGetPos(pGui,pElemRef);
       break;
     default:
       break;
@@ -114,8 +116,8 @@ bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
 
   // Update the color box
-  gslc_tsElem* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
-  gslc_ElemSetCol(pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
+  gslc_tsElemRef* pElemColor = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_COLOR);
+  gslc_ElemSetCol(pGui,pElemColor,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   return true;
 }
@@ -123,7 +125,7 @@ bool CbSlidePos(void* pvGui,void* pvElem,int16_t nPos)
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElem*  pElem = NULL;
+  gslc_tsElemRef*  pElemRef = NULL;
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
@@ -131,50 +133,50 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
 
   // Create Title with offset shadow
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){2,2,320,50},
     "Home Automation",0,E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){32,32,60});
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetFillEn(pElem,false);
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){32,32,60});
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){0,0,320,50},
     "Home Automation",0,E_FONT_TITLE);
-  gslc_ElemSetTxtCol(pElem,(gslc_tsColor){128,128,240});
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetFillEn(pElem,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){128,128,240});
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   // Create background box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create dividers
-  pElem = gslc_ElemCreateLine(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,20,100,300,100);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK3);
-  pElem = gslc_ElemCreateLine(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,235,60,235,95);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK3);
+  pElemRef = gslc_ElemCreateLine(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,20,100,300,100);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK3);
+  pElemRef = gslc_ElemCreateLine(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,235,60,235,95);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK3);
 
   // Create color box
-  pElem = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,90+30,130,100});
   gslc_tsColor colRGB = (gslc_tsColor){m_nPosR,m_nPosG,m_nPosB};
-  gslc_ElemSetCol(pElem,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
 
   // Create Quit button with text label
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,60,50,30},"SAVE",0,E_FONT_BTN,&CbBtnQuit);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
 
   // Create dummy selector
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,65,100,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,65,100,20},
     "Selected Room:",0,E_FONT_HEAD);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT2);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
 
 
 
-  pElem = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
    (gslc_tsRect){140,65,80,20},"Kitchen...",0,E_FONT_BTN,NULL);
-  gslc_ElemSetCol(pElem,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
 
   // Create sliders
   // - Define element arrangement
@@ -187,55 +189,55 @@ bool InitOverlays()
   uint16_t  nLabelH   = 20;
   int16_t   nSlideX   = nLabelX + nLabelW + 20;
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,120,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,120,20},
     "Set LED RGB:",0,E_FONT_HEAD);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_WHITE);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   nCtrlY += 25;
 
 
   // Create three sliders (R,G,B) and assign callback function
   // that is invoked upon change. The common callback will update
   // the color box.
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Red:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_R,E_PG_MAIN,&m_sXSlider_R,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosR,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_RED_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
   nCtrlY += nCtrlGap;
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Green:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_G,E_PG_MAIN,&m_sXSlider_G,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosG,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
   nCtrlY += nCtrlGap;
 
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){nLabelX,nCtrlY,nLabelW,nLabelH},
     "Blue:",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_GRAY_LT3);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
-  pElem = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER_B,E_PG_MAIN,&m_sXSlider_B,
           (gslc_tsRect){nSlideX,nCtrlY,nSlideW,nSlideH},0,255,m_nPosB,5,false);
-  gslc_ElemSetCol(pElem,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXSliderSetStyle(pElem,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(pElem,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_BLUE_DK4,10,5,GSLC_COL_GRAY_DK2);
+  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
   nCtrlY += nCtrlGap;
 
 
-  pElem = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){250,230,60,10},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){250,230,60,10},
     "GUIslice Example",0,E_FONT_TXT);
-  gslc_ElemSetTxtCol(pElem,GSLC_COL_BLACK);
-  gslc_ElemSetTxtAlign(pElem,GSLC_ALIGN_MID_RIGHT);
-  gslc_ElemSetFillEn(pElem,false);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   return true;
 }
