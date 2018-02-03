@@ -110,7 +110,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nDispDepth      = 0;
 
   #if defined( DRV_DISP_ADAGFX ) || defined( DRV_DISP_TFT_ESPI )
-    pGui->nRotation		= ADAGFX_ROTATE;
+    pGui->nRotation		= GSLC_ROTATE;
     pGui->nSwapXY		= ADATOUCH_SWAP_XY;
     pGui->nFlipX		= ADATOUCH_FLIP_X;
     pGui->nFlipY		= ADATOUCH_FLIP_Y;
@@ -670,14 +670,14 @@ gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt)
 gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
 {
   gslc_tsImgRef sImgRef;
-#if (ADAGFX_SD_EN)
+#if (GSLC_SD_EN)
   sImgRef.eImgFlags = GSLC_IMGREF_SRC_SD | (GSLC_IMGREF_FMT & eFmt);
   sImgRef.pFname    = pFname;
   sImgRef.pImgBuf   = NULL;
   sImgRef.pvImgRaw  = NULL;
 #else
   // TODO: Change message to also handle non-Arduino output
-  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:ADAGFX_SD_EN=0\n","");
+  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
   sImgRef.eImgFlags = GSLC_IMGREF_NONE;
 #endif
   return sImgRef;

@@ -11,7 +11,7 @@
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
 //   - IMPORTANT: This sketch uses graphics located on an external SD card
 //     accessed via a SPI interface. The GUIslice_config.h needs to set
-//     #define ADAGFX_SD_EN 1
+//     #define GSLC_SD_EN 1
 // - This example assumes that two image files have been created in the
 //   root of the SD card directory: "exit_n24.bmp" and "exit_g24.bmp"
 //   representing the quit button normal and glowing states. The file

@@ -103,7 +103,7 @@ bool InitOverlays()
   // -----------------------------------
   // Background
   // - Background image from SD card disabled, uncomment to enable
-  // - Ensure that ADAGFX_SD_EN is set to 1 in GUIslice_config.h
+  // - Ensure that GSLC_SD_EN is set to 1 in GUIslice_config.h
   //static const char m_strImgBkgnd[] = IMG_BKGND;
   //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24));
 

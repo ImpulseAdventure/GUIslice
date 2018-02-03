@@ -105,16 +105,16 @@ extern "C" {
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
   // - TODO: Add support for ESP8266 SPIFF
-  #define ADAGFX_SD_EN    0
+  #define GSLC_SD_EN    0
 
   // Enable support for clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  #define ADAGFX_CLIP 1
+  #define GSLC_CLIP_EN 1
 
   // Set Default rotation
   // - Note that if you change this you will likely have to change ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y
   //   as well to ensure that the touch screen orientation matches the display rotation
-  #define ADAGFX_ROTATE     1
+  #define GSLC_ROTATE     1
 
 #endif // DRV_DISP_*
 

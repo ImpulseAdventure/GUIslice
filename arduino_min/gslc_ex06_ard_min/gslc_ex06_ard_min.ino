@@ -16,7 +16,7 @@
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
 //   - IMPORTANT: This sketch can demonstrate use of a logo located on an external SD card
 //     accessed via a SPI interface. To enable, the GUIslice_config.h needs to set
-//     #define ADAGFX_SD_EN 1
+//     #define GSLC_SD_EN 1
 // - This sketch is expected to exhibit some flickering on unbuffered displays
 //
 

@@ -49,13 +49,13 @@
 
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #include <Adafruit_ILI9341.h>
-  #if (ADAGFX_SD_EN)
+  #if (GSLC_SD_EN)
     #include <SD.h>   // Include support for SD card access
   #endif
   #include <SPI.h>
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
   #include <Adafruit_TFTLCD.h>
-  #if (ADAGFX_SD_EN)
+  #if (GSLC_SD_EN)
     #include <SD.h>   // Include support for SD card access
   #endif
   #include <SPI.h>
@@ -70,7 +70,7 @@
 #elif defined(DRV_DISP_ADAGFX_HX8357)
   #include <Adafruit_HX8357.h>
   // TODO: Select either SPI or I2C. For now, assume SPI
-  #if (ADAGFX_SD_EN)
+  #if (GSLC_SD_EN)
     #include <SD.h>   // Include support for SD card access
   #endif
   #include <SPI.h>
@@ -235,7 +235,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     gslc_DrvSetClipRect(pGui,&rClipRect);
 
     // Initialize SD card usage
-    #if (ADAGFX_SD_EN)
+    #if (GSLC_SD_EN)
     if (!SD.begin(ADAGFX_PIN_SDCS)) {
       GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n",0);
       return false;
@@ -438,7 +438,7 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // Perform clipping
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipPt(&pDriver->rClipRect,nX,nY)) { return true; }
@@ -457,7 +457,7 @@ bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,uint16_t nNumPt,gslc_ts
 
 bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // Perform clipping
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }
@@ -470,7 +470,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // Perform clipping
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }
@@ -484,7 +484,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipLine(&pDriver->rClipRect,&nX0,&nY0,&nX1,&nY1)) { return true; }
 #endif
@@ -496,7 +496,7 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
 
 bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // TODO
 #endif
 
@@ -507,7 +507,7 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
 
 bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // TODO
 #endif
 
@@ -520,7 +520,7 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // TODO
 #endif
 
@@ -532,7 +532,7 @@ bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
-#if (ADAGFX_CLIP)
+#if (GSLC_CLIP_EN)
   // TODO
 #endif
 
@@ -602,7 +602,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
 // ----- REFERENCE CODE end
 
 
-#if (ADAGFX_SD_EN)
+#if (GSLC_SD_EN)
 // ----- REFERENCE CODE begin
 // The following code was based upon the following reference code but modified to
 // adapt for use in GUIslice.
@@ -637,7 +637,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   uint8_t  bmpDepth;              // Bit depth (currently must be 24)
   uint32_t bmpImageoffset;        // Start of image data in file
   uint32_t rowSize;               // Not always = bmpWidth; may have padding
-  uint8_t  sdbuffer[3*ADAGFX_SD_BUFFPIXEL]; // pixel buffer (R+G+B per pixel)
+  uint8_t  sdbuffer[3*GSLC_SD_BUFFPIXEL]; // pixel buffer (R+G+B per pixel)
   uint8_t  buffidx = sizeof(sdbuffer); // Current position in sdbuffer
   boolean  goodBmp = false;       // Set to true on valid header parse
   boolean  flip    = true;        // BMP is stored bottom-to-top
@@ -753,7 +753,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   }
 }
 // ----- REFERENCE CODE end
-#endif // ADAGFX_SD_EN
+#endif // GSLC_SD_EN
 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
@@ -791,7 +791,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     // Load image from SD media
-    #if (ADAGFX_SD_EN)
+    #if (GSLC_SD_EN)
       if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
         // 24-bit Bitmap
         gslc_DrvDrawBmp24FromSD(pGui,sImgRef.pFname,nDstX,nDstY);
