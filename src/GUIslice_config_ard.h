@@ -105,7 +105,7 @@ extern "C" {
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
-  #define ADAGFX_PIN_RST   11   // Display Reset
+  #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
   #define ADAGFX_PIN_WR    A1  // Display write pin (for parallel displays)
   #define ADAGFX_PIN_RD    A0  // Display read pin (for parallel displays)
