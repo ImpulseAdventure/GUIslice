@@ -1,5 +1,5 @@
-#ifndef _GUISLICE_CONFIG_H_
-#define _GUISLICE_CONFIG_H_
+#ifndef _GUISLICE_CONFIG_ESP_H_
+#define _GUISLICE_CONFIG_ESP_H_
 
 // =======================================================================
 // GUIslice library (user configuration) for ESP8266 / ESP32
@@ -224,4 +224,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // _GUISLICE_CONFIG_H_
+#endif // _GUISLICE_CONFIG_ESP_H_

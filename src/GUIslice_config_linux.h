@@ -1,5 +1,5 @@
-#ifndef _GUISLICE_CONFIG_H_
-#define _GUISLICE_CONFIG_H_
+#ifndef _GUISLICE_CONFIG_LINUX_H_
+#define _GUISLICE_CONFIG_LINUX_H_
 
 // =======================================================================
 // GUIslice library (user configuration) for LINUX / Raspberry Pi / Beaglebone
@@ -170,4 +170,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // _GUISLICE_CONFIG_H_
+#endif // _GUISLICE_CONFIG_LINUX_H_
