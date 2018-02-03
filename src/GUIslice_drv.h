@@ -50,7 +50,7 @@ extern "C" {
 #elif defined(DRV_DISP_TFT_ESPI)
   #include "GUIslice_drv_tft_espi.h"
 #else
-  #error "Driver needs to be specified in GUIslice_config.h (DRV_DISP_*)"
+  #error "Driver needs to be specified in GUIslice_config_*.h (DRV_DISP_*)"
 #endif
 
 
