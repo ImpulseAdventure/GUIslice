@@ -71,6 +71,16 @@ extern "C" {
 #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
 #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
 
+// Error reporting
+// - Set DEBUG_ERR to 1 to enable error reporting via the Serial connection
+// - Enabling DEBUG_ERR increases FLASH memory consumption which may be
+//   limited on the baseline Arduino (ATmega328P) devices.
+#if defined(__AVR__)
+    #define DEBUG_ERR               0   // Disable by default on low-mem Arduino
+#else
+    #define DEBUG_ERR               1   // Enable by default on all other devices
+#endif
+
 // -----------------------------------------------------------------------------------------
 
 // Graphics display driver-specific additional configuration
@@ -81,8 +91,6 @@ extern "C" {
   #define GSLC_LOCAL_STR      0
   #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
 
-  // Error reporting
-  #define DEBUG_ERR   0       // Enable error message reporting (requires more memory)
 
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
@@ -157,9 +165,6 @@ extern "C" {
   #define GSLC_LOCAL_STR      0
   #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
 
-  // Error reporting
-  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
-
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
@@ -195,8 +200,12 @@ extern "C" {
   #define ADATOUCH_I2C_ADDR   0x41  // I2C address of touch device
 
   // For ADATOUCH_SPI_HW=1
+#if defined(ESP8266)
+  // ESP8266 uses different pin naming
+  #define ADATOUCH_PIN_CS     PIN_D0 // From Adafruit 2.8" TFT touch shield (for ESP8266)
+#else
   #define ADATOUCH_PIN_CS     8 // From Adafruit 2.8" TFT touch shield
-  //#define ADATOUCH_PIN_CS     PIN_D0 // From Adafruit 2.8" TFT touch shield (for ESP8266)
+#endif
 
   // Calibration values for touch display
   // - These values may need to be updated to match your display
