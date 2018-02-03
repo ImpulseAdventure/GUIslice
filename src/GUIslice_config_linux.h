@@ -71,6 +71,10 @@ extern "C" {
 #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
 #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
 
+// Error reporting
+// - Set DEBUG_ERR to 1 to enable error reporting via the console
+#define DEBUG_ERR                   1   // Enable by default
+
 // -----------------------------------------------------------------------------------------
 
 // Graphics display driver-specific additional configuration
@@ -90,10 +94,6 @@ extern "C" {
   #define GSLC_USE_FLOAT      1
 
 
-  // Error reporting
-  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
-
-
 #elif defined(DRV_DISP_SDL2)
   // Define default device paths for framebuffer & touchscreen
   // - The following assumes display driver (eg. fbtft) reads from fb1
@@ -111,10 +111,6 @@ extern "C" {
 
   #define GSLC_LOCAL_STR      1
   #define GSLC_USE_FLOAT      1
-
-
-  // Error reporting
-  #define DEBUG_ERR   1       // Enable error message reporting (requires more memory)
 
 
 #endif // DRV_DISP_*
