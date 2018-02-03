@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/01/31)
+// - Version 0.10.0   (2018/02/02)
 // =======================================================================
 //
 // The MIT License
@@ -159,7 +159,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   // Initialize the display and touch drivers
   if (bOk) { bOk &= gslc_DrvInit(pGui); }
+  #if !defined(DRV_TOUCH_NONE)
   if (bOk) { bOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH); }
+  #endif
 
   if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
   return bOk;
@@ -378,6 +380,7 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
+  #if !defined(DRV_TOUCH_NONE)
   int16_t   nTouchX = 0;
   int16_t   nTouchY = 0;
   uint16_t  nTouchPress = 0;
@@ -423,6 +426,7 @@ void gslc_Update(gslc_tsGui* pGui)
       bDoneEvts = true;
     }
   } while (!bDoneEvts);
+  #endif // !DRV_TOUCH_NONE
 
   // Issue a timer tick to all pages
   uint8_t nPageInd;
@@ -1949,6 +1953,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       break;
 
     case GSLC_EVT_TOUCH:
+      #if !defined(DRV_TOUCH_NONE)
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
       pTouchRec = (gslc_tsEventTouch*)(pvData);
@@ -1968,6 +1973,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
+      #endif // !DRV_TOUCH_NONE
       break;
 
     case GSLC_EVT_TICK:
@@ -2633,6 +2639,10 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
 
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
+#if defined(DRV_TOUCH_NONE)
+  return;
+#else
+
   // Fetch the data members of the touch event
   int16_t       nX      = pEventTouch->nX;
   int16_t       nY      = pEventTouch->nY;
@@ -2742,6 +2752,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     }
 
   }
+#endif // !DRV_TOUCH_NONE
 }
 
 
@@ -2749,6 +2760,10 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 // and dispatching to the touch event handler for the page
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
+#if defined(DRV_TOUCH_NONE)
+  return;
+#else
+
   if ((pGui == NULL) || (pPage == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -2796,6 +2811,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   pGui->nTouchLastX      = nX;
   pGui->nTouchLastY      = nY;
   pGui->nTouchLastPress  = nPress;
+#endif // !DRV_TOUCH_NONE
 }
 
 
@@ -2806,6 +2822,10 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 
 bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   bool bOk;
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "InitTouch";
@@ -2831,11 +2851,16 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
     GSLC_DEBUG_PRINT("ERROR: InitTouch() failed in touch driver init\n",0);
   }
   return bOk;
+#endif // !DRV_TOUCH_NONE
 }
 
 
 bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "GetTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -2854,6 +2879,7 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
 #endif
 
   return false;
+#endif // !DRV_TOUCH_NONE
 }
 
 
@@ -3211,11 +3237,14 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   return true;
 }
 
-
 // Trigger a touch event on an element
 bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
         gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   gslc_tsEventTouch sEventTouch;
   sEventTouch.eTouch        = eTouch;
   sEventTouch.nX            = nX;
@@ -3223,6 +3252,7 @@ bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
   gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pElemRefTracked,&sEventTouch);
   gslc_ElemEvent((void*)pGui,sEvent);
   return true;
+#endif // !DRV_TOUCH_NONE
 }
 
 // Initialize the element struct to all zeros

@@ -1009,6 +1009,10 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
 //
 bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -1074,7 +1078,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   }
 
   return true;
-
+  #endif // !DRV_TOUCH_NONE
 }
 
 // ============================================================================
@@ -1371,6 +1375,10 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 // after any touch event
 bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -1448,6 +1456,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   }
 
   return true;
+  #endif // !DRV_TOUCH_NONE
 }
 
 
@@ -1696,6 +1705,10 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
 //   data structures.
 bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumClick";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -1750,10 +1763,15 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
   } // eTouch
 
   return true;
+#endif // !DRV_TOUCH_NONE
 }
 
 bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
+#if defined(DRV_TOUCH_NONE)
+  return false;
+#else
+
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -1814,7 +1832,7 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 
 
   return true;
-
+  #endif // !DRV_TOUCH_NONE
 }
 #endif // GSLC_FEATURE_COMPOUND
 

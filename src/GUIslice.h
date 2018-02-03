@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/01/31)
+// - Version 0.10.0   (2018/02/02)
 // =======================================================================
 //
 // The MIT License
@@ -2172,7 +2172,7 @@ void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
 ///
 void gslc_ElemDestruct(gslc_tsElem* pElem);
 
-
+#if !defined(DRV_TOUCH_NONE)
 ///
 /// Trigger an element's touch event. This is an optional
 /// behavior useful in some extended element types.
@@ -2187,6 +2187,7 @@ void gslc_ElemDestruct(gslc_tsElem* pElem);
 ///
 bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
         gslc_teTouch eTouch,int16_t nX,int16_t nY);
+#endif // !DRV_TOUCH_NONE
 
 ///
 /// Initialize a Font struct
