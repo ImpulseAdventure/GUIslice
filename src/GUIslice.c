@@ -34,16 +34,8 @@
 
 // GUIslice library
 
-// Import user configuration depending on device type
-#if defined(__linux__)
-  #include "GUIslice_config_linux.h"
-#elif defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
-  #include "GUIslice_config_ard.h"
-#elif defined(ESP8266) || defined(ESP32)
-  #include "GUIslice_config_esp.h"
-#else
-  #error "Unknown device platform"
-#endif
+// Import configuration ( which will import a sub-config depending on device type)
+#include "GUIslice_config.h"
 
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
