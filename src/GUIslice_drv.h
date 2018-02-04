@@ -49,6 +49,8 @@ extern "C" {
   #include "GUIslice_drv_adagfx.h"
 #elif defined(DRV_DISP_TFT_ESPI)
   #include "GUIslice_drv_tft_espi.h"
+#elif defined(DRV_DISP_M5STACK)
+  #include "GUIslice_drv_m5stack.h"
 #else
   #error "Driver needs to be specified in GUIslice_config_*.h (DRV_DISP_*)"
 #endif

@@ -49,17 +49,15 @@ extern "C" {
 // Specify the graphics driver library
 // - Uncomment one of the following graphics drivers
 #define DRV_DISP_TFT_ESPI          // Arduino: Bodmer/TFT_eSPI library
-//#define DRV_DISP_M5STACK          // M5Stack : TODO
-
+//#define DRV_DISP_M5STACK           // M5Stack: m5stack/M5Stack library
 
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
 //#define DRV_TOUCH_NONE          // No touchscreen support
-#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
+//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
-//#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
+#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
 //#define DRV_TOUCH_ADA_SIMPLE    // Arduino: Use Adafruit Touchscreen
-
 
 // -----------------------------------------------------------------------------------------
 // Enable of optional features
@@ -120,6 +118,40 @@ extern "C" {
 
 
 // -----------------------------------------------------------------------------------------
+
+
+#if defined(DRV_DISP_M5STACK)
+
+  #define GSLC_DEV_TOUCH ""   // No device path used
+
+  #define GSLC_LOCAL_STR      0
+  #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
+
+  #define ADAGFX_PIN_SDCS   4   // SD card chip select
+  #define TFT_LIGHT_PIN    32   // display backlight
+
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  // - TODO: Add support for ESP8266 SPIFF
+  #define GSLC_SD_EN    0
+
+  // Enable support for clipping (DrvSetClipRect)
+  // - Note that this will impact performance of drawing graphics primitives
+  #define GSLC_CLIP_EN 1
+
+  // Set Default rotation
+  // - Note that if you change this you will likely have to change ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y
+  //   as well to ensure that the touch screen orientation matches the display rotation
+  #define GSLC_ROTATE     0
+
+#endif // DRV_DISP_*
+
+
+// -----------------------------------------------------------------------------------------
+
 
 // Touch Driver-specific additional configuration
 #if defined(DRV_TOUCH_ADA_STMPE610)
