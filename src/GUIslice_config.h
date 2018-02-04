@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_H_
 
 // =======================================================================
-// GUIslice library (user configuration) for Arduino / Cortex-M0
+// GUIslice library (user configuration) selection by device
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
@@ -32,13 +32,6 @@
 //
 // =======================================================================
 
-// =======================================================================
-// User Configuration
-// - This file can be modified by the user to match the
-//   intended target configuration
-// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-//   specific to board and display combinations
-// =======================================================================
 
 #ifdef __cplusplus
 extern "C" {
