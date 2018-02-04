@@ -48,24 +48,16 @@ extern "C" {
 
 // Specify the graphics driver library
 // - Uncomment one of the following graphics drivers
-#ifdef ARDUINO_M5Stack-Core-ESP32
-#define DRV_DISP_M5STACK           // M5Stack: m5stack/M5Stack library
-#else
 #define DRV_DISP_TFT_ESPI          // Arduino: Bodmer/TFT_eSPI library
-#endif
-
+//#define DRV_DISP_M5STACK           // M5Stack: m5stack/M5Stack library
 
 // Specify the touchscreen driver
 // - Uncomment one of the following touchscreen drivers
-#ifdef ARDUINO_M5Stack-Core-ESP32
-#define DRV_TOUCH_NONE            // No touchscreen support
-#else
 //#define DRV_TOUCH_NONE          // No touchscreen support
-#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
+//#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
 //#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
-//#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
+#define DRV_TOUCH_TFT_ESPI      // Arduino: Use TFT_eSPI XPT2046 touch driver
 //#define DRV_TOUCH_ADA_SIMPLE    // Arduino: Use Adafruit Touchscreen
-#endif
 
 // -----------------------------------------------------------------------------------------
 // Enable of optional features
