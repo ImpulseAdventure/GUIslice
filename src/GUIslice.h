@@ -240,6 +240,9 @@ typedef enum {
 #define GSLC_COL_ORANGE     (gslc_tsColor) {255,165,0}     ///< Orange
 #define GSLC_COL_BROWN      (gslc_tsColor) {165,42,42}     ///< Brown
 
+// Monochrome definitions
+#define GSLC_COLMONO_BLACK  (gslc_tsColor) {255,255,255}   ///< Black
+#define GSLC_COLMONO_WHITE  (gslc_tsColor) {  0,  0,  0}   ///< White
 
 /// Touch event type for element touch tracking
 typedef enum {

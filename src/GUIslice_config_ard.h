@@ -93,11 +93,12 @@ extern "C" {
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
-  #define DRV_DISP_ADAGFX_ILI9341
-  //#define DRV_DISP_ADAGFX_ILI9341_8BIT
-  //#define DRV_DISP_ADAGFX_ST7735
-  //#define DRV_DISP_ADAGFX_SSD1306
-  //#define DRV_DISP_ADAGFX_HX8357
+  #define DRV_DISP_ADAGFX_ILI9341         // Adafruit ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9341_8BIT  // Adafruit ILI9341 (8-bit interface)
+  //#define DRV_DISP_ADAGFX_ST7735        // Adafruit ST7735
+  //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
+  //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
+  //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
 
 
   // For Adafruit-GFX drivers, define pin connections
@@ -107,8 +108,8 @@ extern "C" {
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
   #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
-  #define ADAGFX_PIN_WR    A1  // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD    A0  // Display read pin (for parallel displays)
+  #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
+  #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
 
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI

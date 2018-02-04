@@ -74,6 +74,9 @@
     #include <SD.h>   // Include support for SD card access
   #endif
   #include <SPI.h>
+#elif defined(DRV_DISP_ADAGFX_PCD8544)
+  #include <Adafruit_PCD8544.h>
+  #include <SPI.h>
 #endif
 
 #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -129,6 +132,14 @@ extern "C" {
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
+  #endif
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_PCD8544)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    Adafruit_PCD8544 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+  #else
+    Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, DAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
@@ -227,6 +238,10 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = HX8357_TFTHEIGHT;
       pGui->nDispH = HX8357_TFTWIDTH;
+
+    #elif defined(DRV_DISP_ADAGFX_PCD8544)
+      m_disp.begin();
+      //m_disp.setContrast(50); Set the contrast level
 
     #endif
 
