@@ -858,6 +858,8 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     int16_t           nCurGroup;
 
     // We use the GUI pointer for access to other elements
+    // NOTE: There is an assumption that we are calling ElemXCheckboxSetState
+    //       on a checkbox on the current page.
     for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemRefCnt;nCurInd++) {
       // Fetch extended data
       pCurElemRef   = &pGui->pCurPageCollect->asElemRef[nCurInd];

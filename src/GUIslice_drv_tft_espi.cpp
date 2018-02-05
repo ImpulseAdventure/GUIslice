@@ -30,8 +30,8 @@
 // =======================================================================
 
 // Compiler guard for requested driver
-#if defined(ESP8266)
-#include "GUIslice_config_esp.h" // Sets DRV_DISP_*
+#if defined(ESP8266) || defined(ESP32)
+#include "GUIslice_config_ard.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_TFT_ESPI)
 
 // =======================================================================

@@ -45,7 +45,7 @@ extern "C" {
 #elif defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
   #include "GUIslice_config_ard.h"
 #elif defined(ESP8266) || defined(ESP32)
-  #include "GUIslice_config_esp.h"
+  #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"
 #endif
