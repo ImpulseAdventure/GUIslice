@@ -250,5 +250,4 @@ void loop()
     gslc_Quit(&m_gui);
     while (1) { }
   }
-}
-
+} 
