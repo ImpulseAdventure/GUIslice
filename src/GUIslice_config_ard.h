@@ -1,12 +1,16 @@
 #ifndef _GUISLICE_CONFIG_ARD_H_
 #define _GUISLICE_CONFIG_ARD_H_
 
-// =======================================================================
-// GUIslice library (user configuration) for Arduino / Cortex-M0
+// =============================================================================
+// GUIslice library (user configuration) for:
+//     - Arduino
+//     - Cortex-M0
+//     - ESP8266 / ESP32
+//
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// =======================================================================
+// =============================================================================
 //
 // The MIT License
 //
@@ -30,65 +34,65 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// =======================================================================
+// =============================================================================
 
-// =======================================================================
+// =============================================================================
 // User Configuration
 // - This file can be modified by the user to match the
 //   intended target configuration
 // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
 //   specific to board and display combinations
-// =======================================================================
+// =============================================================================
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-// -----------------------------------------------------------------------------------------
 
-// Specify the graphics driver library
-// - Uncomment one of the following graphics drivers
-#define DRV_DISP_ADAGFX            // Arduino: Adafruit-GFX library
+// =============================================================================
+// DISPLAY CONFIGURATION - SELECT
+// =============================================================================
+
+  // Specify the graphics driver library
+  // - Uncomment one of the following graphics drivers DRV_DISP_*
+  //   applicable to the device type in use
+
+  // --------------------------------------------------------------
+  // Arduino / ATmega / AVR / Cortex-M0 / nRF52:
+      #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  // --------------------------------------------------------------
+  // ESP8266 / ESP32 / NodeMCU:
+  //  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  //  #define DRV_DISP_TFT_ESPI         // Bodmer/TFT_eSPI library
+  //  #define DRV_DISP_M5STACK          // m5stack/M5Stack library
+  // --------------------------------------------------------------
+  // STM32:
+  //  TODO
+  // --------------------------------------------------------------
 
 
-// Specify the touchscreen driver
-// - Uncomment one of the following touchscreen drivers
-//#define DRV_TOUCH_NONE          // No touchscreen support
-#define DRV_TOUCH_ADA_STMPE610  // Arduino: Use Adafruit STMPE610 touch driver
-//#define DRV_TOUCH_ADA_FT6206    // Arduino: Use Adafruit FT6206 touch driver
-//#define DRV_TOUCH_ADA_SIMPLE    // Arduino: Use Adafruit Touchscreen
+// =============================================================================
+// TOUCH CONFIGURATION - SELECT
+// =============================================================================
+
+  // Specify the touchscreen driver
+  // - Uncomment one of the following touchscreen drivers DRV_TOUCH_*
+  //   applicable to the controller chip in use
+
+  //  #define DRV_TOUCH_NONE            // No touchscreen support
+      #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
+  //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
+  //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
+  //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
 
 
-// -----------------------------------------------------------------------------------------
-// Enable of optional features
-// - For memory constrained devices such as Arduino, it is best to
-//   set the following features to 0 (to disable) unless they are
-//   required.
+// =============================================================================
+// DISPLAY CONFIGURATION - DETAILS
+// - Graphics display driver-specific additional configuration
+// =============================================================================
 
-#define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-#define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-#define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
-
-// Error reporting
-// - Set DEBUG_ERR to 1 to enable error reporting via the Serial connection
-// - Enabling DEBUG_ERR increases FLASH memory consumption which may be
-//   limited on the baseline Arduino (ATmega328P) devices.
-#if defined(__AVR__)
-    #define DEBUG_ERR               0   // Disable by default on low-mem Arduino
-#else
-    #define DEBUG_ERR               1   // Enable by default on all other devices
-#endif
-
-// -----------------------------------------------------------------------------------------
-
-// Graphics display driver-specific additional configuration
+// -----------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX)
-
-  #define GSLC_DEV_TOUCH ""   // No device path used
-
-  #define GSLC_LOCAL_STR      0
-  #define GSLC_USE_FLOAT      0 // Use fixed-point lookup tables instead
-
 
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
@@ -125,33 +129,54 @@ extern "C" {
   #define ADAGFX_PIN_CLK
 
 
-  // Enable support for SD card
-  // - Set to 1 to enable, 0 to disable
-  // - Note that the inclusion of the SD library consumes considerable
-  //   RAM and flash memory which could be problematic for Arduino models
-  //   with limited resources.
-  #define GSLC_SD_EN    0
-
-  // Define buffer size for loading images from SD
-  // - A larger buffer will be faster but at the cost of RAM
-  #define GSLC_SD_BUFFPIXEL   50
-
-  // Enable support for clipping (DrvSetClipRect)
-  // - Note that this will impact performance of drawing graphics primitives
-  #define GSLC_CLIP_EN 1
-
   // Set Default rotation
-  // - Note that if you change this you will likely have to change ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y
-  //   as well to ensure that the touch screen orientation matches the display rotation
+  // - Note that if you change this you will likely have to change
+  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   orientation matches the display rotation
   #define GSLC_ROTATE     1
 
+// -----------------------------------------------------------------------------
+#elif defined(DRV_DISP_TFT_ESPI)
+
+  // NOTE: When using the TFT_eSPI library, there are additional
+  //       library-specific configuration files that may need
+  //       customization (including pin configuration), such as
+  //       "User_Setup_Select.h" (typically located in the
+  //       Arduino /libraries/TFT_eSPI folder). Please refer to
+  //       Bodmer's TFT_eSPI library for more details:
+  //       https://github.com/Bodmer/TFT_eSPI
+
+  // NOTE: To avoid potential SPI conflicts, it is recommended
+  //       that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
+
+
+  // Set Default rotation
+  // - Note that if you change this you will likely have to change
+  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   orientation matches the display rotation
+  #define GSLC_ROTATE     1
+
+// -----------------------------------------------------------------------------
+#elif defined(DRV_DISP_M5STACK)
+
+  #define ADAGFX_PIN_SDCS   4   // SD card chip select
+  #define TFT_LIGHT_PIN    32   // display backlight
+
+  // Set Default rotation
+  // - Note that if you change this you will likely have to change
+  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   orientation matches the display rotation
+  #define GSLC_ROTATE     0
 
 #endif // DRV_DISP_*
 
 
-// -----------------------------------------------------------------------------------------
+// =============================================================================
+// TOUCH CONFIGURATION - DETAILS
+// - Touch Driver-specific additional configuration
+// =============================================================================
 
-// Touch Driver-specific additional configuration
+// -----------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by setting one of the following to 1
@@ -170,20 +195,20 @@ extern "C" {
   // - These values may need to be updated to match your display
   // - Typically used in resistive displays
   // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display corners)
+  //   (check for min and max values reported from program as you touch display
+  //   corners)
   // - Note that X & Y directions reference the display's natural orientation
   #define ADATOUCH_X_MIN 230
   #define ADATOUCH_Y_MIN 260
   #define ADATOUCH_X_MAX 3800
   #define ADATOUCH_Y_MAX 3700
 
-
-
+// -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // Define sensitivity coefficient (capacitive touch)
   #define ADATOUCH_SENSITIVITY  40
 
-
+// -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   // Calibration values for touch display
   // - These values may need to be updated to match your display
@@ -193,55 +218,128 @@ extern "C" {
   #define ADATOUCH_X_MAX 900
   #define ADATOUCH_Y_MAX 900
 
+// -----------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_TFT_ESPI)
+  // The TFT_eSPI display library also includes support for XPT2046 touch controller
+  // Note that TFT_eSPI's "User_Setup" should define TOUCH_CS
+  #define DRV_TOUCH_IN_DISP   // Use the display driver (TFT_eSPI) for touch events
 
+  // Define the XPT2046 touch driver calibration values
+  // - The following are some example defaults, but they should be updated
+  //   to match your specific touch device.
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
 #endif // DRV_TOUCH_*
 
-// Define any Touch Axis Swapping and Flipping
-// - Set any of the following to 1 to perform touch display
-//   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
-//   remapping modes should be enabled for your display
-// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-#define ADATOUCH_SWAP_XY  1
-#define ADATOUCH_FLIP_X   0
-#define ADATOUCH_FLIP_Y   1
 
-// Define the maximum number of touch events that are handled
-// per gslc_Update() call. Normally this can be set to 1 but certain
-// displays may require a greater value (eg. 30) in order to increase
-// responsiveness of the touch functionality.
-#define GSLC_TOUCH_MAX_EVT    1
+// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------------------
+  // Define any Touch Axis Swapping and Flipping
+  // - Set any of the following to 1 to perform touch display
+  //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
+  //   remapping modes should be enabled for your display
+  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+  #define ADATOUCH_SWAP_XY  1
+  #define ADATOUCH_FLIP_X   0
+  #define ADATOUCH_FLIP_Y   1
 
-
-// When using element local string storage (GSLC_LOCAL_STR=1),
-// this defines the fixed length buffer used for every element
-#define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  // Define the maximum number of touch events that are handled
+  // per gslc_Update() call. Normally this can be set to 1 but certain
+  // displays may require a greater value (eg. 30) in order to increase
+  // responsiveness of the touch functionality.
+  #define GSLC_TOUCH_MAX_EVT    1
 
 
-// Debug modes
-// - Uncomment the following to enable specific debug modes
-//#define DBG_LOG           // Enable debugging log output
-//#define DBG_TOUCH         // Enable debugging of touch-presses
-//#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting
-//#define DBG_DRAW_IMM      // Enable immediate rendering of drawing primitives
-//#define DBG_DRIVER        // Enable graphics driver debug reporting
+// =============================================================================
+// COMMON CONFIGURATION
+// =============================================================================
 
-// Enable for bitmap transparency and definition of color to use
-#define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-#define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  // Error reporting
+  // - Set DEBUG_ERR to 1 to enable error reporting via the Serial connection
+  // - Enabling DEBUG_ERR increases FLASH memory consumption which may be
+  //   limited on the baseline Arduino (ATmega328P) devices.
+  #if defined(__AVR__)
+    #define DEBUG_ERR               0   // Disable by default on low-mem Arduino
+  #else
+    // For all other devices, DEBUG_ERR is enabled by default.
+    // Since this mode increases FLASH memory considerably, it may be
+    // necessary to disable this feature.
+    #define DEBUG_ERR               1   // Enable debug reporting
+  #endif
 
 
-// -----------------------------------------------------------------------------------------
+  // Enable of optional features
+  // - For memory constrained devices such as Arduino, it is best to
+  //   set the following features to 0 (to disable) unless they are
+  //   required.
 
-// Define compatibility for non-AVR to call PROGMEM functions
-#if defined(__AVR__)
+  #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
+  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
+  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
+
+
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  #define GSLC_SD_EN    0
+
+  // Define buffer size for loading images from SD
+  // - A larger buffer will be faster but at the cost of RAM
+  #define GSLC_SD_BUFFPIXEL   50
+
+
+  // Enable support for graphics clipping (DrvSetClipRect)
+  // - Note that this will impact performance of drawing graphics primitives
+  #define GSLC_CLIP_EN 1
+
+  // Enable for bitmap transparency and definition of color to use
+  #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+
+
+  // In "Local String" mode, memory within internal element array is
+  // used for strings. This mode incurs a memory cost for all elements,
+  // irrespective of whether strings are used or their length. This
+  // mode may make string definition convenient but is not memory-efficient.
+  // Therefore, it is not recommended for limited memory devices such as
+  // Arduino.
+  // - When using element local string storage (GSLC_LOCAL_STR=1),
+  //   GSLC_LOCAL_STR_LEN defines the fixed length buffer used for every element
+  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+
+  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+
+
+  // Debug diagnostic modes
+  // - Uncomment any of the following to enable specific debug modes
+  //#define DBG_LOG           // Enable debugging log output
+  //#define DBG_TOUCH         // Enable debugging of touch-presses
+  //#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting
+  //#define DBG_DRAW_IMM      // Enable immediate rendering of drawing primitives
+  //#define DBG_DRIVER        // Enable graphics driver debug reporting
+
+
+// =============================================================================
+// INTERNAL CONFIGURATION
+// - Users should not need to modify the following
+// =============================================================================
+
+  // Display device string is only used in LINUX drivers
+  #define GSLC_DEV_TOUCH ""   // No device path used
+
+
+  // Define compatibility for non-AVR to call PROGMEM functions
+  #if defined(__AVR__)
     #define GSLC_USE_PROGMEM 1
-#else
+  #else
     #define GSLC_USE_PROGMEM 0
-#endif
+  #endif
 
+
+// =============================================================================
 
 #ifdef __cplusplus
 }
