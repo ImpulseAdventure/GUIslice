@@ -2979,11 +2979,6 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     #endif
   }
 
-  // TODO:
-  // - Save pCollect in element?
-  //   - This would facilitate any group operations (eg. checkbox)
-  //   - Alternately, include pGui in parameters to gslc_ElemXCheckboxToggleState().
-
   // If the element creation was successful, then set the valid flag
   sElem.nFeatures      |= GSLC_ELEM_FEA_VALID;
 
