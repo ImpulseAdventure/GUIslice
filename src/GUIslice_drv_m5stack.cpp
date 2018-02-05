@@ -31,7 +31,7 @@
 
 // Compiler guard for requested driver
 #if defined(ESP32)
-#include "GUIslice_config_esp.h" // Sets DRV_DISP_*
+#include "GUIslice_config_ard.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_M5STACK)
 
 // =======================================================================
@@ -94,7 +94,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     gslc_DrvSetClipRect(pGui,&rClipRect);
 
     pinMode(TFT_LIGHT_PIN, OUTPUT);
-    digitalWrite(TFT_LIGHT_PIN, HIGH); 
+    digitalWrite(TFT_LIGHT_PIN, HIGH);
 
   }
   return true;
