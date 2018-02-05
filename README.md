@@ -9,7 +9,7 @@
 - *Widgets*: text, images, buttons, checkboxes, radio buttons, sliders,
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - *Platform-independent GUI core currently supports*: SDL1.2, SDL2.0, Adafruit-GFX, TFT_eSPI
-- *Typical target*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, Cortex M0 (Feather M0), LINUX, Beaglebone Black
+- *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, Cortex M0 (Feather M0), LINUX, Beaglebone Black, M5Stack
 - *Typical displays*: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
 - *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357
 - *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
@@ -31,11 +31,9 @@
 - The following table lists a number of devices that have been tested with GUIslice
   and the recommended configuration modes and test examples.
   
-![guislice-devices](https://user-images.githubusercontent.com/8510097/35765285-5e7f1eb0-0875-11e8-8623-ce1bf2f3a5bf.PNG)
+![guislice-devices](https://user-images.githubusercontent.com/8510097/35789025-15e0918c-09ee-11e8-9122-676833f0c3ee.PNG)
   
 ## Important Note for Arduino Users ##
-- *Major changes are arriving soon in **GUIslice version 0.10**, which will reduce
-  memory consumption for Arduino devices considerably. Stay tuned!*
 - The baseline Arduino (**ATmega328P**) devices have very limited SRAM memory (2KB SRAM, 32KB FLASH).
   Therefore, it is important that GUI elements are stored in FLASH whenever possible. A set of
   examples that demonstrate this method are located in `\arduino_min`.
@@ -43,6 +41,6 @@
   to run on these limited devices.
 - Other Arduino variants and devices such as **ATmega2560** (8KB SRAM, 256KB FLASH), **ESP8266**, **Node-MCU**,
   **Feather M0**, etc. tend to work much better as there is far more SRAM and FLASH available.
-- By default, `DEBUG_ERR` is enabled to provide error messages via the Serial Monitor
+- By default, `DEBUG_ERR` is enabled on many devices to provide error messages via the Serial Monitor
   interface. However, if further reduction of FLASH memory is necessary, disable DEBUG_ERR
-  in the `GUIslice_config.h`.
+  in the `GUIslice_config_*.h`.
