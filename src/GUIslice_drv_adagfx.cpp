@@ -90,6 +90,8 @@
   #include <TouchScreen.h>
 #endif
 
+#include <FS.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -654,8 +656,6 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 }
 // ----- REFERENCE CODE end
 
-
-#if (GSLC_SD_EN)
 // ----- REFERENCE CODE begin
 // The following code was based upon the following reference code but modified to
 // adapt for use in GUIslice.
@@ -669,6 +669,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 // May need to reverse subscript order if porting elsewhere.
 uint16_t gslc_DrvRead16SD(File f) {
   uint16_t result;
+  // TODO: Don't assume the target is litle-endian
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read(); // MSB
   return result;
@@ -676,6 +677,7 @@ uint16_t gslc_DrvRead16SD(File f) {
 
 uint32_t gslc_DrvRead32SD(File f) {
   uint32_t result;
+  // TODO: Don't assume the target is litle-endian
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read();
   ((uint8_t *)&result)[2] = f.read();
@@ -683,9 +685,8 @@ uint32_t gslc_DrvRead32SD(File f) {
   return result;
 }
 
-void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, uint16_t y)
+void gslc_DrvDrawBmp24FromFile(gslc_tsGui* pGui, File &bmpFile, uint16_t x, uint16_t y)
 {
-  File     bmpFile;
   int      bmpWidth, bmpHeight;   // W+H in pixels
   uint8_t  bmpDepth;              // Bit depth (currently must be 24)
   uint32_t bmpImageoffset;        // Start of image data in file
@@ -696,7 +697,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   boolean  flip    = true;        // BMP is stored bottom-to-top
   int      w, h, row, col;
   uint8_t  r, g, b;
-  uint32_t pos = 0, startTime = millis();
+  uint32_t pos = 0;
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
 
@@ -705,20 +706,17 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   //Serial.print(filename);
   //Serial.println('\'');
 
-  // Open requested file on SD card
-  if ((bmpFile = SD.open(filename)) == 0) {
-    GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() file not found [%s]",filename);
-    return;
-  }
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
-    uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
+    // Ignore file size.
+    gslc_DrvRead32SD(bmpFile);
     //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
-    uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
+    // Ignore header size
+    gslc_DrvRead32SD(bmpFile);
     //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
@@ -802,12 +800,62 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   }
   bmpFile.close();
   if(!goodBmp) {
-    GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() BMP format unknown [%s]",filename);
+    GSLC_DEBUG_PRINT("%s", "ERROR: DrvDrawBmp24FromFile() BMP format unknown");
   }
 }
-// ----- REFERENCE CODE end
-#endif // GSLC_SD_EN
 
+#if (GSLC_SD_EN)
+void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, uint16_t y)
+{
+  File bmpFile;
+  // Open requested file on SD card
+  if ((bmpFile = SD.open(filename)) == 0) {
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawBmp24FromSD() file not found [%s]",filename);
+    return;
+  }
+  gslc_DrvDrawBmp24FromFile(pGui, bmpFile, x, y);
+}
+#endif // GSLC_SD_EN
+// ----- REFERENCE CODE end
+
+class RamFile : public File
+{
+    // Implements just enough functionality to make gslc_DrvDrawBmp24FromFile
+    // happy.
+    // Read off the end of this file at your own peril.
+    public:
+    RamFile(const unsigned char *contents) : contents(contents), pos(0) {}
+
+    int read() {
+        return contents[pos++];
+    }
+    size_t read(uint8_t* buf, size_t size)
+    {
+        for (size_t i = 0; i < size; i++) {
+            buf[i] = contents[pos++];
+        }
+        return size;
+    }
+    size_t position() const {
+        return pos;
+    }
+    bool seek(uint32_t pos) {
+        this->pos = pos;
+        return true;
+    }
+    void close() {}
+
+    private:
+    const unsigned char *contents;
+    size_t pos;
+};
+
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
+  const unsigned char *bmp,bool bProgMem)
+{
+  RamFile bmpFile(bmp);
+  gslc_DrvDrawBmp24FromFile(pGui, bmpFile, x, y);
+}
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
@@ -825,6 +873,9 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // Draw a monochrome bitmap from SRAM
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
+      return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
     } else {
       return false; // TODO: not yet supported
