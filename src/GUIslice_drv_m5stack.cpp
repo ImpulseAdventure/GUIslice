@@ -30,8 +30,7 @@
 // =======================================================================
 
 // Compiler guard for requested driver
-#if defined(ESP32)
-#include "GUIslice_config_ard.h" // Sets DRV_DISP_*
+#include "GUIslice_config.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_M5STACK)
 
 // =======================================================================
@@ -795,4 +794,3 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #endif // __cplusplus
 
 #endif // Compiler guard for requested driver
-#endif // Arduino variants
