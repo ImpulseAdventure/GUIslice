@@ -32,7 +32,7 @@
 
 // Compiler guard for requested driver
 #if defined (__AVR__) || defined(ARDUINO_SAMD_ZERO) || defined(ESP8266) || defined(ESP32)
-#include "GUIslice_config_ard.h" // Sets DRV_DISP_*
+#include "GUIslice_config.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_ADAGFX)
 
 // =======================================================================
