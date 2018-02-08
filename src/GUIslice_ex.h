@@ -138,6 +138,7 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 /// - This function is used to select between one of several gauge types
 ///   (eg. progress bar, radial dial, etc.)
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nType:       Gauge style enumeration
 ///
@@ -149,6 +150,7 @@ void gslc_ElemXGaugeSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teXG
 ///
 /// Configure the appearance of the Gauge indicator
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colGauge:    Color of the indicator
 /// \param[in]  nIndicLen:   Length of the indicator
@@ -164,6 +166,7 @@ void gslc_ElemXGaugeSetIndicator(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_
 ///
 /// Configure the appearance of the Gauge ticks
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colTick:     Color of the gauge ticks
 /// \param[in]  nTickCnt:    Number of ticks to draw around / along gauge
@@ -178,6 +181,7 @@ void gslc_ElemXGaugeSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 /// Update a Gauge element's current value
 /// - Note that min & max values are assigned in create()
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nVal:        New value to show in gauge
 ///
@@ -192,6 +196,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVa
 /// - Default fill direction for horizontal gauges: left-to-right
 /// - Default fill direction for vertical gauges: bottom-to-top
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bFlip:       If set, reverse direction of fill from default
 ///
@@ -205,7 +210,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -218,7 +223,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 /// - Called from gslc_ElemXGaugeDraw()
 ///
 /// \param[in]  pGui:        Ptr to GUI
-/// \param[in]  pElem:       Ptr to Element
+/// \param[in]  pElemRef:    Ptr to Element reference
 /// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
@@ -231,7 +236,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
 /// - Called from gslc_ElemXGaugeDraw()
 ///
 /// \param[in]  pGui:        Ptr to GUI
-/// \param[in]  pElem:       Ptr to Element
+/// \param[in]  pElemRef:    Ptr to Element reference
 /// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
@@ -245,7 +250,7 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_te
 /// - Called from gslc_ElemXGaugeDraw()
 ///
 /// \param[in]  pGui:        Ptr to GUI
-/// \param[in]  pElem:       Ptr to Element
+/// \param[in]  pElemRef:    Ptr to Element reference
 /// \param[in]  eRedraw:     Redraw status
 ///
 /// \return true if success, false otherwise
@@ -296,6 +301,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
 ///
 /// Get a Checkbox element's current state
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Current state
@@ -305,6 +311,7 @@ bool gslc_ElemXCheckboxGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Set a Checkbox element's current state
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bChecked:    New state
 ///
@@ -325,6 +332,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 ///
 /// Toggle a Checkbox element's current state
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
@@ -409,6 +417,7 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 ///
 /// Set a Slider element's current position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bTrim:       Show a colored trim?
 /// \param[in]  colTrim:     Color of trim
@@ -426,6 +435,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 ///
 /// Get a Slider element's current position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Current slider position
@@ -437,6 +447,7 @@ int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// Set a Slider element's current position
 ///
 /// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nPos:        New position value
 ///
@@ -447,6 +458,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
 ///
 /// Assign the position callback function for a slider
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
 ///
@@ -556,6 +568,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum);
 ///
 /// Set the current counter associated with SelNum
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pSelNum:     Ptr to Element
 /// \param[in]  nCount:      New counter value
 ///
@@ -654,6 +667,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 /// Reset the contents of the textbox
 /// - Clears the buffer and resets the position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
@@ -666,7 +680,7 @@ void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -679,6 +693,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 /// - If wrap has been enabled, then a newline will
 ///   be forced
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  pTxt         Pointer to text string (null-terminated)
 ///
@@ -689,6 +704,7 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt);
 ///
 /// Insert a color set code into the current buffer position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nCol:        Color to assign for next text written to textbox
 ///
@@ -699,6 +715,7 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 ///
 /// Insert a color reset code into the current buffer position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
@@ -708,6 +725,7 @@ void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Enable or disable line wrap within textbox
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bWrapEn:     Enable line wrap if true
 ///
@@ -720,6 +738,7 @@ void gslc_ElemXTextboxWrapSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bWr
 /// Set the textbox scroll position (nScrollPos) as a fraction of
 /// nScrollMax
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nScrollPos:  New scroll position
 /// \param[in]  nScrollMax:  Maximum scroll position
@@ -790,6 +809,7 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 ///
 /// Set the graph's additional drawing characteristics
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  eStyle:      Drawing style for the graph
 /// \param[in]  nMargin:     Margin to provide around graph area inside frame
@@ -802,6 +822,7 @@ void gslc_ElemXGraphSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 ///
 /// Set the graph's drawing range
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nYMin:       Minimum Y value to draw
 /// \param[in]  nYMax:       Maximum Y value to draw
@@ -816,7 +837,7 @@ void gslc_ElemXGraphSetRange(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -825,6 +846,7 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 /// Add a value to the graph at the latest position
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nVal:        Data value to add
 ///
@@ -837,6 +859,7 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal);
 /// Set the graph scroll position (nScrollPos) as a fraction of
 /// nScrollMax
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nScrollPos:  New scroll position
 /// \param[in]  nScrollMax:  Maximum scroll position
@@ -856,7 +879,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 //
 
 
-/// \def gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,bRadio,nStyle,colCheck,bChecked)
+/// \def gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_)
 ///
 /// Create a Checkbox or Radio button Element in Flash
 ///
@@ -868,17 +891,17 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 /// \param[in]  nW:          Width of element
 /// \param[in]  nH:          Height of element
 /// \param[in]  nGroup:      Group ID that radio buttons belong to (else GSLC_GROUP_NONE)
-/// \param[in]  bRadio:      Radio-button functionality if true
-/// \param[in]  nStyle:      Drawing style for checkbox / radio button
-/// \param[in]  colCheck:    Color for inner fill when checked
-/// \param[in]  bChecked:    Default state
+/// \param[in]  bRadio_:     Radio-button functionality if true
+/// \param[in]  nStyle_:     Drawing style for checkbox / radio button
+/// \param[in]  colCheck_:   Color for inner fill when checked
+/// \param[in]  bChecked_:   Default state
 ///
 /// \return none
 ///
 
 
 /// \def gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
-///      nPosMin,nPosMax,nPos,nThumbSz,bVert,colFrame,colFill)
+///      nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_)
 ///
 /// Create a Slider Element in Flash
 ///
@@ -889,20 +912,20 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 /// \param[in]  nY:          Y coordinate of element
 /// \param[in]  nW:          Width of element
 /// \param[in]  nH:          Height of element
-/// \param[in]  nPosMin:     Minimum position value
-/// \param[in]  nPosMax:     Maximum position value
-/// \param[in]  nPos:        Starting position value
-/// \param[in]  nThumbSz:    Size of the thumb control
-/// \param[in]  bVert:       Orientation (true for vertical)
-/// \param[in]  colFrame:    Color of the element frame
-/// \param[in]  colFill:     Color of the element fill
+/// \param[in]  nPosMin_:    Minimum position value
+/// \param[in]  nPosMax_:    Maximum position value
+/// \param[in]  nPos_:       Starting position value
+/// \param[in]  nThumbSz_:   Size of the thumb control
+/// \param[in]  bVert_:      Orientation (true for vertical)
+/// \param[in]  colFrame_:   Color of the element frame
+/// \param[in]  colFill_:    Color of the element fill
 ///
 /// \return none
 ///
 
 
 /// \def gslc_ElemXGaugeCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
-///      nMin,nMax,nVal,colFrame,colFill,colGauge,bVert)
+///      nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_)
 ///
 /// Create a Gauge Element in Flash
 ///
@@ -913,13 +936,13 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 /// \param[in]  nY:          Y coordinate of element
 /// \param[in]  nW:          Width of element
 /// \param[in]  nH:          Height of element
-/// \param[in]  nMin:        Minimum value of gauge for nVal comparison
-/// \param[in]  nMax:        Maximum value of gauge for nVal comparison
-/// \param[in]  nVal:        Starting value of gauge
-/// \param[in]  colFrame:    Color for the gauge frame
-/// \param[in]  colFill:     Color for the gauge background fill
-/// \param[in]  colGauge:    Color for the gauge indicator
-/// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
+/// \param[in]  nMin_:       Minimum value of gauge for nVal comparison
+/// \param[in]  nMax_:       Maximum value of gauge for nVal comparison
+/// \param[in]  nVal_:       Starting value of gauge
+/// \param[in]  colFrame_:   Color for the gauge frame
+/// \param[in]  colFill_:    Color for the gauge background fill
+/// \param[in]  colGauge_:   Color for the gauge indicator
+/// \param[in]  bVert_:      Flag to indicate vertical vs horizontal action
 ///                          (true = vertical, false = horizontal)
 ///
 /// \return none
