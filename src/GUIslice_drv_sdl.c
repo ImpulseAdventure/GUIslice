@@ -30,6 +30,7 @@
 // =======================================================================
 
 // Compiler guard for requested driver
+#if defined(__linux__)
 #include "GUIslice_config.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_SDL1) || defined(DRV_DISP_SDL2)
 
@@ -1379,3 +1380,4 @@ int gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 #endif // DRV_TOUCH_TSLIB
 
 #endif // Compiler guard for requested driver
+#endif // __linux__
