@@ -18,7 +18,7 @@ Sample code in these examples are intended for the following device platforms:
 Some sketches (eg. `glsc_ex03_ard_min`) are intended to demonstrate image loading from SD cards.
 In order to support these functions, one needs to ensure:
 - Resource files from the `/res` folder are copied into the root of the SD card
-- SD card support is enabled in `GUIslice_config_ard.h` (via `#define SD_EN 1`)
+- SD card support is enabled in `GUIslice_config_ard.h` (via `#define GSLC_SD_EN 1`)
 - Some sketches (such as `gslc_ex05_ard_min`) may include optional image support and
   therefore require uncommenting a section of code associated with the SD card images
 
