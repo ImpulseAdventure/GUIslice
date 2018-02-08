@@ -2,6 +2,7 @@
 *A lightweight GUI framework suitable for embedded displays*
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
+- [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
 - [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
 
 ## Features ##
@@ -30,9 +31,9 @@
 ## Device Configuration
 - The following table lists a number of devices that have been tested with GUIslice
   and the recommended configuration modes and test examples.
-  
+
 ![guislice-devices](https://user-images.githubusercontent.com/8510097/35789025-15e0918c-09ee-11e8-9122-676833f0c3ee.PNG)
-  
+
 ## Important Note for Arduino Users ##
 - The baseline Arduino (**ATmega328P**) devices have very limited SRAM memory (2KB SRAM, 32KB FLASH).
   Therefore, it is important that GUI elements are stored in FLASH whenever possible. A set of
