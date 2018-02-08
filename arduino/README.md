@@ -1,9 +1,12 @@
 # GUIslice library - Examples for Arduino #
+This folder contains examples for Arduino devices. The examples use a simpler
+API since they don't use the FLASH memory optimizations.
 
-The examples in this folder are designed to be run from the Arduino IDE
+### Compiling ###
+The examples in this folder are designed to be compiled from the within the **Arduino IDE**
 
 ### Device Support ###
-These examples are intended for the following device platforms:
+Sample code in these examples are intended for the following device platforms:
 - Arduino (ATmega328P) / UNO / ProMini / etc. **[*Note #1*]**
 - ATmega2560, etc.
 - Adafruit Feather M0 (Cortex-M0)
