@@ -31,7 +31,6 @@
 
 
 // Compiler guard for requested driver
-#if defined (__AVR__) || defined(ARDUINO_SAMD_ZERO) || defined(ESP8266) || defined(ESP32)
 #include "GUIslice_config.h" // Sets DRV_DISP_*
 #if defined(DRV_DISP_ADAGFX)
 
@@ -578,10 +577,10 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 // - ColorB[7:0],  0x00,
 // - Monochrome bitmap follows...
 //
-void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
- const unsigned char *bitmap,bool bProgMem)
+void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
+ const unsigned char *pBitmap,bool bProgMem)
  {
-  const unsigned char*  bmap_base = bitmap;
+  const unsigned char*  bmap_base = pBitmap;
   int16_t         w,h;
   gslc_tsColor    nCol;
 
@@ -609,7 +608,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
         }
       }
       if(nByte & 0x80) {
-        gslc_DrvDrawPoint(pGui,x+i,y+j,nCol);
+        gslc_DrvDrawPoint(pGui,nDstX+i,nDstY+j,nCol);
       }
     }
   }
@@ -1160,4 +1159,3 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 #endif // __cplusplus
 
 #endif // Compiler guard for requested driver
-#endif // Arduino variants

@@ -497,7 +497,7 @@ typedef struct gslc_tsElem {
   gslc_tsImgRef       sImgRefNorm;      ///< Image reference to draw (normal)
   gslc_tsImgRef       sImgRefGlow;      ///< Image reference to draw (glowing)
 
-  //#if (GSLC_FEATURE_COMPOUND)
+  // if (GSLC_FEATURE_COMPOUND)
   /// Parent element reference. Used during redraw
   /// to notify parent elements that they require
   /// redraw as well. Primary usage is in compound
@@ -506,7 +506,7 @@ typedef struct gslc_tsElem {
   ///       is not wrapped in an #ifdef because the ElemCreate*_P()
   ///       function macros currently initialize this field.
   gslc_tsElemRef*     pElemRefParent;
-  //#endif
+  // endif
 
   // Text handling
 #if (GSLC_LOCAL_STR)
@@ -649,6 +649,8 @@ typedef struct {
 ///
 /// Get the GUIslice version number
 ///
+/// \param[in]  pGui:      Pointer to GUI
+///
 /// \return String containing version number
 ///
 char* gslc_GetVer(gslc_tsGui* pGui);
@@ -727,6 +729,7 @@ void gslc_Update(gslc_tsGui* pGui);
 ///
 /// Create an event structure
 ///
+/// \param[in]  pGui:       Pointer to GUI
 /// \param[in]  eType:      Event type (draw, touch, tick, etc.)
 /// \param[in]  nSubType:   Refinement of event type (or 0 if unused)
 /// \param[in]  pvScope:    Void ptr to object receiving event so that
@@ -780,7 +783,6 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 /// - This routine is useful in determining if a relative coordinate
 ///   is within a given W x H dimension
 ///
-/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nSelX:       X coordinate to test
 /// \param[in]  nSelY:       X coordinate to test
 /// \param[in]  nWidth:      Width to test against
@@ -1207,6 +1209,7 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 /// Assign the event callback function for a page
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pPage:       Pointer to page
 /// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
 ///
@@ -1504,6 +1507,7 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 ///
 /// Get an Element ID from an element structure
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference structure
 ///
 /// \return ID of element or GSLC_ID_NONE if not found
@@ -1518,6 +1522,7 @@ int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Set the fill state for an Element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bFillEn:     True if filled, false otherwise
 ///
@@ -1528,6 +1533,7 @@ void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn);
 ///
 /// Set the frame state for an Element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bFrameEn:    True if framed, false otherwise
 ///
@@ -1538,6 +1544,7 @@ void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn
 ///
 /// Update the common color selection for an Element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colFrame:    Color for the frame
 /// \param[in]  colFill:     Color for the fill
@@ -1550,7 +1557,8 @@ void gslc_ElemSetCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colF
 ///
 /// Update the common color selection for glowing state of an Element
 ///
-/// \param[in]  pElem:        Pointer to Element
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Pointer to Element reference
 /// \param[in]  colFrameGlow: Color for the frame when glowing
 /// \param[in]  colFillGlow:  Color for the fill when glowing
 /// \param[in]  colTxtGlow    Color for the text when glowing
@@ -1564,6 +1572,7 @@ void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor 
 /// Set the group ID for an element
 /// - Typically used to associate radio button elements together
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nGroupId:    Group ID to assign
 ///
@@ -1575,6 +1584,7 @@ void gslc_ElemSetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nGroupId);
 ///
 /// Get the group ID for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Group ID or GSLC_GROUP_ID_NONE if unassigned
@@ -1584,6 +1594,7 @@ int gslc_ElemGetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 /// Set the alignment of a textual element (horizontal and vertical)
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nAlign:      Alignment to specify:
 ///                           - GSLC_ALIGN_TOP_LEFT
@@ -1602,6 +1613,7 @@ void gslc_ElemSetTxtAlign(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nAl
 
 /// Set the margin around of a textual element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nMargin:     Number of pixels gap to leave surrounding text
 ///
@@ -1612,6 +1624,7 @@ void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nM
 ///
 /// Update the text string associated with an Element ID
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  pStr:        String to copy into element
 ///
@@ -1624,6 +1637,7 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
 ///
 /// Update the text string color associated with an Element ID
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  colVal:      RGB color to change to
 ///
@@ -1635,6 +1649,7 @@ void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor c
 ///
 /// Update the text string location in memory
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  eFlags:      Flags associated with text memory location (GSLC_TXT_MEM_*)
 ///
@@ -1657,6 +1672,7 @@ void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nFontId);
 ///
 /// Update the need-redraw status for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  eRedraw:     Redraw state to set
 ///
@@ -1667,6 +1683,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 ///
 /// Get the need-redraw status for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Redraw status
@@ -1676,7 +1693,8 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Update the glowing enable for an element
 ///
-/// \param[in]  pElem:      Pointer to Element
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  pElemRef:   Pointer to Element reference
 /// \param[in]  bGlowEn:    True if element should support glowing
 ///
 /// \return none
@@ -1686,8 +1704,9 @@ void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn);
 ///
 /// Copy style settings from one element to another
 ///
-/// \param[in]  pElemSrc:   Pointer to source Element
-/// \param[in]  pElemDest:  Pointer to destination Element
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRefSrc:   Pointer to source Element reference
+/// \param[in]  pElemRefDest:  Pointer to destination Element reference
 ///
 /// \return none
 ///
@@ -1696,6 +1715,7 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 ///
 /// Get the glowing enable for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return True if element supports glowing
@@ -1706,6 +1726,7 @@ bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Update the glowing indicator for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  bGlowing:    True if element is glowing
 ///
@@ -1716,6 +1737,7 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing);
 ///
 /// Get the glowing indicator for an element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return True if element is glowing
@@ -1725,6 +1747,7 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// Assign the event callback function for a element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
 ///
@@ -1738,6 +1761,7 @@ void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVE
 /// - This allows the user to override the default rendering for
 ///   an element, enabling the creation of a custom element
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  funcCb:      Function pointer to drawing routine (or NULL for default))
 ///
@@ -1750,6 +1774,7 @@ void gslc_ElemSetDrawFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_DRAW
 /// - This allows the user to provide background updates to
 ///   an element triggered by the main loop call to gslc_Update()
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  funcCb:      Function pointer to tick routine (or NULL for none))
 ///
@@ -1763,7 +1788,8 @@ void gslc_ElemSetTickFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_TICK
 /// - This routine is useful in determining if a touch
 ///   coordinate is inside of a button.
 ///
-/// \param[in]  pElem:        Element used for boundary test
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Element reference used for boundary test
 /// \param[in]  nX:           X coordinate to test
 /// \param[in]  nY:           Y coordinate to test
 /// \param[in]  bOnlyClickEn: Only output true if element was also marked
@@ -1839,6 +1865,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 ///   element array so the pElem pointer can be discarded are the
 ///   call is complete.
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  pElem:        Ptr to the element to add
 /// \param[in]  eFlags:       Flags describing the element (eg. whether the
@@ -1854,6 +1881,7 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
 ///
 /// Determine if any elements in a collection need redraw
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to Element collection
 ///
 /// \return True if redraw required, false otherwise
@@ -1863,6 +1891,7 @@ bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
 
 /// Find an element in a collection by its Element ID
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  nElemId:      Element ID to search for
 ///
@@ -1889,6 +1918,7 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
 
 /// Allocate the next available Element ID in a collection
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 ///
 /// \return Element ID that is reserved for use
@@ -1898,6 +1928,7 @@ int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
 
 /// Get the element within a collection that is currently being tracked
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 ///
 /// \return Pointer to the element reference in the collection that is
@@ -1909,6 +1940,7 @@ gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* p
 
 /// Set the element within a collection that is currently being tracked
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  pElemRef:     Ptr to element reference to mark as being tracked
 ///
@@ -1922,6 +1954,7 @@ void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_t
 ///   a sub-element should cause the parent (compound element) to be redrawn
 ///   as well.)
 ///
+/// \param[in]  pGui:           Pointer to GUI
 /// \param[in]  pCollect:       Pointer to the collection
 /// \param[in]  pElemRefParent: Ptr to element reference that is the parent
 ///
@@ -1937,6 +1970,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 ///
 /// Assign the event callback function for an element collection
 ///
+/// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pCollect:    Pointer to collection
 /// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
 ///
@@ -2147,6 +2181,7 @@ void gslc_GuiDestruct(gslc_tsGui* pGui);
 ///
 /// Free up any members associated with a page
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pPage:        Pointer to Page
 ///
 /// \return none
@@ -2156,6 +2191,7 @@ void gslc_PageDestruct(gslc_tsGui* pGui,gslc_tsPage* pPage);
 ///
 /// Free up any members associated with an element collection
 ///
+/// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to collection
 ///
 /// \return none

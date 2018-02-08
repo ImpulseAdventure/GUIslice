@@ -1211,14 +1211,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
 }
 
 
-///
-/// Assign the position callback function for a slider
-///
-/// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
-///
-/// \return none
-///
+// Assign the position callback function for a slider
 void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XSLIDER_POS funcCb)
 {
   if ((pElemRef == NULL) || (funcCb == NULL)) {
