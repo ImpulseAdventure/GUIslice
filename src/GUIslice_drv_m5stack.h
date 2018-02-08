@@ -458,6 +458,23 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 ///
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef);
 
+
+///
+/// Draw a monochrome bitmap from a memory array
+/// - Draw from the bitmap buffer using the foreground color
+///   defined in the header (unset bits are transparent)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nDstX:       Destination X coord for copy
+/// \param[in]  nDstY:       Destination Y coord for copy
+/// \param[in]  pBitmap:     Pointer to bitmap buffer
+/// \param[in]  bProgMem:    Bitmap is stored in Flash if true, RAM otherwise
+///
+/// \return none
+///
+void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, const unsigned char *pBitmap,bool bProgMem);
+
+
 ///
 /// Copy the background image to destination screen
 ///
