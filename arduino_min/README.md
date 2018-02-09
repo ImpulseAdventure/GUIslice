@@ -10,8 +10,6 @@ The examples in this folder are designed to be compiled from the within the **Ar
 Sample code in these examples are intended for the following device platforms:
 - Arduino (ATmega328P) / UNO / ProMini / etc.
 - ATmega2560, etc.
-- Adafruit Feather M0 (Cortex-M0)
-- Adafruit Feather nRF52 (Cortex-M4F)
 
 
 ### Resource Files ###
