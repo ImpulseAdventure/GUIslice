@@ -390,11 +390,21 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
     m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
+#if (GSLC_USE_PROGMEM)
     nTxtLen = strlen_P(pStr);
     char tempStr[nTxtLen+1];
     strncpy_P(tempStr,pStr,nTxtLen);
     tempStr[nTxtLen] = '\0';  // Force termination
     m_disp.getTextBounds(tempStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+#else
+    // NOTE: Should not get here
+    // - The text string has been marked as being stored in
+    //   FLASH via PROGMEM (typically for Arduino) but
+    //   the current device does not support the PROGMEM
+    //   methodology.
+    // - Degrade back to using SRAM directly
+    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+#endif
   }
   m_disp.setFont();
   return true;

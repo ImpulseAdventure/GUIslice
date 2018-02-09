@@ -949,7 +949,7 @@ void gslc_ElemXGraphScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t 
 ///
 
 
-#ifdef GSLC_USE_PROGMEM
+#if (GSLC_USE_PROGMEM)
 
 #define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
