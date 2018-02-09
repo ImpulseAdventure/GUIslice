@@ -46,6 +46,8 @@ extern "C" {
   #include "GUIslice_config_ard.h"
 #elif defined(ESP8266) || defined(ESP32)
   #include "GUIslice_config_ard.h"
+#elif defined(NRF52)
+  #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"
 #endif
