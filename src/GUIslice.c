@@ -995,11 +995,8 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
   gslc_tsRect rNew = {0,0,0,0};
 
   // Detect error case of contracting region too far
-  if (rRect.w + (2*nExpandW) < 0) {
-    //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
-    return rNew;
-  }
-  if (rRect.h + (2*nExpandH) < 0) {
+  if ( (rRect.w < (-2*nExpandW)) || (rRect.h < (-2*nExpandH)) ) {
+    // Return an empty coordinate box (which won't be drawn)
     //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
     return rNew;
   }
@@ -2076,6 +2073,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   //   the fill region slightly so that we don't overdraw
   //   the frame (prevent unnecessary flicker).
   if ((pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) && (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN)) {
+    // NOTE: If the region is already too small to shrink (eg. w=1 or h=1)
+    // then a zero dimension box will be returned by ExpandRect() and not drawn
     rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
   }
   // - This also changes the fill color if selected and glow state is enabled
