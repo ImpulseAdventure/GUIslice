@@ -6,6 +6,8 @@
 //     - Arduino
 //     - Cortex-M0
 //     - ESP8266 / ESP32
+//     - nRF52
+//     - STM32
 //
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
@@ -67,7 +69,7 @@ extern "C" {
   //  #define DRV_DISP_M5STACK          // m5stack/M5Stack library
   // --------------------------------------------------------------
   // STM32:
-  //  TODO
+  //  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   // --------------------------------------------------------------
 
 
