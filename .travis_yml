@@ -1,0 +1,13 @@
+language: c
+sudo: false
+env:
+  global:
+     - PRETTYNAME="GUIslice embedded GUI library for Arduino & Raspberry Pi"
+before_install:
+  - source <(curl -SLs https://raw.githubusercontent.com/${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH}/install.sh)
+script:
+  - build_platform uno
+notifications:
+  email:
+    on_success: change
+    on_failure: change
