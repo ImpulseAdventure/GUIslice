@@ -4,6 +4,7 @@
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
 - [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
+- Build status: [![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
 
 ## Features ##
 - Pure C library, no dynamic memory allocation

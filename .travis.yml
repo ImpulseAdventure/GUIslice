@@ -2,11 +2,29 @@ language: c
 sudo: false
 env:
   global:
-     - PRETTYNAME="GUIslice embedded GUI library for Arduino & Raspberry Pi"
+    - PRETTYNAME="GUIslice embedded GUI library for Arduino & Raspberry Pi"
 before_install:
-  - source <(curl -SLs https://raw.githubusercontent.com/${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH}/install.sh)
+  - # Compiling via Arduino IDE per: https://stackoverflow.com/questions/28510001/how-to-set-up-travis-to-build-arduino-spark-teensy-library
+  - ARD_VER="1.8.5"
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
+  - sleep 5
+  - export DISPLAY=:1.0
+  - echo "Downloading version $ARD_VER of the Arduino IDE..."
+  - wget http://downloads.arduino.cc/arduino-$ARD_VER-linux64.tar.xz
+  - echo "Extracting the Arduino IDE..."
+  - tar xf arduino-$ARD_VER-linux64.tar.xz
+  - echo "Moving Arduino IDE..."
+  - sudo mv arduino-$ARD_VER /usr/local/share/arduino
+  - echo "Linking Arduino IDE..."
+  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+  - echo "Removing Arduino IDE ver $ARD_VER tar that was downloaded..."
+  - rm arduino-$ARD_VER-linux64.tar.xz
+install:
+  - ln -s $PWD /usr/local/share/arduino/libraries/GUIslice
+  - arduino --install-library "Adafruit GFX Library,Adafruit ILI9341,Adafruit STMPE610"
 script:
-  - build_platform uno
+  - arduino --verify --board arduino:avr:uno $PWD/arduino_min/gslc_ex07_ard_min/gslc_ex07_ard_min.ino
+  - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/arduino/gslc_ex07_ard/gslc_ex07_ard.ino
 notifications:
   email:
     on_success: change
