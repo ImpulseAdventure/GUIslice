@@ -32,7 +32,7 @@
 
 // Compiler guard for requested driver
 #include "GUIslice_config.h" // Sets DRV_DISP_*
-#if defined(DRV_DISP_ADAGFX)
+#if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
 
 // =======================================================================
 // Driver Layer for Adafruit-GFX
@@ -43,8 +43,12 @@
 
 #include <stdio.h>
 
-#include <Adafruit_GFX.h>
-#include <gfxfont.h>
+#if defined(DRV_DISP_ADAGFX)
+  #include <Adafruit_GFX.h>
+  #include <gfxfont.h>
+#elif defined(DRV_DISP_ADAGFX_AS)
+  #include <Adafruit_GFX_AS.h>
+#endif
 
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #include <Adafruit_ILI9341.h>
@@ -54,6 +58,12 @@
   #include <SPI.h>
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
   #include <Adafruit_TFTLCD.h>
+  #if (GSLC_SD_EN)
+    #include <SD.h>   // Include support for SD card access
+  #endif
+  #include <SPI.h>
+#elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
+  #include <Adafruit_ILI9341_STM.h>
   #if (GSLC_SD_EN)
     #include <SD.h>   // Include support for SD card access
   #endif
@@ -110,6 +120,14 @@ extern "C" {
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
+  #endif
+
+    // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
@@ -384,18 +402,22 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 {
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
+  char*     pTmpStr   = NULL;
+
+#if defined(DRV_DISP_ADAGFX)
   m_disp.setFont((const GFXfont *)pFont->pvFont);
+#endif
   m_disp.setTextSize(nTxtScale);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+    pTmpStr = (char*)pStr;
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
 #if (GSLC_USE_PROGMEM)
     nTxtLen = strlen_P(pStr);
     char tempStr[nTxtLen+1];
     strncpy_P(tempStr,pStr,nTxtLen);
     tempStr[nTxtLen] = '\0';  // Force termination
-    m_disp.getTextBounds(tempStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+    pTmpStr = tempStr;
 #else
     // NOTE: Should not get here
     // - The text string has been marked as being stored in
@@ -403,10 +425,23 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     //   the current device does not support the PROGMEM
     //   methodology.
     // - Degrade back to using SRAM directly
-    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+    pTmpStr = (char*)pStr;
 #endif
   }
+
+  // Fetch the text bounds
+#if defined(DRV_DISP_ADAGFX)
+  m_disp.getTextBounds(pTmpStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+#elif defined(DRV_DISP_ADAGFX_AS)
+  // NOTE: Adafruit-GFX-AS is based on an older version of Adafruit-GFX
+  //       and doesn't provide the getTextBounds() API
+  *pnTxtSzW = m_disp.getTextWidth(pTmpStr,nTxtScale);
+  *pnTxtSzH = m_disp.getTextHeight(nTxtScale);
+#endif
+
+#if defined(DRV_DISP_ADAGFX)
   m_disp.setFont();
+#endif
   return true;
 }
 
@@ -414,7 +449,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+#if defined(DRV_DISP_ADAGFX)
   m_disp.setFont((const GFXfont *)pFont->pvFont);
+#endif
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
@@ -430,7 +467,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
     m_disp.println();
   }
+#if defined(DRV_DISP_ADAGFX)
    m_disp.setFont();
+#endif
   return true;
 }
 

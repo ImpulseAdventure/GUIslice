@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/02/03)
+// - Version 0.10.0   (2018/02/12)
 // =======================================================================
 //
 // The MIT License
@@ -591,7 +591,7 @@ typedef struct {
   uint16_t            nDispH;           ///< Height of the display (pixels)
   uint8_t             nDispDepth;       ///< Bit depth of display (bits per pixel)
 
-  #if defined( DRV_DISP_ADAGFX ) || defined( DRV_DISP_TFT_ESPI ) || defined( DRV_DISP_M5STACK )
+  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
     uint8_t           nRotation;       ///< Adafruit GFX Rotation of display
     uint8_t           nSwapXY;         ///< Adafruit GFX Touch Swap x and y axes
     uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis

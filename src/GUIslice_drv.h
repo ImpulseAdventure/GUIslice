@@ -45,7 +45,7 @@ extern "C" {
   #include "GUIslice_drv_sdl.h"
 #elif defined(DRV_DISP_SDL2)
   #include "GUIslice_drv_sdl.h"
-#elif defined(DRV_DISP_ADAGFX)
+#elif defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
   #include "GUIslice_drv_adagfx.h"
 #elif defined(DRV_DISP_TFT_ESPI)
   #include "GUIslice_drv_tft_espi.h"
