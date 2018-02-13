@@ -481,7 +481,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341)|| defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // Nothing to do as we're not double-buffered
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -1187,7 +1187,7 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
 
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
     // RGB565
     nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
     nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
