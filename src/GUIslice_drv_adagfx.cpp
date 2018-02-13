@@ -122,7 +122,9 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
-    Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+    //Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+    // TODO: Resolve why PIN_RST=-1 doesn't give same behavior as 2-param function variant
+    Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
   #else
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
@@ -215,7 +217,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // image in the controller graphics RAM
     pGui->bRedrawPartialEn = true;
 
-    #if defined(DRV_DISP_ADAGFX_ILI9341)
+#if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
       m_disp.begin();
 
       m_disp.readcommand8(ILI9341_RDMODE);
