@@ -437,11 +437,14 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 #elif defined(DRV_DISP_ADAGFX_AS)
   // NOTE: Adafruit-GFX-AS is based on an older version of Adafruit-GFX
   //       and doesn't provide the getTextBounds() API.
-  //       A nFontId of 1 is passed to indicate that the default
+  //       A nFontId of 0 is passed to indicate that the default
   //       Adafruit font (5x7) will be used.
   // TODO: Support custom fonts in Adafruit-GFX-AS
-  *pnTxtSzW = m_disp.getTextWidth(pTmpStr,1);
-  *pnTxtSzH = m_disp.getTextHeight(1);
+  *pnTxtSzW = m_disp.getTextWidth(pTmpStr,0);
+  *pnTxtSzH = m_disp.getTextHeight(pTmpStr,0);
+  // No baseline offset supported
+  *pnTxtX = 0;
+  *pnTxtY = 0;
 #endif
 
 #if defined(DRV_DISP_ADAGFX)
