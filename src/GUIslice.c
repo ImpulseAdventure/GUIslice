@@ -101,7 +101,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nDispH          = 0;
   pGui->nDispDepth      = 0;
 
-  #if defined( DRV_DISP_ADAGFX ) || defined( DRV_DISP_TFT_ESPI ) || defined( DRV_DISP_M5STACK )
+  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
     pGui->nRotation		= GSLC_ROTATE;
     pGui->nSwapXY		= ADATOUCH_SWAP_XY;
     pGui->nFlipX		= ADATOUCH_FLIP_X;

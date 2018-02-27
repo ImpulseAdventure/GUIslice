@@ -48,7 +48,7 @@ extern "C" {
   #include "GUIslice_config_ard.h"
 #elif defined(NRF52)
   #include "GUIslice_config_ard.h"
-#elif defined(ARDUINO_STM32_FEATHER)
+#elif defined(ARDUINO_STM32_FEATHER) || defined(__STM32F1__)
   #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"
