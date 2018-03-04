@@ -819,35 +819,35 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 class RamFileImpl : public fs::FileImpl
 {
-    // Implements just enough functionality to make gslc_DrvDrawBmp24FromFile
-    // happy.
-    // Read off the end of this file at your own peril.
-    public:
+  // Implements just enough functionality to make gslc_DrvDrawBmp24FromFile
+  // happy.
+  // Read off the end of this file at your own peril.
+  public:
     RamFileImpl(const unsigned char *contents) : contents(contents), pos(0) {}
 
     size_t read(uint8_t* buf, size_t size) override
     {
-        for (size_t i = 0; i < size; i++) {
-            buf[i] = contents[pos++];
-        }
-        return size;
+      for (size_t i = 0; i < size; i++) {
+        buf[i] = contents[pos++];
+      }
+      return size;
     }
     size_t position() const override {
-        return pos;
+      return pos;
     }
     bool seek(uint32_t pos, SeekMode mode) override {
-        switch (mode) {
-            case SeekSet:
-                this->pos = pos;
-                break;
-            case SeekCur:
-                this->pos += pos;
-                break;
-            case SeekEnd:
-                /* Not implemented. */
-                return false;
-        }
-        return true;
+      switch (mode) {
+        case SeekSet:
+          this->pos = pos;
+          break;
+        case SeekCur:
+          this->pos += pos;
+          break;
+        case SeekEnd:
+          /* Not implemented. */
+          return false;
+      }
+      return true;
     }
     void close() override {}
 
@@ -862,7 +862,7 @@ class RamFileImpl : public fs::FileImpl
     void rewindDirectory(void) {}
     operator bool() { return false; }
 
-    private:
+  private:
     const unsigned char *contents;
     size_t pos;
 };
