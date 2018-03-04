@@ -91,6 +91,7 @@
 #endif
 
 #include <FS.h>
+#include <FSImpl.h>
 
 
 #ifdef __cplusplus
@@ -701,13 +702,11 @@ void gslc_DrvDrawBmp24FromFile(gslc_tsGui* pGui, File &bmpFile, uint16_t x, uint
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
 
-  //Serial.println();
-  //Serial.print("Loading image '");
-  //Serial.print(filename);
-  //Serial.println('\'');
-
   // Parse BMP header
-  if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
+  uint16_t signature = gslc_DrvRead16SD(bmpFile);
+  //Serial.print("signature=");
+  //Serial.println(signature);
+  if(signature == 0x4D42) { // BMP signature
     // Ignore file size.
     gslc_DrvRead32SD(bmpFile);
     //Serial.print("File size: "); Serial.println(nFileSize);
@@ -818,32 +817,50 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 #endif // GSLC_SD_EN
 // ----- REFERENCE CODE end
 
-class RamFile : public File
+class RamFileImpl : public fs::FileImpl
 {
     // Implements just enough functionality to make gslc_DrvDrawBmp24FromFile
     // happy.
     // Read off the end of this file at your own peril.
     public:
-    RamFile(const unsigned char *contents) : contents(contents), pos(0) {}
+    RamFileImpl(const unsigned char *contents) : contents(contents), pos(0) {}
 
-    int read() {
-        return contents[pos++];
-    }
-    size_t read(uint8_t* buf, size_t size)
+    size_t read(uint8_t* buf, size_t size) override
     {
         for (size_t i = 0; i < size; i++) {
             buf[i] = contents[pos++];
         }
         return size;
     }
-    size_t position() const {
+    size_t position() const override {
         return pos;
     }
-    bool seek(uint32_t pos) {
-        this->pos = pos;
+    bool seek(uint32_t pos, SeekMode mode) override {
+        switch (mode) {
+            case SeekSet:
+                this->pos = pos;
+                break;
+            case SeekCur:
+                this->pos += pos;
+                break;
+            case SeekEnd:
+                /* Not implemented. */
+                return false;
+        }
         return true;
     }
-    void close() {}
+    void close() override {}
+
+    // These functions aren't implemented, but have to be to instantiate the
+    // class.
+    size_t write(const uint8_t *buf, size_t size) { return 0; }
+    void flush() {}
+    size_t size() const { return 0; }
+    const char* name() const { return "RAM"; }
+    boolean isDirectory(void) { return false; }
+    fs::FileImplPtr openNextFile(const char* mode) { return NULL; }
+    void rewindDirectory(void) {}
+    operator bool() { return false; }
 
     private:
     const unsigned char *contents;
@@ -853,7 +870,7 @@ class RamFile : public File
 void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t x, int16_t y,
   const unsigned char *bmp,bool bProgMem)
 {
-  RamFile bmpFile(bmp);
+  File bmpFile(fs::FileImplPtr(new RamFileImpl(bmp)));
   gslc_DrvDrawBmp24FromFile(pGui, bmpFile, x, y);
 }
 
