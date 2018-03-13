@@ -1,14 +1,19 @@
 # GUIslice library #
+[![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
+[![GitHub Issues](https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg)](https://github.com/ImpulseAdventure/GUIslice/issues)
+![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 *A lightweight GUI framework suitable for embedded displays*
 
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
 
-- [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
 - [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
-- Build status: [![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
+- [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
+
 
 ## Features ##
 - Pure C library, no dynamic memory allocation
