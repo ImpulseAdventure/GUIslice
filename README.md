@@ -1,5 +1,9 @@
 # GUIslice library #
 *A lightweight GUI framework suitable for embedded displays*
+
+![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
+![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
+
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
@@ -20,13 +24,9 @@
 - *Arduino Dependencies*: TFT_eSPI or Adafruit-GFX plus display / touch driver libraries
 
 ## Screenshots ##
-
-![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
-![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-
-![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
+![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
 
 
 ## Device Configuration
