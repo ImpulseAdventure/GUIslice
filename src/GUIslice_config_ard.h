@@ -70,6 +70,7 @@ extern "C" {
   // --------------------------------------------------------------
   // STM32:
   //  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  //  #define DRV_DISP_ADAGFX_AS        // Adafruit-GFX-AS library
   // --------------------------------------------------------------
 
 
@@ -106,7 +107,16 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
   //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
 
+#elif defined(DRV_DISP_ADAGFX_AS)
 
+  // The Adafruit-GFX-AS library supports a number of displays
+  // - Select a display sub-type by uncommenting one of the
+  //   following DRV_DISP_ADAGFX_* lines
+  #define DRV_DISP_ADAGFX_ILI9341_STM     // Adafruit ILI9341 (STM32 version)
+
+#endif
+
+#if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
   // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
