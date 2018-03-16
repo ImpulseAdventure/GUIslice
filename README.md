@@ -20,7 +20,7 @@
 - *Widgets*: text, images, buttons, checkboxes, radio buttons, sliders,
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - *Platform-independent GUI core currently supports*: SDL1.2, SDL2.0, Adafruit-GFX, TFT_eSPI
-- *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, M5Stack, (soon STM32)
+- *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, M5Stack, STM32
 - *Typical displays*: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
 - *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357
 - *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
