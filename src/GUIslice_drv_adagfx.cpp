@@ -412,25 +412,54 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
 {
-  uint16_t nTxtScale = pFont->nSize;
-  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  uint16_t  nTxtScale = pFont->nSize;
+  uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  char      ch;
+
+  // Initialize the font and positioning
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 
-  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-    // String in SRAM; can access buffer directly
-    m_disp.println(pStr);
-  } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
-    // String in PROGMEM (flash); must access via pgm_* calls
-    char ch;
-    while ((ch = pgm_read_byte(pStr++))) {
-      m_disp.print(ch);
-    }
-    m_disp.println();
+  // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
+  bool bProg = false;
+  if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
+    bProg = true;
   }
-   m_disp.setFont();
+
+  while (1) {
+    // Fetch the next character
+    if (!bProg) {
+      // String in SRAM; can access buffer directly
+      ch = *(pStr++);
+    } else {
+      // String in PROGMEM (flash); must access via pgm_* calls
+      ch = pgm_read_byte(pStr++);
+    }
+
+    // Detect string terminator
+    if (ch == 0) {
+      break;
+    }
+
+    // Render the character
+    m_disp.print(ch);
+
+    // Handle multi-line text:
+    // If we just output a newline, Adafruit-GFX will automatically advance
+    // the Y cursor but reset the X cursor to 0. Therefore we need to
+    // readjust the X cursor to our aligned bounding box.
+    if (ch == '\n') {
+      int16_t nCurPosY = m_disp.getCursorY();
+      m_disp.setCursor(nTxtX,nCurPosY);
+    }
+
+  } // while(1)
+
+  // Restore the font
+  m_disp.setFont();
+
   return true;
 }
 

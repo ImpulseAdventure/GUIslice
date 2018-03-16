@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.0   (2018/02/28)
+// - Version 0.10.1   (2018/03/15)
 // =======================================================================
 //
 // The MIT License
@@ -58,7 +58,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.10.0"
+#define GUISLICE_VER "0.10.1"
 
 
 // ========================================================================
@@ -2174,6 +2174,15 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     // alignment mode.
 
     // Fetch the size of the text to allow for justification
+    // NOTE: For multi-line text strings, the following call will
+    //       return the maximum dimensions of the entire block of
+    //       text, thus alignment will be based on the outer dimensions
+    //       not individual rows of text. As a result, the overall
+    //       text block will be rendered with the requested alignment
+    //       but individual rows will render like GSLC_ALIGNH_LEFT
+    //       within the aligned text block. In order to support per-line
+    //       horizontal justification, a pre-scan and alignment calculation
+    //       for each text row would need to be performed.
     int16_t       nTxtOffsetX,nTxtOffsetY;
     uint16_t      nTxtSzW,nTxtSzH;
     gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
