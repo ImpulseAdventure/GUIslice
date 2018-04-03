@@ -131,6 +131,7 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 
@@ -750,6 +751,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 bool gslc_ElemXCheckboxGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -1141,6 +1143,7 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
@@ -1917,6 +1920,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 
@@ -2327,6 +2331,7 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 
