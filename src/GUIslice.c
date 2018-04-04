@@ -1753,6 +1753,7 @@ gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
@@ -1791,6 +1792,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
@@ -1823,6 +1825,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 
@@ -1849,6 +1852,7 @@ gslc_tsElemRef* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1)
@@ -1878,6 +1882,7 @@ gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
@@ -1905,6 +1910,7 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
     return &(pGui->sElemRefTmp);
 #endif
   }
+  return NULL;
 }
 
 
