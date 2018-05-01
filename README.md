@@ -37,9 +37,8 @@
 ## Device Configuration
 - The following table lists a number of devices that have been tested with GUIslice
   and the recommended configuration modes and test examples.
-- NOTE: **STM32** support (eg. *STM32F103*) is in testing and will soon be released!
 
-![guislice-devices](https://user-images.githubusercontent.com/8510097/35789025-15e0918c-09ee-11e8-9122-676833f0c3ee.PNG)
+![guislice-devices](https://user-images.githubusercontent.com/8510097/39462702-230a68b6-4cc8-11e8-8c18-a45b55ba55c6.png)
 
 ## Important Note for Arduino Users ##
 - The baseline Arduino (**ATmega328P**) devices have very limited SRAM memory (2KB SRAM, 32KB FLASH).
