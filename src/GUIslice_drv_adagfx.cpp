@@ -404,20 +404,23 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 {
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
-  char*     pTmpStr   = NULL;
 
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
-    pTmpStr = (char*)pStr;
+    // Fetch the text bounds
+    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
 #if (GSLC_USE_PROGMEM)
     nTxtLen = strlen_P(pStr);
     char tempStr[nTxtLen+1];
     strncpy_P(tempStr,pStr,nTxtLen);
     tempStr[nTxtLen] = '\0';  // Force termination
-    pTmpStr = tempStr;
+
+    // Fetch the text bounds
+    m_disp.getTextBounds(tempStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
 #else
     // NOTE: Should not get here
     // - The text string has been marked as being stored in
@@ -425,11 +428,11 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     //   the current device does not support the PROGMEM
     //   methodology.
     // - Degrade back to using SRAM directly
-    pTmpStr = (char*)pStr;
+
+    // Fetch the text bounds
+    m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
 #endif
   }
-  // Fetch the text bounds
-  m_disp.getTextBounds(pTmpStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
 
   m_disp.setFont();
   return true;
