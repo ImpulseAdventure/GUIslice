@@ -366,11 +366,15 @@ typedef enum {
   GSLC_TXT_ALLOC_NONE     = (0<<2),   ///< No text string present
   GSLC_TXT_ALLOC_INT      = (1<<2),   ///< Text string allocated in internal element memory (GSLC_STR_LOCAL=1)
   GSLC_TXT_ALLOC_EXT      = (2<<2),   ///< Text string allocated in external memory (GSLC_STR_LOCAL=0), ie. user code
+  GSLC_TXT_ENC_PLAIN      = (0<<4),   ///< Encoding is plain text (LATIN1))
+  GSLC_TXT_ENC_UTF8       = (1<<4),   ///< Encoding is UTF-8
+
   // Masks
   GSLC_TXT_MEM            = (3<<0),   ///< Mask for updating text memory type
   GSLC_TXT_ALLOC          = (3<<2),   ///< Mask for updating location of text string buffer allocation
+  GSLC_TXT_ENC            = (3<<4),   ///< Mask for updating text encoding
   // Defaults
-  GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE,
+  GSLC_TXT_DEFAULT        = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_NONE | GSLC_TXT_ENC_PLAIN,
 } gslc_teTxtFlags;
 
 
@@ -1656,6 +1660,20 @@ void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor c
 /// \return none
 ///
 void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags);
+
+
+///
+/// Update the text string encoding mode
+/// - This function can be used to indicate that the element's text string is
+///   encoded in UTF-8, which supports extended / foreign character maps
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  eFlags:      Flags associated with text encoding (GSLC_TXT_ENC_*)
+///
+/// \return none
+///
+void gslc_ElemSetTxtEnc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags);
 
 
 ///

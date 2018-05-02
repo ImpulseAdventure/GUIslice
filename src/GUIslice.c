@@ -2405,6 +2405,19 @@ void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlag
   pElem->eTxtFlags = (eFlagsCur & ~GSLC_TXT_MEM) | (eFlags & GSLC_TXT_MEM);
 }
 
+void gslc_ElemSetTxtEnc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtEnc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+
+  gslc_teTxtFlags eFlagsCur = pElem->eTxtFlags;
+  pElem->eTxtFlags = (eFlagsCur & ~GSLC_TXT_ENC) | (eFlags & GSLC_TXT_ENC);
+}
+
 void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nFontId)
 {
   if ((pGui == NULL) || (pElemRef == NULL)) {

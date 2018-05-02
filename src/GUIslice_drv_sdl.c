@@ -543,7 +543,11 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   // NOTE: Shouldn't need to process eTxtFlags
   int32_t nTxtSzW,nTxtSzH;
   TTF_Font* pDrvFont = (TTF_Font*)(pFont->pvFont);
-  TTF_SizeText(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
+  if ((eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8) {
+    TTF_SizeUTF8(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
+  } else {
+    TTF_SizeText(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
+  }
   *pnTxtSzW = (uint16_t)nTxtSzW;
   *pnTxtSzH = (uint16_t)nTxtSzH;
   // No offset coordinates used
@@ -562,11 +566,15 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   if ((pStr == NULL) || (pStr[0] == '\0')) {
     return true;
   }
-  // NOTE: Shouldn't need to process eTxtFlags
+
   gslc_tsDriver*  pDriver   = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Surface*    pSurfTxt  = NULL;
   TTF_Font*       pDrvFont  = (TTF_Font*)(pFont->pvFont);
-  pSurfTxt = TTF_RenderText_Solid(pDrvFont,pStr,gslc_DrvAdaptColor(colTxt));
+  if ((eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8) {
+    pSurfTxt = TTF_RenderUTF8_Blended(pDrvFont,pStr,gslc_DrvAdaptColor(colTxt));
+  } else {
+    pSurfTxt = TTF_RenderText_Blended(pDrvFont,pStr,gslc_DrvAdaptColor(colTxt));
+  }
   if (pSurfTxt == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawTxt() failed in TTF_RenderText_Solid() (%s)\n",pStr);
     return false;
