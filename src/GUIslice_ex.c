@@ -1896,7 +1896,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   } else {
     // Scrollbar is enabled
     pXData->bScrollEn   = true;
-    pXData->nScrollPos  = pXData->nBufRows - pXData->nWndRows;
+    pXData->nScrollPos  = 0;
   }
 
   sElem.pXData            = (void*)(pXData);
@@ -1951,7 +1951,7 @@ void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 }
 
 // Advance the buffer writer to the next line
-// The window is also
+// The window is also shifted if we are eating the first row
 void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsXTextbox* pBox)
 {
   pBox->nBufPosX = 0;
@@ -1960,6 +1960,12 @@ void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsXTextbox* pBox)
   // Wrap the pointers around end of buffer
   pBox->nBufPosY      = pBox->nBufPosY % pBox->nBufRows;
 
+  // Did the buffer write pointer start to encroach upon
+  // the visible window region? If so, shift the window
+  if (pBox->nBufPosY == pBox->nWndRowStart) {
+    // Advance the window (with wrap if needed)
+    pBox->nWndRowStart = (pBox->nWndRowStart + 1) % pBox->nBufRows;
+  }
 }
 
 void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nScrollPos,uint8_t nScrollMax)
@@ -2070,6 +2076,7 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
   bool            bDone = false;
   uint16_t        nTxtPos = 0;
   unsigned char   chNext;
+
   if (pTxt == NULL) { bDone = true; }
   while (!bDone) {
     chNext = pTxt[nTxtPos];
@@ -2091,20 +2098,19 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
       gslc_ElemXTextboxLineWrAdv(pGui,pBox);
     } else {
       // TODO: Check to see if we are in mask/truncate state
+      // Note that this routine also handles line wrap
       gslc_ElemXTextboxBufAdd(pGui,pBox,chNext,true);
-    }
-
-    if (pBox->nBufPosX >= pBox->nBufCols) {
-      // TODO: Wrap line?
-      // - No, this should be handled in ElemXTextboxBufAdd()
     }
   }
 
   // Set the redraw flag
   // - Only need incremental redraw
+  // - TODO: Detect case of single line-update and limit redraw
+  //         to line instead of redrawing entire control. Whenever
+  //         the line is advanced, the full control content should
+  //         be redrawn.
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
-
 
 bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
@@ -2159,16 +2165,15 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   colTxt = pElem->colElemText;
 
   // Calculate the current window position based on
-  // the current buffer write pointer and scroll
-  // position
+  // scroll position
   nScrollMax          = pBox->nBufRows - pBox->nWndRows;
-  pBox->nWndRowStart  = pBox->nBufRows + pBox->nBufPosY;
-  pBox->nWndRowStart -= (pBox->nWndRows - 1);
+
+  uint16_t nWndRowStartScr = pBox->nWndRowStart;
+
   // Only correct for scrollbar position if enabled
   if (pBox->bScrollEn) {
-    pBox->nWndRowStart -= (nScrollMax - pBox->nScrollPos);
+    nWndRowStartScr = (pBox->nWndRowStart + pBox->nScrollPos) % pBox->nBufRows;
   }
-  pBox->nWndRowStart  = pBox->nWndRowStart % pBox->nBufRows;
 
   uint8_t nOutRow = 0;
   uint8_t nOutCol = 0;
@@ -2184,7 +2189,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
       // Calculate row offset after accounting for buffer wrap
       // and current window starting offset
-      uint16_t nRowCur = pBox->nWndRowStart + nOutRow;
+      uint16_t nRowCur = nWndRowStartScr + nOutRow;
       nRowCur = nRowCur % pBox->nBufRows;
 
       // NOTE: At the start of buffer fill where we have
@@ -2233,11 +2238,11 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
           colTxt.b = chNext;
           eTBoxState = TBOX_NORM;
         }
-      }
+      } // eTBoxState
 
-    }
+    } // nOutCol
     nCurY++;
-  }
+  } // nOutRow
 
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
