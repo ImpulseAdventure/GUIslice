@@ -53,8 +53,16 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References 
 gslc_tsXSlider              m_sXSlider;
 gslc_tsXSlider              m_sXSliderText;
 
-#define TBOX_ROWS           15
-#define TBOX_COLS           12
+// Define max number of rows and columns
+// - Warning: sizing must be considered carefully on limited
+//   RAM devices (such as Arduino)
+// - For the number of columns, some margin should
+//   be provided for special characters:
+//   - Each row allocates one byte for the line terminator (NULL)
+//   - Each embedded color change consumes 4 bytes
+#define TBOX_ROWS           12  // Define max # rows
+#define TBOX_COLS           16  // Define max # columns
+
 gslc_tsXTextbox             m_sTextbox;
 char                        m_acTextboxBuf[TBOX_ROWS*TBOX_COLS];
 
@@ -161,12 +169,12 @@ bool InitOverlays()
 
 
   // Create wrapping box for textbox and scrollbar
-  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,124});
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){18,83,203,64});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create textbox
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
-    &m_sTextbox,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(char*)&m_acTextboxBuf,
+    &m_sTextbox,(gslc_tsRect){20,85,180,60},E_FONT_TXT,(char*)&m_acTextboxBuf,
         TBOX_ROWS,TBOX_COLS);
   gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
@@ -174,7 +182,7 @@ bool InitOverlays()
 
   // Create vertical scrollbar for textbox
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderText,
-        (gslc_tsRect){200,85,20,120},0,100,100,5,true);
+        (gslc_tsRect){200,85,20,60},0,100,0,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
@@ -190,8 +198,6 @@ bool InitOverlays()
 
 void setup()
 {
-  bool bOk = true;
-
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
@@ -213,14 +219,18 @@ void setup()
   // Insert some text
   gslc_tsElemRef* pElemTextbox = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TEXTBOX);
 
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Hi!\n");
-
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Welcome\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Hi ");
+#if (GSLC_FEATURE_XTEXTBOX_EMBED)
+  // Can change text color dynamically only if feature enabled
   gslc_ElemXTextboxColSet(&m_gui,pElemTextbox,GSLC_COL_RED);
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED\n");
   gslc_ElemXTextboxColReset(&m_gui,pElemTextbox);
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Long line here that might wrap\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Goodbye...\n");
+#else
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED\n");
+#endif
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Long line here that may wrap\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"End...\n");
 
   m_bQuit = false;
   return;
@@ -234,7 +244,7 @@ void loop()
   m_nCount++;
 
     if ((m_nCount % 5000) == 0) {
-      snprintf(acTxt,MAX_STR,"%u\n",m_nCount);
+      snprintf(acTxt,MAX_STR,"Step %u\n",m_nCount);
       gslc_ElemXTextboxAdd(&m_gui,m_pElemTextbox,acTxt);
     }
 

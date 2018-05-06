@@ -59,8 +59,16 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];   // Storage for all elements in RAM
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References for all elements in GUI
 
-#define TBOX_ROWS           15
-#define TBOX_COLS           12
+// Define max number of rows and columns
+// - Warning: sizing must be considered carefully on limited
+//   RAM devices (such as Arduino)
+// - For the number of columns, some margin should
+//   be provided for special characters:
+//   - Each row allocates one byte for the line terminator (NULL)
+//   - Each embedded color change consumes 4 bytes
+#define TBOX_ROWS           12  // Define max # rows
+#define TBOX_COLS           16  // Define max # columns
+
 gslc_tsXTextbox             m_sTextbox;
 char                        m_acTextboxBuf[TBOX_ROWS*TBOX_COLS];
 
@@ -89,7 +97,7 @@ bool CbControls(void* pvGui,void* pvElemRef,int16_t nPos)
 
   char            acTxt[20];
   int16_t         nVal;
-  gslc_tsElemRef* pElemTmp = NULL;
+  gslc_tsElemRef* pElemRefTmp = NULL;
 
   // Handle various controls
   switch (pElem->nId) {
@@ -97,23 +105,23 @@ bool CbControls(void* pvGui,void* pvElemRef,int16_t nPos)
       // Fetch the scrollbar value
       nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
       // Update the textbox scroll position
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
-      gslc_ElemXTextboxScrollSet(pGui,pElemTmp,nVal,100);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
+      gslc_ElemXTextboxScrollSet(pGui,pElemRefTmp,nVal,100);
       break;
 
     case E_SLIDER:
       // Fetch the slider position
-      nVal = gslc_ElemXSliderGetPos(&m_gui,pElemRef);
+      nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
 
       // Link slider to the numerical display
       snprintf(acTxt,20,(char*)"%u",nVal);
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-      gslc_ElemSetTxtStr(pGui,pElemTmp,acTxt);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TXT_COUNT);
+      gslc_ElemSetTxtStr(pGui,pElemRefTmp,acTxt);
 
       // Link slider to insertion of text into textbox
-      pElemTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
+      pElemRefTmp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_ELEM_TEXTBOX);
       snprintf(acTxt,20,(char*)"Slider=%3u\n",nVal);
-      gslc_ElemXTextboxAdd(pGui,pElemTmp,acTxt);
+      gslc_ElemXTextboxAdd(pGui,pElemRefTmp,acTxt);
 
       break;
 
@@ -138,9 +146,9 @@ bool InitOverlays()
   #define TMP_COL1 (gslc_tsColor){ 32, 32, 60}
   #define TMP_COL2 (gslc_tsColor){128,128,240}
   // Note: must use title Font ID
-  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",&m_asFont[1],
+  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Textbox",&m_asFont[1],
           TMP_COL1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
-  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",&m_asFont[1],
+  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Textbox",&m_asFont[1],
           TMP_COL2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 */
 
@@ -161,20 +169,20 @@ bool InitOverlays()
 
 
   // Create wrapping box for textbox and scrollbar
-  gslc_ElemCreateBox_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,18,83,203,124,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,true,true,NULL,NULL);
+  gslc_ElemCreateBox_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,18,83,203,64,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create textbox
   // - NOTE: XTextbox does not have a FLASH-based version yet (ElemXTextboxCreate_P)
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX,E_PG_MAIN,
-    &m_sTextbox,(gslc_tsRect){20,85,180,120},E_FONT_TXT,(char*)&m_acTextboxBuf,
+    &m_sTextbox,(gslc_tsRect){20,85,180,60},E_FONT_TXT,(char*)&m_acTextboxBuf,
         TBOX_ROWS,TBOX_COLS);
   gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
   m_pElemTextbox = pElemRef;
 
   // Create vertical scrollbar for textbox
-  gslc_ElemXSliderCreate_P(&m_gui,E_SCROLLBAR,E_PG_MAIN,200,85,20,120,
-    0,100,100,5,true,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK);
+  gslc_ElemXSliderCreate_P(&m_gui,E_SCROLLBAR,E_PG_MAIN,200,85,20,60,
+    0,100,0,5,true,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK);
   pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_SCROLLBAR);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
@@ -188,8 +196,6 @@ bool InitOverlays()
 
 void setup()
 {
-  bool bOk = true;
-
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
@@ -214,14 +220,18 @@ void setup()
   // Insert some text
   gslc_tsElemRef* pElemTextbox = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TEXTBOX);
 
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Hi!\n");
-
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Welcome\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Hi ");
+#if (GSLC_FEATURE_XTEXTBOX_EMBED)
+  // Can change text color dynamically only if feature enabled
   gslc_ElemXTextboxColSet(&m_gui,pElemTextbox,GSLC_COL_RED);
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED\n");
   gslc_ElemXTextboxColReset(&m_gui,pElemTextbox);
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Long line here that might wrap\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Goodbye...\n");
+#else
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"RED\n");
+#endif
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"Long line here that may wrap\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,(char*)"End...\n");
 
   m_bQuit = false;
   return;
@@ -235,7 +245,7 @@ void loop()
   m_nCount++;
 
     if ((m_nCount % 5000) == 0) {
-      snprintf(acTxt,MAX_STR,"%u\n",m_nCount);
+      snprintf(acTxt,MAX_STR,"Step %u\n",m_nCount);
       gslc_ElemXTextboxAdd(&m_gui,m_pElemTextbox,acTxt);
     }
 
@@ -250,4 +260,4 @@ void loop()
     gslc_Quit(&m_gui);
     while (1) { }
   }
-} 
+}

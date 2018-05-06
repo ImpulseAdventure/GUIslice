@@ -1828,7 +1828,6 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 
-
   return true;
   #endif // !DRV_TOUCH_NONE
 }
@@ -2000,9 +1999,12 @@ void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_
 void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsXTextbox* pBox,unsigned char chNew,bool bAdvance)
 {
   // Ensure that we haven't gone past end of line
-  if (pBox->nBufPosX >= pBox->nBufCols) {
+  // - Note that we have to leave one extra byte for the line terminator (NULL)
+  if ((pBox->nBufPosX+1) >= pBox->nBufCols) {
     if (pBox->bWrapEn) {
       // Perform line wrap
+      // - Force a null at the end of the current line first
+      pBox->pBuf[pBox->nBufPosY * pBox->nBufCols + (pBox->nBufCols-1)] = 0;
       gslc_ElemXTextboxLineWrAdv(pGui,pBox);
     } else {
       // Ignore the write
@@ -2027,6 +2029,10 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsXTextbox* pBox,unsigned cha
 
 void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor nCol)
 {
+#if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
+  GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColSet() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
+  return;
+#else
   gslc_tsXTextbox*  pBox = NULL;
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
@@ -2043,14 +2049,20 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
   gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.r,true);
   gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.g,true);
   gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.b,true);
+#endif
 }
 
 void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+#if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
+  GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColReset() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
+  return;
+#else
   gslc_tsXTextbox*  pBox = NULL;
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
   gslc_ElemXTextboxBufAdd(pGui,pBox,GSLC_XTEXTBOX_CODE_COL_RESET,true);
+#endif
 }
 
 void gslc_ElemXTextboxWrapSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bWrapEn)
@@ -2067,6 +2079,17 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
   gslc_tsXTextbox*  pBox = NULL;
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
+  // Warn the user about mode compatibility
+#if (GSLC_FEATURE_XTEXTBOX_EMBED)
+  static bool bWarned = false;  // Warn only once
+  bool bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
+  if ((!bWarned) && (bEncUtf8)) {
+    // Continue to render the text, but issue warning to the user
+    GSLC_DEBUG_PRINT("WARNING: ElemXTextboxAdd(%s) UTF-8 encoding not supported in GSLC_FEATURE_XTEXTBOX_EMBED=1 mode\n","");
+    bWarned = true;
+  }
+#endif
 
   // Add null-terminated string to the bottom of the buffer
   // If the string exceeds the buffer length then it will wrap
@@ -2091,6 +2114,8 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
       continue;
     }
 
+    // FIXME: It is possible that the following check may no longer be
+    // appropriate when using UTF-8 encoding mode.
     if (chNext == '\n') {
       // Terminate the line
       gslc_ElemXTextboxBufAdd(pGui,pBox,0,false);
@@ -2135,7 +2160,6 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   bool     bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
   bool     bFrameEn  = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
 
-
   // Draw the frame
   if (eRedraw == GSLC_REDRAW_FULL) {
     if (bFrameEn) {
@@ -2147,19 +2171,18 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
   gslc_DrawFillRect(pGui,rInner,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
 
-  unsigned char     chNext;
   uint16_t          nBufPos = 0;
-  uint8_t           nCurX = 0;
-  uint8_t           nCurY = 0;
+
   uint16_t          nTxtPixX;
   uint16_t          nTxtPixY;
   gslc_tsColor      colTxt;
-
-  enum              {TBOX_NORM, TBOX_COL_SET};
-  int16_t           eTBoxState = TBOX_NORM;
-  uint16_t          nTBoxStateCnt = 0;
+  bool              bEncUtf8;
 
   uint8_t           nScrollMax;
+
+  // Determine what encoding method is used for text
+  // Not used at the moment
+  bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
 
   // Initialize color state
   colTxt = pElem->colElemText;
@@ -2174,6 +2197,54 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   if (pBox->bScrollEn) {
     nWndRowStartScr = (pBox->nWndRowStart + pBox->nScrollPos) % pBox->nBufRows;
   }
+
+#if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
+
+  // Normal mode support (no embedded text color)
+  // - This mode is much faster and is able to support UTF-8 text encoding
+
+  uint8_t nCurY = 0;
+
+  uint8_t nOutRow = 0;
+  uint8_t nMaxRow = 0;
+
+  nMaxRow = (pBox->nBufRows < pBox->nWndRows)? pBox->nBufRows : pBox->nWndRows;
+  for (nOutRow=0;nOutRow<nMaxRow;nOutRow++) {
+
+    // Calculate row offset after accounting for buffer wrap
+    // and current window starting offset
+    uint16_t nRowCur = nWndRowStartScr + nOutRow;
+    nRowCur = nRowCur % pBox->nBufRows;
+
+    // NOTE: At the start of buffer fill where we have
+    // only written a couple rows, we don't stop reading
+    // across all of the rows. We are dependent upon
+    // the reset to initialize all rows with NULL terminator
+    // so that we don't show garbage.
+
+    nBufPos = nRowCur * pBox->nBufCols;
+
+    nTxtPixX = pElem->rElem.x + pBox->nMargin + 0 * pBox->nChSizeX;
+    nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;
+    gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt);
+
+    nCurY++;
+  } // nOutRow
+
+#else
+
+  // Embedded color mode support
+  // - This mode supports inline changing of text color
+  // - However, it does not support UTF-8 character encoding
+  // - It is also slower since rendering is per-character
+
+  enum              {TBOX_NORM, TBOX_COL_SET};
+  int16_t           eTBoxState = TBOX_NORM;
+  uint16_t          nTBoxStateCnt = 0;
+
+  unsigned char     chNext;
+  uint8_t           nCurX = 0;
+  uint8_t           nCurY = 0;
 
   uint8_t nOutRow = 0;
   uint8_t nOutCol = 0;
@@ -2243,6 +2314,8 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     } // nOutCol
     nCurY++;
   } // nOutRow
+
+#endif // GSLC_FEATURE_XTEXTBOX_EMBED
 
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);

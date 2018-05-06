@@ -42,11 +42,8 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsXSlider              m_sXSlider;
 gslc_tsXSlider              m_sXSliderText;
 
-// Define max number of rows and columns
-// - Note that each embedded color change consumes 4 spaces (columns)
-#define TBOX_ROWS           20  // Define max # rows
-#define TBOX_COLS           20  // Define max # columns
-
+#define TBOX_ROWS           20
+#define TBOX_COLS           20
 gslc_tsXTextbox             m_sTextbox;
 char                        m_acTextboxBuf[TBOX_ROWS*TBOX_COLS];
 
@@ -182,7 +179,7 @@ bool InitOverlays()
 
   // Create vertical scrollbar for textbox
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSliderText,
-        (gslc_tsRect){200,85,20,120},0,100,0,5,true);
+        (gslc_tsRect){200,85,20,120},0,100,100,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbControls);
 
@@ -225,18 +222,13 @@ int main( int argc, char* args[] )
   // Insert some text
   gslc_tsElemRef* pElemTextbox = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TEXTBOX);
 
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Welcome\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Hi ");
-#if (GSLC_FEATURE_XTEXTBOX_EMBED)
-  // Can change text color dynamically only if feature enabled
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Hi there!\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Status: ");
   gslc_ElemXTextboxColSet(&m_gui,pElemTextbox,GSLC_COL_RED);
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"RED\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"FAIL\n");
   gslc_ElemXTextboxColReset(&m_gui,pElemTextbox);
-#else
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"RED\n");
-#endif
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Long line here that may wrap\n");
-  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"End...\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Long line here that might wrap\n");
+  gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,"Goodbye...\n");
 
   // -----------------------------------
   // Main event loop
@@ -248,7 +240,7 @@ int main( int argc, char* args[] )
     usleep(50);
     nCnt++;
     if ((nCnt % 5000) == 0) {
-      snprintf(acTxt,20,"Step %u\n",nCnt);
+      snprintf(acTxt,20,"%u\n",nCnt);
       gslc_ElemXTextboxAdd(&m_gui,pElemTextbox,acTxt);
     }
   }

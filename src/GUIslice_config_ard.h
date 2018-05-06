@@ -288,6 +288,7 @@ extern "C" {
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
   #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
+  #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
 
 
   // Enable support for SD card
