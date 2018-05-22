@@ -160,6 +160,9 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     return NULL;  // No image preload done
   }
+
+  // Default
+  return NULL;
 }
 
 
@@ -315,6 +318,9 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
   m_disp.setTextDatum(nDatum);
 
   m_disp.drawString(pStr,nTxtX,nTxtY);
+
+  // For now, always return true
+  return true;
 }
 
 // NOTE: As TFT_eSPI performs some complex logic in determining the font
@@ -516,7 +522,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t nByte;
+  uint8_t nByte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
@@ -883,8 +889,6 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
 {
-  uint16_t  nRawX,nRawY;
-  uint8_t   nRawPress;
 
   #if defined(DRV_TOUCH_NONE)
   return false;
@@ -906,6 +910,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
   // ----------------------------------------------------------------
   #if defined(DRV_TOUCH_ADA_STMPE610)
+
+  uint16_t  nRawX,nRawY;
+  uint8_t   nRawPress;
 
   if (m_touch.touched()) {
 
