@@ -489,6 +489,9 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 // Touch Functions (if using display driver library)
 // -----------------------------------------------------------------------
 
+#if defined(DRV_TOUCH_IN_DISP)
+// Use TFT_eSPI's integrated XPT2046 touch driver
+
 ///
 /// Perform any touchscreen-specific initialization
 ///
@@ -502,7 +505,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 
 
 ///
-/// Get the last touch event from the SDL_Event handler
+/// Get the last touch event from the internal XPT2046 touch handler
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
@@ -512,6 +515,8 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \return true if an event was detected or false otherwise
 ///
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress);
+
+#endif // DRV_TOUCH_IN_DISP
 
 
 // -----------------------------------------------------------------------

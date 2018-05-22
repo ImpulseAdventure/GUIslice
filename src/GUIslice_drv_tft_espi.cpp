@@ -782,6 +782,15 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 // Touch Functions (via display driver)
 // -----------------------------------------------------------------------
 
+// Confirm that TOUCH_CS has been defined otherwise the
+// m_disp.getTouch() call won't be defined in TFT_eSPI
+#if defined(DRV_TOUCH_TFT_ESPI)
+  #if !defined(TOUCH_CS)
+    #error "To use DRV_TOUCH_TFT_ESPI, TOUCH_CS needs to be defined in TFT_eSPI User_Setup"
+  #endif
+#endif
+
+#if defined(DRV_TOUCH_IN_DISP)
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   if (pGui == NULL) {
@@ -803,13 +812,6 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   return true;
 }
 
-// Confirm that TOUCH_CS has been defined otherwise the
-// m_disp.getTouch() call won't be defined in TFT_eSPI
-#if defined(DRV_TOUCH_TFT_ESPI)
-  #if !defined(TOUCH_CS)
-    #error "To use DRV_TOUCH_TFT_ESPI, TOUCH_CS needs to be defined in TFT_eSPI User_Setup"
-  #endif
-#endif
 
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
 {
@@ -856,6 +858,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 
   return true;
 }
+
+#endif // DRV_TOUCH_IN_DISP
 
 // ------------------------------------------------------------------------
 // Touch Functions (via external touch driver)
