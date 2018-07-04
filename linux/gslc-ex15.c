@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 02: Accept touch input, text button
+// - Example 15: Foreign language support
 //
 
 #include "GUIslice.h"
@@ -12,18 +12,21 @@
 
 // Defines for resources
 #define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+// Define additional font with foreign characters
+// - NOTE: This font will require manual installation
+#define FONT_AMIKO "/usr/share/fonts/truetype/amiko/Amiko-Regular.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT};
-enum {E_FONT_BTN};
+enum {E_FONT_BTN,E_FONT_EXTRA};
 
 bool    m_bQuit = false;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            1
-#define MAX_ELEM_PG_MAIN    2
+#define MAX_FONT            2
+#define MAX_ELEM_PG_MAIN    4
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -83,8 +86,9 @@ int main( int argc, char* args[] )
 
   // Load Fonts
   bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,12);
-  if (!bOk) { printf("ERROR: gslc_FontAdd() failed\n"); exit(1); }
-
+  if (!bOk) { printf("ERROR: gslc_FontAdd(FONT_BTN) failed\n"); exit(1); }
+  bOk = gslc_FontAdd(&m_gui,E_FONT_EXTRA,GSLC_FONTREF_FNAME,FONT_AMIKO,36);
+  if (!bOk) { printf("ERROR: gslc_FontAdd(FONT_EXTRA) failed\n"); exit(1); }
 
   // -----------------------------------
   // Create page elements
@@ -97,9 +101,18 @@ int main( int argc, char* args[] )
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
+  // Create text with foreign language support
+  // - ElemSetTxtEnc() is called to change the encoding to UTF-8
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){40,110,240,60},
+    "cześć",0,E_FONT_EXTRA);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_YELLOW);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetTxtEnc(&m_gui,pElemRef,GSLC_TXT_ENC_UTF8);
+
+
   // Create Quit button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){120,100,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){220,60,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
 
   // -----------------------------------
   // Start display
