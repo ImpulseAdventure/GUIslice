@@ -13,7 +13,7 @@
 - [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
 - [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
-
+- **Support email**: guislice @ impulseadventure . com
 
 ## Features ##
 - Pure C library, no dynamic memory allocation
