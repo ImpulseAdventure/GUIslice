@@ -374,6 +374,10 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   #if !defined(DRV_TOUCH_NONE)
 
   // ---------------------------------------------
@@ -1455,11 +1459,19 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 // requires a redraw.
 void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)
 {
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   pGui->pCurPage->bPageNeedRedraw = bRedraw;
 }
 
 bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 {
+  if (pGui->pCurPage == NULL) {
+    return false; // No page added yet
+  }
+
   return pGui->pCurPage->bPageNeedRedraw;
 }
 
@@ -1478,6 +1490,10 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   gslc_tsElem*      pElem = NULL;
   gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
+
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
 
   // Only work on current page
   pCollect = pGui->pCurPageCollect;
@@ -1524,6 +1540,10 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 //   are rendered.
 void gslc_PageRedrawGo(gslc_tsGui* pGui)
 {
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   // Update any page redraw status that may be required
   // - Note that this routine handles cases where an element
   //   marked as requiring update is semi-transparent which can
@@ -1570,6 +1590,10 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
 void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 {
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   pGui->pCurPage->bPageNeedFlip = bNeeded;
 
   // To assist in debug of drawing primitives, support immediate
@@ -1582,11 +1606,19 @@ void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 
 bool gslc_PageFlipGet(gslc_tsGui* pGui)
 {
+  if (pGui->pCurPage == NULL) {
+    return false; // No page added yet
+  }
+
   return pGui->pCurPage->bPageNeedFlip;
 }
 
 void gslc_PageFlipGo(gslc_tsGui* pGui)
 {
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   if (pGui->pCurPage->bPageNeedFlip) {
     gslc_DrvPageFlipNow(pGui);
 

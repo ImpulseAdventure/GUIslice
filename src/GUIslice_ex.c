@@ -774,6 +774,10 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   bool                bCurChecked;
   gslc_tsElemRef*     pFoundElemRef = NULL;
 
+  if (pGui->pCurPage == NULL) {
+    return NULL; // No page added yet
+  }
+
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxFindChecked";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -841,6 +845,10 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
+  if (pGui->pCurPage == NULL) {
+    return; // No page added yet
+  }
+
   gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
   gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
   bool                bRadio    = pCheckbox->bRadio;
