@@ -2186,8 +2186,6 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   gslc_tsColor      colTxt;
   bool              bEncUtf8;
 
-  uint8_t           nScrollMax;
-
   // Determine what encoding method is used for text
   // Not used at the moment
   bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
@@ -2195,10 +2193,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   // Initialize color state
   colTxt = pElem->colElemText;
 
-  // Calculate the current window position based on
-  // scroll position
-  nScrollMax          = pBox->nBufRows - pBox->nWndRows;
-
+  // Calculate the starting row for the window
   uint16_t nWndRowStartScr = pBox->nWndRowStart;
 
   // Only correct for scrollbar position if enabled

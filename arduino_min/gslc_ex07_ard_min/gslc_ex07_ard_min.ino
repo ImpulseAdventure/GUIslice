@@ -215,8 +215,6 @@ bool InitOverlays()
 
 void setup()
 {
-  bool bOk = true;
-
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
