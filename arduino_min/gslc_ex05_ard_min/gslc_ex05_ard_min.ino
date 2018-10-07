@@ -58,8 +58,8 @@ unsigned  m_nCount = 0;
   #define MAX_ELEM_PG_MAIN_PROG   0                                       // # Elems in Flash
   #define MAX_ELEM_PG_EXTRA_PROG  0                                       // # Elems in Flash
 #endif
-#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
-#define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG  // # Elems in RAM
+#define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN  - MAX_ELEM_PG_MAIN_PROG   // # Elems in RAM
+#define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_EXTRA - MAX_ELEM_PG_EXTRA_PROG  // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;

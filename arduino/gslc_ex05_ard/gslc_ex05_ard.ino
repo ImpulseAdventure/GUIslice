@@ -48,7 +48,7 @@ unsigned  m_nCount = 0;
 #define MAX_ELEM_PG_MAIN        9                 // # Elems total on Main page
 #define MAX_ELEM_PG_EXTRA       7                 // # Elems total on Extra page
 #define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN  // # Elems in RAM
-#define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_MAIN  // # Elems in RAM
+#define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_EXTRA // # Elems in RAM
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
