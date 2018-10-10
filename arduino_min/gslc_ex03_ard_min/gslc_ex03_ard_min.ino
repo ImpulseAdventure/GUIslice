@@ -11,6 +11,7 @@
 //   - NOTE: This sketch requires the SD card support library which
 //     adds considerable Flash and RAM requirements. As a result, it
 //     is unlikely to run on basic Arduino devices (eg. ATmega328)
+//   - Expected behavior: Clicking on button terminates program
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections

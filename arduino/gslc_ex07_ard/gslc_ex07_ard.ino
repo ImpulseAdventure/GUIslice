@@ -5,6 +5,8 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 07 (Arduino):
 //   - Sliders with dynamic color control and position callback
+//   - Expected behavior: Clicking on "SAVE" button terminates program,
+//     and no action when clicking on "Selected Room" button
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. Therefore, it may not
 //     run on Arduino devices with limited memory. A "minimal"

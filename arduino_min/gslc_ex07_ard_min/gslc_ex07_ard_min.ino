@@ -5,6 +5,8 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 07 (Arduino): [minimum RAM version]
 //   - Sliders with dynamic color control and position callback
+//   - Expected behavior: Clicking on "SAVE" button terminates program,
+//     and no action when clicking on "Selected Room" button
 //   - Demonstrates the use of ElemCreate*_P() functions.
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).

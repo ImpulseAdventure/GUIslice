@@ -5,6 +5,7 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 03 (Arduino):
 //   - Accept touch input, graphic button
+//   - Expected behavior: Clicking on button terminates program
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -17,6 +18,7 @@
 //   representing the quit button normal and glowing states. The file
 //   format is 24-bit BMP. These files have been included for reference in
 //   /arduino/res/
+
 
 #include "GUIslice.h"
 #include "GUIslice_drv.h"

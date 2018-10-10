@@ -5,6 +5,7 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 02 (Arduino):
 //   - Accept touch input, text button
+//   - Expected behavior: Clicking on button terminates program
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. A "minimal"
 //     version is located in the "arduino_min" folder which includes

@@ -5,6 +5,7 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 02 (Arduino): [minimum RAM version]
 //   - Accept touch input, text button
+//   - Expected behavior: Clicking on button terminates program
 //   - Demonstrates the use of ElemCreate*_P() functions.
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).
