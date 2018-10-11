@@ -70,7 +70,7 @@ extern "C" {
   // --------------------------------------------------------------
   // STM32:
   //  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  //  #define DRV_DISP_ADAGFX_AS        // Adafruit-GFX-AS library
+  //  #define DRV_DISP_ADAGFX_AS        // Adafruit-GFX-AS library, high speed using DMA
   // --------------------------------------------------------------
 
 
@@ -106,18 +106,8 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
   //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
   //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
-
-#elif defined(DRV_DISP_ADAGFX_AS)
-
-  // The Adafruit-GFX-AS library supports a number of displays
-  // - Select a display sub-type by uncommenting one of the
-  //   following DRV_DISP_ADAGFX_* lines
-  #define DRV_DISP_ADAGFX_ILI9341_STM     // Adafruit ILI9341 (STM32 version)
-
-#endif
-
-#if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
-  // For Adafruit-GFX drivers, define pin connections
+  
+    // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
@@ -127,6 +117,66 @@ extern "C" {
   #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
   #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
 
+  // Use hardware SPI interface?
+  // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
+  // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
+  //   ADAGFX_PIN_MISO, ADAGFX_PIN_CLK). These pin definitions can be left blank in
+  //   hardware SPI mode.
+  #define ADAGFX_SPI_HW     1
+
+  // Define custom SPI pin connections used in software SPI mode (ADAGFX_SPI_HW=0)
+  // - These definitions can be left blank in hardware mode (ADAGFX_SPI_HW=1)
+  #define ADAGFX_PIN_MOSI
+  #define ADAGFX_PIN_MISO
+  #define ADAGFX_PIN_CLK
+
+  // Set Default rotation
+  // - Note that if you change this you will likely have to change
+  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   orientation matches the display rotation
+  #define GSLC_ROTATE     1
+
+
+#elif defined(DRV_DISP_ADAGFX_AS)
+
+  //NOTE: this is a optimized driver for STM32 only
+
+  // The Adafruit-GFX-AS library supports a number of displays
+  // - Select a display sub-type by uncommenting one of the
+  //   following DRV_DISP_ADAGFX_* lines
+  #define DRV_DISP_ADAGFX_ILI9341_STM     // Adafruit ILI9341 (STM32 version)
+
+  // For Adafruit-GFX drivers, define pin connections
+  // - Define general pins (modify these example pin assignments to match your board)
+  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+  
+  //Note: Fixed pin setting for HW SPI1  
+  //  PA5  SCLK
+  //  PA6  MISO
+  //  PA7  MOSI
+  
+  // USE Arduino STM32 PIN Notations 
+  // - Define to use Arduino STM32 PIN Notations
+  //#define STM32_NOTATION 
+  
+  #if defined(STM32_NOTATION)
+    // NOTE: Using Arduino STM32 pin notation
+    #define ADAGFX_PIN_CS   PA4   // Display chip select
+    #define ADAGFX_PIN_DC   PB1   // Display SPI data/command
+    #define ADAGFX_PIN_RST  PB0   // Display Reset (set to -1 in order to use Adafruit-GFX drivers w/o reset)
+    #define ADAGFX_PIN_SDCS       // SD card chip select
+    #define ADAGFX_PIN_WR         // Display write pin (for parallel displays)
+    #define ADAGFX_PIN_RD         // Display read pin (for parallel displays)
+  #else
+    // NOTE: Using Arduino pin notation
+    #define ADAGFX_PIN_CS    10   // Display chip select
+    #define ADAGFX_PIN_DC     9   // Display SPI data/command
+    #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
+    #define ADAGFX_PIN_SDCS   4   // SD card chip select
+    #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
+    #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
+  #endif
+    
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
   // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
@@ -179,6 +229,10 @@ extern "C" {
   //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
   //   orientation matches the display rotation
   #define GSLC_ROTATE     0
+
+#else
+
+  #error "Unknown driver for display DRV_DISP_..."
 
 #endif // DRV_DISP_*
 
