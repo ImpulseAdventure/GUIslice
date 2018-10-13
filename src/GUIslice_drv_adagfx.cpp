@@ -239,15 +239,27 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
       m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = ILI9341_TFTHEIGHT;
-      pGui->nDispH = ILI9341_TFTWIDTH;
+      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+        pGui->nDispW = ILI9341_TFTWIDTH;
+        pGui->nDispH = ILI9341_TFTHEIGHT;
+      }
+      else {
+        pGui->nDispW = ILI9341_TFTHEIGHT;
+        pGui->nDispH = ILI9341_TFTWIDTH;
+      }
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
       m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = TFTHEIGHT;
-      pGui->nDispH = TFTWIDTH;
+      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+        pGui->nDispW = ILI9341_TFTWIDTH;
+        pGui->nDispH = ILI9341_TFTHEIGHT;
+      }
+      else {
+        pGui->nDispW = ILI9341_TFTHEIGHT;
+        pGui->nDispH = ILI9341_TFTWIDTH;
+      }
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -1185,6 +1197,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
 
+    //Serial.print("p: ");Serial.print(nOutputX);Serial.print(",");Serial.print(nOutputY);Serial.print(",");Serial.println(m_nLastRawPress);
+    //Serial.print("nDispOutMaxX: ");Serial.println(nDispOutMaxX);
+    //Serial.print("nDispOutMaxY: ");Serial.println(nDispOutMaxY);
 
     // Return with indication of new value
     return true;
