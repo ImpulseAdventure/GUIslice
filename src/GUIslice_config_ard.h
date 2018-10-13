@@ -87,6 +87,7 @@ extern "C" {
   //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
+  //  #define DRV_TOUCH_XPT2046             // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
 
 
 // =============================================================================
@@ -243,7 +244,11 @@ extern "C" {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-#if defined(DRV_TOUCH_ADA_STMPE610)
+#if defined(DRV_TOUCH_NONE)
+
+  //no touch defined
+
+#elif defined(DRV_TOUCH_ADA_STMPE610)
 
   // Select wiring method by setting one of the following to 1
   #define ADATOUCH_I2C_HW 0
@@ -294,6 +299,31 @@ extern "C" {
   // - The following are some example defaults, but they should be updated
   //   to match your specific touch device.
   #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+
+#elif defined(DRV_TOUCH_XPT2046)
+  // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+
+  // SPI2 is used. Due to some known issues of the TFT SPI driver working on SPI1 it was not possible to share the touch with SPI1.
+  // On the Arduino STM32 this are the following pins:
+  //   PB13   SCLK
+  //   PB14   MISO
+  //   PB15   MOSI
+  #define XPT2046_DEFINE_DPICLASS SPIClass XPT2046_spi(2); //Create an SPI instance on SPI2 port
+
+  //chip select pin for touch SPI2
+  #define XPT2046_CS PB12
+
+  // Calibration values for touch display
+  // - These values may need to be updated to match your display
+  // - empirically found for XPT2046
+  #define ADATOUCH_X_MIN 398
+  #define ADATOUCH_Y_MIN 280
+  #define ADATOUCH_X_MAX 3877
+  #define ADATOUCH_Y_MAX 3805
+
+#else
+
+  #error "Unknown driver for touch DRV_TOUCH_..."
 
 #endif // DRV_TOUCH_*
 
