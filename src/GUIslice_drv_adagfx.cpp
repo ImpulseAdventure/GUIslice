@@ -95,9 +95,11 @@
 #elif defined(DRV_TOUCH_ADA_FT6206)
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
-#elif defined(DRV_TOUCH_ADA_SIMPLE )
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
   #include <stdint.h>
   #include <TouchScreen.h>
+#elif defined(DRV_TOUCH_XPT2046)
+  #include <XPT2046_touch.h>
 #endif
 
 
@@ -122,9 +124,12 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
-    //Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
-    // TODO: Resolve why PIN_RST=-1 doesn't give same behavior as 2-param function variant
-    Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
+    //PIN_RST=-1 doesn't give same behavior as 2-param function variant, therefore use different functions
+    #if ADAGFX_PIN_RST==-1
+      Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
+    #else
+      Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+    #endif  
   #else
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
@@ -187,7 +192,12 @@ extern "C" {
   #define YM 44   // Can be a digital pin
   #define XP 45   // Can be a digital pin
   TouchScreen m_touch = TouchScreen(XP, YP, XM, YM, 300);
-#endif // DRV_TOUCH_ADA_*
+#elif defined(DRV_TOUCH_XPT2046)
+  // create an SPI class for XPT2046 access
+  XPT2046_DEFINE_DPICLASS;
+  // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance    
+#endif // DRV_TOUCH_*
 
 
 
@@ -229,15 +239,27 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       // Rotate display from native portrait orientation to landscape
       // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
       m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = ILI9341_TFTHEIGHT;
-      pGui->nDispH = ILI9341_TFTWIDTH;
+      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+        pGui->nDispW = ILI9341_TFTWIDTH;
+        pGui->nDispH = ILI9341_TFTHEIGHT;
+      }
+      else {
+        pGui->nDispW = ILI9341_TFTHEIGHT;
+        pGui->nDispH = ILI9341_TFTWIDTH;
+      }
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
       m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = TFTHEIGHT;
-      pGui->nDispH = TFTWIDTH;
+      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+        pGui->nDispW = ILI9341_TFTWIDTH;
+        pGui->nDispH = ILI9341_TFTHEIGHT;
+      }
+      else {
+        pGui->nDispW = ILI9341_TFTHEIGHT;
+        pGui->nDispH = ILI9341_TFTWIDTH;
+      }
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -939,7 +961,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -957,6 +979,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
       return true;
     }
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
+    return true;
+  #elif defined(DRV_TOUCH_XPT2046)
+    m_touch.begin();
     return true;
   #else
     // ERROR: Unsupported driver mode
@@ -1083,6 +1108,33 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     }
   }
 
+  #elif defined(DRV_TOUCH_XPT2046)
+
+    TS_Point p = m_touch.getPoint();
+
+    if (p.z > 0) {
+      nRawX=p.x;
+      nRawY=p.y;
+	  nRawPress=p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } 
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
   #endif // DRV_TOUCH_*
 
 
@@ -1113,7 +1165,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE)
+    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
       // Perform constraining to input boundaries
       nInputX = constrain(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX);
       nInputY = constrain(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX);
@@ -1145,6 +1197,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
 
+    //Serial.print("p: ");Serial.print(nOutputX);Serial.print(",");Serial.print(nOutputY);Serial.print(",");Serial.println(m_nLastRawPress);
+    //Serial.print("nDispOutMaxX: ");Serial.println(nDispOutMaxX);
+    //Serial.print("nDispOutMaxY: ");Serial.println(nDispOutMaxY);
 
     // Return with indication of new value
     return true;
