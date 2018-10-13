@@ -1065,7 +1065,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
     nRawX=p.x;
     nRawY=p.y;
-	nRawPress=p.x;
+    nRawPress=p.z;
     m_nLastRawX = nRawX;
     m_nLastRawY = nRawY;
     m_nLastRawPress = nRawPress;
