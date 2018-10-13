@@ -2854,8 +2854,29 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 
   gslc_tsEventTouch sEventTouch;
   sEventTouch.eTouch        = eTouch;
-  sEventTouch.nX            = nX;
-  sEventTouch.nY            = nY;
+
+  // Save the coordinates from the touch driver
+  // NOTE: Many display touch drivers return valid coordinates upon a
+  //       TOUCH_UP event, whereas some return zero position coordinates in
+  //       this event (eg. TFT_eSPI with ILI9486). Thus, to ensure that we
+  //       have consistent detection of position when the touch is released,
+  //       we will pass the previous good position in this event (transition
+  //       from TOUCH_DOWN to TOUCH_UP).
+  //
+  //       The position during the TOUCH_UP event is used to determine if a
+  //       touch was released within an element (causing a button selection)
+  //       or outside of it (generally leading to a non-selection).
+  //
+  if (eTouch == GSLC_TOUCH_UP) {
+    // Use previous (good) coordinates from touch driver
+    sEventTouch.nX          = pGui->nTouchLastX;
+    sEventTouch.nY          = pGui->nTouchLastY;
+  } else {
+    // Use most recent coordinate from touch driver
+    sEventTouch.nX          = nX;
+    sEventTouch.nY          = nY;
+  }
+
   void* pvData = (void*)(&sEventTouch);
   gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
   gslc_PageEvent(pGui,sEvent);
