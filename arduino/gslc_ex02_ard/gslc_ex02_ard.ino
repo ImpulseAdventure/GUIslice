@@ -55,7 +55,6 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 
 void setup()
 {
-  bool            bOk = true;
   gslc_tsElemRef* pElemRef = NULL;
 
   // Initialize debug output

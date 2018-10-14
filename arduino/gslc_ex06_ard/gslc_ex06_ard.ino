@@ -115,15 +115,15 @@ bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   gslc_DrawLine(pGui,nX,nY-200,nX,nY+200,GSLC_COL_GRAY_DK2);
   gslc_DrawLine(pGui,nX-200,nY,nX+200,nY,GSLC_COL_GRAY_DK2);
 
-  gslc_DrawFrameRect(pGui,(gslc_tsRect){nX-30,nY-20,60,40},GSLC_COL_BLUE_DK2);
+  gslc_DrawFrameRect(pGui,(gslc_tsRect){(int16_t)(nX-30),(int16_t)(nY-20),60,40},GSLC_COL_BLUE_DK2);
   for (nInd=-5;nInd<=5;nInd++) {
     gslc_DrawLine(pGui,nX,nY,nX+nInd*20,nY+100,GSLC_COL_PURPLE);
   }
 
-  gslc_DrawFillRect(pGui,(gslc_tsRect){nX+1,nY+1,10,10},GSLC_COL_RED_DK2);
-  gslc_DrawFillRect(pGui,(gslc_tsRect){nX+1,nY-10,10,10},GSLC_COL_GREEN_DK2);
-  gslc_DrawFillRect(pGui,(gslc_tsRect){nX-10,nY+1,10,10},GSLC_COL_BLUE_DK2);
-  gslc_DrawFillRect(pGui,(gslc_tsRect){nX-10,nY-10,10,10},GSLC_COL_YELLOW);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){(int16_t)(nX+1),(int16_t)(nY+1),10,10},GSLC_COL_RED_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){(int16_t)(nX+1),(int16_t)(nY-10),10,10},GSLC_COL_GREEN_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){(int16_t)(nX-10),(int16_t)(nY+1),10,10},GSLC_COL_BLUE_DK2);
+  gslc_DrawFillRect(pGui,(gslc_tsRect){(int16_t)(nX-10),(int16_t)(nY-10),10,10},GSLC_COL_YELLOW);
 
   // Disable clipping region
   gslc_SetClipRect(pGui,NULL);

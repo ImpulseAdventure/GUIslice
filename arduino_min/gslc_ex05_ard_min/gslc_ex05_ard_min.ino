@@ -7,12 +7,12 @@
 //   - Multiple page handling
 //   - Background image
 //   - Compound elements
+//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //   - Demonstrates the use of ElemCreate*_P() functions
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).
 //   - NOTE: This sketch requires moderate program storage in Flash.
 //     As a result, it may not run on basic Arduino devices (eg. ATmega328)
-//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections

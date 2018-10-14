@@ -769,7 +769,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   int16_t             nCurInd;
   gslc_tsElemRef*     pCurElemRef = NULL;
   gslc_tsElem*        pCurElem = NULL;
-  int8_t              nCurType;
+  int16_t             nCurType;
   int16_t             nCurGroup;
   bool                bCurChecked;
   gslc_tsElemRef*     pFoundElemRef = NULL;
@@ -1691,7 +1691,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
   // FIXME: Consider replacing the printf() with an optimized function to
   //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
   char  acStrNew[GSLC_LOCAL_STR_LEN];
-  snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%d",pSelNum->nCounter);
+  snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%hd",pSelNum->nCounter);
 
   // Update the element
   gslc_tsElemRef* pElemRef = gslc_CollectFindElemById(pGui,&pSelNum->sCollect,SELNUM_ID_TXT);
@@ -2184,11 +2184,11 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   uint16_t          nTxtPixX;
   uint16_t          nTxtPixY;
   gslc_tsColor      colTxt;
-  bool              bEncUtf8;
+  //bool            bEncUtf8;
 
   // Determine what encoding method is used for text
   // Not used at the moment
-  bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
+  //bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
 
   // Initialize color state
   colTxt = pElem->colElemText;
