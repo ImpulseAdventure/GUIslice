@@ -3087,9 +3087,7 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   void*           pvScope   = sEvent.pvScope;
-  void*           pvData    = sEvent.pvData;
   gslc_tsCollect* pCollect  = (gslc_tsCollect*)(pvScope);
 
   unsigned        nInd;
@@ -3101,6 +3099,8 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
     #if defined(DRV_TOUCH_NONE)
     return false;
     #else
+    gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+    void*           pvData    = sEvent.pvData;
     // TOUCH is passed to CollectTouch which determines the element
     // in the collection that should receive the event
     gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
