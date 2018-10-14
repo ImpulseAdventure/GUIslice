@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.3   (2018/10/06)
+// - Version 0.10.4   (2018/10/13)
 // =======================================================================
 //
 // The MIT License
@@ -1991,6 +1991,15 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 
     case GSLC_EVT_TOUCH:
       #if !defined(DRV_TOUCH_NONE)
+      // Hide warnings about unused variables when TOUCH is not enabled
+      (void)pvData;
+      (void)pElemRefTracked;
+      (void)pElemTracked;
+      (void)pTouchRec;
+      (void)nRelX;
+      (void)nRelY;
+      (void)eTouch;
+      (void)pfuncXTouch;
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
       pTouchRec = (gslc_tsEventTouch*)(pvData);
