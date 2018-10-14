@@ -1959,16 +1959,9 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     return false;
   }
   gslc_tsGui*         pGui              = (gslc_tsGui*)(pvGui);
-  void*               pvData            = sEvent.pvData;
   void*               pvScope           = sEvent.pvScope;
   gslc_tsElemRef*     pElemRef          = NULL;
-  gslc_tsElemRef*     pElemRefTracked   = NULL;
   gslc_tsElem*        pElem             = NULL;
-  gslc_tsElem*        pElemTracked      = NULL;
-  gslc_tsEventTouch*  pTouchRec         = NULL;
-  int                 nRelX,nRelY;
-  gslc_teTouch        eTouch;
-  GSLC_CB_TOUCH       pfuncXTouch       = NULL;
   GSLC_CB_TICK        pfuncXTick        = NULL;
 
   switch(sEvent.eType) {
@@ -1991,6 +1984,16 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 
     case GSLC_EVT_TOUCH:
       #if !defined(DRV_TOUCH_NONE)
+
+      // Variables
+      void*               pvData            = sEvent.pvData;
+      gslc_tsElemRef*     pElemRefTracked   = NULL;
+      gslc_tsElem*        pElemTracked      = NULL;
+      gslc_tsEventTouch*  pTouchRec         = NULL;
+      int                 nRelX,nRelY;
+      gslc_teTouch        eTouch;
+      GSLC_CB_TOUCH       pfuncXTouch       = NULL;
+
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
       pTouchRec = (gslc_tsEventTouch*)(pvData);
@@ -3078,9 +3081,7 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   void*           pvScope   = sEvent.pvScope;
-  void*           pvData    = sEvent.pvData;
   gslc_tsCollect* pCollect  = (gslc_tsCollect*)(pvScope);
 
   unsigned        nInd;
@@ -3092,6 +3093,8 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
     #if defined(DRV_TOUCH_NONE)
     return false;
     #else
+    gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+    void*           pvData    = sEvent.pvData;
     // TOUCH is passed to CollectTouch which determines the element
     // in the collection that should receive the event
     gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
