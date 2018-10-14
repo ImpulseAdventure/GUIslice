@@ -107,7 +107,7 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
   //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
   //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
-  
+
     // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
@@ -150,16 +150,16 @@ extern "C" {
   // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  
-  //Note: Fixed pin setting for HW SPI1  
+
+  //Note: Fixed pin setting for HW SPI1
   //  PA5  SCLK
   //  PA6  MISO
   //  PA7  MOSI
-  
-  // USE Arduino STM32 PIN Notations 
+
+  // USE Arduino STM32 PIN Notations
   // - Define to use Arduino STM32 PIN Notations
-  //#define STM32_NOTATION 
-  
+  //#define STM32_NOTATION
+
   #if defined(STM32_NOTATION)
     // NOTE: Using Arduino STM32 pin notation
     #define ADAGFX_PIN_CS   PA4   // Display chip select
@@ -177,7 +177,7 @@ extern "C" {
     #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
     #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
   #endif
-    
+
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
   // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
@@ -289,6 +289,10 @@ extern "C" {
   #define ADATOUCH_X_MAX 900
   #define ADATOUCH_Y_MAX 900
 
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN 10
+  #define ADATOUCH_PRESS_MAX 1000
+
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
   // The TFT_eSPI display library also includes support for XPT2046 touch controller
@@ -320,6 +324,9 @@ extern "C" {
   #define ADATOUCH_Y_MIN 280
   #define ADATOUCH_X_MAX 3877
   #define ADATOUCH_Y_MAX 3805
+
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN 0
 
 #else
 

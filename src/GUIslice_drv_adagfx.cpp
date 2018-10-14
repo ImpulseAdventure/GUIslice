@@ -129,7 +129,7 @@ extern "C" {
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
     #else
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
-    #endif  
+    #endif
   #else
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
@@ -196,7 +196,7 @@ extern "C" {
   // create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
   // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
-  XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance    
+  XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 #endif // DRV_TOUCH_*
 
 
@@ -1086,17 +1086,25 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-  if (p.z > 10 && p.z < 1000) {
+  // Select reasonable touch pressure thresholds
+  // Note that the minimum is not "> 0" as some
+  // displays may produce a (small) non-zero value
+  // when not touched.
+  #if defined(ADATOUCH_PRESS_MIN) && defined(ADATOUCH_PRESS_MAX)
+  if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+  #else
+  if ((p.z > 10) && (p.z < 1000)) {
+  #endif
 
-    nRawX=p.x;
-    nRawY=p.y;
-    nRawPress=p.z;
+    nRawX = p.x;
+    nRawY = p.y;
+    nRawPress = p.z;
     m_nLastRawX = nRawX;
     m_nLastRawY = nRawY;
     m_nLastRawPress = nRawPress;
     m_bLastTouched = true;
-    bValid = true;}
-  else {
+    bValid = true;
+  } else {
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
     } else {
@@ -1112,10 +1120,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
     TS_Point p = m_touch.getPoint();
 
+    #if defined(ADATOUCH_PRESS_MIN)
+    if (p.z > ADATOUCH_PRESS_MIN) {
+    #else
     if (p.z > 0) {
-      nRawX=p.x;
-      nRawY=p.y;
-	  nRawPress=p.z;
+    #endif
+      nRawX = p.x;
+      nRawY = p.y;
+      nRawPress = p.z;
       m_nLastRawX = nRawX;
       m_nLastRawY = nRawY;
       m_nLastRawPress = nRawPress;
@@ -1125,7 +1137,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     else {
       if (!m_bLastTouched) {
         // Wasn't touched before; do nothing
-      } 
+      }
       else {
         // Touch release
         // Indicate old coordinate but with pressure=0
@@ -1197,6 +1209,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
 
+    // Debug output
     //Serial.print("p: ");Serial.print(nOutputX);Serial.print(",");Serial.print(nOutputY);Serial.print(",");Serial.println(m_nLastRawPress);
     //Serial.print("nDispOutMaxX: ");Serial.println(nDispOutMaxX);
     //Serial.print("nDispOutMaxY: ");Serial.println(nDispOutMaxY);
