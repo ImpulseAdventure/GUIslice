@@ -1990,7 +1990,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       break;
 
     case GSLC_EVT_TOUCH:
-      #if !defined(DRV_TOUCH_NONE)
+      #if defined(DRV_TOUCH_NONE)
       // Hide warnings about unused variables when TOUCH is not enabled
       (void)pvData;
       (void)pElemRefTracked;
@@ -2000,6 +2000,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       (void)nRelY;
       (void)eTouch;
       (void)pfuncXTouch;
+      #else
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
       pTouchRec = (gslc_tsEventTouch*)(pvData);
@@ -2019,7 +2020,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
-      #endif // !DRV_TOUCH_NONE
+      #endif // DRV_TOUCH_NONE
       break;
 
     case GSLC_EVT_TICK:
