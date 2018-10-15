@@ -865,7 +865,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -882,6 +882,11 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
+  #elif defined(DRV_TOUCH_ADA_SIMPLE)
+    return true;
+  #elif defined(DRV_TOUCH_XPT2046)
+    m_touch.begin();
+    return true;
   #else
     // ERROR: Unsupported driver mode
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);

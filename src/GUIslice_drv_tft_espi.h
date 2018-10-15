@@ -523,7 +523,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 // Touch Functions (if using external touch driver library)
 // -----------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
 
 ///
 /// Perform any touchscreen-specific initialization
