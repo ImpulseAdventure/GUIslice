@@ -995,8 +995,6 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
 {
-  uint16_t  nRawX,nRawY;
-  uint8_t   nRawPress;
 
   #if defined(DRV_TOUCH_NONE)
   return false;
@@ -1018,6 +1016,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 
   // ----------------------------------------------------------------
   #if defined(DRV_TOUCH_ADA_STMPE610)
+
+  uint16_t  nRawX,nRawY;
+  uint8_t   nRawPress;
 
   if (m_touch.touched()) {
 
@@ -1082,10 +1083,13 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
 
+  uint16_t  nRawX,nRawY;
+  uint8_t   nRawPress;
+
   TSPoint p = m_touch.getPoint();
 
-  pinMode(XM, OUTPUT);
-  pinMode(YP, OUTPUT);
+  pinMode(ADATOUCH_PIN_XM, OUTPUT);
+  pinMode(ADATOUCH_PIN_YP, OUTPUT);
 
   // Select reasonable touch pressure thresholds
   // Note that the minimum is not "> 0" as some
@@ -1117,7 +1121,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     }
   }
 
+  // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046)
+
+    uint16_t  nRawX,nRawY;
+    uint8_t   nRawPress;
 
     TS_Point p = m_touch.getPoint();
 
@@ -1148,6 +1156,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       }
     }
 
+  // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
 
 

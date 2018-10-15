@@ -55,6 +55,11 @@
 #elif defined(DRV_TOUCH_ADA_FT6206)
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+  #include <stdint.h>
+  #include <TouchScreen.h>
+#elif defined(DRV_TOUCH_XPT2046)
+  #include <XPT2046_touch.h>
 #endif
 
 
@@ -88,11 +93,25 @@ TFT_eSPI m_disp = TFT_eSPI();
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+  #if defined(ADATOUCH_PIN_XP) && defined(ADATOUCH_PIN_YP) && defined(ADATOUCH_PIN_XM) && defined(ADATOUCH_PIN_YM) && defined(ADATOUCH_RX)
+  TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
+  #else
+  // Config fields not defined, so use arbitrary default pinout
+  TouchScreen m_touch = TouchScreen(27, 14, 12, 13, 300);
+  #endif // defined(ADATOUCH_*)
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046)
+  // Create an SPI class for XPT2046 access
+  XPT2046_DEFINE_DPICLASS;
+  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
+  XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
     // Define the XPT2046 calibration data
     uint16_t m_anCalData[5] = TFT_ESPI_TOUCH_CALIB;
 // ------------------------------------------------------------------------
-#endif // DRV_TOUCH_ADA_*
+#endif // DRV_TOUCH_*
 
 
 // =======================================================================
@@ -982,6 +1001,82 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
       bValid = true;
     }
   }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_SIMPLE)
+
+  uint16_t  nRawX,nRawY;
+  uint8_t   nRawPress;
+
+  TSPoint p = m_touch.getPoint();
+
+  pinMode(ADATOUCH_PIN_XM, OUTPUT);
+  pinMode(ADATOUCH_PIN_YP, OUTPUT);
+
+  // Select reasonable touch pressure thresholds
+  // Note that the minimum is not "> 0" as some
+  // displays may produce a (small) non-zero value
+  // when not touched.
+  #if defined(ADATOUCH_PRESS_MIN) && defined(ADATOUCH_PRESS_MAX)
+  if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+  #else
+  if ((p.z > 10) && (p.z < 1000)) {
+  #endif
+
+    nRawX = p.x;
+    nRawY = p.y;
+    nRawPress = p.z;
+    m_nLastRawX = nRawX;
+    m_nLastRawY = nRawY;
+    m_nLastRawPress = nRawPress;
+    m_bLastTouched = true;
+    bValid = true;
+  } else {
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+    }
+  }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046)
+
+    uint16_t  nRawX,nRawY;
+    uint8_t   nRawPress;
+
+    TS_Point p = m_touch.getPoint();
+
+    #if defined(ADATOUCH_PRESS_MIN)
+    if (p.z > ADATOUCH_PRESS_MIN) {
+    #else
+    if (p.z > 0) {
+    #endif
+      nRawX = p.x;
+      nRawY = p.y;
+      nRawPress = p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
 
   // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
