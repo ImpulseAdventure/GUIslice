@@ -185,17 +185,18 @@ extern "C" {
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_ADA_SIMPLE )
-  // TODO: Should these be configurable in GUIslice_config.h?
-  #define YP A2   // Must be an analog pin, use "An" notation!
-  #define XM A3   // Must be an analog pin, use "An" notation!
-  #define YM 44   // Can be a digital pin
-  #define XP 45   // Can be a digital pin
-  TouchScreen m_touch = TouchScreen(XP, YP, XM, YM, 300);
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+  #if defined(ADATOUCH_PIN_XP) && defined(ADATOUCH_PIN_YP) && defined(ADATOUCH_PIN_XM) && defined(ADATOUCH_PIN_YM) && defined(ADATOUCH_RX)
+  TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
+  #else
+  // Config fields not defined, so use default pinout
+  TouchScreen m_touch = TouchScreen(45, A2, A3, 44, 300);
+  #endif // defined(ADATOUCH_*)
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
-  // create an SPI class for XPT2046 access
+  // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
-  // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 #endif // DRV_TOUCH_*
 

@@ -259,7 +259,6 @@ extern "C" {
   #define ADATOUCH_I2C_ADDR   0x41  // I2C address of touch device
 
   // For ADATOUCH_SPI_HW=1
-
   #define ADATOUCH_PIN_CS     8 // From Adafruit 2.8" TFT touch shield
 
   // Calibration values for touch display
@@ -281,6 +280,14 @@ extern "C" {
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+
+  // Define 4-wire resistive touchscreen pinout
+  #define ADATOUCH_PIN_YP A2   // "Y+": Must be an analog pin, use "An" notation
+  #define ADATOUCH_PIN_XM A3   // "X-": Must be an analog pin, use "An" notation
+  #define ADATOUCH_PIN_YM 44   // "Y-": Can be a digital pin
+  #define ADATOUCH_PIN_XP 45   // "X+": Can be a digital pin
+  #define ADATOUCH_RX 300      // "rxplate"
+
   // Calibration values for touch display
   // - These values may need to be updated to match your display
   // - Typically used in resistive displays
@@ -304,17 +311,19 @@ extern "C" {
   //   to match your specific touch device.
   #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
+// -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
-  // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
 
-  // SPI2 is used. Due to some known issues of the TFT SPI driver working on SPI1 it was not possible to share the touch with SPI1.
-  // On the Arduino STM32 this are the following pins:
+  // SPI2 is used. Due to some known issues of the TFT SPI driver working on SPI1
+  // it was not possible to share the touch with SPI1.
+  // On the Arduino STM32 these are the following pins:
   //   PB13   SCLK
   //   PB14   MISO
   //   PB15   MOSI
   #define XPT2046_DEFINE_DPICLASS SPIClass XPT2046_spi(2); //Create an SPI instance on SPI2 port
 
-  //chip select pin for touch SPI2
+  // Chip select pin for touch SPI2
   #define XPT2046_CS PB12
 
   // Calibration values for touch display
@@ -328,6 +337,7 @@ extern "C" {
   // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN 0
 
+// -----------------------------------------------------------------------------
 #else
 
   #error "Unknown driver for touch DRV_TOUCH_..."
