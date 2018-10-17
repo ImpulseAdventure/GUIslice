@@ -14,8 +14,8 @@
     "email": "guislice@impulseadventure.com",
     "maintainer": true
   },
-  "frameworks": "*",
-  "platforms": "*",
+  "frameworks": "arduino",
+  "platforms": "atmelavr, atmelsam, espressif8266, espressif32, ststm32",
   "license": "MIT",
   "examples": [
     "arduino/gslc_ex*_ard/*.ino",
