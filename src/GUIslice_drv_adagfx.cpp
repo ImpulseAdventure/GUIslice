@@ -100,6 +100,8 @@
   #include <TouchScreen.h>
 #elif defined(DRV_TOUCH_XPT2046)
   #include <XPT2046_touch.h>
+#elif defined(DRV_TOUCH_HANDLER)
+  #include <GUIslice_th.h>
 #endif
 
 
@@ -198,6 +200,8 @@ extern "C" {
   XPT2046_DEFINE_DPICLASS;
   // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
+#elif defined(DRV_TOUCH_HANDLER)
+
 #endif // DRV_TOUCH_*
 
 
@@ -962,7 +966,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_HANDLER)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -984,6 +988,8 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #elif defined(DRV_TOUCH_XPT2046)
     m_touch.begin();
     return true;
+  #elif defined(DRV_TOUCH_HANDLER)
+    return true;
   #else
     // ERROR: Unsupported driver mode
     GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
@@ -997,7 +1003,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 {
 
   #if defined(DRV_TOUCH_NONE)
-  return false;
+    return false;
   #endif
 
   // As the STMPE610 hardware driver doesn't appear to return
@@ -1124,8 +1130,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046)
 
-    uint16_t  nRawX,nRawY;
-    uint8_t   nRawPress;
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
 
     TS_Point p = m_touch.getPoint();
 
@@ -1148,6 +1154,41 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
         // Wasn't touched before; do nothing
       }
       else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_HANDLER)
+
+    uint16_t  nRawX,nRawY;
+    uint16_t  nRawPress; 
+  
+    TouchHandler *pTH = gslc_getTouchHandler();
+    THPoint p(0,0,0);
+    //if no TouchHandler was defined use (0,0,0)
+    if (pTH!=NULL)
+        p = pTH->getPoint();
+    
+    if (p.z > 0) {
+      nRawX=p.x;
+      nRawY=p.y;
+	  nRawPress=p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+      //Serial.print("pTH= ");Serial.print(p.x);Serial.print(" ");Serial.print(p.y);Serial.print(" ");Serial.println(p.z);
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
         // Touch release
         // Indicate old coordinate but with pressure=0
         m_nLastRawPress = 0;
