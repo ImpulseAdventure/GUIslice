@@ -260,11 +260,13 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
+#ifdef SMOOTH_FONT
   if (eFontRefType  == GSLC_FONTREF_FNAME){
     m_disp.loadFont((const char*)pvFontRef);
     return NULL;
   }
-  else if (eFontRefType == GSLC_FONTREF_PTR) {
+#endif
+  if (eFontRefType == GSLC_FONTREF_PTR) {
     // Return pointer to Adafruit-GFX GFXfont structure
     return pvFontRef;
   }
