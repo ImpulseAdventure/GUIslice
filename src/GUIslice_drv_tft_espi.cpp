@@ -260,13 +260,19 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
-  // Arduino mode currently only supports font definitions from memory
-  if (eFontRefType != GSLC_FONTREF_PTR) {
-    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - Arduino only supports memory-based fonts\n","");
+  if (eFontRefType  == GSLC_FONTREF_FNAME){
+    m_disp.loadFont((const char*)pvFontRef);
     return NULL;
   }
-  // Return pointer to Adafruit-GFX GFXfont structure
-  return pvFontRef;
+  else if (eFontRefType == GSLC_FONTREF_PTR) {
+    // Return pointer to Adafruit-GFX GFXfont structure
+    return pvFontRef;
+  }
+  else {
+    // Arduino mode currently only supports font definitions from memory
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - Arduino only supports memory-based fonts and fonts stored in SPIFFS\n","");
+    return NULL;
+  }
 }
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
@@ -303,11 +309,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 }
 
 bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
-        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
+        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   uint16_t nTxtScale = pFont->nSize;
-  m_disp.setTextColor(nColRaw);
+  m_disp.setTextColor(nColRaw,nColBgRaw);
   // TFT_eSPI font API differs from Adafruit-GFX's setFont() API
   if (pFont->pvFont == NULL) {
     m_disp.setTextFont(1);
@@ -355,11 +362,12 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 
 // This method is not recommended for use with TFT_eSPI. DrvDrawTxtAlign()
 // should be used instead.
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt)
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
-  m_disp.setTextColor(nColRaw);
+  uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
+  m_disp.setTextColor(nColRaw,nColBgRaw);
   // m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 

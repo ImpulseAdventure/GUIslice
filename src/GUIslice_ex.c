@@ -2156,7 +2156,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-
+  gslc_tsColor colBg = GSLC_COL_BLACK;
   // Fetch the element's extended data structure
   gslc_tsXTextbox* pBox;
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
@@ -2177,7 +2177,8 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
   // Clear the background (inset from frame)
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  gslc_DrawFillRect(pGui,rInner,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
+  colBg = (bGlow)?pElem->colElemFillGlow:pElem->colElemFill;
+  gslc_DrawFillRect(pGui,rInner,colBg);
 
   uint16_t          nBufPos = 0;
 
@@ -2229,7 +2230,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
     nTxtPixX = pElem->rElem.x + pBox->nMargin + 0 * pBox->nChSizeX;
     nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;
-    gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt);
+    gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt,colBg);
 
     nCurY++;
   } // nOutRow
@@ -2298,7 +2299,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
           acChToDraw[1] = 0;
           nTxtPixX = pElem->rElem.x + pBox->nMargin + nCurX * pBox->nChSizeX;
           nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;
-          gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&acChToDraw,pElem->eTxtFlags,colTxt);
+          gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&acChToDraw,pElem->eTxtFlags,colTxt,colBg);
 
           nCurX++;
 
