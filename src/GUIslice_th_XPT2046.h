@@ -11,21 +11,11 @@
 #include <XPT2046_touch.h>
 
 class TouchHandler_XPT2046: public TouchHandler {
-    public:   
-            
-        #if defined(__STM32F1__)
-            //default constructor for STM32F1
-            //spi(SPIClass(2)): Create an SPI instance on SPI2 port
-            //touchDriver(XPT2046_touch(PB12, spi)): Chip Select pin, SPI port                  
-            TouchHandler_XPT2046(void) : spi(SPIClass(2)), touchDriver(XPT2046_touch(PB12, spi)) {
-                setCalibration(398,3877,280,3805);
-                setSwapFlip(true,false,true);
-            }            
-        #endif
+    public:
         // parameters:
         //   spi object to be used
         //   chip select pin for spi
-        TouchHandler_XPT2046(SPIClass &spi, uint8_t spi_cs_pin ) : spi(spi), touchDriver(XPT2046_touch(spi_cs_pin, spi)) {
+        TouchHandler_XPT2046(SPIClass &spi, uint8_t spi_cs_pin) : spi(spi), touchDriver(XPT2046_touch(spi_cs_pin, spi)) {
             //empirical calibration values, can be updated by calling setCalibration in the user program
             setCalibration(398,3877,280,3805);
             //swapping and flipping to adopt to default GUIslice orientation

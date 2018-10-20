@@ -52,7 +52,16 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 
 //instantiate the touch handler
-TouchHandler_XPT2046 touchHandler;
+#if defined(__STM32F1__)
+  //usefull values for STM32  
+  SPIClass touchSPI(2);
+  TouchHandler_XPT2046 touchHandler = TouchHandler_XPT2046(/*spi=*/ touchSPI, /*spi_cs_pin=*/ PB12);
+#else  
+  //values for Arduino, to be confirmed
+  SPIClass touchSPI(2);
+  TouchHandler_XPT2046 touchHandler = TouchHandler_XPT2046(/*spi=*/ touchSPI, /*spi_cs_pin=*/ 0);
+#endif
+
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
