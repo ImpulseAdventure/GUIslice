@@ -254,8 +254,8 @@ bool InitOverlays()
   gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,20,170,50,10,"Control:",&m_asFont[1],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,170,20,20,GSLC_GROUP_ID_NONE,
-          false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,170,20,20,GSLC_COL_BLACK,true,
+          GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,110,170,50,10,"Enable",&m_asFont[1],
           GSLC_COL_GRAY_LT1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);

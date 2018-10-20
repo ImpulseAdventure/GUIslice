@@ -126,20 +126,20 @@ bool InitOverlays()
   // Create checkbox 1
   gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,GSLC_GROUP_ID_NONE,
-          false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,GSLC_COL_BLACK,true,
+          GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
   gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,80,135,20,20,E_GROUP1,
-          true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,80,135,20,20,GSLC_COL_BLACK,true,
+          E_GROUP1,true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
 
   // Create radio 2
   gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,20,160,20,20,"Radio2:",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,80,160,20,20,E_GROUP1,
-          true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
+  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,80,160,20,20,GSLC_COL_BLACK,true,
+          E_GROUP1,true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
 
   // Create slider
   gslc_ElemXSliderCreate_P(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,160,140,100,20,
