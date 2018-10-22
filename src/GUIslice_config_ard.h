@@ -87,7 +87,8 @@ extern "C" {
   //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
-  //  #define DRV_TOUCH_XPT2046             // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  //  #define DRV_TOUCH_XPT2046         // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  //  #define DRV_TOUCH_HANDLER         // touch handler class
 
 
 // =============================================================================
@@ -158,7 +159,7 @@ extern "C" {
 
   // USE Arduino STM32 PIN Notations
   // - Define to use Arduino STM32 PIN Notations
-  //#define STM32_NOTATION
+  // #define STM32_NOTATION
 
   #if defined(STM32_NOTATION)
     // NOTE: Using Arduino STM32 pin notation
@@ -336,6 +337,10 @@ extern "C" {
 
   // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN 0
+
+// -----------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_HANDLER)
+  // touch handler class
 
 // -----------------------------------------------------------------------------
 #else
