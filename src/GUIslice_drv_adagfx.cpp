@@ -1310,6 +1310,27 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
     return( true );
 }
 
+///
+/// Change rotation, automatically adapt touchscreen axes swap/flip
+///
+/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h 
+/// are valid for the rotation defined in GUIslice_config_ard.h
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if successful
+///
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+    nRotation = nRotation & 0x03;
+    uint8_t nSwapXY = (pGui->nSwapXY > 0) ^ ( (pGui->nRotation ^ nRotation) & 1 );
+    uint8_t nFlipX  = (pGui->nFlipX > 0)  ^ ( (pGui->nRotation ^ nRotation) >> 1 );
+    uint8_t nFlipY  = (pGui->nFlipY > 0)  ^ ( (pGui->nRotation ^ nRotation) >> 1 );
+    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
+    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+}
+
 
 // =======================================================================
 // Private Functions
