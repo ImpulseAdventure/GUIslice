@@ -44,6 +44,11 @@ Sample code in these examples are intended for the following device platforms:
 - Beaglebone Black
 - and other LINUX platforms
 
+### Font Files ###
+Most of the example files require the use of a font resource. By default, the examples use the **noto** font which is usually installed in the following location: `/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf`. Please confirm that this font file exists at this location (or update the example's font resource path accordingly) before running the examples. If this font isn't already installed in your system, you may be able to install it with `sudo apt-get install fonts-noto`.
+
+Note that earlier versions of GUIslice defaulted to the **droid** font, but this has changed since recent linux distributions no longer include **droid**.
+
 ### Resource Files ###
 Some examples (eg. `glsc_ex03`) are intended to demonstrate image loading from SD cards.
 In order to support these functions, one needs to ensure:
