@@ -1319,6 +1319,9 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
   } else {
     // Fetch a font resource from the driver
     const void* pvFont = gslc_DrvFontAdd(eFontRefType,pvFontRef,nFontSz);
+    if (pvFont == NULL) {
+      return false;
+    }
 
     pGui->asFont[pGui->nFontCnt].eFontRefType = eFontRefType;
     pGui->asFont[pGui->nFontCnt].pvFont       = pvFont;
