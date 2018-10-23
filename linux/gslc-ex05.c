@@ -19,7 +19,7 @@
 
 // Defines for resources
 #define MAX_PATH  255
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
 #define IMG_BKGND       "/res/bkgnd1_320x240.bmp"
 char  m_strImgBkgnd[MAX_PATH];
 
@@ -206,11 +206,11 @@ int main( int argc, char* args[] )
   // - In this example, we are loading the same font but at
   //   different point sizes. We could also refer to other
   //   font files as well.
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,12);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,12);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT_DROID_SANS,10);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT_DROID_SANS,32);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,32);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
 

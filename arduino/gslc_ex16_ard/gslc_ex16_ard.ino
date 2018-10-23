@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 11 (Arduino):
+// - Example 16 (Arduino):
 //   - show the usage of the touch handler class, this class allows easy user adaption of new touch screens
 //   - Accept touch input, text button
 //   - Expected behavior: Clicking on button is shown by a lighter button color

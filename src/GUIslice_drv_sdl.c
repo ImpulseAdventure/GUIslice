@@ -516,7 +516,7 @@ const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRe
   // file path to the font file
   pFont = TTF_OpenFont((const char*)pvFontRef,nFontSz);
   if (pFont == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont failed\n",pvFontRef);
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont\n",pvFontRef);
     return NULL;
   }
   return (const void*)pFont;

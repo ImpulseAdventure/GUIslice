@@ -11,7 +11,7 @@
 
 
 // Defines for resources
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
 // Define additional font with foreign characters
 // - NOTE: This font will require manual installation
 #define FONT_AMIKO "/usr/share/fonts/truetype/amiko/Amiko-Regular.ttf"
@@ -85,7 +85,7 @@ int main( int argc, char* args[] )
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { exit(1); }
 
   // Load Fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,12);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,12);
   if (!bOk) { printf("ERROR: gslc_FontAdd(FONT_BTN) failed\n"); exit(1); }
   bOk = gslc_FontAdd(&m_gui,E_FONT_EXTRA,GSLC_FONTREF_FNAME,FONT_AMIKO,36);
   if (!bOk) { printf("ERROR: gslc_FontAdd(FONT_EXTRA) failed\n"); exit(1); }

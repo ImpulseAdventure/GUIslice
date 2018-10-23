@@ -11,7 +11,7 @@
 
 
 // Defines for resources
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
