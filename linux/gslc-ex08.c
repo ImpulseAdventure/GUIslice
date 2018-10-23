@@ -15,7 +15,7 @@
 
 // Defines for resources
 #define MAX_PATH  255
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
 #define IMG_GRAD_BACK   "/res/grad-blue1.bmp"
 #define IMG_GRADBAR_TOP "/res/gradbar-purple-top.bmp"
 #define IMG_GRADBAR_BOT "/res/gradbar-purple-bot.bmp"
@@ -278,13 +278,13 @@ int main( int argc, char* args[] )
 
   // Load Fonts
   // - Normally we would select a number of different fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,14);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT_DROID_SANS,10);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,GSLC_FONTREF_FNAME,FONT_DROID_SANS,20);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_HEAD,GSLC_FONTREF_FNAME,FONT1,20);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT_DROID_SANS,36);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,36);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
   // -----------------------------------

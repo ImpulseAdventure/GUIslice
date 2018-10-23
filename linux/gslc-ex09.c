@@ -16,7 +16,7 @@
 #include "unistd.h"   // For usleep() //xxx
 
 // Defines for resources
-#define FONT_DROID_SANS "/usr/share/fonts/truetype/droid/DroidSans.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
@@ -187,11 +187,11 @@ int main( int argc, char* args[] )
 
   // Load Fonts
   // - Normally we would select a number of different fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT_DROID_SANS,14);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT_DROID_SANS,10);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT_DROID_SANS,36);
+  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,36);
   if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
 
   // -----------------------------------
