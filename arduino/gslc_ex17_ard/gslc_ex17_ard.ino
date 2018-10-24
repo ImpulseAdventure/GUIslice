@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 11 (ESP32):
+// - Example 17 (ESP32):
 //   - Accept touch input, text button, text box
 //   - Antialiased Fonts
 //   - NOTE: This is Example demonstrates text antialiasing with the TFT_eSPI library.
