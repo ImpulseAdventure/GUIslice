@@ -324,6 +324,8 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
     #ifdef SMOOTH_FONT
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
         m_disp.loadFont((const char*)pFont->pvFont);
+      } else {
+        m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
       }
     #else
       m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
@@ -352,6 +354,12 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
   m_disp.setTextDatum(nDatum);
 
   m_disp.drawString(pStr,nTxtX,nTxtY);
+
+  #ifdef SMOOTH_FONT
+    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
+      m_disp.unloadFont();
+    }
+  #endif
 
   // For now, always return true
   return true;
@@ -400,6 +408,11 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
     m_disp.println();
   }
+  #ifdef SMOOTH_FONT
+    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
+      m_disp.unloadFont();
+    }
+  #endif
 
   return true;
 }
