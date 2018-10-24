@@ -260,13 +260,7 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
-#ifdef SMOOTH_FONT
-  if (eFontRefType  == GSLC_FONTREF_FNAME){
-    m_disp.loadFont((const char*)pvFontRef);
-    return NULL;
-  }
-#endif
-  if (eFontRefType == GSLC_FONTREF_PTR) {
+  if (eFontRefType == GSLC_FONTREF_PTR  || eFontRefType  == GSLC_FONTREF_FNAME) {
     // Return pointer to Adafruit-GFX GFXfont structure
     return pvFontRef;
   }
@@ -316,12 +310,24 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   uint16_t nTxtScale = pFont->nSize;
-  m_disp.setTextColor(nColRaw,nColBgRaw);
+
+  #ifdef SMOOTH_FONT
+    m_disp.setTextColor(nColRaw,nColBgRaw);
+  #else
+    m_disp.setTextColor(nColRaw);
+  #endif
+
   // TFT_eSPI font API differs from Adafruit-GFX's setFont() API
   if (pFont->pvFont == NULL) {
     m_disp.setTextFont(1);
   } else {
-    m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
+    #ifdef SMOOTH_FONT
+      if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
+        m_disp.loadFont((const char*)pFont->pvFont);
+      }
+    #else
+      m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
+    #endif
   }
   m_disp.setTextSize(nTxtScale);
 
@@ -369,7 +375,14 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
-  m_disp.setTextColor(nColRaw,nColBgRaw);
+  #ifdef SMOOTH_FONT
+      if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
+        m_disp.loadFont((const char*)pFont->pvFont);
+        m_disp.setTextColor(nColRaw,nColBgRaw);
+      }
+  #else
+  m_disp.setTextColor(nColRaw);
+  #endif
   // m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 

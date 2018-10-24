@@ -11,11 +11,16 @@
 //     examples/Smooth Fonts/Print_Smooth_Font/data folder has to be uploaded to SPIFFS first
 
 // Font file is stored in SPIFFS
+
+#if !defined(ESP8266) && !defined(ESP32)
+  #error "This example only works on ESP8266 / ESP32"
+#endif
+
+
 #define FS_NO_GLOBALS
 #include <SPIFFS.h>
 
 #include <stdint.h>
-#include <TouchScreen.h>
 #include "GUIslice.h"
 #include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
@@ -24,15 +29,15 @@
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX,E_ELEM_BTN_QUIT, E_ELEM_TEXT};
-enum {E_FONT_BTN};
+enum {E_ELEM_BOX, E_ELEM_BTN_QUIT1, E_ELEM_BTN_QUIT2, E_ELEM_TEXT};
+enum {E_FONT_BTN, E_FONT_AATEXT};
 
 bool    m_bQuit = false;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            1
-#define MAX_ELEM_PG_MAIN    3
+#define MAX_FONT            2
+#define MAX_ELEM_PG_MAIN    4
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -77,7 +82,8 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,"Final-Frontier-28",28)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,3)) { return; }
+  if (!gslc_FontAdd(&m_gui,E_FONT_AATEXT,GSLC_FONTREF_FNAME,"Final-Frontier-28",28)) { return; }
 
   // -----------------------------------
   // Create page elements
@@ -91,11 +97,14 @@ void setup()
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
   // Create Quit button with text label
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT1,E_PG_MAIN,
     (gslc_tsRect){120,40,80,40},(char*)"Quit",0,E_FONT_BTN,&CbBtnQuit);
 
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT2,E_PG_MAIN,
+    (gslc_tsRect){120,100,80,40},(char*)"Quit",0,E_FONT_AATEXT,&CbBtnQuit);
+
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT,E_PG_MAIN,
-    (gslc_tsRect){30,80,260,120},(char*)"Antialias Demo Text",0,E_FONT_BTN);
+    (gslc_tsRect){30,160,260,40},(char*)"Antialias Demo Text",0,E_FONT_AATEXT);
 
 
 
@@ -120,4 +129,3 @@ void loop()
     while (1) { }
   }
 }
-
