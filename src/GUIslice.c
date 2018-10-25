@@ -1319,9 +1319,9 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
   } else {
     // Fetch a font resource from the driver
     const void* pvFont = gslc_DrvFontAdd(eFontRefType,pvFontRef,nFontSz);
-    if (pvFont == NULL) {
-      return false;
-    }
+    // TODO: Resolve a means to detect if LINUX font files failed to load
+    //       and then return 'false'. Note that DrvFontAdd() may normally
+    //       return NULL in ADAGFX mode for some font types.
 
     pGui->asFont[pGui->nFontCnt].eFontRefType = eFontRefType;
     pGui->asFont[pGui->nFontCnt].pvFont       = pvFont;
