@@ -137,6 +137,6 @@ gslc-ex11: gslc-ex11.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ gslc-ex11.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex18: gslc-ex11.c $(GSLC_CORE) $(GSLC_SRCS)
+gslc-ex18: gslc-ex18.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ gslc-ex18.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
