@@ -3,8 +3,11 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 05 (Arduino): [minimum RAM version]
-//   - Multiple page handling, checkboxes
+// - Example 18 (Arduino): [minimum RAM version]
+//   - Multiple page handling
+//   - Background image
+//   - Compound elements
+//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //   - Demonstrates the use of ElemCreate*_P() functions
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).
@@ -29,7 +32,7 @@
 enum {E_PG_MAIN,E_PG_EXTRA};
 enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
       E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_CHECK3};
+      E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
@@ -49,8 +52,8 @@ unsigned  m_nCount = 0;
 #define MAX_ELEM_PG_MAIN        9                                         // # Elems total on Main page
 #define MAX_ELEM_PG_EXTRA       7                                         // # Elems total on Extra page
 #if (GSLC_USE_PROGMEM)
-  #define MAX_ELEM_PG_MAIN_PROG   8                                       // # Elems in Flash
-  #define MAX_ELEM_PG_EXTRA_PROG  7                                       // # Elems in Flash
+  #define MAX_ELEM_PG_MAIN_PROG   7                                       // # Elems in Flash
+  #define MAX_ELEM_PG_EXTRA_PROG  5                                       // # Elems in Flash
 #else
   #define MAX_ELEM_PG_MAIN_PROG   0                                       // # Elems in Flash
   #define MAX_ELEM_PG_EXTRA_PROG  0                                       // # Elems in Flash
@@ -68,7 +71,7 @@ gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA_RAM];
 gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
 
 gslc_tsXGauge               m_sXGauge;
-gslc_tsXCheckbox            m_asXCheck[3];
+gslc_tsXSelNum              m_sXSelNum[3];
 
 
 #define MAX_STR             8
@@ -154,9 +157,9 @@ bool InitOverlays()
   m_pElemProgress = pElemRef; // Save for quick access
 
 
-  // Checkbox element
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,200,80,30,30,GSLC_COL_BLACK,true,
-          GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -168,20 +171,20 @@ bool InitOverlays()
   gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,50,170,50,20,"Back",&m_asFont[0],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
 
-  // Create a few labels & checkboxes
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,60,50,20,20,GSLC_COL_BLACK,true,
-          GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  gslc_ElemCreateTxt_P(&m_gui,201,E_PG_EXTRA,100,50,50,10,"Data 1",&m_asFont[1], // E_FONT_TXT
+  // Create a few labels
+  gslc_ElemCreateTxt_P(&m_gui,201,E_PG_EXTRA,60,50,50,10,"Data 1",&m_asFont[1], // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
+  gslc_ElemCreateTxt_P(&m_gui,202,E_PG_EXTRA,60,70,50,10,"Data 2",&m_asFont[1], // E_FONT_TXT
+          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
+  gslc_ElemCreateTxt_P(&m_gui,203,E_PG_EXTRA,60,90,50,10,"Data 3",&m_asFont[1], // E_FONT_TXT
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK3,E_PG_EXTRA,60,80,20,20,GSLC_COL_BLACK,true,
-          GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  gslc_ElemCreateTxt_P(&m_gui,202,E_PG_EXTRA,100,80,50,10,"Data 2",&m_asFont[1], // E_FONT_TXT
-          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
+    (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
-  gslc_ElemCreateTxt_P(&m_gui,203,E_PG_EXTRA,100,110,50,10,"Data 3",&m_asFont[1], // E_FONT_TXT
-          GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
 
   return true;

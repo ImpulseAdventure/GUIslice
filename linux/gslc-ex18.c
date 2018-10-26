@@ -3,8 +3,11 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 05 (LINUX):
-//     Multiple page handling, checkboxes
+// - Example 18 (LINUX):
+//     Multiple page handling
+//     Background image
+//     Compound elements
+// - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //
 
 #include "GUIslice.h"
@@ -48,7 +51,7 @@ gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA];
 gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
 
 gslc_tsXGauge               m_sXGauge;
-gslc_tsXCheckbox            m_asXCheck[3];
+gslc_tsXSelNum              m_sXSelNum[3];
 
 
 #define MAX_STR             100
@@ -152,9 +155,9 @@ bool InitOverlays(char *strPath)
   pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
 
-  // Checkbox element
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_tsRect){200,80,30,30},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -167,26 +170,22 @@ bool InitOverlays(char *strPath)
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
     (gslc_tsRect){50,170,50,20},"Back",0,E_FONT_BTN,&CbBtnCommon);
 
-  // Create a few labels & checkboxes
+  // Create a few labels
   int16_t    nPosY = 50;
-  int16_t    nSpaceY = 30;
+  int16_t    nSpaceY = 20;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    "Data 1",0,E_FONT_TXT); nPosY += nSpaceY;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    "Data 2",0,E_FONT_TXT); nPosY += nSpaceY;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    "Data 3",0,E_FONT_TXT); nPosY += nSpaceY;
 
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck[1],
-    (gslc_tsRect){60,nPosY,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    "Data 1",0,E_FONT_TXT);
-  nPosY += nSpaceY;
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
+    (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK3,E_PG_EXTRA,&m_asXCheck[2],
-    (gslc_tsRect){60,nPosY,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    "Data 2",0,E_FONT_TXT);
-  nPosY += nSpaceY;
-
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    "Data 3",0,E_FONT_TXT);
-  nPosY += nSpaceY;
-
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
   return true;
 }

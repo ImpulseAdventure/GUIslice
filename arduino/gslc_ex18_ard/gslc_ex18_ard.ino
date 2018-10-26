@@ -3,8 +3,12 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 05 (Arduino):
-//   - Multiple page handling, checkboxes
+// - Example 18 (Arduino):
+//   - Multiple page handling
+//   - Background image
+//   - Compound elements
+//
+//   - NOTE: The XSelNum compound element requires GSLC_FEATURE_COMPOUND enabled
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. Therefore, it may not
 //     run on Arduino devices with limited memory. A "minimal"
@@ -23,12 +27,13 @@
 
 
 // Defines for resources
+#define IMG_BKGND       "back1_24.bmp"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN,E_PG_EXTRA};
 enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
       E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_CHECK3};
+      E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
@@ -56,7 +61,7 @@ gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA_RAM];
 gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
 
 gslc_tsXGauge               m_sXGauge;
-gslc_tsXCheckbox            m_asXCheck[3];
+gslc_tsXSelNum              m_sXSelNum[3];
 
 
 #define MAX_STR             8
@@ -95,6 +100,13 @@ bool InitOverlays()
 
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN_RAM,m_asMainElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG_EXTRA,m_asExtraElem,MAX_ELEM_PG_EXTRA_RAM,m_asExtraElemRef,MAX_ELEM_PG_EXTRA);
+
+  // -----------------------------------
+  // Background
+  // - Background image from SD card disabled, uncomment to enable
+  // - Ensure that GSLC_SD_EN is set to 1 in GUIslice_config.h
+  //static const char m_strImgBkgnd[] = IMG_BKGND;
+  //gslc_SetBkgndImage(&m_gui,gslc_GetImageFromSD(m_strImgBkgnd,GSLC_IMGREF_FMT_BMP24));
 
   // -----------------------------------
   // PAGE: MAIN
@@ -137,9 +149,9 @@ bool InitOverlays()
   m_pElemProgress = pElemRef; // Save for quick access
 
 
-  // Checkbox element
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
-    (gslc_tsRect){200,80,30,30},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSelNum[0],
+    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -153,25 +165,23 @@ bool InitOverlays()
     (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_BTN,&CbBtnCommon);
 
 
-  // Create a few labels & checkboxes
+  // Create a few labels
   int16_t    nPosY = 50;
-  int16_t    nSpaceY = 30;
+  int16_t    nSpaceY = 20;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    (char*)"Data 1",0,E_FONT_TXT); nPosY += nSpaceY;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    (char*)"Data 2",0,E_FONT_TXT); nPosY += nSpaceY;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    (char*)"Data 3",0,E_FONT_TXT); nPosY += nSpaceY;
 
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck[1],
-    (gslc_tsRect){60,nPosY,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    (char*)"Data 1",0,E_FONT_TXT);
-  nPosY += nSpaceY;
+  // Add compound element
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSelNum[1],
+    (gslc_tsRect){130,60,120,50},E_FONT_BTN);
 
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK3,E_PG_EXTRA,&m_asXCheck[2],
-    (gslc_tsRect){60,nPosY,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    (char*)"Data 2",0,E_FONT_TXT);
-  nPosY += nSpaceY;
+  pElemRef = gslc_ElemXSelNumCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSelNum[2],
+    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
 
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){100,nPosY,50,10},
-    (char*)"Data 3",0,E_FONT_TXT);
-  nPosY += nSpaceY;
 
   return true;
 }
