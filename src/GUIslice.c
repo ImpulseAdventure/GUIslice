@@ -1451,6 +1451,10 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   // Save a reference to the selected page's element collection
   pGui->pCurPageCollect = &pPage->sCollect;
 
+  #if defined(DEBUG_LOG)
+  GSLC_DEBUG_PRINT("INFO: Changed to page %u\n",nPageId);
+  #endif
+
   // A change of page should always force a future redraw
   if (nPageSaved != nPageId) {
     gslc_PageRedrawSet(pGui,true);
@@ -3152,7 +3156,10 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   }
 
   if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many element references (max=%u)\n",pCollect->nElemRefMax);
+    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many element references (max=%u) on ElemId=%u\n",
+            pCollect->nElemRefMax,pElem->nId);
+    // TODO: Implement a function that returns the current page's ID so that
+    //       users can more easily identify the problematic page.
     return NULL;
   }
 
@@ -3171,13 +3178,21 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   //   not discard/reuse the pointer. It should be defined as a static
   //   variable.
 
+  #if defined(DBG_LOG)
+  GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
+          pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
+  #endif
+
   uint16_t nElemInd;
   uint16_t nElemRefInd;
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
 
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u)\n",pCollect->nElemMax);
+      GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u) on ElemId=%u\n",
+              pCollect->nElemMax,pElem->nId);
+      // TODO: Implement a function that returns the current page's ID so that
+      //       users can more easily identify the problematic page.
       return NULL;
     }
 

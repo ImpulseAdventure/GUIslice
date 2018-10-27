@@ -50,7 +50,7 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 gslc_tsXGauge               m_sXGauge;
-gslc_tsXCheckbox            m_asXCheck[2];
+gslc_tsXCheckbox            m_asXCheck[1];
 
 #define MAX_STR             100
 
