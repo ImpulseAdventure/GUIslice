@@ -999,7 +999,7 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
   gslc_tsRect rNew = {0,0,0,0};
 
   // Detect error case of contracting region too far
-  if ( (rRect.w < (-2*nExpandW)) || (rRect.h < (-2*nExpandH)) ) {
+  if ( ((int16_t)rRect.w < (-2*nExpandW)) || ((int16_t)rRect.h < (-2*nExpandH)) ) {
     // Return an empty coordinate box (which won't be drawn)
     //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
     return rNew;
