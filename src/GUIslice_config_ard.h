@@ -133,8 +133,9 @@ extern "C" {
   #define ADAGFX_PIN_CLK
 
   // Set Default rotation
+  // you can specify values 0,1,2,3, rotation is clockwise
   // - Note that if you change this you will likely have to change
-  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
   //   orientation matches the display rotation
   #define GSLC_ROTATE     1
 
@@ -194,8 +195,9 @@ extern "C" {
 
 
   // Set Default rotation
+  // you can specify values 0,1,2,3, rotation is clockwise
   // - Note that if you change this you will likely have to change
-  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
   //   orientation matches the display rotation
   #define GSLC_ROTATE     1
 
@@ -215,8 +217,9 @@ extern "C" {
 
 
   // Set Default rotation
+  // you can specify values 0,1,2,3, rotation is clockwise
   // - Note that if you change this you will likely have to change
-  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
   //   orientation matches the display rotation
   #define GSLC_ROTATE     1
 
@@ -227,8 +230,9 @@ extern "C" {
   #define TFT_LIGHT_PIN    32   // display backlight
 
   // Set Default rotation
+  // you can specify values 0,1,2,3, rotation is clockwise
   // - Note that if you change this you will likely have to change
-  //   ADATOUCH_FLIP_X & ADATOUCH_FLIP_Y as well to ensure that the touch screen
+  //   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
   //   orientation matches the display rotation
   #define GSLC_ROTATE     0
 
@@ -352,14 +356,27 @@ extern "C" {
 
 // -----------------------------------------------------------------------------
 
-  // Define any Touch Axis Swapping and Flipping
+
+  // Default rotation of the touch, you can specify values 0,1,2,3, rotation is clockwise
+  // it is useful to specify the GLSC_TOUCH_ROTATE_OFFSET as an offset to the GLSC_ROTATE,
+  // thus changing GLSC_ROTATE automatically adopts the GLSC_TOUCH_ROTATE
+  #define GSLC_TOUCH_ROTATE 1
+  
+  // TODO: maybe those macros should be moved to one include file which is included by all drivers
+  #define TOUCH_ROTATION_DATA 0x6350
+  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
+  
   // - Set any of the following to 1 to perform touch display
   //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
   //   remapping modes should be enabled for your display
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  #define ADATOUCH_SWAP_XY  1
+  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied, 
+  //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
+  #define ADATOUCH_SWAP_XY  0
   #define ADATOUCH_FLIP_X   0
-  #define ADATOUCH_FLIP_Y   1
+  #define ADATOUCH_FLIP_Y   0
 
   // Define the maximum number of touch events that are handled
   // per gslc_Update() call. Normally this can be set to 1 but certain
