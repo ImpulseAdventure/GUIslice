@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.3   (2018/10/06)
+// - Version 0.10.4   (2018/10/29)
 // =======================================================================
 //
 // The MIT License
@@ -62,6 +62,17 @@ extern "C" {
   #define GSLC_PMEM PROGMEM
 #else
   #define GSLC_PMEM
+#endif
+
+
+// Detect cases where recently added config parameters are missing
+// as this would indicate that the config file is out-of-date and needs
+// updating. Flag this to the user with a compiler warning and offer default.
+// NOTE: In the future, these checks may be removed.
+#ifndef GSLC_TOUCH_ROTATE
+  #warning "Config: GSLC_TOUCH_ROTATE not defined. Please update GUIslice_config to latest. Using default."
+  // Apply a default to allow compilation to proceed
+  #define GSLC_TOUCH_ROTATE GSLC_ROTATE
 #endif
 
 
@@ -265,6 +276,15 @@ typedef enum {
   GSLC_TOUCH_UP_IN      = GSLC_TOUCH_UP   | GSLC_TOUCH_IN,  ///< Touch up inside tracked element
   GSLC_TOUCH_UP_OUT     = GSLC_TOUCH_UP   | GSLC_TOUCH_OUT, ///< Touch up outside tracked element
 } gslc_teTouch;
+
+
+/// Additional definitions for Touch Handling
+/// These macros define the transforms used in remapping the touchscreen
+/// inputs on the basis of the GUI nRotation setting.
+  #define TOUCH_ROTATION_DATA 0x6350
+  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
 
 
 /// Event types
@@ -2181,6 +2201,19 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 ///
 bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
 
+
+///
+/// Dynamically change rotation, automatically adapt touchscreen axes swap/flip
+///
+/// The function assumes that the touchscreen settings for swap and flip
+/// in the GUIslice config are valid for the configured GSLC_ROTATE.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if success, false otherwise
+///
+bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation);
 
 
 ///

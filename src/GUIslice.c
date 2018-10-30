@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.4   (2018/10/13)
+// - Version 0.10.4   (2018/10/29)
 // =======================================================================
 //
 // The MIT License
@@ -3327,6 +3327,19 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   }
   gslc_PageFlipSet(pGui,true);
   return true;
+}
+
+bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+  // Simple wrapper for driver-specific rotation
+
+  // TODO: For now, only DRV_DISP_ADAGFX supports dynamic rotation.
+  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
+    return gslc_DrvRotate(pGui,nRotation);
+  #else
+    #error "GuiRotate() not supported in current DRV_DISP_* mode yet"
+    return false;
+  #endif
 }
 
 // Trigger a touch event on an element

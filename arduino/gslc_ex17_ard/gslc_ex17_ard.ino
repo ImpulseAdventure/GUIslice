@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 17 (Arduino):
-//   - show the usage of the dynamic rotation
+//   - Show the usage of dynamic rotation
 //   - Accept touch input, text button
 //   - Expected behavior: Clicking on button rotates the screen
 //
@@ -25,7 +25,8 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_ROTATE};
 enum {E_FONT_BTN};
 
-bool    m_bRotate = false;
+bool      m_bRotate = false;
+uint8_t   m_nRotation = 1;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
@@ -91,7 +92,7 @@ void setup()
   m_bRotate = false;
 }
 
-uint8_t rotation = 1;
+
 void loop()
 {
   // Periodically call GUIslice update function
@@ -99,16 +100,16 @@ void loop()
 
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we change the rotation
-  
-  if (m_bRotate) {    
-    gslc_DrvRotate(&m_gui, rotation);
-    rotation++;
+
+  if (m_bRotate) {
+    gslc_GuiRotate(&m_gui, m_nRotation);
+    m_nRotation = (m_nRotation+1) % 4;
 
     m_bRotate = false;
-    
+
   }
   //delay(1000);
-  
+
 }
 
 
