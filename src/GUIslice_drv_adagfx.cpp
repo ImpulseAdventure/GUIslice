@@ -241,30 +241,30 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.readcommand8(ILI9341_RDIMGFMT);
       m_disp.readcommand8(ILI9341_RDSELFDIAG);
 
-      // Rotate display from native portrait orientation to landscape
-      // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
       m_disp.setRotation( pGui->nRotation );
-      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+      #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
         pGui->nDispW = ILI9341_TFTWIDTH;
         pGui->nDispH = ILI9341_TFTHEIGHT;
-      }
-      else {
+      #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
         pGui->nDispW = ILI9341_TFTHEIGHT;
         pGui->nDispH = ILI9341_TFTWIDTH;
-      }
+      #else
+        #error "Wrong GLSC_ROTATE value"
+      #endif
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
       m_disp.setRotation( pGui->nRotation );
-      if (pGui->nRotation == 0 || pGui->nRotation == 2) {
+      #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
         pGui->nDispW = ILI9341_TFTWIDTH;
         pGui->nDispH = ILI9341_TFTHEIGHT;
-      }
-      else {
+      #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
         pGui->nDispW = ILI9341_TFTHEIGHT;
         pGui->nDispH = ILI9341_TFTWIDTH;
-      }
+      #else
+        #error "Wrong GLSC_ROTATE value"
+      #endif
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -1294,6 +1294,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
 bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
 {
     bool redraw     = pGui->nRotation != nRotation;
+    bool swapDispay = (nRotation ^ pGui->nRotation) & 0x01;
     pGui->nRotation = nRotation;
     pGui->nSwapXY   = nSwapXY;
     pGui->nFlipX    = nFlipX;
@@ -1307,7 +1308,39 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
         gslc_PageRedrawGo( pGui );
     }
 
+    // change between portrait <=> landscape
+    if( swapDispay ) {
+        // exchange pGui->nDispH <=> pGui->nDispW
+        uint16_t w = pGui->nDispW;
+        pGui->nDispW = pGui->nDispH;
+        pGui->nDispH = w;
+        
+        // new defaults for clipping region
+        gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+        gslc_DrvSetClipRect(pGui,&rClipRect);
+    }
+
     return( true );
+}
+
+///
+/// Change rotation, automatically adapt touchscreen axes swap/flip based on nRotation vs GLSC_TOUCH_ROTATE
+///
+/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h 
+/// are valid for the rotation defined in GUIslice_config_ard.h
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if successful
+///
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+    uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
+    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
 }
 
 
