@@ -71,8 +71,8 @@ extern "C" {
 // NOTE: In the future, these checks may be removed.
 #ifndef GSLC_TOUCH_ROTATE
   #warning "Config: GSLC_TOUCH_ROTATE not defined. Please update GUIslice_config to latest. Using default."
-  // Apply a default to allow compilation to proceed
-  #define GSLC_TOUCH_ROTATE GSLC_ROTATE
+  // Apply a backward-compatible default to allow compilation to proceed
+  #define GSLC_TOUCH_ROTATE 0
 #endif
 
 
