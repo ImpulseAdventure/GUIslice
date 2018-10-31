@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.4   (2018/10/13)
+// - Version 0.10.4   (2018/10/29)
 // =======================================================================
 //
 // The MIT License
@@ -103,9 +103,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
     pGui->nRotation		= GSLC_ROTATE;
-    pGui->nSwapXY		= ADATOUCH_SWAP_XY;
-    pGui->nFlipX		= ADATOUCH_FLIP_X;
-    pGui->nFlipY		= ADATOUCH_FLIP_Y;
+    pGui->nSwapXY		= ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE);
+    pGui->nFlipX		= ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE);
+    pGui->nFlipY		= ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE);
   #endif
 
   pGui->nPageMax        = nMaxPage;
@@ -3327,6 +3327,19 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   }
   gslc_PageFlipSet(pGui,true);
   return true;
+}
+
+bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+  // Simple wrapper for driver-specific rotation
+
+  // TODO: For now, only DRV_DISP_ADAGFX supports dynamic rotation.
+  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
+    return gslc_DrvRotate(pGui,nRotation);
+  #else
+    GSLC_DEBUG_PRINT("ERROR: GuiRotate(%s) not supported in current DRV_DISP_* mode yet\n","");
+    return false;
+  #endif
 }
 
 // Trigger a touch event on an element
