@@ -3334,7 +3334,7 @@ bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
   // Simple wrapper for driver-specific rotation
 
   // TODO: For now, only DRV_DISP_ADAGFX supports dynamic rotation.
-  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
+  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
     return gslc_DrvRotate(pGui,nRotation);
   #else
     GSLC_DEBUG_PRINT("ERROR: GuiRotate(%s) not supported in current DRV_DISP_* mode yet\n","");

@@ -85,8 +85,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     m_disp.init();
     m_disp.setRotation( pGui->nRotation );
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
+    #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+    #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
+      pGui->nDispW = m_disp.height();
+      pGui->nDispH = m_disp.width();
+    #else
+      #error "Wrong GLSC_ROTATE value"
+    #endif
 
     // Defaults for clipping region
     gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
@@ -760,6 +767,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
 {
     bool redraw     = pGui->nRotation != nRotation;
+    bool swapDispay = (nRotation ^ pGui->nRotation) & 0x01;
     pGui->nRotation = nRotation;
     pGui->nSwapXY   = nSwapXY;
     pGui->nFlipX    = nFlipX;
@@ -773,8 +781,42 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
         gslc_PageRedrawGo( pGui );
     }
 
+    // change between portrait <=> landscape
+    if( swapDispay ) {
+        // exchange pGui->nDispH <=> pGui->nDispW
+        uint16_t w = pGui->nDispW;
+        pGui->nDispW = pGui->nDispH;
+        pGui->nDispH = w;
+
+        // new defaults for clipping region
+        gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+        gslc_DrvSetClipRect(pGui,&rClipRect);
+    }
+
     return( true );
 }
+
+
+///
+/// Change rotation, automatically adapt touchscreen axes swap/flip based on nRotation vs GLSC_TOUCH_ROTATE
+///
+/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h
+/// are valid for the rotation defined in GUIslice_config_ard.h
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if successful
+///
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+    uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
+    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
+    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+}
+
 
 // =======================================================================
 // Private Functions
