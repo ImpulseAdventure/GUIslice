@@ -3337,7 +3337,7 @@ bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS)
     return gslc_DrvRotate(pGui,nRotation);
   #else
-    #error "GuiRotate() not supported in current DRV_DISP_* mode yet"
+    GSLC_DEBUG_PRINT("ERROR: GuiRotate(%s) not supported in current DRV_DISP_* mode yet\n","");
     return false;
   #endif
 }
