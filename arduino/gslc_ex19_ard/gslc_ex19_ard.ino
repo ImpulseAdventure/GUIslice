@@ -8,7 +8,19 @@
 //   - Antialiased Fonts
 //   - NOTE: This is Example demonstrates text antialiasing with the TFT_eSPI library.
 //     The font which can be found in the TFT_eSPI source in the libraries
-//     examples/Smooth Fonts/Print_Smooth_Font/data folder has to be uploaded to SPIFFS first
+//     examples/Smooth Fonts/Print_Smooth_Font/data folder has to be uploaded to SPIFFS first.
+//     Instructions from Bodmer/TFT_eSPI:
+//       ---
+//       The fonts used are in the sketch data folder, press Ctrl+K to view.
+//       Upload the fonts and icons to SPIFFS (must set at least 1M for SPIFFS) using the
+//       "Tools"  "ESP8266 (or ESP32) Sketch Data Upload" menu option in the IDE.
+//       To add this option follow instructions here for the ESP8266:
+//       https://github.com/esp8266/arduino-esp8266fs-plugin
+//       or for the ESP32:
+//       https://github.com/me-no-dev/arduino-esp32fs-plugin
+//       Close the IDE and open again to see the new menu option.
+//       ---
+//
 
 // Font file is stored in SPIFFS
 
@@ -17,8 +29,14 @@
 #endif
 
 
+// Define FS_NO_GLOBALS ahead of FS include to enable
+// both SPIFFS and SD access.
 #define FS_NO_GLOBALS
-#include <SPIFFS.h>
+#include <FS.h>
+
+#if defined(ESP32)
+  #include <SPIFFS.h>
+#endif
 
 #include <stdint.h>
 #include "GUIslice.h"
@@ -65,18 +83,15 @@ void setup()
   gslc_tsElemRef* pElemRef = NULL;
 
   // Initialize debug output
-  analogReadResolution(10);
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
-
 
   // Init SPIFFS for Font Loading
   if (!SPIFFS.begin()) {
     Serial.println("SPIFFS initialisation failed!");
     while (1) yield(); // Stay here twiddling thumbs waiting
   }
-
 
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
