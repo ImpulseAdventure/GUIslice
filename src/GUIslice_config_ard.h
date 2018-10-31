@@ -357,9 +357,10 @@ extern "C" {
 // -----------------------------------------------------------------------------
 
 
-  // Default rotation of the touch, you can specify values 0,1,2,3, rotation is clockwise
-  // it is useful to specify the GLSC_TOUCH_ROTATE_OFFSET as an offset to the GLSC_ROTATE,
-  // thus changing GLSC_ROTATE automatically adopts the GLSC_TOUCH_ROTATE
+  // Specify the default rotation/orientation of the touch device, which must
+  // be in the range 0,1,2,3. It may be necessary to enable DBG_TOUCH to
+  // determine the correct value for your device, along with example ex17.
+  // Rotation value is defined in a clockwise direction.
   #define GSLC_TOUCH_ROTATE 1
 
 
