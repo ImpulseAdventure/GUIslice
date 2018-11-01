@@ -32,8 +32,29 @@ GSLC_DRV := SDL1
 
 # Define any extra linker settings
 # - For tslib (GUIslice_config.h has #define DRV_TOUCH_TSLIB), add "-lts"
+# - If GUIslice config is using DRV_TOUCH_TSLIB mode, then add the
+#   tslib into the linker libraries by passing GSLC_USE_TSLIB=1 on
+#   the make command-line:
+#        make gslc-ex04 GSLC_DRV=SDL1 GSLC_USE_TSLIB=1
+#   If GUIslice config is not using DRV_TOUCH_TSLIB mode, then either
+#   pass 0 for GSLC_USE_TSLIB to make or skip the parameter altogether:
+#        make gslc-ex04 GSLC_DRV=SDL1
+#        make gslc-ex04 GSLC_DRV=SDL1 GSLC_USE_TSLIB=0
 #GSLC_LDLIB_EXTRA := -lm
-GSLC_LDLIB_EXTRA := -lm -lts
+#GSLC_LDLIB_EXTRA := -lm -lts
+
+ifndef GSLC_USE_TSLIB
+  GSLC_LDLIB_EXTRA := -lm
+  $(info GUIslice touch mode: tslib not enabled)
+else
+  ifeq (1,${GSLC_USE_TSLIB})
+    $(info GUIslice touch mode: tslib enabled)
+    GSLC_LDLIB_EXTRA := -lm -lts
+  else
+    $(info GUIslice touch mode: tslib not enabled)
+    GSLC_LDLIB_EXTRA := -lm
+  endif
+endif
 
 # === SDL1.2 ===
 ifeq (SDL1,${GSLC_DRV})
