@@ -557,7 +557,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 }
 
 
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
+// NOTE: SDL driver is compiled as pure C, so can't use default parameters.
+//       Other drivers have specified colBg as a default, but so far no callers
+//       are depending on the default.
+// TODO: Update DrvDrawTxt() and DrvDrawTxtAlign() APIs for all drivers to
+//       no longer use the default param for consistency.
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg)
 {
   if ((pGui == NULL) || (pFont == NULL)) {
     GSLC_DEBUG_PRINT("ERROR: DrvDrawTxt(%s) with NULL ptr\n","");
