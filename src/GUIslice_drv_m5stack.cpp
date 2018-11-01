@@ -85,15 +85,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     m_disp.init();
     m_disp.setRotation( pGui->nRotation );
-    #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
-      pGui->nDispW = m_disp.width();
-      pGui->nDispH = m_disp.height();
-    #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
-      pGui->nDispW = m_disp.height();
-      pGui->nDispH = m_disp.width();
-    #else
-      #error "Wrong GLSC_ROTATE value"
-    #endif
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
 
     // Defaults for clipping region
     gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
