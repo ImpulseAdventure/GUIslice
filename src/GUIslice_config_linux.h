@@ -126,14 +126,26 @@ extern "C" {
 
 #endif // DRV_TOUCH_*
 
-// Define any Touch Axis Swapping and Flipping
-// - Set any of the following to 1 to perform touch display
-//   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
-//   remapping modes should be enabled for your display
-// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-#define ADATOUCH_SWAP_XY  1
-#define ADATOUCH_FLIP_X   0
-#define ADATOUCH_FLIP_Y   1
+
+  // NOTE: The GSLC_ROTATE feature is not yet supported in SDL mode
+  //       however, the following settings are provided for future use.
+
+  // Specify the default rotation/orientation of the touch device, which must
+  // be in the range 0,1,2,3. It may be necessary to enable DBG_TOUCH to
+  // determine the correct value for your device, along with example ex17.
+  // Rotation value is defined in a clockwise direction.
+  #define GSLC_TOUCH_ROTATE 1
+
+
+  // - Set any of the following to 1 to perform touch display
+  //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
+  //   remapping modes should be enabled for your display
+  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
+  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied,
+  //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
+  #define ADATOUCH_SWAP_XY  0
+  #define ADATOUCH_FLIP_X   0
+  #define ADATOUCH_FLIP_Y   0
 
 // Define the maximum number of touch events that are handled
 // per gslc_Update() call. Normally this can be set to 1 but certain
