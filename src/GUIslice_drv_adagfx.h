@@ -274,10 +274,11 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 /// \param[in]  pStr:        String to display
 /// \param[in]  eTxtFlags:   Flags associated with text string
 /// \param[in]  colTxt:      Color to draw text
+/// \param[in]  colBg:       unused in ADAGFX, defaults to black
 ///
 /// \return true if success, false if failure
 ///
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt);
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt,gslc_tsColor colBg);
 
 
 // -----------------------------------------------------------------------

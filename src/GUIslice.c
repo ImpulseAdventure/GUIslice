@@ -2116,7 +2116,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
   bGlowing  = gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
-
+  gslc_tsColor colBg = GSLC_COL_BLACK;
 
   // --------------------------------------------------------------------------
   // Background
@@ -2135,8 +2135,10 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // - This also changes the fill color if selected and glow state is enabled
   if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
+      colBg = pElem->colElemFillGlow;
       gslc_DrawFillRect(pGui,rElemInner,pElem->colElemFillGlow);
     } else {
+      colBg = pElem->colElemFill;
       gslc_DrawFillRect(pGui,rElemInner,pElem->colElemFill);
     }
   } else {
@@ -2220,7 +2222,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     int16_t nY1 = nY0 + nElemH - 2*nMargin;
 
     gslc_DrvDrawTxtAlign(pGui,nX0,nY0,nX1,nY1,pElem->eTxtAlign,pElem->pTxtFont,
-            pElem->pStrBuf,pElem->eTxtFlags,colTxt);
+            pElem->pStrBuf,pElem->eTxtFlags,colTxt,colBg);
 
 #else // DRV_OVERRIDE_TXT_ALIGN
 
@@ -2262,7 +2264,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     nTxtY -= nTxtOffsetY;
 
     // Call the driver text rendering routine
-    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt);
+    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt,colBg);
 
 #endif // DRV_OVERRIDE_TXT_ALIGN
 
