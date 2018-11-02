@@ -86,7 +86,7 @@ extern "C" {
   #define GSLC_DEV_VID_DRV  "fbcon"
 
   // Enable SDL startup workaround? (1 to enable, 0 to disable)
-  #define DRV_SDL_FIX_START 1
+  #define DRV_SDL_FIX_START 0
 
   // Show SDL mouse (1 to show, 0 to hide)
   #define DRV_SDL_MOUSE_SHOW 0
