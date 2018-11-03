@@ -1364,6 +1364,11 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
   gslc_tsPage*        pPage       = (gslc_tsPage*)(sEvent.pvScope);
   gslc_tsCollect*     pCollect    = NULL;
 
+  if (pPage == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "PageEvent";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+  }
+
   // Handle any page-level events first
   // ...
 
@@ -3474,6 +3479,8 @@ void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
     pElem = gslc_GetElemFromRef(pGui,pElemRef);
     gslc_ElemDestruct(pElem);
   }
+  pCollect->nElemRefCnt = 0;
+  pCollect->nElemCnt = 0;
 
 }
 
@@ -3504,6 +3511,7 @@ void gslc_GuiDestruct(gslc_tsGui* pGui)
     pPage = &pGui->asPage[nPageInd];
     gslc_PageDestruct(pGui,pPage);
   }
+  pGui->nPageCnt = 0;
 
   // TODO: Consider moving into main element array
   if (pGui->sImgRefBkgnd.eImgFlags != GSLC_IMGREF_NONE) {
