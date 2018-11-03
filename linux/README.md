@@ -30,11 +30,30 @@ sudo ./test-sdl1
 ### Compiling ###
 The examples in this folder are designed to be compiled using the provided `Makefile` at
 the command-line. It is assumed that SDL and the optional touch library has been installed.
-Detailed installation notes available at: 
+Detailed installation notes available at:
 
 ~~~
-make gslc_07
-sudo ./gslc_07
+make gslc-ex07
+sudo ./gslc-ex07
+~~~
+
+# Example of compiling without tslib
+The following example assumes that `GUIslice_config_linux.h` has not enabled
+tslib, ie. `#define DRV_TOUCH_SDL` or `#define DRV_TOUCH_NONE`. In that case
+we should disable the compiler from attempting to link in the tslib library:
+~~~
+make gslc-ex04 GSLC_TOUCH_TSLIB=0
+~~~
+
+# Example of compiling with SDL2
+By default, the makefile assumes SDL1 mode, but SDL2 can be configured as follows
+~~~
+make gslc-ex02 GSLC_DRV=SDL2
+~~~
+
+# Example of combined parameters
+~~~
+make all GSLC_DRV=SDL1 GSLC_TOUCH_TSLIB=0
 ~~~
 
 
@@ -50,7 +69,7 @@ Most of the example files require the use of a font resource. By default, the ex
 Note that earlier versions of GUIslice defaulted to the **droid** font, but this has changed since recent linux distributions no longer include **droid**.
 
 ### Resource Files ###
-Some examples (eg. `glsc_ex03`) are intended to demonstrate image loading from SD cards.
+Some examples (eg. `glsc-ex03`) are intended to demonstrate image loading from SD cards.
 In order to support these functions, one needs to ensure:
 - Resource files from the `/res` folder are copied into the root of the SD card
 - SD card support is enabled in `GUIslice_config_linux.h` (via `#define GSLC_SD_EN 1`)

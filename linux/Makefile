@@ -8,6 +8,41 @@
 ##       A simpler Makefile can be used if this flexibility is
 ##       not required.
 
+# ---------------------------------------------------------------------------
+# Define compiler flags for GUIslice
+# - In some cases, the makefile compilation options must match
+#   settings in the GUIslice_config_linux.h configuration file.
+#
+# GRAPHICS DRIVER
+# - make parameter: GSLC_DRV=(SDL1,SDL2)
+# - On the makefile command-line, pass the GSLC_DRV parameter to select
+#   the graphics driver matching the #define DRV_DISP_* setting in
+#   GUIslice_config_linux.h, eg:
+#     GUIslice_config_linux.h:  #define DRV_DISP_SDL1
+#     Makefile:                 make <target> GSLC_DRV=SDL1
+#
+#
+# TOUCH DRIVER
+# - make parameter: GSLC_TOUCH=(TSLIB,SDL,NONE)
+# - On the makefile command-line, pass the GSLC_TOUCH parameter to
+#   indicate whether or not DRV_TOUCH_TSLIB is #defined in the
+#   GUIslice_config_linux.h, eg:
+#     GUIslice_config_linux.h:  #define DRV_TOUCH_TSLIB
+#     Makefile:                 make <target> GSLC_TOUCH=TSLIB
+#
+#     GUIslice_config_linux.h:  #define DRV_TOUCH_SDL (or DRV_TOUCH_NONE)
+#     Makefile:                 make <target> GSLC_TOUCH=NONE
+# - Note that the makefile only checks to see if DRV_TOUCH=TSLIB and
+#   will ignore any other values.
+#
+# NOTES:
+# - Note that multiple parameters may be passed, for example:
+#     make gslc-ex04
+#     make gslc-ex06 GSLC_TOUCH=TSLIB GSLC_DRV=SDL2
+#     make all GSLC_TOUCH=TSLIB
+#
+
+
 DEBUG = -O3
 CC = gcc
 INCLUDE = -I/usr/local/include
@@ -16,38 +51,22 @@ LDFLAGS = -L/usr/local/lib
 
 GSLC_CORE = ../src/GUIslice.c ../src/GUIslice_ex.c ../src/GUIslice_config_linux.h
 
-# ---------------------------------------------------------------------------
-# Define compiler flags for GUIslice
-# - Select the graphics driver by uncommenting one of the following lines
-#   and edit GUIslice_config.h to set the appropriate #define DRV_DISP_*
-#   Example for SDL1:
-#     Makefile:            GSLC_DRV := SDL1
-#     GUIslice_config.h:   #define DRV_DISP_SDL1
-#
-# NOTE: One can also override this from the command-line as follows:
-#       make gslc-ex04 GSLC_DRV=SDL2
-#
+
+# Define default compiler flags which may be overridden by command line
+
+# Define graphics driver (overridden by command line GSLC_DRV)
 GSLC_DRV := SDL1
 #GSLC_DRV := SDL2
 
-# Define any extra linker settings
-# - For tslib (GUIslice_config.h has #define DRV_TOUCH_TSLIB), add "-lts"
-# - If GUIslice config is using DRV_TOUCH_TSLIB mode, then add the
-#   tslib into the linker libraries by passing GSLC_USE_TSLIB=1 on
-#   the make command-line:
-#        make gslc-ex04 GSLC_DRV=SDL1 GSLC_USE_TSLIB=1
-#   If GUIslice config is not using DRV_TOUCH_TSLIB mode, then either
-#   pass 0 for GSLC_USE_TSLIB to make or skip the parameter altogether:
-#        make gslc-ex04 GSLC_DRV=SDL1
-#        make gslc-ex04 GSLC_DRV=SDL1 GSLC_USE_TSLIB=0
+# Define any extra linker settings (overridden by command line GSLC_TOUCH_TSLIB)
 #GSLC_LDLIB_EXTRA := -lm
 #GSLC_LDLIB_EXTRA := -lm -lts
 
-ifndef GSLC_USE_TSLIB
-  GSLC_LDLIB_EXTRA := -lm
-  $(info GUIslice touch mode: tslib not enabled)
+ifndef GSLC_TOUCH
+  GSLC_LDLIB_EXTRA := -lm -lts
+  $(info GUIslice touch mode: tslib enabled by default)
 else
-  ifeq (1,${GSLC_USE_TSLIB})
+  ifeq (TSLIB,${GSLC_TOUCH})
     $(info GUIslice touch mode: tslib enabled)
     GSLC_LDLIB_EXTRA := -lm -lts
   else
