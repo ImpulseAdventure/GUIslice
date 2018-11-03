@@ -39,10 +39,10 @@ sudo ./gslc-ex07
 
 # Example of compiling without tslib
 The following example assumes that `GUIslice_config_linux.h` has not enabled
-tslib, ie. `#define DRV_TOUCH_SDL` or `#define DRV_TOUCH_NONE`. In that case
+tslib, ie. `#define DRV_TOUCH_NONE` (or `#define DRV_TOUCH_SDL`). In that case
 we should disable the compiler from attempting to link in the tslib library:
 ~~~
-make gslc-ex04 GSLC_TOUCH_TSLIB=0
+make gslc-ex04 GSLC_TOUCH=NONE
 ~~~
 
 # Example of compiling with SDL2
@@ -53,7 +53,7 @@ make gslc-ex02 GSLC_DRV=SDL2
 
 # Example of combined parameters
 ~~~
-make all GSLC_DRV=SDL1 GSLC_TOUCH_TSLIB=0
+make all GSLC_DRV=SDL1 GSLC_TOUCH=SDL
 ~~~
 
 
