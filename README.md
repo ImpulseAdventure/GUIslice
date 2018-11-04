@@ -24,7 +24,8 @@
 - *Typical displays*: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
 - *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357
 - *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
-- Foreign characters / UTF-8 encoding (in SDL mode)
+- Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
+- Dynamic display rotation
 - No GUIslice installation -- just add include files and go!
 - *LINUX Dependencies*: sdl, sdl-ttf, optional: tslib
 - *Arduino Dependencies*: TFT_eSPI or Adafruit-GFX plus display / touch driver libraries
