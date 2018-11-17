@@ -4,6 +4,11 @@ Please refer to the wiki page for installation and usage details:
 
 [GUIslice Builder - Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder)
 
+### Directory Contents ###
+- `Builder_user_guide.pdf`: Builder User Guide (PDF format)
+- `builder-linux64-X.Y.Z.tar.gz`: Builder Executable (in LINUX tar gzip format)
+- `builder-win64-X-Y-Z.zip`: Builder Executable (in Windows ZIP format)
+
 ### Brief Overview
 The GUIslice Builder is a standalone desktop application that is designed to help generate layouts for GUIslice.
 
