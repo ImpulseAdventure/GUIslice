@@ -7,7 +7,7 @@ Please refer to the wiki page for installation and usage details:
 ### Builder Contents ###
 Note that the Builder executables are attached to the latest [Release Notes](https://github.com/ImpulseAdventure/GUIslice/releases):
 - [Builder_user_guide.pdf](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.10.4/Builder_user_guide.pdf) Builder User Guide (in PDF format)
-- [builder-win64-0.10.4-beta5.zip](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.10.4/builder-win64-0.10.4-beta5.zip) Builder Executable (in Windows ZIP format)
+- [builder-win64-0.10.4-beta6.zip](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.10.4/builder-win64-0.10.4-beta6.zip) Builder Executable (in Windows ZIP format)
 - [builder-linux64-0.10.4-beta5.tar.gz](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.10.4/builder-linux64-0.10.4-beta5.tar.gz) Builder Executable (in LINUX tar gzip format)
 
 ### Brief Overview
