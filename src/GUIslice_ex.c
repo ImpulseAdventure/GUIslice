@@ -326,11 +326,11 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   int16_t nMin  = pGauge->nMin;
   int16_t nRng  = pGauge->nMax - pGauge->nMin;
 
-  uint16_t nScl;
-  int16_t nGaugeMid;
-  int16_t nLen;
-  int16_t nTmp;
-  int32_t nTmpL;
+  uint32_t nScl = 1;
+  int16_t nGaugeMid = 0;
+  int16_t nLen = 0;
+  int16_t nTmp = 0;
+  int32_t nTmpL = 0;
 
   if (nRng == 0) {
     GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
@@ -395,7 +395,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   nGaugeX0 = (nGaugeX0 < nElemX0)? nElemX0 : nGaugeX0;
   nGaugeY0 = (nGaugeY0 < nElemY0)? nElemY0 : nGaugeY0;
   nGaugeX1 = (nGaugeX1 > nElemX1)? nElemX1 : nGaugeX1;
-  nGaugeX1 = (nGaugeX1 > nElemX1)? nElemX1 : nGaugeX1;
+  nGaugeY1 = (nGaugeY1 > nElemY1)? nElemY1 : nGaugeY1;
 
   // Support flipping of gauge directionality
   // - The bFlip flag reverses the fill direction
