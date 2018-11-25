@@ -870,7 +870,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 }
 
 
-bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
 {
 
   if ((pGui == NULL) || (pGui->pvDriver == NULL)) {
@@ -912,6 +912,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnP
   } else {
     *pnPress = 0;
   }
+  *peInputEvent = GSLC_INPUT_TOUCH;
+  *pnInputVal   = 0;
 
   return true;
 }
@@ -953,7 +955,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 }
 
 
-bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
+bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
 
   #if defined(DRV_TOUCH_NONE)
@@ -1169,9 +1171,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     }
 
     // Final assignment
-    *pnX      = nOutputX;
-    *pnY      = nOutputY;
-    *pnPress  = m_nLastRawPress;
+    *pnX          = nOutputX;
+    *pnY          = nOutputY;
+    *pnPress      = m_nLastRawPress;
+    *peInputEvent = GSLC_INPUT_TOUCH;
+    *pnInputVal   = 0;
 
     // Print output for debug
     #ifdef DBG_TOUCH

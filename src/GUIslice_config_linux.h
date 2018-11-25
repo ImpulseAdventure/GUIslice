@@ -71,6 +71,7 @@ extern "C" {
 #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
 #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
 #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
+#define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
 // Error reporting
 // - Set DEBUG_ERR to 1 to enable error reporting via the console

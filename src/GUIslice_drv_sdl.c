@@ -869,7 +869,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev)
 
 
 
-bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n","");
@@ -880,24 +880,34 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   bool        bRet = false;
   SDL_Event   sEvent;
   int32_t     nX,nY;
-  if (SDL_PollEvent(&sEvent)) {
-    // Placeholder content for keypress handler
-    // TODO: Move into separate routine
-    if (sEvent.type == SDL_KEYDOWN) {
-      switch(sEvent.key.keysym.sym) {
-        case SDLK_UP: break;
-        case SDLK_DOWN: break;
-        case SDLK_RIGHT: break;
-        default: break;
-      }
-    } else if (sEvent.type == SDL_KEYUP) {
+  int16_t     nKeyVal;
 
+  *peInputEvent = GSLC_INPUT_NONE;
+
+  if (SDL_PollEvent(&sEvent)) {
+    nKeyVal = (int16_t)(sEvent.key.keysym.sym);
+
+    // Handle Key presses
+    if (sEvent.type == SDL_KEYDOWN) {
+      #if (GSLC_FEATURE_INPUT)
+        *peInputEvent = GSLC_INPUT_KEY_DOWN;
+        *pnInputVal = nKeyVal;
+        bRet = true;
+      #endif
+    } else if (sEvent.type == SDL_KEYUP) {
+      #if (GSLC_FEATURE_INPUT)
+        *peInputEvent = GSLC_INPUT_KEY_UP;
+        *pnInputVal = nKeyVal;
+        bRet = true;
+      #endif
+
+    // Handle Touch / Mouse presses
     } else if (sEvent.type == SDL_MOUSEMOTION) {
       #if defined(DRV_DISP_SDL1)
-      SDL_GetMouseState(&nX,&nY);
+        SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
-      nX = sEvent.button.x;
-      nY = sEvent.button.y;
+        nX = sEvent.button.x;
+        nY = sEvent.button.y;
       #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
@@ -907,28 +917,31 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       // Note that we can't simply leave pnPress as-is since it
       // doesn't retain its state in the caller.
       *pnPress = pGui->nTouchLastPress;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONDOWN) {
       #if defined(DRV_DISP_SDL1)
-      SDL_GetMouseState(&nX,&nY);
+        SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
-      nX = sEvent.button.x;
-      nY = sEvent.button.y;
+        nX = sEvent.button.x;
+        nY = sEvent.button.y;
       #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 1;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
     } else if (sEvent.type == SDL_MOUSEBUTTONUP) {
       #if defined(DRV_DISP_SDL1)
-      SDL_GetMouseState(&nX,&nY);
+        SDL_GetMouseState(&nX,&nY);
       #elif defined(DRV_DISP_SDL2)
-      nX = sEvent.motion.x;
-      nY = sEvent.motion.y;
+        nX = sEvent.motion.x;
+        nY = sEvent.motion.y;
       #endif
       *pnX = (int16_t)nX;
       *pnY = (int16_t)nY;
       (*pnPress) = 0;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
 
 
@@ -944,16 +957,19 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
       // Note that we can't simply leave pnPress as-is since it
       // doesn't retain its state in the caller.
       *pnPress = pGui->nTouchLastPress;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
     } else if (sEvent.type == SDL_FINGERDOWN) {
       *pnX = (int16_t)(sEvent.tfinger.x);
       *pnY = (int16_t)(sEvent.tfinger.y);
       (*pnPress) = 1;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
     } else if (sEvent.type == SDL_FINGERUP) {
       *pnX = (int16_t)(sEvent.tfinger.x);
       *pnY = (int16_t)(sEvent.tfinger.y);
       (*pnPress) = 0;
+      *peInputEvent = GSLC_INPUT_TOUCH;
       bRet = true;
     #endif  // DRV_DISP_SDL2
 
@@ -1370,23 +1386,35 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev)
 }
 
 
-int gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
+bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
   if (pGui == NULL) {
     GSLC_DEBUG_PRINT("ERROR: TDrvGetTouch(%s) called with NULL ptr\n","");
-    return 0;
+    return false;
   }
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   // In case tslib was not loaded, exit now
   if (pDriver->pTsDev == NULL) {
-    return 0;
+    return false;
   }
   struct ts_sample   pSamp;
   int32_t nRet = ts_read(pDriver->pTsDev,&pSamp,1);
-  (*pnX)      = pSamp.x;
-  (*pnY)      = pSamp.y;
-  (*pnPress)  = pSamp.pressure;
-  return nRet;
+  // ts_read returns the number of samples actually fetched
+  // Since we are only requesting at most 1 sample, the return
+  // value should either be 0 (no samples) or 1 (sample success)
+
+  if (nRet >= 0) {
+    // Sample successfully fetched
+    (*pnX)          = pSamp.x;
+    (*pnY)          = pSamp.y;
+    (*pnPress)      = pSamp.pressure;
+    (*peInputEvent) = GSLC_INPUT_TOUCH;
+    (*pnInputVal)   = 0;
+    return true;
+  } else {
+    // No sample returned
+    return false;
+  }
 }
 
 #endif // DRV_TOUCH_TSLIB

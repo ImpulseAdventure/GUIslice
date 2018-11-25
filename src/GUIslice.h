@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.4   (2018/11/04)
+// - Version 0.10.5   (2018/11/24)
 // =======================================================================
 //
 // The MIT License
@@ -255,27 +255,64 @@ typedef enum {
 #define GSLC_COLMONO_BLACK  (gslc_tsColor) {255,255,255}   ///< Black
 #define GSLC_COLMONO_WHITE  (gslc_tsColor) {  0,  0,  0}   ///< White
 
-/// Touch event type for element touch tracking
+
+
+/// Raw input event types: touch, key, GPIOs
 typedef enum {
-  GSLC_TOUCH_NONE       = 0,                                ///< No touch event active
+  GSLC_INPUT_NONE,          ///< No input event
+  GSLC_INPUT_TOUCH,         ///< Touch / mouse event
+  GSLC_INPUT_KEY_DOWN,      ///< Key press down / pin input asserted
+  GSLC_INPUT_KEY_UP,        ///< Key press up (released)
+  GSLC_INPUT_PIN_ASSERT,    ///< GPIO pin input asserted (eg. set to 1 / High)
+  GSLC_INPUT_PIN_DEASSERT,  ///< GPIO pin input deasserted (eg. set to 0 / Low)
+} gslc_teInputRawEvent;
 
-  // Touch state
-  GSLC_TOUCH_DOWN       = (1<<4),                           ///< Touch event (down)
-  GSLC_TOUCH_MOVE       = (1<<5),                           ///< Touch event (move)
-  GSLC_TOUCH_UP         = (1<<6),                           ///< Touch event (up)
 
-  // Touch positioning
-  GSLC_TOUCH_IN         = (1<<0),                           ///< Touch event inside element
-  GSLC_TOUCH_OUT        = (1<<1),                           ///< Touch event outside element
-  GSLC_TOUCH_INOUT_MASK = GSLC_TOUCH_IN | GSLC_TOUCH_OUT,   ///< Mask for in/out state
+/// GUI Action Requested
+/// These actions are usually the result of an InputMap lookup
+typedef enum {
+  GSLC_ACTION_UNDEF,        ///< Invalid action
+  GSLC_ACTION_NONE,         ///< No action to perform
+  GSLC_ACTION_FOCUS_PREV,   ///< Advance focus to the previous GUI element
+  GSLC_ACTION_FOCUS_NEXT,   ///< Advance focus to the next GUI element
+  GSLC_ACTION_SELECT,       ///< Select the currently focused GUI element
+  GSLC_ACTION_SET_REL,      ///< Adjust value (relative) of focused element  
+  GSLC_ACTION_SET_ABS,      ///< Adjust value (absolute) of focused element
+  GSLC_ACTION_DEBUG         ///< Internal debug action
+} gslc_teAction;
 
-  // Combined touch state and positioning
-  GSLC_TOUCH_DOWN_IN    = GSLC_TOUCH_DOWN | GSLC_TOUCH_IN,  ///< Touch down inside element (start tracking)
-  GSLC_TOUCH_MOVE_IN    = GSLC_TOUCH_MOVE | GSLC_TOUCH_IN,  ///< Touch move inside tracked element
-  GSLC_TOUCH_MOVE_OUT   = GSLC_TOUCH_MOVE | GSLC_TOUCH_OUT, ///< Touch move outside tracked element
-  GSLC_TOUCH_UP_IN      = GSLC_TOUCH_UP   | GSLC_TOUCH_IN,  ///< Touch up inside tracked element
-  GSLC_TOUCH_UP_OUT     = GSLC_TOUCH_UP   | GSLC_TOUCH_OUT, ///< Touch up outside tracked element
+
+/// Processed event from input raw events and actions
+typedef enum {
+  GSLC_TOUCH_NONE         = 0,          ///< No touch event active
+
+  // Indexed state (ie. key/GPIO selects specific element vs touch coordinate)
+  GSLC_TOUCH_TYPE_MASK    = (1<<7),     ///< Mask for type: coord/direct mode
+  GSLC_TOUCH_COORD        = (0<<7),     ///< Event based on touch coordinate
+  GSLC_TOUCH_DIRECT       = (1<<7),     ///< Event based on specific element index (keyboard/GPIO action)
+
+  GSLC_TOUCH_SUBTYPE_MASK =                     (15<<0),    ///< Mask for subtype
+
+  // Coordinate-based events
+  GSLC_TOUCH_DOWN         = GSLC_TOUCH_COORD  | ( 1<<0),    ///< Touch event (down)
+  GSLC_TOUCH_DOWN_IN      = GSLC_TOUCH_COORD  | ( 2<<0),    ///< Touch event (down inside tracked element)
+  GSLC_TOUCH_DOWN_OUT     = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
+  GSLC_TOUCH_UP           = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
+  GSLC_TOUCH_UP_IN        = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
+  GSLC_TOUCH_UP_OUT       = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up inside tracked element)
+  GSLC_TOUCH_MOVE         = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
+  GSLC_TOUCH_MOVE_IN      = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
+  GSLC_TOUCH_MOVE_OUT     = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)
+  // Index-based events
+  GSLC_TOUCH_FOCUS_ON     = GSLC_TOUCH_DIRECT | ( 1<<0),    ///< Direct event focus on element
+  GSLC_TOUCH_FOCUS_OFF    = GSLC_TOUCH_DIRECT | ( 2<<0),    ///< Direct event focus away from focused element
+  GSLC_TOUCH_FOCUS_SELECT = GSLC_TOUCH_DIRECT | ( 3<<0),    ///< Direct event select focus element
+  GSLC_TOUCH_SET_REL      = GSLC_TOUCH_DIRECT | ( 4<<0),    ///< Direct event set value (relative) on focus element
+  GSLC_TOUCH_SET_ABS      = GSLC_TOUCH_DIRECT | ( 5<<0),    ///< Direct event set value (absolute) on focus element
+
 } gslc_teTouch;
+
+
 
 
 /// Additional definitions for Touch Handling
@@ -398,7 +435,6 @@ typedef enum {
 } gslc_teTxtFlags;
 
 
-
 // -----------------------------------------------------------------------
 // Forward declarations
 // -----------------------------------------------------------------------
@@ -424,6 +460,8 @@ typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 /// Callback function for element tick
 typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElemRef);
 
+/// Callback function for pin polling
+typedef bool (*GSLC_CB_PIN_POLL)(void* pvGui,int16_t* pnPinInd,int16_t* pnPinVal);
 
 // -----------------------------------------------------------------------
 // Structures
@@ -466,8 +504,8 @@ typedef struct gslc_tsEvent {
 /// Structure used to pass touch data through event
 typedef struct gslc_tsEventTouch {
   gslc_teTouch      eTouch;           ///< Touch state
-  int16_t           nX;               ///< Touch X coordinate (absolute)
-  int16_t           nY;               ///< Touch Y coordinate (absolute)
+  int16_t           nX;               ///< Touch X coordinate (or param1)
+  int16_t           nY;               ///< Touch Y coordinate (or param2)
 } gslc_tsEventTouch;
 
 /// Font reference structure
@@ -576,7 +614,11 @@ typedef struct {
   uint16_t              nElemRefMax;      ///< Maximum number of element references to allocate
   uint16_t              nElemRefCnt;      ///< Number of element references allocated
 
+  // Touch tracking
   gslc_tsElemRef*       pElemRefTracked;  ///< Element reference currently being touch-tracked (NULL for none)
+
+  // Input focus
+  int16_t               nElemIndFocused;  ///< Element index currently in focus (eg. by keyboard/pin control), GSLC_IND_NONE for none
 
   // Callback functions
   GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events
@@ -604,6 +646,20 @@ typedef struct {
   GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events
 
 } gslc_tsPage;
+
+
+/// Input mapping
+/// - Describes mapping from keyboard or GPIO input
+///   to a GUI action (such as changing the current
+///   element focus)
+/// - This is generally used to support keyboard or GPIO
+///   control over the GUI operation
+typedef struct {
+  gslc_teInputRawEvent  eEvent;               ///< The input event
+  int16_t               nVal;                 ///< The value associated with the input event
+  gslc_teAction         eAction;              ///< Resulting action
+  int16_t               nActionVal;           ///< The value for the output action
+} gslc_tsInputMap;
 
 
 /// GUI structure
@@ -661,9 +717,27 @@ typedef struct {
 
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
+  GSLC_CB_PIN_POLL    pfuncPinPoll;     ///< Callback func ptr for pin polling
+
+
+  // Key/pin input control mapping
+  gslc_tsInputMap*    asInputMap;       ///< Array of input maps
+  uint8_t             nInputMapMax;     ///< Maximum number of input maps
+  uint8_t             nInputMapCnt;     ///< Current number of input maps
 
 } gslc_tsGui;
 
+
+// ------------------------------------------------------------------------
+// Input Mapping Functions
+// ------------------------------------------------------------------------
+
+/// NOTE: The following are experimental APIs and are subject to change
+/// TODO doc
+void gslc_SetPinPollFunc(gslc_tsGui* pGui, GSLC_CB_PIN_POLL pfunc);
+void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax);
+void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal);
+bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal);
 
 
 // ------------------------------------------------------------------------
@@ -764,6 +838,7 @@ void gslc_Update(gslc_tsGui* pGui);
 /// \return None
 ///
 gslc_tsEvent gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData);
+
 
 
 
@@ -1389,6 +1464,11 @@ gslc_tsElemRef* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t n
 void gslc_PageRedrawCalc(gslc_tsGui* pGui);
 
 
+/// NOTE: The following are experimental APIs and are subject to change
+/// xxx TODO doc
+int16_t gslc_PageFocusStep(gslc_tsGui* pGui,gslc_tsPage* pPage,bool bNext);
+
+
 // ------------------------------------------------------------------------
 // Element General Functions
 // ------------------------------------------------------------------------
@@ -1987,6 +2067,32 @@ gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* p
 void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef);
 
 
+
+/// Get the element index within a collection that is currently in focus
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Element index or GSLC_IND_NONE for none
+///
+int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
+
+
+/// Set the element index within a collection that is currently in focus
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nElemInd:     Element index to set in focus, GSLC_IND_NONE for none
+///
+/// \return none
+///
+void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
+
+
+// TODO doc
+bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
+
+
 /// Assign the parent element reference to all elements within a collection
 /// - This is generally used in the case of compound elements where updates to
 ///   a sub-element should cause the parent (compound element) to be redrawn
@@ -2040,6 +2146,17 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
 
 
+/// Handle direct input events within the element collection
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+/// \param[in]  pEventTouch:  Ptr to the touch event structure
+///
+/// \return none
+///
+void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
+
+
 // ------------------------------------------------------------------------
 // Tracking Functions
 // ------------------------------------------------------------------------
@@ -2060,7 +2177,19 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 ///
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress);
 
-
+///
+/// Handles a direct input event and performs the necessary
+/// tracking, glowing and selection actions depending
+/// on the state.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pPage:       Pointer to current page
+/// \param[in]  nKey:        Keyboard / External pin input value
+/// xxx TODO doc
+///
+/// \return none
+///
+void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
 
 
 // ------------------------------------------------------------------------
@@ -2087,10 +2216,11 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \param[out] pnX:         Ptr to int to contain latest touch X coordinate
 /// \param[out] pnY:         Ptr to int to contain latest touch Y coordinate
 /// \param[out] pnPress:     Ptr to int to contain latest touch pressure value
+/// xxx TODO doc
 ///
 /// \return true if touch event, false otherwise
 ///
-bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress);
+bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
 #endif // !DRV_TOUCH_NONE
 
@@ -2493,7 +2623,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
       GSLC_TYPE_TXT,                                              \
-	  (gslc_tsRect){nX,nY,nW,nH},                             \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
       GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -2653,7 +2783,7 @@ void gslc_ResetElem(gslc_tsElem* pElem);
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
       GSLC_TYPE_TXT,                                              \
-	  (gslc_tsRect){nX,nY,nW,nH},                             \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
       GSLC_GROUP_ID_NONE,                                         \
       colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \

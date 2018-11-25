@@ -927,13 +927,13 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
     // Check to see if an image has been assigned to the background
     if (pGui->sImgRefBkgnd.eImgFlags == GSLC_IMGREF_NONE) {
-	  // No image assigned, so assume flat color background
+      // No image assigned, so assume flat color background
       // TODO: Create a new eImgFlags enum to signal that the
       //       background should be a flat color instead of
       //       an image.
       uint16_t nColRaw = pDriver->nColRawBkgnd;
       m_disp.fillScreen(nColRaw);
-	} else {
+    } else {
       // An image should be loaded
       // TODO: For now, re-use the DrvDrawImage(). Later, consider
       //       extending to support different background drawing
@@ -956,7 +956,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 }
 
 
-bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
   // TODO
   return false;
@@ -999,7 +999,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 }
 
 
-bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pnPress)
+bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
 
   #if defined(DRV_TOUCH_NONE)
@@ -1177,7 +1177,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     if (p.z > 0) {
       nRawX=p.x;
       nRawY=p.y;
-	  nRawPress=p.z;
+      nRawPress=p.z;
       m_nLastRawX = nRawX;
       m_nLastRawY = nRawY;
       m_nLastRawPress = nRawPress;
@@ -1250,9 +1250,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX, int16_t* pnY, uint16_t* pn
     }
 
     // Final assignment
-    *pnX      = nOutputX;
-    *pnY      = nOutputY;
-    *pnPress  = m_nLastRawPress;
+    *pnX          = nOutputX;
+    *pnY          = nOutputY;
+    *pnPress      = m_nLastRawPress;
+    *peInputEvent = GSLC_INPUT_TOUCH;
+    *pnInputVal   = 0;
 
     // Print output for debug
     #ifdef DBG_TOUCH

@@ -109,7 +109,7 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
   //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
 
-    // For Adafruit-GFX drivers, define pin connections
+  // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
@@ -357,18 +357,22 @@ extern "C" {
 // -----------------------------------------------------------------------------
 
 
-  // Specify the default rotation/orientation of the touch device, which must
-  // be in the range 0,1,2,3. It may be necessary to enable DBG_TOUCH to
-  // determine the correct value for your device, along with example ex17.
-  // Rotation value is defined in a clockwise direction.
+  // Default rotation of the touch, you can specify values 0,1,2,3, rotation is clockwise
+  // it is useful to specify the GLSC_TOUCH_ROTATE_OFFSET as an offset to the GLSC_ROTATE,
+  // thus changing GLSC_ROTATE automatically adopts the GLSC_TOUCH_ROTATE
   #define GSLC_TOUCH_ROTATE 1
-
-
+  
+  // TODO: maybe those macros should be moved to one include file which is included by all drivers
+  #define TOUCH_ROTATION_DATA 0x6350
+  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
+  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
+  
   // - Set any of the following to 1 to perform touch display
   //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
   //   remapping modes should be enabled for your display
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied,
+  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied, 
   //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
   #define ADATOUCH_SWAP_XY  0
   #define ADATOUCH_FLIP_X   0
@@ -408,6 +412,7 @@ extern "C" {
   #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
   #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
+  #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
 
   // Enable support for SD card

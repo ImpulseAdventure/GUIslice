@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.4   (2018/11/04)
+// - Version 0.10.5   (2018/11/24)
 // =======================================================================
 //
 // The MIT License
@@ -58,7 +58,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.10.2"
+#define GUISLICE_VER "0.10.5"
 
 
 // ========================================================================
@@ -91,6 +91,8 @@ char* gslc_GetVer(gslc_tsGui* pGui)
   return (char*)GUISLICE_VER;
 }
 
+
+
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
 {
   unsigned  nInd;
@@ -102,10 +104,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nDispDepth      = 0;
 
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
-    pGui->nRotation		= GSLC_ROTATE;
-    pGui->nSwapXY		= ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE);
-    pGui->nFlipX		= ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE);
-    pGui->nFlipY		= ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE);
+    pGui->nRotation     = GSLC_ROTATE;
+    pGui->nSwapXY       = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE);
+    pGui->nFlipX        = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE);
+    pGui->nFlipY        = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE);
   #endif
 
   pGui->nPageMax        = nMaxPage;
@@ -134,7 +136,13 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nTouchLastY           = 0;
   pGui->nTouchLastPress       = 0;
 
-  pGui->pfuncXEvent = NULL;
+  pGui->pfuncXEvent           = NULL;
+  pGui->pfuncPinPoll          = NULL;
+
+  pGui->asInputMap            = NULL;
+  pGui->nInputMapMax          = 0;
+  pGui->nInputMapCnt          = 0;
+
 
   pGui->sImgRefBkgnd = gslc_ResetImage();
 
@@ -159,6 +167,67 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
   return bOk;
+}
+
+void gslc_SetPinPollFunc(gslc_tsGui* pGui,GSLC_CB_PIN_POLL pfunc)
+{
+  pGui->pfuncPinPoll = pfunc;
+}
+
+
+void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return;
+#else
+  pGui->asInputMap    = asInputMap;
+  pGui->nInputMapMax  = nInputMapMax;
+  pGui->nInputMapCnt  = 0;
+#endif
+}
+
+void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return;
+#else
+  if (pGui->nInputMapCnt >= pGui->nInputMapMax) {
+    GSLC_DEBUG_PRINT("ERROR: InputMapAdd() too many mappings. Max=%u\n",pGui->nInputMapMax);
+    return;
+  }
+  gslc_tsInputMap sInputMap;
+  sInputMap.eEvent      = eInputEvent;
+  sInputMap.nVal        = nInputVal;
+  sInputMap.eAction     = eAction;
+  sInputMap.nActionVal  = nActionVal;
+  pGui->asInputMap[pGui->nInputMapCnt] = sInputMap;
+  pGui->nInputMapCnt++;
+#endif
+}
+
+bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return false;
+#else
+  uint8_t         nInputInd;
+  uint8_t         nInputMax = pGui->nInputMapCnt;
+  bool            bFound = false;
+  gslc_tsInputMap sMapEntry;
+  // Assign defaults
+  *peAction     = GSLC_ACTION_UNDEF;
+  *pnActionVal  = 0;
+  // Search
+  for (nInputInd=0;((nInputInd<nInputMax)&&(!bFound));nInputInd++) {
+    sMapEntry = pGui->asInputMap[nInputInd];
+    if ((sMapEntry.eEvent == eInputEvent) && (sMapEntry.nVal == nInputVal)) {
+      bFound = true;
+      *peAction = pGui->asInputMap[nInputInd].eAction;
+      *pnActionVal = sMapEntry.nActionVal;
+    }
+  }
+  return bFound;
+#endif
 }
 
 
@@ -371,6 +440,7 @@ void gslc_Quit(gslc_tsGui* pGui)
   gslc_GuiDestruct(pGui);
 }
 
+
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
@@ -384,10 +454,12 @@ void gslc_Update(gslc_tsGui* pGui)
   // Touch handling
   // ---------------------------------------------
 
-  int16_t   nTouchX = 0;
-  int16_t   nTouchY = 0;
-  uint16_t  nTouchPress = 0;
-  bool      bTouchEvent = true;
+  int16_t               nTouchX = 0;
+  int16_t               nTouchY = 0;
+  uint16_t              nTouchPress = 0;
+  bool                  bEvent = true;      // xxx FIXME: Should this be false?
+  gslc_teInputRawEvent  eInputEvent = GSLC_INPUT_NONE;
+  int16_t               nInputVal = 0;
 
   // Handle touchscreen presses
   // - We clear the event queue here so that we don't fall behind
@@ -409,23 +481,77 @@ void gslc_Update(gslc_tsGui* pGui)
   bool      bDoneEvts = false;
   uint16_t  nNumEvts  = 0;
   do {
-    bTouchEvent = gslc_GetTouch(pGui,&nTouchX,&nTouchY,&nTouchPress);
-    if (bTouchEvent) {
-      // Track and handle the touch events
-      // - Handle the events on the current page
-      gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
+    bEvent = false;
 
-      #ifdef DBG_TOUCH
-      // Highlight current touch for coordinate debug
-      gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
-      gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
-      #endif
+    // --------------------------------------------------------------
+    // First check physical pin inputs
+    // --------------------------------------------------------------
+    int16_t  nPinNum = -1;
+    int16_t  nPinState = 0;
+    GSLC_CB_PIN_POLL  pfuncPinPoll = pGui->pfuncPinPoll;
+
+    if (pfuncPinPoll != NULL) {
+      bEvent = (*pfuncPinPoll)(pGui,&nPinNum,&nPinState);
+      if (bEvent) {
+        eInputEvent = GSLC_INPUT_PIN_ASSERT;
+        nInputVal = nPinNum;
+      }
+    } 
+
+    // --------------------------------------------------------------
+    // If no event found yet, check touch / keyboard
+    // --------------------------------------------------------------
+    if (!bEvent) {
+      // Fetch input event, which could include touch / mouse / keyboard / pin
+      bEvent = gslc_GetTouch(pGui, &nTouchX, &nTouchY, &nTouchPress, &eInputEvent, &nInputVal);
+    }
+
+    // --------------------------------------------------------------
+    // If event found, handle it
+    // --------------------------------------------------------------
+    if (bEvent) {
+
+      // Track and handle the input events
+      // - Handle the events on the current page
+      switch (eInputEvent) {
+        case GSLC_INPUT_KEY_DOWN:
+          gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          break;
+        case GSLC_INPUT_KEY_UP:
+          // NOTE: For now, only handling key-down events
+          // TODO: gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          break;
+
+        case GSLC_INPUT_PIN_ASSERT:
+          gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          break;
+        case GSLC_INPUT_PIN_DEASSERT:
+          // TODO: gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          break;
+
+        case GSLC_INPUT_TOUCH:
+          // Track and handle the touch events
+          // - Handle the events on the current page
+          gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
+
+          #ifdef DBG_TOUCH
+          // Highlight current touch for coordinate debug
+          gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
+          gslc_DrawFrameRect(pGui,rMark,GSLC_COL_YELLOW);
+          #endif
+          break;
+
+        case GSLC_INPUT_NONE:
+        default:
+          break;
+
+      }
 
       nNumEvts++;
     }
 
     // Should we stop handling events?
-    if ((!bTouchEvent) || (nNumEvts >= GSLC_TOUCH_MAX_EVT)) {
+    if ((!bEvent) || (nNumEvts >= GSLC_TOUCH_MAX_EVT)) {
       bDoneEvts = true;
     }
   } while (!bDoneEvts);
@@ -1691,6 +1817,33 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
   pPage->pfuncXEvent       = funcCb;
 }
 
+
+int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return GSLC_IND_NONE;
+#else
+  bool              bWrapped = false;
+  bool              bFound = false;
+  int16_t           nInd = GSLC_IND_NONE;
+  gslc_tsCollect* pCollect = &pPage->sCollect;
+
+  bFound = gslc_CollectFindFocusStep(pGui, pCollect, bNext, &bWrapped, &nInd);
+  if (!bFound) {
+    nInd = GSLC_IND_NONE;
+  } else {
+    if (bWrapped) {
+      // Optionally pause here
+      // If we wrap, then disable current focus for this particular step
+      nInd = GSLC_IND_NONE;
+    }
+  }
+  gslc_CollectSetFocus(pGui,pCollect,nInd);
+  return nInd;
+#endif
+}
+
+
 // ------------------------------------------------------------------------
 // Element General Functions
 // ------------------------------------------------------------------------
@@ -2018,9 +2171,16 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       pTouchRec = (gslc_tsEventTouch*)(pvData);
       pElemRefTracked = pElemRef;
       pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
-      nRelX = pTouchRec->nX - pElemTracked->rElem.x;
-      nRelY = pTouchRec->nY - pElemTracked->rElem.y;
       eTouch = pTouchRec->eTouch;
+      if ((eTouch & GSLC_TOUCH_TYPE_MASK) == GSLC_TOUCH_DIRECT) {
+        // Pass parameters directly (they are not coordinates)
+        nRelX = pTouchRec->nX;
+        nRelY = pTouchRec->nY;
+      } else {
+        // Generate relative coordinates
+        nRelX = pTouchRec->nX - pElemTracked->rElem.x;
+        nRelY = pTouchRec->nY - pElemTracked->rElem.y;
+      }
 
       // Since we are going to use the callback within the element
       // we need to ensure it is cached in RAM first
@@ -2564,7 +2724,7 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
 void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
 {
-  if (pElemRef == NULL) {
+  if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlow";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
@@ -2723,12 +2883,133 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
 // Tracking Functions
 // ------------------------------------------------------------------------
 
+
+void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return;
+#else
+  // Fetch the data members of the touch event
+  gslc_teTouch      eTouch    = pEventTouch->eTouch;
+  int16_t           nInputInd = pEventTouch->nX;      // nX overloaded as element index
+  int16_t           nInputVal = pEventTouch->nY;      // nY overloaded as action value
+  gslc_tsElemRef*   pElemIndRef;
+
+  if ((nInputInd >= 0) && (nInputInd < pCollect->nElemRefMax)) {
+    pElemIndRef = &(pCollect->asElemRef[nInputInd]);
+  } else {
+    pElemIndRef = NULL;
+  }
+
+  gslc_tsElemRef*   pTrackedRefOld = NULL;
+  gslc_tsElemRef*   pTrackedRefNew = NULL;
+
+  // Pass zero to callbacks since no actual position
+  int16_t           nX = 0;
+  int16_t           nY = 0;
+
+  // Fetch the item currently being tracked (if any)
+  pTrackedRefOld = gslc_CollectGetElemRefTracked(pGui,pCollect);
+
+  // Reset the in-tracked flag
+  bool  bInTracked = false;
+
+  // For direct input events, eTouch will already be fully defined with DOWN/UP + IN/OUT
+  if (eTouch == GSLC_TOUCH_FOCUS_ON) {
+    // ---------------------------------
+    // Touch Down Event
+    // ---------------------------------
+
+    // End glow on previously tracked element (if any)
+    // - We shouldn't really enter a "Touch Down" event
+    //   with an element still marked as being tracked
+    if (pTrackedRefOld != NULL) {
+      gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
+    }
+
+    // Determine the new element to start tracking
+    pTrackedRefNew = pElemIndRef;
+
+    if (pTrackedRefNew == NULL) {
+      // Didn't find an element, so clear the tracking reference
+
+      gslc_CollectSetElemTracked(pGui,pCollect,NULL);
+    } else {
+      // Found an element, so mark it as being the tracked element
+
+      // Set the new tracked element reference
+      gslc_CollectSetElemTracked(pGui,pCollect,pTrackedRefNew);
+      if (pTrackedRefNew->pElem == NULL) {
+        return;
+      }
+
+      // Start glow on new element
+      gslc_ElemSetGlow(pGui,pTrackedRefNew,true);
+
+      // Notify element for optional custom handling
+      // - We do this after we have determined which element should
+      //   receive the touch tracking
+      eTouch = GSLC_TOUCH_DOWN_IN;
+      //gslc_ElemSendEventTouch(pGui,pTrackedRefNew,eTouch,nX,nY);
+
+    }
+
+  } else if ((eTouch == GSLC_TOUCH_FOCUS_OFF) || (eTouch == GSLC_TOUCH_FOCUS_SELECT)) {
+    // ---------------------------------
+    // Touch Up Event
+    // ---------------------------------
+
+    if (pTrackedRefOld != NULL) {
+      // Are we still over tracked element?
+      if (eTouch == GSLC_TOUCH_FOCUS_OFF) {
+        bInTracked = false;
+      } else if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
+        bInTracked = true;
+      }
+
+      if (!bInTracked) {
+        // Released not over tracked element
+        eTouch = GSLC_TOUCH_UP_OUT;
+        //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+      } else {
+        // Notify original tracked element for optional custom handling
+        eTouch = GSLC_TOUCH_UP_IN;
+        // FIXME: Do we really want to change the eTouch type here?
+        // Perhaps this is the best way to reuse the existing touch handler in the element
+        nX = 0; // Arbitrary
+        nY = 0; // Arbitrary
+        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+      }
+
+      // Clear glow state
+      if (pTrackedRefOld->pElem == NULL) {
+        return;
+      }
+      gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
+
+    }
+
+    // Clear the element tracking state
+    gslc_CollectSetElemTracked(pGui,pCollect,NULL);
+
+  } else if ((eTouch == GSLC_TOUCH_SET_REL) || (eTouch == GSLC_TOUCH_SET_ABS)) {
+    // ---------------------------------
+    // Element Value Adjust Event
+    // ---------------------------------
+    nX = 0; // Unused
+    nY = nInputVal; // Relative or Absolute value
+    gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+  }
+#endif // GSLC_FEATURE_INPUT
+}
+
+
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
   // Fetch the data members of the touch event
-  int16_t       nX      = pEventTouch->nX;
-  int16_t       nY      = pEventTouch->nY;
-  gslc_teTouch  eTouch  = pEventTouch->eTouch;
+  int16_t       nX        = pEventTouch->nX;
+  int16_t       nY        = pEventTouch->nY;
+  gslc_teTouch  eTouch    = pEventTouch->eTouch;
 
   gslc_tsElemRef*   pTrackedRefOld = NULL;
   gslc_tsElemRef*   pTrackedRefNew = NULL;
@@ -2837,6 +3118,116 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
 }
 
+void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
+{
+#if !(GSLC_FEATURE_INPUT)
+  GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in `GUIslice_config_*.h`%s\n", "");
+  return;
+#else
+  if ((pGui == NULL) || (pPage == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "TrackInput";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+
+  gslc_tsEventTouch sEventTouch;
+  void*             pvData = (void*)(&sEventTouch);
+  gslc_tsEvent      sEvent;
+  int16_t           nFocusInd = GSLC_IND_NONE;
+  gslc_tsCollect*   pCollect = NULL;
+
+  gslc_teAction     eAction = GSLC_ACTION_NONE;
+  int16_t           nActionVal;
+
+
+  gslc_InputMapLookup(pGui,eInputEvent,nInputVal,&eAction,&nActionVal);
+  switch(eAction) {
+    case GSLC_ACTION_FOCUS_PREV:
+    case GSLC_ACTION_FOCUS_NEXT:
+
+      // Unfocus old element
+      sEventTouch.eTouch = GSLC_TOUCH_FOCUS_OFF;
+      sEventTouch.nX = GSLC_IND_NONE;
+      sEventTouch.nY = 0; // Unused
+
+      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+      gslc_PageEvent(pGui,sEvent);
+
+      // Focus on new element
+      bool bStepNext = (eAction == GSLC_ACTION_FOCUS_NEXT);
+      nFocusInd = gslc_PageFocusStep(pGui,pPage,bStepNext);
+      if (nFocusInd == GSLC_IND_NONE) {
+        break;
+      }
+      sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
+      sEventTouch.nX = nFocusInd;
+      sEventTouch.nY = 0; // Unused
+
+      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+      gslc_PageEvent(pGui,sEvent);
+
+      break;
+
+    case GSLC_ACTION_SELECT:
+
+      pCollect = &pPage->sCollect;
+      nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
+
+      // Ensure an element is in focus!
+      if (nFocusInd == GSLC_IND_NONE) {
+        break;
+      } else {
+        // Select currently focused element
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
+        sEventTouch.nX = nFocusInd;
+        sEventTouch.nY = 0; // Unused
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
+
+        // Reapply focus to current element
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
+      }
+
+      break;
+
+    case GSLC_ACTION_SET_REL:
+    case GSLC_ACTION_SET_ABS:
+
+      pCollect = &pPage->sCollect;
+      nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
+
+      // Ensure an element is in focus!
+      if (nFocusInd == GSLC_IND_NONE) {
+        break;
+      } else {
+        // Change current element
+        if (eAction == GSLC_ACTION_SET_REL) {
+          sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
+          sEventTouch.nX = 0; // Unused
+          sEventTouch.nY = nActionVal;
+        } else {
+          sEventTouch.eTouch = GSLC_TOUCH_SET_ABS;
+          sEventTouch.nX = 0; // Unused
+          sEventTouch.nY = nActionVal;
+        }
+
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
+      }
+      break;
+
+    case GSLC_ACTION_UNDEF:
+      // ERROR: unknown action
+      break;
+
+    default:
+      // No action mapped
+      break;
+  }
+#endif // GSLC_FEATURE_INPUT
+}
 
 // This routine is responsible for the GUI-level touch event state machine
 // and dispatching to the touch event handler for the page
@@ -2948,7 +3339,7 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
 }
 
 
-bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
+bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "GetTouch";
@@ -2956,15 +3347,18 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress)
     return false;
   }
 
+  *peInputEvent = GSLC_INPUT_NONE;
+  *pnInputVal   = 0;
+
 #if defined(DRV_TOUCH_NONE)
   // Touch handling disabled
   return false;
 #elif defined(DRV_TOUCH_IN_DISP)
   // Use display driver for touch events
-  return gslc_DrvGetTouch(pGui,pnX,pnY,pnPress);
+  return gslc_DrvGetTouch(pGui,pnX,pnY,pnPress,peInputEvent,pnInputVal);
 #else
   // Use external touch driver for touch events
-  return gslc_TDrvGetTouch(pGui,pnX,pnY,pnPress);
+  return gslc_TDrvGetTouch(pGui,pnX,pnY,pnPress,peInputEvent,pnInputVal);
 #endif
 
   return false;
@@ -3111,6 +3505,7 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
   // Handle any collection-based events first
   // ...
   if (sEvent.eType == GSLC_EVT_TOUCH) {
+
     #if defined(DRV_TOUCH_NONE)
     return false;
     #else
@@ -3118,8 +3513,16 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
     void*           pvData    = sEvent.pvData;
     // TOUCH is passed to CollectTouch which determines the element
     // in the collection that should receive the event
-    gslc_tsEventTouch* pEventTouch = (gslc_tsEventTouch*)(pvData);
-    gslc_CollectTouch(pGui,pCollect,pEventTouch);
+    gslc_tsEventTouch*  pEventTouch = (gslc_tsEventTouch*)(pvData);
+    gslc_teTouch        eTouch      = pEventTouch->eTouch;
+
+    if ((eTouch & GSLC_TOUCH_TYPE_MASK) == GSLC_TOUCH_COORD) {
+      gslc_CollectTouch(pGui,pCollect,pEventTouch);
+    } else if ((eTouch & GSLC_TOUCH_TYPE_MASK) == GSLC_TOUCH_DIRECT) {
+      gslc_CollectInput(pGui,pCollect,pEventTouch);
+    } else {
+      // FAIL
+    }
     return true;
     #endif  // !DRV_TOUCH_NONE
 
@@ -3562,7 +3965,83 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
   for (nInd=0;nInd<nElemMax;nInd++) {
     (pCollect->asElemRef[nInd]).pElem = NULL;
   }
+
+  // Reset touch / input tracking
+  pCollect->pElemRefTracked = NULL;
+  pCollect->nElemIndFocused = GSLC_IND_NONE;
 }
+
+
+bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return false;
+#else
+  gslc_tsElemRef*   pElemRef = NULL;
+  int16_t           nIndStart;
+  bool              bFound = false;
+  unsigned          nElemIndCnt = pCollect->nElemRefCnt;
+  int16_t           nIndStep;
+  int16_t           nInd;
+  int16_t           nIndFocus = GSLC_IND_NONE;
+  bool              bCanFocus;
+
+  *pbWrapped = false;
+  *pnElemInd = GSLC_IND_NONE;
+
+  nIndFocus = gslc_CollectGetFocus(pGui, pCollect);
+  if (nIndFocus == GSLC_IND_NONE) {
+    nIndStart = (bNext) ? 0 : (nElemIndCnt - 1);
+  } else {
+    nIndStart = (bNext) ? (nIndFocus + 1) : (nIndFocus - 1);
+  }
+
+  for (nIndStep=0;((!bFound)&&(nIndStep<nElemIndCnt));nIndStep++) {
+    if (bNext) {
+      nInd = nIndStep + nIndStart;
+      // Detect wrap
+      if (nInd >= nElemIndCnt) {
+        *pbWrapped = true;
+        nInd -= nElemIndCnt;
+      }
+    } else {
+      nInd = nIndStart - nIndStep;
+      // Detect wrap
+      if (nInd < 0) {
+        *pbWrapped = true;
+        nInd += nElemIndCnt;
+      }
+    }
+
+    // Get focus capability attribute
+    bCanFocus = false;
+    pElemRef = &(pCollect->asElemRef[nInd]);
+    if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
+      if (pElemRef->pElem == NULL) {
+        GSLC_DEBUG_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
+        exit(1); // FATAL
+      } else {
+        // Check the "click enable" flag
+        if (pElemRef->pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) {
+          bCanFocus = true;
+        }
+      }
+    }
+
+
+    if (bCanFocus) {
+      bFound = true;
+    }
+  }
+
+  if (bFound) {
+    *pnElemInd = nInd;
+  }
+
+  return bFound;
+#endif // GSLC_FEATURE_INPUT
+}
+
 
 // Search internal element array for one with a particular ID
 gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemId)
@@ -3635,6 +4114,17 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
   }
    // Return pointer or NULL if none found
   return pFoundElemRef;
+}
+
+
+int16_t gslc_CollectGetFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
+{
+  return pCollect->nElemIndFocused;
+}
+
+void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd)
+{
+  pCollect->nElemIndFocused = nElemInd;
 }
 
 

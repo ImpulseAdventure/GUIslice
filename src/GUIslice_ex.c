@@ -1403,8 +1403,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 
   bool    bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
   int16_t nPosRng;
-  int16_t nPos;
+  int16_t nPos = 0;
   bool    bUpdatePos = false;
+  bool    bIndexed = false;
 
   switch(eTouch) {
 
@@ -1432,25 +1433,55 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       gslc_ElemSetGlow(pGui,pElemRef,false);
       break;
 
+    case GSLC_TOUCH_SET_REL:
+    case GSLC_TOUCH_SET_ABS:
+      bIndexed = true;
+      gslc_ElemSetGlow(pGui,pElemRef,true);
+      bUpdatePos = true;
+      break;
+
     default:
       return false;
       break;
   }
 
-  // Perform additional range checking
-  nRelX = (nRelX < 0)? 0 : nRelX;
-  nRelY = (nRelY < 0)? 0 : nRelY;
-
 
   // If we need to update the slider position, calculate the value
   // and perform the update
   if (bUpdatePos) {
-    // Calc new position
-    nPosRng = pSlider->nPosMax - pSlider->nPosMin;
-    if (!pSlider->bVert) {
-      nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+
+    if (bIndexed) {
+      // The position is changed by direct control (eg. keyboard)
+      // instead of touch coordinates
+
+      // FIXME: Change the following to be either absolute or relative
+      // value assignment instead of inc/dec. Then the user code can
+      // define what the magnitude and direction should be.
+
+      if (eTouch == GSLC_TOUCH_SET_REL) {
+        // Overload the "nRelY" parameter
+        nPos = pSlider->nPos;
+        nPos += nRelY;
+        nPos = (nPos > pSlider->nPosMax)? pSlider->nPosMax : nPos;
+        nPos = (nPos < pSlider->nPosMin)? pSlider->nPosMin : nPos;
+      } else if (eTouch == GSLC_TOUCH_SET_ABS) {
+        // Overload the "nRelY" parameter
+        nPos = nRelY;
+        nPos = (nPos > pSlider->nPosMax)? pSlider->nPosMax : nPos;
+        nPos = (nPos < pSlider->nPosMin)? pSlider->nPosMin : nPos;
+      }
     } else {
-      nPos = (nRelY * nPosRng / pElem->rElem.h) + pSlider->nPosMin;
+      // Perform additional range checking
+      nRelX = (nRelX < 0)? 0 : nRelX;
+      nRelY = (nRelY < 0)? 0 : nRelY;
+
+      // Calc new position
+      nPosRng = pSlider->nPosMax - pSlider->nPosMin;
+      if (!pSlider->bVert) {
+        nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+      } else {
+        nPos = (nRelY * nPosRng / pElem->rElem.h) + pSlider->nPosMin;
+      }
     }
     // Update the slider
     gslc_ElemXSliderSetPos(pGui,pElemRef,nPos);
@@ -1820,7 +1851,25 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   // rather than the compound element. gslc_CollectTouch()
   // is responsible for determining in/out status at the
   // next level down in the element hierarchy.
-  eTouch &= ~GSLC_TOUCH_INOUT_MASK;
+  switch (eTouch) {
+    case GSLC_TOUCH_DOWN_IN:
+    case GSLC_TOUCH_DOWN_OUT:
+      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+      eTouch |=  GSLC_TOUCH_DOWN;
+      break;
+    case GSLC_TOUCH_UP_IN:
+    case GSLC_TOUCH_UP_OUT:
+      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+      eTouch |=  GSLC_TOUCH_UP;
+      break;
+    case GSLC_TOUCH_MOVE_IN:
+    case GSLC_TOUCH_MOVE_OUT:
+      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+      eTouch |=  GSLC_TOUCH_MOVE;
+      break;
+    default:
+      break;
+  }
 
   // Cascade the touch event to the sub-element collection
   // - Note that we use absolute coordinates
