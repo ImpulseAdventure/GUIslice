@@ -6,7 +6,7 @@ env:
 addons:
   apt:
     packages:
-	  - doxygen
+      - doxygen
 before_install:
   - # Compiling via Arduino IDE per: https://stackoverflow.com/questions/28510001/how-to-set-up-travis-to-build-arduino-spark-teensy-library
   - ARD_VER="1.8.5"
