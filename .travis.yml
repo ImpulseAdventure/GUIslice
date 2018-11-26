@@ -30,7 +30,7 @@ install:
 script:
   - arduino --verify --board arduino:avr:uno $PWD/arduino_min/gslc_ex07_ard_min/gslc_ex07_ard_min.ino
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/arduino/gslc_ex07_ard/gslc_ex07_ard.ino
-  - doxygen Doxyfile
+  - doxygen doxygen.conf
 deploy:
   provider: pages
   skip_cleanup: true
