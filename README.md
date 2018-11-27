@@ -27,6 +27,7 @@
 - *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
+- GPIO / pin / keyboard control for non-touchscreen devices
 - No GUIslice installation -- just add include files and go!
 - *LINUX Dependencies*: sdl, sdl-ttf, optional: tslib
 - *Arduino Dependencies*: TFT_eSPI or Adafruit-GFX plus display / touch driver libraries
