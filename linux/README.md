@@ -16,15 +16,15 @@ For the purposes of diagnostics, a simple test of the basic SDL graphics driver 
 **SDL1.2**:
 ~~~
 # Demonstration using SDL1.2
-make test-sdl1
-sudo ./test-sdl1
+make test_sdl1
+sudo ./test_sdl1
 ~~~
 
 **SDL2**:
 ~~~
 # Demonstration using SDL2
-make test-sdl1
-sudo ./test-sdl1
+make test_sdl2
+sudo ./test_sdl2
 ~~~
 
 ### Compiling ###
@@ -33,8 +33,8 @@ the command-line. It is assumed that SDL and the optional touch library has been
 Detailed installation notes available at:
 
 ~~~
-make gslc-ex07
-sudo ./gslc-ex07
+make ex07_lnx_slider
+sudo ./ex07_lnx_slider
 ~~~
 
 # Example of compiling without tslib
@@ -42,13 +42,13 @@ The following example assumes that `GUIslice_config_linux.h` has not enabled
 tslib, ie. `#define DRV_TOUCH_NONE` (or `#define DRV_TOUCH_SDL`). In that case
 we should disable the compiler from attempting to link in the tslib library:
 ~~~
-make gslc-ex04 GSLC_TOUCH=NONE
+make ex04_lnx_ctrls GSLC_TOUCH=NONE
 ~~~
 
 # Example of compiling with SDL2
 By default, the makefile assumes SDL1 mode, but SDL2 can be configured as follows
 ~~~
-make gslc-ex02 GSLC_DRV=SDL2
+make ex02_lnx_btn_txt GSLC_DRV=SDL2
 ~~~
 
 # Example of combined parameters

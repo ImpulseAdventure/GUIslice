@@ -3,8 +3,8 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 21 (LINUX): Dynamic content with GPIO control
-//   - Same as Example 04, except adds GPIO pin input control
+// - Example 22 (LINUX): Dynamic content with keyboard control
+//   - Same as Example 04, except adds keyboard input control
 //     IMPORTANT NOTE: This example must be run with SDL Touch mode
 //                     by setting DRV_TOUCH_SDL in GUIslice_config_linux.h
 //   - Demonstrates push buttons, checkboxes and slider controls

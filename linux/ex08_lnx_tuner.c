@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 08: Radio station tuner
+// - Example 08: Radio station tuner mockup
 //
 
 #include "GUIslice.h"

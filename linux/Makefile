@@ -37,8 +37,8 @@
 #
 # NOTES:
 # - Note that multiple parameters may be passed, for example:
-#     make gslc-ex04
-#     make gslc-ex06 GSLC_TOUCH=TSLIB GSLC_DRV=SDL2
+#     make ex04_lnx_ctrls
+#     make ex06_lnx_callback GSLC_TOUCH=TSLIB GSLC_DRV=SDL2
 #     make all GSLC_TOUCH=TSLIB
 #
 
@@ -97,25 +97,25 @@ endif
 # ---------------------------------------------------------------------------
 
 # Examples that operate in all driver modes
-SRC =   gslc-ex01.c \
-	gslc-ex02.c \
-	gslc-ex03.c \
-	gslc-ex04.c \
-	gslc-ex05.c \
-	gslc-ex06.c \
-	gslc-ex07.c \
-	gslc-ex09.c \
-	gslc-ex10.c \
-	gslc-ex11.c \
-	gslc-ex18.c \
-	gslc-ex21.c
+SRC =   ex01_lnx_basic.c \
+	ex02_lnx_btn_txt.c \
+	ex03_lnx_btn_img.c \
+	ex04_lnx_ctrls.c \
+	ex05_lnx_pages.c \
+	ex06_lnx_callback.c \
+	ex07_lnx_slider.c \
+	ex09_lnx_radial.c \
+	ex10_lnx_textbox.c \
+	ex11_lnx_graph.c \
+	ex18_lnx_compound.c \
+	ex22_lnx_input_key.c
 
 # Add simple example for specific driver modes
 ifeq (SDL1,${GSLC_DRV})
-  SRC += test-sdl1.c
+  SRC += test_sdl1.c
 endif
 ifeq (SDL2,${GSLC_DRV})
-  SRC += test-sdl2.c
+  SRC += test_sdl2.c
 endif
 
 
@@ -130,59 +130,59 @@ clean:
 	$(RM) $(BINS)
 
 
-test-sdl1: test-sdl1.c
+test_sdl1: test_sdl1.c
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ test-sdl1.c $(LDFLAGS) -lSDL
+	@$(CC) $(CFLAGS) -o $@ test_sdl1.c $(LDFLAGS) -lSDL
 
-test-sdl2: test-sdl2.c
+test_sdl2: test_sdl2.c
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ test-sdl2.c $(LDFLAGS) -lSDL2
+	@$(CC) $(CFLAGS) -o $@ test_sdl2.c $(LDFLAGS) -lSDL2
 
-gslc-ex01: gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS)
+ex01_lnx_basic: ex01_lnx_basic.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex01.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex01_lnx_basic.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex02: gslc-ex02.c $(GSLC_CORE) $(GSLC_SRCS)
+ex02_lnx_btn_txt: ex02_lnx_btn_txt.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex02.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex02_lnx_btn_txt.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex03: gslc-ex03.c $(GSLC_CORE) $(GSLC_SRCS)
+ex03_lnx_btn_img: ex03_lnx_btn_img.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex03.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex03_lnx_btn_img.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex04: gslc-ex04.c $(GSLC_CORE) $(GSLC_SRCS)
+ex04_lnx_ctrls: ex04_lnx_ctrls.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex04.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex04_lnx_ctrls.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex05: gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS)
+ex05_lnx_pages: ex05_lnx_pages.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex05.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex05_lnx_pages.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex06: gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS)
+ex06_lnx_callback: ex06_lnx_callback.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex06.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -lm -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex06_lnx_callback.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -lm -I . -I ../src
 
-gslc-ex07: gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS)
+ex07_lnx_slider: ex07_lnx_slider.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex07.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex07_lnx_slider.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex09: gslc-ex09.c $(GSLC_CORE) $(GSLC_SRCS)
+ex09_lnx_radial: ex09_lnx_radial.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex09.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex09_lnx_radial.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex10: gslc-ex10.c $(GSLC_CORE) $(GSLC_SRCS)
+ex10_lnx_textbox: ex10_lnx_textbox.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex10.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex10_lnx_textbox.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex11: gslc-ex11.c $(GSLC_CORE) $(GSLC_SRCS)
+ex11_lnx_graph: ex11_lnx_graph.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex11.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex11_lnx_graph.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex18: gslc-ex18.c $(GSLC_CORE) $(GSLC_SRCS)
+ex18_lnx_compound: ex18_lnx_compound.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex18.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex18_lnx_compound.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
-gslc-ex21: gslc-ex21.c $(GSLC_CORE) $(GSLC_SRCS)
+ex22_lnx_input_key: ex22_lnx_input_key.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
-	@$(CC) $(CFLAGS) -o $@ gslc-ex21.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
+	@$(CC) $(CFLAGS) -o $@ ex22_lnx_input_key.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../src
 
