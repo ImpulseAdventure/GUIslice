@@ -46,47 +46,58 @@
 #if defined(DRV_DISP_ADAGFX)
   #include <Adafruit_GFX.h>
   #include <gfxfont.h>
+
+  // Now configure specific display driver for Adafruit-GFX
+  #if defined(DRV_DISP_ADAGFX_ILI9341)
+    #include <Adafruit_ILI9341.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+    #include <Adafruit_TFTLCD.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_SSD1306)
+    #include <Adafruit_SSD1306.h>
+    // TODO: Select either SPI or I2C. For now, assume SPI
+    #include <SPI.h>
+    #include <Wire.h>
+  #elif defined(DRV_DISP_ADAGFX_ST7735)
+    #include <Adafruit_ST7735.h>
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_HX8357)
+    #include <Adafruit_HX8357.h>
+    // TODO: Select either SPI or I2C. For now, assume SPI
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_PCD8544)
+    #include <Adafruit_PCD8544.h>
+    #include <SPI.h>
+  #else
+    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
+  #endif
+
 #elif defined(DRV_DISP_ADAGFX_AS)
   #include <Adafruit_GFX_AS.h>
+
+  // Now configure specific display driver for Adafruit-GFX-AS
+  #if defined(DRV_DISP_ADAGFX_ILI9341_STM)
+    #include <Adafruit_ILI9341_STM.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
+  #else
+    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
+  #endif
+
 #endif
 
-#if defined(DRV_DISP_ADAGFX_ILI9341)
-  #include <Adafruit_ILI9341.h>
-  #if (GSLC_SD_EN)
-    #include <SD.h>   // Include support for SD card access
-  #endif
-  #include <SPI.h>
-#elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
-  #include <Adafruit_TFTLCD.h>
-  #if (GSLC_SD_EN)
-    #include <SD.h>   // Include support for SD card access
-  #endif
-  #include <SPI.h>
-#elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
-  #include <Adafruit_ILI9341_STM.h>
-  #if (GSLC_SD_EN)
-    #include <SD.h>   // Include support for SD card access
-  #endif
-  #include <SPI.h>
-#elif defined(DRV_DISP_ADAGFX_SSD1306)
-  #include <Adafruit_SSD1306.h>
-  // TODO: Select either SPI or I2C. For now, assume SPI
-  #include <SPI.h>
-  #include <Wire.h>
-#elif defined(DRV_DISP_ADAGFX_ST7735)
-  #include <Adafruit_ST7735.h>
-  #include <SPI.h>
-#elif defined(DRV_DISP_ADAGFX_HX8357)
-  #include <Adafruit_HX8357.h>
-  // TODO: Select either SPI or I2C. For now, assume SPI
-  #if (GSLC_SD_EN)
-    #include <SD.h>   // Include support for SD card access
-  #endif
-  #include <SPI.h>
-#elif defined(DRV_DISP_ADAGFX_PCD8544)
-  #include <Adafruit_PCD8544.h>
-  #include <SPI.h>
-#endif
 
 #if defined(DRV_TOUCH_ADA_STMPE610)
   #include <SPI.h>
@@ -1357,18 +1368,19 @@ uint16_t gslc_DrvAdaptColorToRaw(gslc_tsColor nCol)
 {
   uint16_t nColRaw = 0;
 
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
-    // RGB565
-    nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
-    nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
-    nColRaw |= (((nCol.b & 0xF8) >> 3) <<  0); // Mask: 0000 0000 0001 1111
-
-  #elif defined(DRV_DISP_ADAGFX_SSD1306)
+  #if defined(DRV_DISP_ADAGFX_SSD1306) || defined(DRV_DISP_ADAGFX_PCD8544)
+    // Monochrome
     if ((nCol.r == 0) && (nCol.g == 0) && (nCol.b == 0)) { // GSLC_COL_BLACK
       nColRaw = 0;  // BLACK
     } else {
       nColRaw = 1;  // WHITE
     }
+
+  #else
+    // Default to RGB565
+    nColRaw |= (((nCol.r & 0xF8) >> 3) << 11); // Mask: 1111 1000 0000 0000
+    nColRaw |= (((nCol.g & 0xFC) >> 2) <<  5); // Mask: 0000 0111 1110 0000
+    nColRaw |= (((nCol.b & 0xF8) >> 3) <<  0); // Mask: 0000 0000 0001 1111
 
   #endif // DRV_DISP_ADAGFX_*
 
