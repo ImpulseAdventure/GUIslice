@@ -18,9 +18,9 @@
   "platforms": "atmelavr, atmelsam, espressif8266, espressif32, ststm32",
   "license": "MIT",
   "examples": [
-    "arduino/ex*_ard_*/ex*_ard_*.ino",
-    "arduino_min/ex*_ardmin_*/ex*_ardmin_*.ino",
-    "linux/ex*_lnx_*.c"
+    "examples/arduino/ex*_ard_*/ex*_ard_*.ino",
+    "examples/arduino_min/ex*_ardmin_*/ex*_ardmin_*.ino",
+    "examples/linux/ex*_lnx_*.c"
   ]
 }
 

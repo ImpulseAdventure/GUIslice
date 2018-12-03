@@ -69,7 +69,7 @@ Most of the example files require the use of a font resource. By default, the ex
 Note that earlier versions of GUIslice defaulted to the **droid** font, but this has changed since recent linux distributions no longer include **droid**.
 
 ### Resource Files ###
-Some examples (eg. `glsc-ex03`) are intended to demonstrate image loading from SD cards.
+Some examples (eg. `ex03_lnx_btn_img`) are intended to demonstrate image loading from SD cards.
 In order to support these functions, one needs to ensure:
 - Resource files from the `/res` folder are copied into the root of the SD card
 - SD card support is enabled in `GUIslice_config_linux.h` (via `#define GSLC_SD_EN 1`)

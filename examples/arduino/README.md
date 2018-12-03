@@ -16,7 +16,7 @@ Sample code in these examples are intended for the following device platforms:
 
 **[*Note #1*]**: The base Arduino device is extremely limited in memory. As a result,
 a number of the examples may not run properly. Instead, it is highly recommended
-to run the minimal-RAM examples (see the `/arduino_min` folder) instead.
+to run the minimal-RAM examples (see the `\examples\arduino_min` folder) instead.
 
 ### Resource Files ###
 Some sketches (eg. `ex03_ard_btn_img`) are intended to demonstrate image loading from SD cards.

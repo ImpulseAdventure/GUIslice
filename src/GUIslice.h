@@ -564,7 +564,7 @@ typedef struct gslc_tsElem {
   /// redraw as well. Primary usage is in compound
   /// elements.
   /// NOTE: Although this field is only used in GLSC_COMPOUND mode, it
-  ///       is not wrapped in an #ifdef because the ElemCreate*_P()
+  ///       is not wrapped in an ifdef because the ElemCreate*_P()
   ///       function macros currently initialize this field.
   gslc_tsElemRef*     pElemRefParent;
   // endif
