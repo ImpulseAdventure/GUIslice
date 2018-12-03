@@ -10,7 +10,7 @@
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
 
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
-- [GUIslice API documentation (PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
+- [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
 - [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - **Support email**: guislice @ impulseadventure . com
