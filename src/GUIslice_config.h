@@ -31,6 +31,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+// \file GUIslice_config.h
 
 
 #ifdef __cplusplus

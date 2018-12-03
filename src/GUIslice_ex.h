@@ -34,6 +34,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+/// \file GUIslice_ex.h
 
 
 // Extended element definitions

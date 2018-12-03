@@ -28,6 +28,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+// \file GUIslice_drv_sdl.c
 
 // Compiler guard for requested driver
 #include "GUIslice_config.h" // Sets DRV_DISP_*

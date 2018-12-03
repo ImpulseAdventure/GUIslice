@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.5   (2018/11/24)
+// - Version 0.10.5   (2018/12/02)
 // =======================================================================
 //
 // The MIT License
@@ -33,7 +33,6 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-
 /// \file GUIslice.h
 
 
@@ -728,20 +727,12 @@ typedef struct {
 } gslc_tsGui;
 
 
-// ------------------------------------------------------------------------
-// Input Mapping Functions
-// ------------------------------------------------------------------------
-
-/// NOTE: The following are experimental APIs and are subject to change
-/// TODO doc
-void gslc_SetPinPollFunc(gslc_tsGui* pGui, GSLC_CB_PIN_POLL pfunc);
-void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax);
-void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal);
-bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal);
 
 
 // ------------------------------------------------------------------------
-// General Functions
+/// \defgroup _GeneralFunc_ General Functions
+/// General functions for configuring the GUI
+/// @{
 // ------------------------------------------------------------------------
 
 ///
@@ -801,6 +792,20 @@ void gslc_DebugPrintf(const char* pFmt, ...);
 
 
 ///
+/// Dynamically change rotation, automatically adapt touchscreen axes swap/flip
+///
+/// The function assumes that the touchscreen settings for swap and flip
+/// in the GUIslice config are valid for the configured GSLC_ROTATE.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if success, false otherwise
+///
+bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation);
+
+
+///
 /// Exit the GUIslice environment
 /// - Calls lower-level destructors to clean up any initialized subsystems
 ///   and deletes any created elements or fonts
@@ -825,26 +830,44 @@ void gslc_Update(gslc_tsGui* pGui);
 
 
 ///
-/// Create an event structure
+/// Configure the background to use a bitmap image
+/// - The background is used when redrawing the entire page
 ///
-/// \param[in]  pGui:       Pointer to GUI
-/// \param[in]  eType:      Event type (draw, touch, tick, etc.)
-/// \param[in]  nSubType:   Refinement of event type (or 0 if unused)
-/// \param[in]  pvScope:    Void ptr to object receiving event so that
-///                         the event handler will have the context
-/// \param[in]  pvData:     Void ptr to additional data associated with
-///                         the event (eg. coordinates for touch events)
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  sImgRef:     Image reference
 ///
-/// \return None
+/// \return true if success, false if fail
 ///
-gslc_tsEvent gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData);
+bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 
+///
+/// Configure the background to use a solid color
+/// - The background is used when redrawing the entire page
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nCol:        RGB Color to use
+///
+/// \return true if success, false if fail
+///
+bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
+///
+/// Set the clipping rectangle for further drawing
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pRect:       Pointer to Rect for clipping (or NULL for entire screen)
+///
+/// \return true if success, false if error
+///
+bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
 
 
 // ------------------------------------------------------------------------
-// Graphics General Functions
+/// @}
+/// \defgroup _GraphicsGenFunc_ Graphics General Functions
+/// Helper functions that support graphics operations
+/// @{
 // ------------------------------------------------------------------------
 
 
@@ -928,13 +951,6 @@ bool gslc_ClipLine(gslc_tsRect* pClipRect,int16_t* pnX0,int16_t* pnY0,int16_t* p
 ///
 bool gslc_ClipRect(gslc_tsRect* pClipRect,gslc_tsRect* pRect);
 
-///
-/// Create a blank image reference structure
-///
-/// \return Image reference struct
-///
-gslc_tsImgRef gslc_ResetImage();
-
 
 ///
 /// Create an image reference to a bitmap file in LINUX filesystem
@@ -978,6 +994,8 @@ gslc_tsImgRef gslc_GetImageFromRam(unsigned char* pImgBuf,gslc_teImgRefFlags eFm
 /// \return Loaded image reference
 ///
 gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFlags eFmt);
+
+
 
 
 ///
@@ -1059,10 +1077,13 @@ gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsC
 ///
 bool gslc_ColorEqual(gslc_tsColor a,gslc_tsColor b);
 
+
 // ------------------------------------------------------------------------
-// Graphics Primitive Functions
-// - These routines cause immediate drawing to occur on the
-//   primary screen
+/// @}
+/// \defgroup _GraphicsPrimFunc_ Graphics Primitive Functions
+/// These routines cause immediate drawing to occur on the
+/// primary screen
+/// @{
 // ------------------------------------------------------------------------
 
 
@@ -1256,7 +1277,10 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 
 
 // -----------------------------------------------------------------------
-// Font Functions
+/// @}
+/// \defgroup _Font_ Font Functions
+/// Functions that load fonts
+/// @{
 // -----------------------------------------------------------------------
 
 ///
@@ -1290,31 +1314,12 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 
 
 
-
 // ------------------------------------------------------------------------
-// Page Functions
+/// @}
+/// \defgroup _Page_ Page Functions
+/// Functions that operate at the page level
+/// @{
 // ------------------------------------------------------------------------
-
-///
-/// Common event handler function for a page
-///
-/// \param[in]  pvGui:       Void pointer to GUI
-/// \param[in]  sEvent:      Event data structure
-///
-/// \return true if success, false if fail
-///
-bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
-
-///
-/// Assign the event callback function for a page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pPage:       Pointer to page
-/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
-///
-/// \return none
-///
-void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb);
 
 ///
 /// Fetch the current page ID
@@ -1359,53 +1364,6 @@ void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw);
 bool gslc_PageRedrawGet(gslc_tsGui* pGui);
 
 
-///
-/// Redraw all elements on the active page. Only the
-/// elements that have been marked as needing redraw are
-/// rendered unless the entire page has been marked as
-/// needing redraw (in which case everything is drawn)
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return none
-///
-void gslc_PageRedrawGo(gslc_tsGui* pGui);
-
-///
-/// Indicate whether the screen requires page flip
-/// - This is generally called with bNeeded=true whenever
-///   drawing has been done to the active page. Page flip
-///   is actually performed later when calling PageFlipGo().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  bNeeded:     True if screen requires page flip
-///
-/// \return None
-///
-void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded);
-
-
-///
-/// Get state of pending page flip state
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return True if screen requires page flip
-///
-bool gslc_PageFlipGet(gslc_tsGui* pGui);
-
-
-///
-/// Update the visible screen if page has been marked for flipping
-/// - On some hardware this can trigger a double-buffering
-///   page flip.
-///
-/// \param[in]  pGui:        Pointer to GUI
-///
-/// \return None
-///
-void gslc_PageFlipGo(gslc_tsGui* pGui);
-
 
 /// Add a page to the GUI
 /// - This call associates an element array with the collection within the page
@@ -1432,15 +1390,6 @@ void gslc_PageFlipGo(gslc_tsGui* pGui);
 void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t nMaxElem,
         gslc_tsElemRef* psElemRef,uint16_t nMaxElemRef);
 
-/// Find a page in the GUI by its ID
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  nPageId:      Page ID to search
-///
-/// \return Ptr to a page or NULL if none found
-///
-gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
-
 /// Find an element in the GUI by its Page ID and Element ID
 ///
 /// \param[in]  pGui:         Pointer to GUI
@@ -1451,50 +1400,19 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
 ///
 gslc_tsElemRef* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 
-/// Perform a redraw calculation on the page to determine if additional
-/// elements should also be redrawn. This routine checks to see if any
-/// transparent elements have been marked as needing redraw. If so, the
-/// whole page may be marked as needing redraw (or at least the other
-/// elements that have been exposed underneath).
-///
-/// \param[in]  pGui:         Pointer to GUI
-///
-/// \return none
-///
-void gslc_PageRedrawCalc(gslc_tsGui* pGui);
 
-
-/// NOTE: The following are experimental APIs and are subject to change
-/// xxx TODO doc
-int16_t gslc_PageFocusStep(gslc_tsGui* pGui,gslc_tsPage* pPage,bool bNext);
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _Elem_ Element Functions
+/// Functions that are used to create and manipulate elements
+/// @{
+// ------------------------------------------------------------------------
 
 
 // ------------------------------------------------------------------------
-// Element General Functions
-// ------------------------------------------------------------------------
-
-// TODO DOC
-uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask);
-
-// TODO DOC
-void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal);
-
-
-// Returns a pointer to an element from an element reference, copying
-// from FLASH to RAM if element is stored in PROGMEM. This function
-// enables all APIs to work with Elements irrespective of whether they
-// were created in RAM or Flash.
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pElemRef:     Pointer to Element Reference
-///
-/// \return Pointer to Element after ensuring that it is accessible from RAM
-///
-gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
-
-
-// ------------------------------------------------------------------------
-// Element Creation Functions
+/// \defgroup _ElemCreate_ Element: Creation Functions
+/// Functions that create GUI elements
+/// @{
 // ------------------------------------------------------------------------
 
 
@@ -1604,7 +1522,10 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
 
 
 // ------------------------------------------------------------------------
-// Element General Functions
+/// @}
+/// \defgroup _ElemGen_ Element: General Functions
+/// General-purpose functions that operate on Elements
+/// @{
 // ------------------------------------------------------------------------
 
 
@@ -1620,7 +1541,10 @@ int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 
 // ------------------------------------------------------------------------
-// Element Update Functions
+/// @}
+/// \defgroup _ElemUpd_ Element: Update Functions
+/// Functions that configure or modify an existing eleemnt
+/// @{
 // ------------------------------------------------------------------------
 
 ///
@@ -1918,282 +1842,18 @@ void gslc_ElemSetTickFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_TICK
 bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int16_t nY,bool bOnlyClickEn);
 
 
-// ------------------------------------------------------------------------
-// Element Event Handling Functions
-// ------------------------------------------------------------------------
-
-///
-/// Common event handler function for an element
-///
-/// \param[in]  pvGui:       Void pointer to GUI
-/// \param[in]  sEvent:      Event data structure
-///
-/// \return true if success, false if fail
-///
-bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent);
-
-
-// ------------------------------------------------------------------------
-// Element Drawing Functions
-// ------------------------------------------------------------------------
-
-///
-/// Draw an element to the active display
-/// - Element is referenced by a page ID and element ID
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nPageId:     ID of page containing element
-/// \param[in]  nElemId:     ID of element
-///
-/// \return none
-///
-void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
-
-
-// ------------------------------------------------------------------------
-// Element Collection Functions
-// ------------------------------------------------------------------------
-
-
-/// Reset the members of an element collection
-///
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  asElem:       Internal element array storage to associate with the
-///                           collection
-/// \param[in]  nElemMax:     Maximum number of elements that can be added to the
-///                           internal element array (ie. RAM))
-/// \param[in]  asElemRef:    Internal element reference array storage to
-///                           associate with the collection. All elements, whether they
-///                           are located in the internal element array or in
-///                           external Flash (PROGMEM) storage, require an entry
-///                           in the element reference array.
-/// \param[in]  nElemRefMax:  Maximum number of elements in the reference array.
-///                           This is effectively the maximum number of elements
-///                           that can appear in the collection, irrespective of whether
-///                           it is stored in RAM or Flash (PROGMEM).
-///
-/// \return none
-///
-void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax,
-        gslc_tsElemRef* asElemRef,uint16_t nElemRefMax);
-
-
-/// Add an element to a collection
-/// - Note that the contents of pElem are copied to the collection's
-///   element array so the pElem pointer can be discarded are the
-///   call is complete.
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  pElem:        Ptr to the element to add
-/// \param[in]  eFlags:       Flags describing the element (eg. whether the
-///                           element should be stored in internal RAM array
-///                           or is located in Flash/PROGMEM).
-///
-/// \return Pointer to the element reference in the collection that has been added
-///         or NULL if there was an error
-///
-gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
-
-
-///
-/// Determine if any elements in a collection need redraw
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to Element collection
-///
-/// \return True if redraw required, false otherwise
-///
-bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
-
-
-/// Find an element in a collection by its Element ID
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  nElemId:      Element ID to search for
-///
-/// \return Pointer to the element reference in the collection that was found
-///         or NULL if no matches found
-///
-gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemId);
-
-
-/// Find an element in a collection by a coordinate coordinate
-/// - A match is found if the element is "clickable" (bClickEn=true)
-///   and the coordinate falls within the element's bounds (rElem).
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  nX:           Absolute X coordinate to use for search
-/// \param[in]  nY:           Absolute Y coordinate to use for search
-///
-/// \return Pointer to the element reference in the collection that was found
-///         or NULL if no matches found
-///
-gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
-
-
-/// Allocate the next available Element ID in a collection
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-///
-/// \return Element ID that is reserved for use
-///
-int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
-
-
-/// Get the element within a collection that is currently being tracked
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-///
-/// \return Pointer to the element reference in the collection that is
-///         currently being tracked or NULL if no elements
-///         are being tracked
-///
-gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
-
-
-/// Set the element within a collection that is currently being tracked
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  pElemRef:     Ptr to element reference to mark as being tracked
-///
-/// \return none
-///
-void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef);
 
 
 
-/// Get the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-///
-/// \return Element index or GSLC_IND_NONE for none
-///
-int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
-
-
-/// Set the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  nElemInd:     Element index to set in focus, GSLC_IND_NONE for none
-///
-/// \return none
-///
-void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
-
-
-// TODO doc
-bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
-
-
-/// Assign the parent element reference to all elements within a collection
-/// - This is generally used in the case of compound elements where updates to
-///   a sub-element should cause the parent (compound element) to be redrawn
-///   as well.)
-///
-/// \param[in]  pGui:           Pointer to GUI
-/// \param[in]  pCollect:       Pointer to the collection
-/// \param[in]  pElemRefParent: Ptr to element reference that is the parent
-///
-/// \return none
-///
-void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent);
-
-
-// ------------------------------------------------------------------------
-// Collect Event Handlers
-// ------------------------------------------------------------------------
-
-///
-/// Assign the event callback function for an element collection
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pCollect:    Pointer to collection
-/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
-///
-/// \return none
-///
-void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
-
-///
-/// Common event handler function for an element collection
-///
-/// \param[in]  pvGui:       Void pointer to GUI
-/// \param[in]  sEvent:      Event data structure
-///
-/// \return true if success, false if fail
-///
-bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
-
+/// @} // End of _Elem_
 
 #if !defined(DRV_TOUCH_NONE)
 
-/// Handle touch events within the element collection
-///
-/// \param[in]  pGui:         Pointer to the GUI
-/// \param[in]  pCollect:     Ptr to the element collection
-/// \param[in]  pEventTouch:  Ptr to the touch event structure
-///
-/// \return none
-///
-void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
-
-
-/// Handle direct input events within the element collection
-///
-/// \param[in]  pGui:         Pointer to the GUI
-/// \param[in]  pCollect:     Ptr to the element collection
-/// \param[in]  pEventTouch:  Ptr to the touch event structure
-///
-/// \return none
-///
-void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
-
-
 // ------------------------------------------------------------------------
-// Tracking Functions
-// ------------------------------------------------------------------------
-
-
-///
-/// Handles a touch event and performs the necessary
-/// tracking, glowing and selection actions depending
-/// on the press state.
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pPage:       Pointer to current page
-/// \param[in]  nX:          X coordinate of touch event
-/// \param[in]  nY:          Y coordinate of touch event
-/// \param[in]  nPress:      Pressure level of touch event (0 for none, else touch)
-///
-/// \return none
-///
-void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress);
-
-///
-/// Handles a direct input event and performs the necessary
-/// tracking, glowing and selection actions depending
-/// on the state.
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pPage:       Pointer to current page
-/// \param[in]  nKey:        Keyboard / External pin input value
-/// xxx TODO doc
-///
-/// \return none
-///
-void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
-
-
-// ------------------------------------------------------------------------
-// Touchscreen Functions
+/// @}
+/// \defgroup _Touch_ Touchscreen Functions
+/// Functions that configure and respond to a touch device
+/// @{
 // ------------------------------------------------------------------------
 
 
@@ -2225,208 +1885,28 @@ bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPre
 #endif // !DRV_TOUCH_NONE
 
 // ------------------------------------------------------------------------
-// Private Functions
-// - The following functions are generally not required for
-//   typical users of GUIslice. However, for advanced usage
-//   more direct access may be required.
+/// @}
+/// \defgroup _Input_ Input Mapping Functions
+/// Functions that handle GPIO / pin and keyboard input
+/// @{
 // ------------------------------------------------------------------------
 
 
-///
-/// Create a new element with default styling
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  nElemId:      User-supplied ID for referencing this element
-///                           (or GSLC_ID_AUTO to auto-generate)
-/// \param[in]  nPageId:      The page ID on which this page should be associated
-/// \param[in]  nType:        Enumeration that indicates the type of element
-///                           that is requested for creation. The type adjusts
-///                           the visual representation and default styling.
-/// \param[in]  rElem:        Rectangle region framing the element
-/// \param[in]  pStrBuf:      String to copy into element
-/// \param[in]  nStrBufMax:   Maximum length of string buffer (pStrBuf). Only applicable
-///                           if GSLC_LOCAL_STR=0. Ignored if GSLC_LOCAL_STR=1.)
-/// \param[in]  nFontId:      Font ID for textual elements
-///
-/// \return Initialized structure
-///
-gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int16_t nType,
-  gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId);
+/// \todo Doc. This API is experimental and subject to change
+void gslc_SetPinPollFunc(gslc_tsGui* pGui, GSLC_CB_PIN_POLL pfunc);
 
+/// \todo Doc. This API is experimental and subject to change
+void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax);
 
-///
-/// Add the Element to the list of generated elements
-/// in the GUI environment.
-/// - NOTE: The content of pElem is copied so the pointer
-///         can be released after the call.
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nPageId:     Page ID to add element to (GSLC_PAGE_NONE to skip in
-///                          case of temporary creation for compound elements)
-/// \param[in]  pElem:       Pointer to Element to add
-/// \param[in]  eFlags:      Flags describing the element (eg. whether the
-///                          element should be stored in internal RAM array
-///                          or is located in Flash/PROGMEM).
-///
-/// \return Pointer to Element reference or NULL if fail
-///
-gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
-
-///
-/// Set the clipping rectangle for further drawing
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pRect:       Pointer to Rect for clipping (or NULL for entire screen)
-///
-/// \return true if success, false if error
-///
-bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
-
-
-///
-/// Set an element to use a bitmap image
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference to update
-/// \param[in]  sImgRef:     Image reference (normal state)
-/// \param[in]  sImgRefSel:  Image reference (glowing state)
-///
-/// \return none
-///
-void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef sImgRef,
-  gslc_tsImgRef sImgRefSel);
-
-
-///
-/// Configure the background to use a bitmap image
-/// - The background is used when redrawing the entire page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  sImgRef:     Image reference
-///
-/// \return true if success, false if fail
-///
-bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
-
-///
-/// Configure the background to use a solid color
-/// - The background is used when redrawing the entire page
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nCol:        RGB Color to use
-///
-/// \return true if success, false if fail
-///
-bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
-
-
-/// Draw an element to the active display
-/// - Element is referenced by an element pointer
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Ptr to Element reference to draw
-/// \param[in]  eRedraw:     Redraw mode
-///
-/// \return true if success, false otherwise
-///
-bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
-
-
-///
-/// Dynamically change rotation, automatically adapt touchscreen axes swap/flip
-///
-/// The function assumes that the touchscreen settings for swap and flip
-/// in the GUIslice config are valid for the configured GSLC_ROTATE.
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-///
-/// \return true if success, false otherwise
-///
-bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation);
-
-
-///
-/// Free up any surfaces associated with the GUI,
-/// pages, collections and elements. Also frees
-/// up any fonts.
-/// - Called by gslc_Quit()
-///
-/// \param[in]  pGui:         Pointer to GUI
-///
-/// \return none
-///
-void gslc_GuiDestruct(gslc_tsGui* pGui);
-
-
-///
-/// Free up any members associated with a page
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pPage:        Pointer to Page
-///
-/// \return none
-///
-void gslc_PageDestruct(gslc_tsGui* pGui,gslc_tsPage* pPage);
-
-///
-/// Free up any members associated with an element collection
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to collection
-///
-/// \return none
-///
-void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
-
-///
-/// Free up any members associated with an element
-///
-/// \param[in]  pElem:        Pointer to element
-///
-/// \return none
-///
-void gslc_ElemDestruct(gslc_tsElem* pElem);
-
-#if !defined(DRV_TOUCH_NONE)
-///
-/// Trigger an element's touch event. This is an optional
-/// behavior useful in some extended element types.
-///
-/// \param[in]  pGui:             Pointer to GUI
-/// \param[in]  pElemRefTracked:  Pointer to tracked Element reference (or NULL for none))
-/// \param[in]  eTouch:           Touch event type
-/// \param[in]  nX:               X coordinate of event (absolute coordinate)
-/// \param[in]  nY:               Y coordinate of event (absolute coordinate)
-///
-/// \return true if success, false if error
-///
-bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
-        gslc_teTouch eTouch,int16_t nX,int16_t nY);
-#endif // !DRV_TOUCH_NONE
-
-///
-/// Initialize a Font struct
-///
-/// \param[in]  pFont:       Pointer to Font
-///
-/// \return none
-///
-void gslc_ResetFont(gslc_tsFont* pFont);
-
-///
-/// Initialize an Element struct
-///
-/// \param[in]  pElem:       Pointer to Element
-///
-/// \return none
-///
-void gslc_ResetElem(gslc_tsElem* pElem);
-
+/// \todo Doc. This API is experimental and subject to change
+void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal);
 
 
 // ------------------------------------------------------------------------
-// General purpose macros
+/// @}
+/// \defgroup _GenMacro_ General Purpose Macros
+/// Macros that are used throughout the GUI for debug
+/// @{
 // ------------------------------------------------------------------------
 
 // Create debug macro to selectively include the output code
@@ -2471,7 +1951,10 @@ void gslc_ResetElem(gslc_tsElem* pElem);
           } while (0)
 
 // ------------------------------------------------------------------------
-// Read-only element macros
+/// @}
+/// \defgroup _MacroFlash_ Flash-based Element Macros
+/// Macros that represent element creation routines based in FLASH memory
+/// @{
 // ------------------------------------------------------------------------
 
 // Macro initializers for Read-Only Elements in Flash/PROGMEM
@@ -2871,6 +2354,615 @@ void gslc_ResetElem(gslc_tsElem* pElem);
 
 
 #endif // GSLC_USE_PROGMEM
+
+
+
+// ========================================================================
+/// @}
+/// \defgroup _Int_ Internal Functions
+/// These functions are internal to the GUIslice implementation and are not
+/// intended to be called by user code and subject to change even in minor
+/// releases.
+/// - The following functions are generally not required for
+///   typical users of GUIslice. However, for advanced usage
+///   more direct access may be required.
+/// @{
+// ========================================================================
+
+// ------------------------------------------------------------------------
+/// \defgroup _IntMisc_ Internal: Misc Functions
+/// @{
+// ------------------------------------------------------------------------
+
+///
+/// Create a blank image reference structure
+///
+/// \return Image reference struct
+///
+gslc_tsImgRef gslc_ResetImage();
+
+
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntElem_ Internal: Element Functions
+/// @{
+// ------------------------------------------------------------------------
+///
+/// Create a new element with default styling
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nElemId:      User-supplied ID for referencing this element
+///                           (or GSLC_ID_AUTO to auto-generate)
+/// \param[in]  nPageId:      The page ID on which this page should be associated
+/// \param[in]  nType:        Enumeration that indicates the type of element
+///                           that is requested for creation. The type adjusts
+///                           the visual representation and default styling.
+/// \param[in]  rElem:        Rectangle region framing the element
+/// \param[in]  pStrBuf:      String to copy into element
+/// \param[in]  nStrBufMax:   Maximum length of string buffer (pStrBuf). Only applicable
+///                           if GSLC_LOCAL_STR=0. Ignored if GSLC_LOCAL_STR=1.)
+/// \param[in]  nFontId:      Font ID for textual elements
+///
+/// \return Initialized structure
+///
+gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int16_t nType,
+  gslc_tsRect rElem,char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId);
+
+
+///
+/// Add the Element to the list of generated elements
+/// in the GUI environment.
+/// - NOTE: The content of pElem is copied so the pointer
+///         can be released after the call.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to add element to (GSLC_PAGE_NONE to skip in
+///                          case of temporary creation for compound elements)
+/// \param[in]  pElem:       Pointer to Element to add
+/// \param[in]  eFlags:      Flags describing the element (eg. whether the
+///                          element should be stored in internal RAM array
+///                          or is located in Flash/PROGMEM).
+///
+/// \return Pointer to Element reference or NULL if fail
+///
+gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
+
+
+/// \todo DOC
+uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask);
+
+/// \todo DOC
+void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal);
+
+
+// Returns a pointer to an element from an element reference, copying
+// from FLASH to RAM if element is stored in PROGMEM. This function
+// enables all APIs to work with Elements irrespective of whether they
+// were created in RAM or Flash.
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Pointer to Element Reference
+///
+/// \return Pointer to Element after ensuring that it is accessible from RAM
+///
+gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+
+///
+/// Set an element to use a bitmap image
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference to update
+/// \param[in]  sImgRef:     Image reference (normal state)
+/// \param[in]  sImgRefSel:  Image reference (glowing state)
+///
+/// \return none
+///
+void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef sImgRef,
+  gslc_tsImgRef sImgRefSel);
+
+
+
+/// Draw an element to the active display
+/// - Element is referenced by an element pointer
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Ptr to Element reference to draw
+/// \param[in]  eRedraw:     Redraw mode
+///
+/// \return true if success, false otherwise
+///
+bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawType eRedraw);
+
+
+///
+/// Draw an element to the active display
+/// - Element is referenced by a page ID and element ID
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     ID of page containing element
+/// \param[in]  nElemId:     ID of element
+///
+/// \return none
+///
+/// \todo Unused?
+///
+void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
+
+
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntPage_ Internal: Page Functions
+/// @{
+// ------------------------------------------------------------------------
+
+///
+/// Common event handler function for a page
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+///
+bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
+
+///
+/// Assign the event callback function for a page
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pPage:       Pointer to page
+/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
+///
+/// \return none
+///
+/// \todo Unused?
+void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb);
+
+///
+/// Redraw all elements on the active page. Only the
+/// elements that have been marked as needing redraw are
+/// rendered unless the entire page has been marked as
+/// needing redraw (in which case everything is drawn)
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return none
+///
+void gslc_PageRedrawGo(gslc_tsGui* pGui);
+
+///
+/// Indicate whether the screen requires page flip
+/// - This is generally called with bNeeded=true whenever
+///   drawing has been done to the active page. Page flip
+///   is actually performed later when calling PageFlipGo().
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bNeeded:     True if screen requires page flip
+///
+/// \return None
+///
+void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded);
+
+
+///
+/// Get state of pending page flip state
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return True if screen requires page flip
+///
+bool gslc_PageFlipGet(gslc_tsGui* pGui);
+
+
+///
+/// Update the visible screen if page has been marked for flipping
+/// - On some hardware this can trigger a double-buffering
+///   page flip.
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return None
+///
+void gslc_PageFlipGo(gslc_tsGui* pGui);
+
+/// Find a page in the GUI by its ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nPageId:      Page ID to search
+///
+/// \return Ptr to a page or NULL if none found
+///
+gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
+
+/// Perform a redraw calculation on the page to determine if additional
+/// elements should also be redrawn. This routine checks to see if any
+/// transparent elements have been marked as needing redraw. If so, the
+/// whole page may be marked as needing redraw (or at least the other
+/// elements that have been exposed underneath).
+///
+/// \param[in]  pGui:         Pointer to GUI
+///
+/// \return none
+///
+/// \internal
+void gslc_PageRedrawCalc(gslc_tsGui* pGui);
+
+
+/// \todo Doc. This API is experimental and subject to change
+int16_t gslc_PageFocusStep(gslc_tsGui* pGui,gslc_tsPage* pPage,bool bNext);
+
+
+///
+/// Create an event structure
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  eType:      Event type (draw, touch, tick, etc.)
+/// \param[in]  nSubType:   Refinement of event type (or 0 if unused)
+/// \param[in]  pvScope:    Void ptr to object receiving event so that
+///                         the event handler will have the context
+/// \param[in]  pvData:     Void ptr to additional data associated with
+///                         the event (eg. coordinates for touch events)
+///
+/// \return None
+///
+gslc_tsEvent gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData);
+
+
+///
+/// Common event handler function for an element
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+///
+bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent);
+
+
+#if !defined(DRV_TOUCH_NONE)
+///
+/// Trigger an element's touch event. This is an optional
+/// behavior useful in some extended element types.
+///
+/// \param[in]  pGui:             Pointer to GUI
+/// \param[in]  pElemRefTracked:  Pointer to tracked Element reference (or NULL for none))
+/// \param[in]  eTouch:           Touch event type
+/// \param[in]  nX:               X coordinate of event (absolute coordinate)
+/// \param[in]  nY:               Y coordinate of event (absolute coordinate)
+///
+/// \return true if success, false if error
+///
+bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
+        gslc_teTouch eTouch,int16_t nX,int16_t nY);
+#endif // !DRV_TOUCH_NONE
+
+
+// ------------------------------------------------------------------------
+// Internal: Element Collection Functions
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntCollect_ Internal: Element Collection Functions
+/// @{
+
+
+/// Reset the members of an element collection
+///
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  asElem:       Internal element array storage to associate with the
+///                           collection
+/// \param[in]  nElemMax:     Maximum number of elements that can be added to the
+///                           internal element array (ie. RAM))
+/// \param[in]  asElemRef:    Internal element reference array storage to
+///                           associate with the collection. All elements, whether they
+///                           are located in the internal element array or in
+///                           external Flash (PROGMEM) storage, require an entry
+///                           in the element reference array.
+/// \param[in]  nElemRefMax:  Maximum number of elements in the reference array.
+///                           This is effectively the maximum number of elements
+///                           that can appear in the collection, irrespective of whether
+///                           it is stored in RAM or Flash (PROGMEM).
+///
+/// \return none
+///
+void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nElemMax,
+        gslc_tsElemRef* asElemRef,uint16_t nElemRefMax);
+
+
+/// Add an element to a collection
+/// - Note that the contents of pElem are copied to the collection's
+///   element array so the pElem pointer can be discarded are the
+///   call is complete.
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElem:        Ptr to the element to add
+/// \param[in]  eFlags:       Flags describing the element (eg. whether the
+///                           element should be stored in internal RAM array
+///                           or is located in Flash/PROGMEM).
+///
+/// \return Pointer to the element reference in the collection that has been added
+///         or NULL if there was an error
+///
+gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,const gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
+
+
+///
+/// Determine if any elements in a collection need redraw
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to Element collection
+///
+/// \return True if redraw required, false otherwise
+///
+bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
+
+
+/// Find an element in a collection by its Element ID
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nElemId:      Element ID to search for
+///
+/// \return Pointer to the element reference in the collection that was found
+///         or NULL if no matches found
+///
+gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemId);
+
+
+/// Find an element in a collection by a coordinate coordinate
+/// - A match is found if the element is "clickable" (bClickEn=true)
+///   and the coordinate falls within the element's bounds (rElem).
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nX:           Absolute X coordinate to use for search
+/// \param[in]  nY:           Absolute Y coordinate to use for search
+///
+/// \return Pointer to the element reference in the collection that was found
+///         or NULL if no matches found
+///
+gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
+
+
+/// Allocate the next available Element ID in a collection
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Element ID that is reserved for use
+///
+int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
+
+
+/// Get the element within a collection that is currently being tracked
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Pointer to the element reference in the collection that is
+///         currently being tracked or NULL if no elements
+///         are being tracked
+///
+gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
+
+
+/// Set the element within a collection that is currently being tracked
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  pElemRef:     Ptr to element reference to mark as being tracked
+///
+/// \return none
+///
+void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef);
+
+
+
+/// Get the element index within a collection that is currently in focus
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+///
+/// \return Element index or GSLC_IND_NONE for none
+///
+int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
+
+
+/// Set the element index within a collection that is currently in focus
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to the collection
+/// \param[in]  nElemInd:     Element index to set in focus, GSLC_IND_NONE for none
+///
+/// \return none
+///
+void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
+
+
+/// \todo Doc
+bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
+
+
+/// Assign the parent element reference to all elements within a collection
+/// - This is generally used in the case of compound elements where updates to
+///   a sub-element should cause the parent (compound element) to be redrawn
+///   as well.)
+///
+/// \param[in]  pGui:           Pointer to GUI
+/// \param[in]  pCollect:       Pointer to the collection
+/// \param[in]  pElemRefParent: Ptr to element reference that is the parent
+///
+/// \return none
+///
+void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRefParent);
+
+
+// ------------------------------------------------------------------------
+// Internal: Collect Event Handlers
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntCollectEvt_ Internal: Element Collection Event Functions
+/// @{
+
+///
+/// Assign the event callback function for an element collection
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pCollect:    Pointer to collection
+/// \param[in]  funcCb:      Function pointer to event routine (or NULL for default))
+///
+/// \return none
+///
+void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
+
+///
+/// Common event handler function for an element collection
+///
+/// \param[in]  pvGui:       Void pointer to GUI
+/// \param[in]  sEvent:      Event data structure
+///
+/// \return true if success, false if fail
+///
+bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
+
+
+#if !defined(DRV_TOUCH_NONE)
+
+/// Handle touch events within the element collection
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+/// \param[in]  pEventTouch:  Ptr to the touch event structure
+///
+/// \return none
+///
+void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
+
+
+/// Handle direct input events within the element collection
+///
+/// \param[in]  pGui:         Pointer to the GUI
+/// \param[in]  pCollect:     Ptr to the element collection
+/// \param[in]  pEventTouch:  Ptr to the touch event structure
+///
+/// \return none
+///
+void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
+
+
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntTrack_ Internal: Tracking Functions
+/// @{
+// ------------------------------------------------------------------------
+
+
+///
+/// Handles a touch event and performs the necessary
+/// tracking, glowing and selection actions depending
+/// on the press state.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pPage:       Pointer to current page
+/// \param[in]  nX:          X coordinate of touch event
+/// \param[in]  nY:          Y coordinate of touch event
+/// \param[in]  nPress:      Pressure level of touch event (0 for none, else touch)
+///
+/// \return none
+///
+void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress);
+
+///
+/// Handles a direct input event and performs the necessary
+/// tracking, glowing and selection actions depending
+/// on the state.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pPage:       Pointer to current page
+/// \param[in]  nKey:        Keyboard / External pin input value
+/// xxx TODO doc
+///
+/// \return none
+///
+void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
+
+/// \todo Doc. This API is experimental and subject to change
+bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal);
+
+#endif // !DRV_TOUCH_NONE
+
+
+// ------------------------------------------------------------------------
+/// @}
+/// \defgroup _IntCleanup_ Internal: Cleanup Functions
+/// @{
+// ------------------------------------------------------------------------
+
+
+
+///
+/// Free up any surfaces associated with the GUI,
+/// pages, collections and elements. Also frees
+/// up any fonts.
+/// - Called by gslc_Quit()
+///
+/// \param[in]  pGui:         Pointer to GUI
+///
+/// \return none
+///
+void gslc_GuiDestruct(gslc_tsGui* pGui);
+
+
+///
+/// Free up any members associated with a page
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pPage:        Pointer to Page
+///
+/// \return none
+///
+void gslc_PageDestruct(gslc_tsGui* pGui,gslc_tsPage* pPage);
+
+///
+/// Free up any members associated with an element collection
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pCollect:     Pointer to collection
+///
+/// \return none
+///
+void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
+
+///
+/// Free up any members associated with an element
+///
+/// \param[in]  pElem:        Pointer to element
+///
+/// \return none
+///
+void gslc_ElemDestruct(gslc_tsElem* pElem);
+
+///
+/// Initialize a Font struct
+///
+/// \param[in]  pFont:       Pointer to Font
+///
+/// \return none
+///
+void gslc_ResetFont(gslc_tsFont* pFont);
+
+///
+/// Initialize an Element struct
+///
+/// \param[in]  pElem:       Pointer to Element
+///
+/// \return none
+///
+void gslc_ResetElem(gslc_tsElem* pElem);
+
+
+/// @} // END OF INTERNAL
+
 
 #ifdef __cplusplus
 }

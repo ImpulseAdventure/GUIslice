@@ -28,6 +28,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+/// \file GUIslice_drv_adagfx.cpp
 
 
 // Compiler guard for requested driver

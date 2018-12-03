@@ -31,6 +31,8 @@
 // THE SOFTWARE.
 //
 // =======================================================================
+// \file GUIslice_config_linux.h
+// \brief GUIslice library (user configuration) for LINUX / Raspberry Pi / Beaglebone
 
 // =======================================================================
 // User Configuration
