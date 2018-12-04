@@ -3,7 +3,7 @@
 // The touch handler performs the adaption in between the GUIslice framework and any touch driver
 // The touch handler used is specified in the main program by calling gslc_InitTouchHandler(&touchHandler);
 
-// \file GUIslice_th_XPT2046.h
+/// \file GUIslice_th_XPT2046.h
 
 #ifndef _GUISLICE_TH_XPT2046_H_
 #define _GUISLICE_TH_XPT2046_H_

@@ -31,7 +31,8 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-// \file GUIslice_drv_m5stack.h
+/// \file GUIslice_drv_m5stack.h
+/// \brief GUIslice library (driver layer for M5stack)
 
 
 // =======================================================================

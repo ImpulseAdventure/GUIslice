@@ -31,7 +31,8 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-// \file GUIslice_drv_sdl.h
+/// \file GUIslice_drv_sdl.h
+/// \brief GUIslice library (driver layer for LINUX / SDL)
 
 
 // =======================================================================

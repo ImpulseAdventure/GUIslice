@@ -31,7 +31,8 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-// \file GUIslice_drv_tft_espi.h
+/// \file GUIslice_drv_tft_espi.h
+/// \brief GUIslice library (driver layer for TFT-eSPI)
 
 
 // =======================================================================
