@@ -235,7 +235,10 @@ extern "C" {
   // - Note that if you change this you will likely have to change
   //   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
   //   orientation matches the display rotation
-  #define GSLC_ROTATE     0
+
+  // NOTE: M5stack has a fixed display. A setting of 1 should
+  //       match the built-in display and not need changing.
+  #define GSLC_ROTATE     1
 
 #else
 
