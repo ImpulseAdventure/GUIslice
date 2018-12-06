@@ -744,6 +744,74 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 }
 
 // -----------------------------------------------------------------------
+// Touch Functions (via display driver)
+// -----------------------------------------------------------------------
+
+
+#if defined(DRV_TOUCH_IN_DISP)
+
+bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
+    return false;
+  }
+
+  // For M5stack, no extra initialization is required to support the buttons
+
+  // Nothing further to do with driver
+  return true;
+}
+
+
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
+{
+
+  if ((pGui == NULL) || (pGui->pvDriver == NULL)) {
+    GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n","");
+    return false;
+  }
+
+  // Assign defaults
+  *pnX = 0;
+  *pnY = 0;
+  *pnPress = 0;
+
+  *peInputEvent = GSLC_INPUT_NONE;
+  *pnInputVal = 0;
+
+  // Trigger the M5 update routine
+  M5.update();
+
+  if (M5.BtnA.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_A_LONG;
+  } else if (M5.BtnA.wasReleased()) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_A;
+  }	else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_B_LONG;
+  }	else if (M5.BtnB.wasReleased()) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_B;
+  }	else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_C_LONG;
+  }	else if (M5.BtnC.wasReleased()) {
+	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+	  *pnInputVal = GSLC_PIN_BTN_C;
+  } else {
+	  return false; // No pin event detected
+  }
+
+  // If we reached here, then we had a button event
+	return true;
+}
+
+#endif // DRV_TOUCH_IN_DISP
+
+
+// -----------------------------------------------------------------------
 // Dynamic Screen rotation and Touch axes swap/flip functions
 // -----------------------------------------------------------------------
 
@@ -809,6 +877,29 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
     //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
     return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+}
+
+bool gslc_DrvGetInput(gslc_tsGui* pGui, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "DrvGetInput";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return false;
+  }
+
+  *peInputEvent = GSLC_INPUT_NONE;
+  *pnInputVal = 0;
+
+  // Trigger the M5 update routine
+  M5.update();
+
+  if      (M5.BtnA.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_A; }
+	else if (M5.BtnB.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_B; }
+	else if (M5.BtnC.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_C; }
+	else return false; // No pin event detected
+
+  // If we reached here, then we had a button event
+	return true;
 }
 
 

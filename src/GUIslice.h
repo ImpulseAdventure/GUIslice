@@ -281,6 +281,21 @@ typedef enum {
 } gslc_teAction;
 
 
+/// General purpose pin/button constants
+typedef enum {
+  GSLC_PIN_BTN_A,           ///< Button A (short press)
+  GSLC_PIN_BTN_A_LONG,      ///< Button A (long press)
+  GSLC_PIN_BTN_B,           ///< Button B (short press)
+  GSLC_PIN_BTN_B_LONG,      ///< Button B (long press)
+  GSLC_PIN_BTN_C,           ///< Button C (short press)
+  GSLC_PIN_BTN_C_LONG,      ///< Button C (long press)
+  GSLC_PIN_BTN_D,           ///< Button D (short press)
+  GSLC_PIN_BTN_D_LONG,      ///< Button D (long press)
+  GSLC_PIN_BTN_E,           ///< Button E (short press)
+  GSLC_PIN_BTN_E_LONG,      ///< Button E (long press)
+} gslc_tePin;
+
+
 /// Processed event from input raw events and actions
 typedef enum {
   GSLC_TOUCH_NONE         = 0,          ///< No touch event active
@@ -1876,9 +1891,10 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \param[out] pnX:         Ptr to int to contain latest touch X coordinate
 /// \param[out] pnY:         Ptr to int to contain latest touch Y coordinate
 /// \param[out] pnPress:     Ptr to int to contain latest touch pressure value
-/// xxx TODO doc
 ///
 /// \return true if touch event, false otherwise
+///
+/// \todo Doc
 ///
 bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
@@ -2880,9 +2896,10 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pPage:       Pointer to current page
 /// \param[in]  nKey:        Keyboard / External pin input value
-/// xxx TODO doc
 ///
 /// \return none
+///
+/// \todo Doc
 ///
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
 

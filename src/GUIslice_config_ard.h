@@ -83,11 +83,12 @@ extern "C" {
   // - Uncomment one of the following touchscreen drivers DRV_TOUCH_*
   //   applicable to the controller chip in use
 
-  //  #define DRV_TOUCH_NONE            // No touchscreen support
+  //  #define DRV_TOUCH_NONE            // No touchscreen support & no input (GPIO / keyboard)
       #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
   //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
+  //  #define DRV_TOUCH_M5STACK         // M5stack integrated button driver
   //  #define DRV_TOUCH_XPT2046         // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
   //  #define DRV_TOUCH_HANDLER         // touch handler class
 
@@ -321,6 +322,14 @@ extern "C" {
   #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
 // -----------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_M5STACK)
+  // M5stack integrated button handler
+  #define DRV_TOUCH_IN_DISP   // Use the display driver (M5stack) for touch events
+
+  // Define duration (in ms) for a long-press button event
+  #define M5STACK_TOUCH_PRESS_LONG  300 
+
+// -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
   // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
 
@@ -398,12 +407,12 @@ extern "C" {
   // - Enabling DEBUG_ERR increases FLASH memory consumption which may be
   //   limited on the baseline Arduino (ATmega328P) devices.
   #if defined(__AVR__)
-    #define DEBUG_ERR               0   // Disable by default on low-mem Arduino
+    #define DEBUG_ERR               0   // Debugging disabled by default on low-mem Arduino
   #else
     // For all other devices, DEBUG_ERR is enabled by default.
     // Since this mode increases FLASH memory considerably, it may be
     // necessary to disable this feature.
-    #define DEBUG_ERR               1   // Enable debug reporting
+    #define DEBUG_ERR               1   // Debugging enabled by default
   #endif
 
 
