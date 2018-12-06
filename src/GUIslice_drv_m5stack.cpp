@@ -782,30 +782,35 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   // Trigger the M5 update routine
   M5.update();
 
+  // Btn.wasReleasefor() is only available in the latest M5stack versions.
+#if defined(M5STACK_TOUCH_PRESS_LONG)
   if (M5.BtnA.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_A_LONG;
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_A_LONG;
+  }  else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_B_LONG;
+  }  else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_C_LONG;
   } else if (M5.BtnA.wasReleased()) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_A;
-  }	else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_B_LONG;
-  }	else if (M5.BtnB.wasReleased()) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_B;
-  }	else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_C_LONG;
-  }	else if (M5.BtnC.wasReleased()) {
-	  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-	  *pnInputVal = GSLC_PIN_BTN_C;
+#else
+  if (M5.BtnA.wasReleased()) {
+#endif
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_A;
+  }  else if (M5.BtnB.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_B;
+  }  else if (M5.BtnC.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_C;
   } else {
-	  return false; // No pin event detected
+    return false; // No pin event detected
   }
 
   // If we reached here, then we had a button event
-	return true;
+  return true;
 }
 
 #endif // DRV_TOUCH_IN_DISP
@@ -894,12 +899,12 @@ bool gslc_DrvGetInput(gslc_tsGui* pGui, gslc_teInputRawEvent* peInputEvent, int1
   M5.update();
 
   if      (M5.BtnA.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_A; }
-	else if (M5.BtnB.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_B; }
-	else if (M5.BtnC.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_C; }
-	else return false; // No pin event detected
+  else if (M5.BtnB.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_B; }
+  else if (M5.BtnC.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_C; }
+  else return false; // No pin event detected
 
   // If we reached here, then we had a button event
-	return true;
+  return true;
 }
 
 

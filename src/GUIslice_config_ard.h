@@ -326,8 +326,13 @@ extern "C" {
   // M5stack integrated button handler
   #define DRV_TOUCH_IN_DISP   // Use the display driver (M5stack) for touch events
 
+  // NOTE: Long-press detection is only available in the latest
+  //       M5stack library releases. Uncomment the following
+  //       if the Btn wasReleasefor() API is available.
+  //
   // Define duration (in ms) for a long-press button event
-  #define M5STACK_TOUCH_PRESS_LONG  300 
+  //#define M5STACK_TOUCH_PRESS_LONG  300
+
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
