@@ -11,7 +11,8 @@
 
 - [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
-- [Release notes](https://github.com/ImpulseAdventure/GUIslice/releases)
+- [Latest Updates and Work in Progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
+- [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - **Support email**: guislice @ impulseadventure . com
 
