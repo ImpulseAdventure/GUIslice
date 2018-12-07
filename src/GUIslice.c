@@ -64,8 +64,6 @@
 
 // ========================================================================
 
-
-
 /// Global debug output function
 /// - The user assigns this function via gslc_InitDebug()
 GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
@@ -449,16 +447,23 @@ void gslc_Update(gslc_tsGui* pGui)
     return; // No page added yet
   }
 
+  // The touch handling logic is used by both the touchscreen
+  // handler as well as the GPIO/pin/keyboard input controller
   #if !defined(DRV_TOUCH_NONE)
 
   // ---------------------------------------------
   // Touch handling
   // ---------------------------------------------
 
+  // TODO: Move the physical button / GPIO handling (pfuncPinPoll)
+  //       outside of !defined(DRV_TOUCH_NONE) check so that we can
+  //       enable physical button handling without requiring
+  //       all of the other touch driver logic.
+
   int16_t               nTouchX = 0;
   int16_t               nTouchY = 0;
   uint16_t              nTouchPress = 0;
-  bool                  bEvent = true;      // xxx FIXME: Should this be false?
+  bool                  bEvent = false;
   gslc_teInputRawEvent  eInputEvent = GSLC_INPUT_NONE;
   int16_t               nInputVal = 0;
 
@@ -487,6 +492,8 @@ void gslc_Update(gslc_tsGui* pGui)
     // --------------------------------------------------------------
     // First check physical pin inputs
     // --------------------------------------------------------------
+
+    #if (GSLC_FEATURE_INPUT)
     int16_t  nPinNum = -1;
     int16_t  nPinState = 0;
     GSLC_CB_PIN_POLL  pfuncPinPoll = pGui->pfuncPinPoll;
@@ -498,6 +505,7 @@ void gslc_Update(gslc_tsGui* pGui)
         nInputVal = nPinNum;
       }
     } 
+    #endif // GSLC_FEATURE_INPUT
 
     // --------------------------------------------------------------
     // If no event found yet, check touch / keyboard
@@ -511,7 +519,6 @@ void gslc_Update(gslc_tsGui* pGui)
     // If event found, handle it
     // --------------------------------------------------------------
     if (bEvent) {
-
       // Track and handle the input events
       // - Handle the events on the current page
       switch (eInputEvent) {

@@ -49,6 +49,13 @@ extern "C" {
 #include <stdio.h>
 
 
+// ------------------------------------------------------------------------
+// Error Strings
+// ------------------------------------------------------------------------
+
+extern const char GSLC_PMEM ERRSTR_NULL[];
+extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
+
 
 
 // =======================================================================
@@ -487,6 +494,43 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 /// \return true if success, false if fail
 ///
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
+
+
+// -----------------------------------------------------------------------
+// Touch Functions (if using display driver library)
+// -----------------------------------------------------------------------
+
+#if defined(DRV_TOUCH_IN_DISP)
+// Use M5stack's integrated button handler
+
+///
+/// Perform any touch-specific initialization
+/// - This function doesn't do anything in M5stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  acDev:       Device path to touchscreen
+///                          eg. "/dev/input/touchscreen"
+///
+/// \return true if successful
+///
+bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
+
+
+///
+/// Get the last touch event from the internal button handler
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[out] pnX:         Ptr to X coordinate of last touch event (UNUSED)
+/// \param[out] pnY:         Ptr to Y coordinate of last touch event (UNUSED)
+/// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, 1 for touch) (UNUSED)
+///
+/// \return true if an event was detected or false otherwise
+/// \todo Doc
+///
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
+
+#endif // DRV_TOUCH_IN_DISP
+
 
 // -----------------------------------------------------------------------
 // Dynamic Screen rotation and Touch axes swap/flip functions

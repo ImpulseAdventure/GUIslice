@@ -426,9 +426,9 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
 /// \param[out] pnY:         Ptr to Y coordinate of last touch event
 /// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, 1 for touch)
-/// xxx TODO doc
 ///
 /// \return true if an event was detected or false otherwise
+/// \todo Doc
 ///
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
 
@@ -629,9 +629,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
 /// \param[out] pnY:         Ptr to Y coordinate of last touch event
 /// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, >0 for touch)
-/// xxx TODO doc
 ///
 /// \return non-zero if an event was detected or 0 otherwise
+/// \todo Doc
 ///
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
