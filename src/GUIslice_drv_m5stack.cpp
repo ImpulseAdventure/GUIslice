@@ -884,29 +884,6 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
 }
 
-bool gslc_DrvGetInput(gslc_tsGui* pGui, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal)
-{
-  if (pGui == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "DrvGetInput";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
-    return false;
-  }
-
-  *peInputEvent = GSLC_INPUT_NONE;
-  *pnInputVal = 0;
-
-  // Trigger the M5 update routine
-  M5.update();
-
-  if      (M5.BtnA.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_A; }
-  else if (M5.BtnB.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_B; }
-  else if (M5.BtnC.wasReleased()) { *peInputEvent = GSLC_INPUT_PIN_ASSERT; *pnInputVal = GSLC_PIN_BTN_C; }
-  else return false; // No pin event detected
-
-  // If we reached here, then we had a button event
-  return true;
-}
-
 
 // =======================================================================
 // Private Functions

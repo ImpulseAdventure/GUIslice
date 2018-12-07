@@ -563,8 +563,6 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
 ///
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation);
 
-/// \todo Doc
-bool gslc_DrvGetInput(gslc_tsGui* pGui, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
 // =======================================================================
 // Private Functions
