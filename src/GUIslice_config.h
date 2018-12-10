@@ -53,6 +53,10 @@ extern "C" {
   #include "GUIslice_config_ard.h"
 #elif defined(ARDUINO_ARCH_STM32)  // ST Core from STMicroelectronics
   #include "GUIslice_config_ard.h"
+#elif defined(ARDUINO_ARCH_SAM)   // DUE
+  #include "GUIslice_config_ard.h"
+#elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
+  #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"
 #endif
