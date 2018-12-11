@@ -9,9 +9,9 @@
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
 
-- [Documentation wiki (github)](https://github.com/ImpulseAdventure/GUIslice/wiki)
+- [Documentation wiki](https://github.com/ImpulseAdventure/GUIslice/wiki)
 - [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
-- [Latest Updates and Work in Progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
+- [Latest Updates & Work in Progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
 - [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - **Support email**: guislice @ impulseadventure . com
@@ -22,9 +22,9 @@
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - Includes cross-platform **GUIslice Builder** (beta) desktop application to generate layouts
 - *Platform-independent GUI core currently supports*: SDL1.2, SDL2.0, Adafruit-GFX, TFT_eSPI
-- *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, M5Stack, STM32
+- *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, M5stack, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32
 - *Typical displays*: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
-- *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357
+- *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357, PCD8544
 - *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
@@ -36,7 +36,7 @@
 ## Screenshots ##
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-![Example 2](http://www.impulseadventure.com/elec/images/microsdl-ex07.png)
+![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
 
 ## GUIslice Builder ##
 - Includes cross-platform (Windows & LINUX) desktop application (beta) to generate GUIslice layouts
