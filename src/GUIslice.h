@@ -650,7 +650,7 @@ typedef struct {
 
   gslc_tsCollect      sCollect;             ///< Collection of elements on page
 
-  int8_t              nPageId;              ///< Page identifier
+  int16_t             nPageId;              ///< Page identifier
 
   // Redraw
   bool                bPageNeedRedraw;      ///< Page require a redraw
