@@ -2,9 +2,10 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #011) for:
+// GUIslice library (example user configuration #013) for:
 //   - CPU:     Arduino UNO (ATmega328P)
-//   - Display: Adafruit 2.8" TFT LCD Shield w/ Touchscreen
+//              Arduino Mega2560 (ATmega2560)
+//   - Display: Adafruit 2.8" TFT LCD Shield w/ Touchscreen (resistive)
 //
 // DIRECTIONS:
 // - To use this example configuration, rename the file as "GUIslice_config_ard.h"
@@ -48,8 +49,6 @@
 // User Configuration
 // - This file can be modified by the user to match the
 //   intended target configuration
-// - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-//   specific to board and display combinations
 // =============================================================================
 
 #ifdef __cplusplus
@@ -64,21 +63,22 @@ extern "C" {
 // Orientation
 // -----------------------------------------------------------------------------
 
-// Set Default rotation
-// you can specify values 0,1,2,3, rotation is clockwise
-// - Note that if you change this you will likely have to change
-//   GLSC_TOUCH_ROTATE as well to ensure that the touch screen
-//   orientation matches the display rotation
+// Set Default rotation of the display
+// - Values 0,1,2,3. Rotation is clockwise
+// - Note that changing this value may require a change
+//   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
+//   orientation matches the display.
 #define GSLC_ROTATE     1
 
-// Default rotation of the touch, you can specify values 0,1,2,3, rotation is clockwise
+// Set Default rotation of the touch overlay
+// - Values 0,1,2,3. ROtation is clockwise
 #define GSLC_TOUCH_ROTATE 1
 
 // -----------------------------------------------------------------------------
 // Touch Handling
 // -----------------------------------------------------------------------------
 
-// Calibration values for touch display
+// Calibration values for resistive touch display
 // - These values may need to be updated to match your display
 // - Typically used in resistive displays
 // - These values can be determined from the Adafruit touchtest example sketch
@@ -98,7 +98,9 @@ extern "C" {
 // - Set DEBUG_ERR to 1 to enable error reporting via the Serial connection
 // - Enabling DEBUG_ERR increases FLASH memory consumption which may be
 //   limited on the baseline Arduino (ATmega328P) devices.
-#define DEBUG_ERR               1   // Enable debug reporting by default
+// - For baseline Arduino UNO, recommended to disable this after one has
+//   confirmed basic operation of the library is successful.
+#define DEBUG_ERR               1   // 1 to enable, 0 to disable
 
 // -----------------------------------------------------------------------------
 // Optional Features
@@ -125,7 +127,7 @@ extern "C" {
 
 // =============================================================================
 // INTERNAL CONFIGURATION
-// - The following settings should not require modification
+// - The following settings should not require modification by users
 // =============================================================================
 
 // Define display and touch driver
@@ -137,6 +139,8 @@ extern "C" {
 // -----------------------------------------------------------------------------
 // Pinout
 // -----------------------------------------------------------------------------
+
+// On shields, the following pinouts are hardcoded
 #define ADAGFX_PIN_CS    10   // Display chip select
 #define ADAGFX_PIN_DC     9   // Display SPI data/command
 #define ADAGFX_PIN_RST    0   // Display Reset
@@ -144,7 +148,7 @@ extern "C" {
 #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
 #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
 
-#define ADAGFX_SPI_HW     1
+#define ADAGFX_SPI_HW     1	  // Use the hardware SPI interface
 
 #define ADAGFX_PIN_MOSI
 #define ADAGFX_PIN_MISO
