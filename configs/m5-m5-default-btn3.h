@@ -77,44 +77,12 @@ extern "C" {
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // For M5stack, the wiring is defined by M5stack library
-  // - M5stack: unused
-  //#define ADAGFX_PIN_CS       10    // Display chip select
-  //#define ADAGFX_PIN_DC       9     // Display SPI data/command
-  //#define ADAGFX_PIN_RST      0     // Display Reset
-  //#define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
-  //#define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
-
-  // SD Card
+   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-
-  // Display interface type
-  // - M5stack: unused
-  //#define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
-
-  // Display interface software SPI
-  // - Hardware SPI: the following definitions are unused
-  // - Software SPI: the following pins need to be defined
-  // - M5stack: unused
-  //#define ADAGFX_PIN_MOSI     11
-  //#define ADAGFX_PIN_MISO     12
-  //#define ADAGFX_PIN_CLK      13
 
   // M5stack: additional pins
   #define TFT_LIGHT_PIN       32    // display backlight
 
-  // Touch handling
-  // - M5stack: unused
-  //#define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  //#define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
-
-  // M5stack: Long Press Detection
-  // NOTE: Long-press detection is only available in the latest
-  //       M5stack library releases. Uncomment the following
-  //       if the Btn wasReleasefor() API is available.  
-  //
-  // Define duration (in ms) for a long-press button event
-  //#define M5STACK_TOUCH_PRESS_LONG  300
 
   // -----------------------------------------------------------------------------
   // Orientation
@@ -135,24 +103,14 @@ extern "C" {
   // Touch Handling
   // -----------------------------------------------------------------------------
 
-  // Select touch device wiring method by setting one of the following to 1, others to 0
-  // - M5stack: unused
-  //#define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  //#define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
-  //#define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
+  // M5stack: Long Press Detection
+  // NOTE: Long-press detection is only available in the latest
+  //       M5stack library releases. Uncomment the following
+  //       if the Btn wasReleasefor() API is available.  
+  //
+  // Define duration (in ms) for a long-press button event
+  //#define M5STACK_TOUCH_PRESS_LONG  300
 
-  // Calibration values for resistive touch display
-  // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
-  // - M5stack: unused
-  //#define ADATOUCH_X_MIN 230
-  //#define ADATOUCH_Y_MIN 260
-  //#define ADATOUCH_X_MAX 3800
-  //#define ADATOUCH_Y_MAX 3700
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -165,6 +123,7 @@ extern "C" {
   // - For baseline Arduino UNO, recommended to disable this after one has
   //   confirmed basic operation of the library is successful.
   #define DEBUG_ERR               1   // 1 to enable, 0 to disable
+
 
   // -----------------------------------------------------------------------------
   // Optional Features
