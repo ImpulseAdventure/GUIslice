@@ -131,7 +131,6 @@ extern "C" {
   //   (check for min and max values reported from program as you touch display
   //   corners)
   // - Note that X & Y directions reference the display's natural orientation
-  // - TFT_eSPI: unused
   #define ADATOUCH_X_MIN 230
   #define ADATOUCH_Y_MIN 260
   #define ADATOUCH_X_MAX 3800
