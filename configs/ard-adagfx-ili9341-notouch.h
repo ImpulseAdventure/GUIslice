@@ -60,34 +60,49 @@
 extern "C" {
 #endif // __cplusplus
 
+
   // =============================================================================
   // USER DEFINED CONFIGURATION
   // =============================================================================
 
   // -----------------------------------------------------------------------------
+  // Device Mode Selection
+  // - The following defines the display and touch drivers
+  //   and should not require modifications for this example config
+  // -----------------------------------------------------------------------------
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
+  #define DRV_TOUCH_NONE            // No touch enabled
+
+
+  // -----------------------------------------------------------------------------
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // On UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For UNO/MEGA shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select
-  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays) // UNUSED
-  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays) // UNUSED
+  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
+  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+  // Display interface type
   #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
 
-  // For Hardware SPI, the following definitions are unused
-  // For Software SPI, the following pins need to be defined
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
 
   // Touch handling
   // - UNUSED
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
+  //#define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
+  //#define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
 
 
   // -----------------------------------------------------------------------------
@@ -102,7 +117,7 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. ROtation is clockwise
+  // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_TOUCH_ROTATE 1
 
   // -----------------------------------------------------------------------------
@@ -112,21 +127,22 @@ extern "C" {
   // UNUSED
 
   // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
-  #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
+  //#define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
+  //#define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
+  //#define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
-  // Calibration values for resistive touch display
+  // Calibration for DRV_TOUCH_SIMPLE (resistive analog)
   // - These values may need to be updated to match your display
   // - Typically used in resistive displays
   // - These values can be determined from the Adafruit touchtest example sketch
   //   (check for min and max values reported from program as you touch display
   //   corners)
   // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN 230
-  #define ADATOUCH_Y_MIN 260
-  #define ADATOUCH_X_MAX 3800
-  #define ADATOUCH_Y_MAX 3700
+  // UNUSED
+  //#define ADATOUCH_X_MIN 230
+  //#define ADATOUCH_Y_MIN 260
+  //#define ADATOUCH_X_MAX 3800
+  //#define ADATOUCH_Y_MAX 3700
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -168,17 +184,11 @@ extern "C" {
   // - The following settings should not require modification by users
   // =============================================================================
 
-  // Define display and touch driver
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
-  #define DRV_TOUCH_NONE            // No touch enabled
-
 
 
   // -----------------------------------------------------------------------------
   // Touch Handling
   // -----------------------------------------------------------------------------
-
 
   // Define how touch orientation changes with display orientation
   // - UNUSED

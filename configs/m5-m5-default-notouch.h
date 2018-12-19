@@ -3,21 +3,20 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
-//   - Display: ILI9341
-//   - Touch:   FT6206 (Capacitive)
-//   - Wiring:  Uno/MEGA shield
+//   - CPU:     M5stack
+//   - Display: Integrated
+//   - Touch:   None
+//   - Wiring:  Hardcoded (integrated display)
 //
 //   - Example display:
-//     - Adafruit 2.8" TFT LCD Shield w/ Touchscreen (capacitive)
+//     - M5stack
 //
 // DIRECTIONS:
 // - To use this example configuration, rename the file as "GUIslice_config_ard.h"
 //   and copy into the GUIslice/src directory.
 //
 // WIRING:
-// - As this config file is designed for a shield, no additional
+// - As this config file is designed for an integrated display, no additional
 //   wiring is required to support the GUI operation
 //
 // - Calvin Hass
@@ -70,38 +69,52 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
-  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
+  #define DRV_DISP_M5STACK          // M5stack/M5stack library
+  #define DRV_TOUCH_NONE            // No touch enabled
+
 
   // -----------------------------------------------------------------------------
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_DC       9     // Display SPI data/command
-  #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
+  // For M5stack, the wiring is defined by M5stack library
+  // - M5stack: unused
+  //#define ADAGFX_PIN_CS       10    // Display chip select
+  //#define ADAGFX_PIN_DC       9     // Display SPI data/command
+  //#define ADAGFX_PIN_RST      0     // Display Reset
+  //#define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
+  //#define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  // - M5stack: unused
+  //#define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
   // - Software SPI: the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     11
-  #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      13
+  // - M5stack: unused
+  //#define ADAGFX_PIN_MOSI     11
+  //#define ADAGFX_PIN_MISO     12
+  //#define ADAGFX_PIN_CLK      13
+
+  // M5stack: additional pins
+  #define TFT_LIGHT_PIN       32    // display backlight
 
   // Touch handling
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
+  // - M5stack: unused
+  //#define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
+  //#define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
 
+  // M5stack: Long Press Detection
+  // NOTE: Long-press detection is only available in the latest
+  //       M5stack library releases. Uncomment the following
+  //       if the Btn wasReleasefor() API is available.  
+  //
+  // Define duration (in ms) for a long-press button event
+  //#define M5STACK_TOUCH_PRESS_LONG  300
 
   // -----------------------------------------------------------------------------
   // Orientation
@@ -123,9 +136,10 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
-  #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
+  // - M5stack: unused
+  //#define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
+  //#define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
+  //#define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
   // Calibration values for resistive touch display
   // - These values may need to be updated to match your display
@@ -134,10 +148,11 @@ extern "C" {
   //   (check for min and max values reported from program as you touch display
   //   corners)
   // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN 230
-  #define ADATOUCH_Y_MIN 260
-  #define ADATOUCH_X_MAX 3800
-  #define ADATOUCH_Y_MAX 3700
+  // - M5stack: unused
+  //#define ADATOUCH_X_MIN 230
+  //#define ADATOUCH_Y_MIN 260
+  //#define ADATOUCH_X_MAX 3800
+  //#define ADATOUCH_Y_MAX 3700
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -229,10 +244,14 @@ extern "C" {
 
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 1
+  #define GSLC_USE_PROGMEM 0
 
   #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+
+  // M5stack: Extra definitions
+  #define DRV_TOUCH_IN_DISP
+
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

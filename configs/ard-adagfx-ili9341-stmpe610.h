@@ -60,9 +60,20 @@
 extern "C" {
 #endif // __cplusplus
 
+
   // =============================================================================
   // USER DEFINED CONFIGURATION
   // =============================================================================
+
+  // -----------------------------------------------------------------------------
+  // Device Mode Selection
+  // - The following defines the display and touch drivers
+  //   and should not require modifications for this example config
+  // -----------------------------------------------------------------------------
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
+  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
+
 
   // -----------------------------------------------------------------------------
   // Pinout
@@ -72,14 +83,18 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select
   #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
   #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+  // Display interface type
   #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
 
-  // For Hardware SPI, the following definitions are unused
-  // For Software SPI, the following pins need to be defined
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
@@ -101,7 +116,7 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. ROtation is clockwise
+  // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_TOUCH_ROTATE 1
 
   // -----------------------------------------------------------------------------
@@ -165,17 +180,11 @@ extern "C" {
   // - The following settings should not require modification by users
   // =============================================================================
 
-  // Define display and touch driver
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
-  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
-
 
 
   // -----------------------------------------------------------------------------
   // Touch Handling
   // -----------------------------------------------------------------------------
-
 
   // Define how touch orientation changes with display orientation
   #define TOUCH_ROTATION_DATA 0x6350

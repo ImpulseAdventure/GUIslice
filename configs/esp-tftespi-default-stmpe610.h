@@ -4,13 +4,24 @@
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     ESP8266 / ESP32
-//   - Display: ILI9341
+//   - Display: Default (defined by TFT_eSPI config)
 //   - Touch:   STMPE610 (Resistive)
 //   - Wiring:  Custom breakout:
 //              - Pinout defined by TFT_eSPI's User_Setup.h
 //
 //   - Example display:
 //     - 
+//
+// NOTE: When using the TFT_eSPI library, there are additional
+//       library-specific configuration files that may need
+//       customization (including pin configuration), such as
+//       "User_Setup_Select.h" (typically located in the
+//       Arduino /libraries/TFT_eSPI folder). Please refer to
+//       Bodmer's TFT_eSPI library for more details:
+//       https://github.com/Bodmer/TFT_eSPI
+//
+// NOTE: To avoid potential SPI conflicts, it is recommended
+//       that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"//
 //
 // DIRECTIONS:
 // - To use this example configuration, rename the file as "GUIslice_config_ard.h"
@@ -60,9 +71,19 @@
 extern "C" {
 #endif // __cplusplus
 
+
   // =============================================================================
   // USER DEFINED CONFIGURATION
   // =============================================================================
+
+  // -----------------------------------------------------------------------------
+  // Device Mode Selection
+  // - The following defines the display and touch drivers
+  //   and should not require modifications for this example config
+  // -----------------------------------------------------------------------------
+  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
+  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
+
 
   // -----------------------------------------------------------------------------
   // Pinout
@@ -70,20 +91,27 @@ extern "C" {
 
   // For TFT_eSPI, the wiring is defined by TFT_eSPI's User_Setup.h
   // So the following are not used by GUIslice
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_DC       9     // Display SPI data/command
-  #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select
-  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
+  // TFT_eSPI: unused
+  //#define ADAGFX_PIN_CS       10    // Display chip select
+  //#define ADAGFX_PIN_DC       9     // Display SPI data/command
+  //#define ADAGFX_PIN_RST      0     // Display Reset
+  //#define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
+  //#define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
-  // For Hardware SPI, the following definitions are unused
-  // For Software SPI, the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     11
-  #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      13
+  // Display interface type
+  // TFT_eSPI: unused
+  //#define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
+  // TFT_eSPI: unused
+  //#define ADAGFX_PIN_MOSI     11
+  //#define ADAGFX_PIN_MISO     12
+  //#define ADAGFX_PIN_CLK      13
 
   // Touch handling
   #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
@@ -102,7 +130,7 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. ROtation is clockwise
+  // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_TOUCH_ROTATE 1
 
   // -----------------------------------------------------------------------------
@@ -114,17 +142,23 @@ extern "C" {
   #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
   #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
-  // Calibration values for resistive touch display
+  // Calibration for DRV_TOUCH_SIMPLE (resistive analog)
   // - These values may need to be updated to match your display
   // - Typically used in resistive displays
   // - These values can be determined from the Adafruit touchtest example sketch
   //   (check for min and max values reported from program as you touch display
   //   corners)
   // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN 230
-  #define ADATOUCH_Y_MIN 260
-  #define ADATOUCH_X_MAX 3800
-  #define ADATOUCH_Y_MAX 3700
+  // - TFT_eSPI: unused
+  //#define ADATOUCH_X_MIN 230
+  //#define ADATOUCH_Y_MIN 260
+  //#define ADATOUCH_X_MAX 3800
+  //#define ADATOUCH_Y_MAX 3700
+
+  // Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)
+  // - The following are some example defaults, but they should be updated
+  //   to match your specific touch device.
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -166,17 +200,11 @@ extern "C" {
   // - The following settings should not require modification by users
   // =============================================================================
 
-  // Define display and touch driver
-  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
-  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
-
 
 
   // -----------------------------------------------------------------------------
   // Touch Handling
   // -----------------------------------------------------------------------------
-
 
   // Define how touch orientation changes with display orientation
   #define TOUCH_ROTATION_DATA 0x6350
@@ -222,10 +250,14 @@ extern "C" {
 
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 1
+  #define GSLC_USE_PROGMEM 0
 
   #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+
+  // The TFT_eSPI display library also includes support for XPT2046 touch controller
+  // Note that TFT_eSPI's "User_Setup" should define TOUCH_CS
+  #define DRV_TOUCH_IN_DISP   // Use the display driver (TFT_eSPI) for touch events
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes
