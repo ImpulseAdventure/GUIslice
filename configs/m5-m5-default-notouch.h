@@ -112,7 +112,6 @@ extern "C" {
   //   confirmed basic operation of the library is successful.
   #define DEBUG_ERR               1   // 1 to enable, 0 to disable
 
-
   // -----------------------------------------------------------------------------
   // Optional Features
   // -----------------------------------------------------------------------------
@@ -127,7 +126,6 @@ extern "C" {
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
-
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
   // - Note that the inclusion of the SD library consumes considerable
@@ -140,8 +138,6 @@ extern "C" {
   // INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
-
-
 
   // -----------------------------------------------------------------------------
   // Touch Handling
@@ -177,7 +173,6 @@ extern "C" {
   // - A larger buffer will be faster but at the cost of RAM
   #define GSLC_SD_BUFFPIXEL   50
 
-
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
   #define GSLC_CLIP_EN 1
@@ -186,9 +181,7 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-
   #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
-
 
   #define GSLC_DEV_TOUCH ""
   #define GSLC_USE_PROGMEM 0

@@ -79,7 +79,7 @@ extern "C" {
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // On UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For UNO/MEGA shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
@@ -128,7 +128,7 @@ extern "C" {
   #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
   #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
-  // Calibration values for resistive touch display
+  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
   // - These values may need to be updated to match your display
   // - Typically used in resistive displays
   // - These values can be determined from the Adafruit touchtest example sketch
@@ -166,7 +166,6 @@ extern "C" {
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
-
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
   // - Note that the inclusion of the SD library consumes considerable
@@ -179,8 +178,6 @@ extern "C" {
   // INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
-
-
 
   // -----------------------------------------------------------------------------
   // Touch Handling
@@ -216,7 +213,6 @@ extern "C" {
   // - A larger buffer will be faster but at the cost of RAM
   #define GSLC_SD_BUFFPIXEL   50
 
-
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
   #define GSLC_CLIP_EN 1
@@ -225,9 +221,7 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-
   #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
-
 
   #define GSLC_DEV_TOUCH ""
   #define GSLC_USE_PROGMEM 1

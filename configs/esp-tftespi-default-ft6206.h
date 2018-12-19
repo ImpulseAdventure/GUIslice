@@ -12,16 +12,20 @@
 //   - Example display:
 //     - 
 //
-// NOTE: When using the TFT_eSPI library, there are additional
-//       library-specific configuration files that may need
-//       customization (including pin configuration), such as
-//       "User_Setup_Select.h" (typically located in the
-//       Arduino /libraries/TFT_eSPI folder). Please refer to
-//       Bodmer's TFT_eSPI library for more details:
-//       https://github.com/Bodmer/TFT_eSPI
+// TFT_eSPI Notes:
+//   - When using the TFT_eSPI library, there are additional
+//     library-specific configuration files that may need
+//     customization (including pin configuration), such as
+//     "User_Setup_Select.h" (typically located in the
+//     Arduino /libraries/TFT_eSPI folder). Please refer to
+//     Bodmer's TFT_eSPI library for more details:
+//     https://github.com/Bodmer/TFT_eSPI
 //
-// NOTE: To avoid potential SPI conflicts, it is recommended
-//       that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"//
+//   - To avoid potential SPI conflicts, it is recommended
+//     that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
+//
+//   - For touch support, note that TFT_eSPI's User_Setup.h must
+//     define TOUCH_CS (ie. not commented out).
 //
 // DIRECTIONS:
 // - To use this example configuration, rename the file as "GUIslice_config_ard.h"
@@ -95,10 +99,7 @@ extern "C" {
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
   // Touch handling
-  // - TFT_eSPI: Note that Touch Device Chip Select is defined by TOUCH_CS
-  //   in TFT_eSPI's User_Setup.h
   #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-
 
   // -----------------------------------------------------------------------------
   // Orientation
@@ -136,7 +137,7 @@ extern "C" {
   //#define ADATOUCH_X_MAX 3800
   //#define ADATOUCH_Y_MAX 3700
 
-  // Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)
+  // TFT_eSPI: Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)
   // - The following are some example defaults, but they should be updated
   //   to match your specific touch device.
   //#define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
@@ -170,7 +171,6 @@ extern "C" {
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
-
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
   // - Note that the inclusion of the SD library consumes considerable
@@ -183,8 +183,6 @@ extern "C" {
   // INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
-
-
 
   // -----------------------------------------------------------------------------
   // Touch Handling
@@ -220,7 +218,6 @@ extern "C" {
   // - A larger buffer will be faster but at the cost of RAM
   #define GSLC_SD_BUFFPIXEL   50
 
-
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
   #define GSLC_CLIP_EN 1
@@ -229,19 +226,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-
   #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
-
 
   #define GSLC_DEV_TOUCH ""
   #define GSLC_USE_PROGMEM 0
 
   #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
-
-  // The TFT_eSPI display library also includes support for XPT2046 touch controller
-  // Note that TFT_eSPI's "User_Setup" should define TOUCH_CS
-  //#define DRV_TOUCH_IN_DISP   // Use the display driver (TFT_eSPI) for touch events
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes
