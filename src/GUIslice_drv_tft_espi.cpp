@@ -929,7 +929,11 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
+    #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
+    #else
+    if (!m_touch.begin()) {
+    #endif
       GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() failed to init STMPE610\n",0);
       return false;
     } else {
