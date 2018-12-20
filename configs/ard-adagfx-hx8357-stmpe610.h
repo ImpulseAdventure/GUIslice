@@ -19,8 +19,8 @@
 // WIRING:
 // - The pinout configuration may need to be modified to match your wiring
 //
+// =============================================================================
 // - Calvin Hass
-// - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =============================================================================
 //
@@ -98,11 +98,6 @@ extern "C" {
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
 
-  // Touch handling
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
-
-
   // -----------------------------------------------------------------------------
   // Orientation
   // -----------------------------------------------------------------------------
@@ -126,6 +121,10 @@ extern "C" {
   #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
   #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
   #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
+
+  // Touch bus & pinout
+  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
+  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
 
   // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
   // - These values may need to be updated to match your display

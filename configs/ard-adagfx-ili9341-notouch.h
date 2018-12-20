@@ -20,8 +20,8 @@
 // - As this config file is designed for a shield, no additional
 //   wiring is required to support the GUI operation
 //
+// =============================================================================
 // - Calvin Hass
-// - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =============================================================================
 //

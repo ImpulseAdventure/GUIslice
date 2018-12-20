@@ -35,8 +35,8 @@
 // - As this config file is designed for a shield, no additional
 //   wiring is required to support the GUI operation
 //
+// =============================================================================
 // - Calvin Hass
-// - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =============================================================================
 //
@@ -98,9 +98,6 @@ extern "C" {
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
-  // Touch handling
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-
   // -----------------------------------------------------------------------------
   // Orientation
   // -----------------------------------------------------------------------------
@@ -125,22 +122,8 @@ extern "C" {
   #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS / TOUCH_CS)
   #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
-  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
-  // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
-  //#define ADATOUCH_X_MIN 230
-  //#define ADATOUCH_Y_MIN 260
-  //#define ADATOUCH_X_MAX 3800
-  //#define ADATOUCH_Y_MAX 3700
-
-  // TFT_eSPI: Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)
-  // - The following are some example defaults, but they should be updated
-  //   to match your specific touch device.
-  //#define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+  // Touch bus & pinout
+  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
 
   // TFT_eSPI: Chip Select for Touch Device
   // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)

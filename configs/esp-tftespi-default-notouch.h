@@ -35,8 +35,8 @@
 // - As this config file is designed for a shield, no additional
 //   wiring is required to support the GUI operation
 //
+// =============================================================================
 // - Calvin Hass
-// - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =============================================================================
 //
@@ -97,7 +97,6 @@ extern "C" {
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-
 
   // -----------------------------------------------------------------------------
   // Orientation

@@ -19,8 +19,8 @@
 // WIRING:
 // - The pinout configuration may need to be modified to match your wiring
 //
+// =============================================================================
 // - Calvin Hass
-// - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =============================================================================
 //
@@ -97,7 +97,6 @@ extern "C" {
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
-
 
   // -----------------------------------------------------------------------------
   // Orientation
