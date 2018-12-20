@@ -200,12 +200,7 @@ extern "C" {
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
-  #if defined(ADATOUCH_PIN_XP) && defined(ADATOUCH_PIN_YP) && defined(ADATOUCH_PIN_XM) && defined(ADATOUCH_PIN_YM) && defined(ADATOUCH_RX)
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
-  #else
-  // Config fields not defined, so use default pinout
-  TouchScreen m_touch = TouchScreen(45, A2, A3, 44, 300);
-  #endif // defined(ADATOUCH_*)
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
   // Create an SPI class for XPT2046 access
