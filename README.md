@@ -14,7 +14,7 @@
 - [Latest Updates & Work in Progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
 - [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
-- **Support email**: guislice @ impulseadventure . com
+- **Support email**: guislice@gmail.com
 
 ## Features ##
 - Pure C library, no dynamic memory allocation
@@ -25,7 +25,7 @@
 - *Devices*: Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, M5stack, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32
 - *Typical displays*: PiTFT, Waveshare, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", OLED 0.96", 4D Cape
 - *Display drivers include*: ILI9341, ST7735, SSD1306, HX8357, PCD8544
-- *Touchscreen control including*: STMPE610, FT6206, XPT2046, tslib
+- *Touchscreen control including*: STMPE610, FT6206, XPT2046, 4-wire, tslib
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
 - GPIO / pin / keyboard control for non-touchscreen devices
