@@ -744,6 +744,31 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 }
 // ----- REFERENCE CODE end
 
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem)
+{
+  // AdaFruit GFX doesn't have a routine for this so we output pixel by pixel
+  unsigned short* pImage= (unsigned short*)pBitmap;
+  int16_t h, w;
+  if (bProgMem) {
+    h = (int16_t)pgm_read_word(pImage++);
+    w = (int16_t)pgm_read_word(pImage++);
+  } else {
+    h = (int16_t)pImage++;
+    w = (int16_t)pImage++;
+  }
+  int row, col;
+  for (row=0; row<h; row++) { // For each scanline...
+    for (col=0; col<w; col++) { // For each pixel...
+      if (bProgMem) {
+        //To read from Flash Memory, pgm_read_XXX is required.
+        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
+        m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+      } else {
+        m_disp.drawPixel(nDstX+col, nDstY+row, pImage++);
+      }
+    } // end pixel
+  }
+}
 
 #if (GSLC_SD_EN)
 // ----- REFERENCE CODE begin
@@ -901,6 +926,10 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
+  char addr[6];
+  GSLC_DEBUG_PRINT("ENTER: gslc_DrvDrawImage() %s\n","");
+  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  GSLC_DEBUG_PRINT("%s\n",addr);
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
@@ -916,22 +945,30 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in ram
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
+      return true;
     } else {
       return false; // TODO: not yet supported
     }
-
+#if (GSLC_USE_PROGMEM)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     // TODO: Probably need to fix this to work with PROGMEM,
     //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from program memory
-      // - Dimensions and output color are defined in arrray header
+      // - Dimensions and output color are defined in array header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
+      return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in flash
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
       return true;
     } else {
       return false; // TODO: not yet supported
     }
-
+#endif
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     // Load image from SD media
     #if (GSLC_SD_EN)
@@ -1069,11 +1106,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
-    #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
-    #else
-    if (!m_touch.begin()) {
-    #endif
       GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() failed to init STMPE610\n",0);
       return false;
     } else {
@@ -1523,9 +1556,6 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
 ///
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
-    // TODO: Define an alternate case for DRV_TOUCH_NONE so that the
-    //       the ADATOUCH_*, TOUCH_ROTATION_* and GSLC_TOUCH_ROTATE
-    //       don't need to be defined in the config.
     uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
     uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
     uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
