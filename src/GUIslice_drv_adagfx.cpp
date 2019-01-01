@@ -79,6 +79,12 @@
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
     #include <Adafruit_PCD8544.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    #include <MCUFRIEND_kbv.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+
   #else
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
   #endif
@@ -179,6 +185,10 @@ extern "C" {
   #else
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, DAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+  MCUFRIEND_kbv m_disp;
 
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
@@ -295,6 +305,13 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_PCD8544)
       m_disp.begin();
       //m_disp.setContrast(50); Set the contrast level
+
+    #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+      uint16_t identifier = m_disp.readID();
+      m_disp.begin(identifier);
+      m_disp.setRotation(pGui->nRotation);
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
 
     #endif
 
