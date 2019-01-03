@@ -24,7 +24,7 @@
 
 // Ensure config settings are correct for the sketch
 #if !defined(DRV_DISP_M5STACK) || !defined(DRV_TOUCH_M5STACK) || !(GSLC_FEATURE_INPUT)
-  #error "This sketch requires config: #define DRV_TOUCH_M5TACK, #define DRV_TOUCH_M5STACK, #define GSLC_FEATURE_INPUT 1"
+  #warning "This sketch requires config: #define DRV_TOUCH_M5TACK, #define DRV_TOUCH_M5STACK, #define GSLC_FEATURE_INPUT 1"
 #endif
 
 // Defines for resources

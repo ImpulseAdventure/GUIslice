@@ -44,7 +44,7 @@ EasyButton btn_next(PIN_NEXT, 35, true, true);
 
 // Ensure config settings are correct for the sketch
 #if !defined(DRV_TOUCH_INPUT) || !(GSLC_FEATURE_INPUT)
-  #error "This sketch requires config: #define DRV_TOUCH_INPUT, #define GSLC_FEATURE_INPUT 1"
+  #warning "This sketch requires config: #define DRV_TOUCH_INPUT, #define GSLC_FEATURE_INPUT 1"
 #endif
 
 // Defines for resources
