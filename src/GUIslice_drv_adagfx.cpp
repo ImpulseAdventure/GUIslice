@@ -990,7 +990,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_HANDLER)
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
+    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_INPUT) || defined(DRV_TOUCH_HANDLER)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -1015,6 +1016,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     return true;
   #elif defined(DRV_TOUCH_XPT2046)
     m_touch.begin();
+    return true;
+  #elif defined(DRV_TOUCH_INPUT)
+    // Nothing more to initialize for GPIO input control mode
     return true;
   #elif defined(DRV_TOUCH_HANDLER)
     return true;
@@ -1224,6 +1228,12 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         bValid = true;
       }
     }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_INPUT)
+    // No more to do for GPIO-only mode since gslc_Update() already
+    // looks for GPIO inputs before calling TDrvGetTouch().
+    // bValid will default to false
 
   // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*

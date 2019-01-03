@@ -459,6 +459,9 @@ void gslc_Update(gslc_tsGui* pGui)
   //       outside of !defined(DRV_TOUCH_NONE) check so that we can
   //       enable physical button handling without requiring
   //       all of the other touch driver logic.
+  //       Consider creating a define that indicates whether the
+  //       touch coordinate handling should be compiled or not
+  //       (eg. if !DRV_TOUCH_NONE && !DRV_TOUCH_INPUT)
 
   int16_t               nTouchX = 0;
   int16_t               nTouchY = 0;
