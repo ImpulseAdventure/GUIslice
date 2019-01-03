@@ -90,6 +90,7 @@ extern "C" {
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
   //  #define DRV_TOUCH_M5STACK         // M5stack integrated button driver
   //  #define DRV_TOUCH_XPT2046         // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  //  #define DRV_TOUCH_INPUT           // No touchscreen support, but input only (GPIO / keyboard)
   //  #define DRV_TOUCH_HANDLER         // touch handler class
 
 
@@ -359,6 +360,10 @@ extern "C" {
 
   // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN 0
+
+// -----------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_INPUT)
+// Include basic support for GPIO/keyboard only
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_HANDLER)
