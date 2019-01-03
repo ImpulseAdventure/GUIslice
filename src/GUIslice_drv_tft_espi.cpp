@@ -1217,27 +1217,27 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 ///
 bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
 {
-    bool redraw     = pGui->nRotation != nRotation;
-    bool swapDispay = (nRotation ^ pGui->nRotation) & 0x01;
-    pGui->nRotation = nRotation;
-    pGui->nSwapXY   = nSwapXY;
-    pGui->nFlipX    = nFlipX;
-    pGui->nFlipY    = nFlipY;
+    bool bRedraw      = pGui->nRotation != nRotation;
+    bool bSwapDisplay = (nRotation ^ pGui->nRotation) & 0x01;
+    pGui->nRotation   = nRotation;
+    pGui->nSwapXY     = nSwapXY;
+    pGui->nFlipX      = nFlipX;
+    pGui->nFlipY      = nFlipY;
 
     m_disp.setRotation( pGui->nRotation );
 
     // Redraw the current page if rotation value changed
-    if( redraw ) {
+    if( bRedraw ) {
         gslc_PageRedrawSet( pGui, true );
         gslc_PageRedrawGo( pGui );
     }
 
     // change between portrait <=> landscape
-    if( swapDispay ) {
+    if( bSwapDisplay ) {
         // exchange pGui->nDispH <=> pGui->nDispW
-        uint16_t w = pGui->nDispW;
+        uint16_t nTmpW = pGui->nDispW;
         pGui->nDispW = pGui->nDispH;
-        pGui->nDispH = w;
+        pGui->nDispH = nTmpW;
 
         // new defaults for clipping region
         gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
