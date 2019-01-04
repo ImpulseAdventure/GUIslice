@@ -1564,6 +1564,10 @@ int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Set the fill state for an Element
+/// - If not filled, the element can support transparency against an
+///   arbitrary background, but this can require full screen redraws
+///   if the element is updated.
+/// - If filled, the background fill color can be changed by gslc_ElemSetCol()
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference

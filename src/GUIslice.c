@@ -2014,7 +2014,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
   sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
-  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
@@ -2100,7 +2100,7 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   gslc_tsElemRef* pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BOX,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.nFeatures      &= ~GSLC_ELEM_FEA_FRAME_EN;
-  sElem.nFeatures      &= ~GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures      |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures      &= ~GSLC_ELEM_FEA_CLICK_EN;
   // Update the normal and glowing images
   gslc_DrvSetElemImageNorm(pGui,&sElem,sImgRef);
