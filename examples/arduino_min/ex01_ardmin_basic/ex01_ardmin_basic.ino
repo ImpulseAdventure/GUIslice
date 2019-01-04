@@ -70,17 +70,22 @@ void setup()
 
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
+}
 
+void loop()
+{
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
   // Main code here...
+  // In a real program, we would detect button presses and take action.
+  // For this simple demo, we will terminate after 2 seconds.
   delay(2000);
 
   // Close down display
   gslc_Quit(&m_gui);
+
+  // Since we can't really exit an Arduino program, we're just going to
+  // enter an infinite loop here.
+  while (1) { }
 }
-
-void loop() { }
-
-

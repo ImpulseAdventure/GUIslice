@@ -81,6 +81,8 @@ int main( int argc, char* args[] )
   gslc_Update(&m_gui);
 
   // Main code here...
+  // In a real program, we would detect button presses and take action.
+  // For this simple demo, we will terminate after 2 seconds.
   sleep(2);
 
   // Close down display
