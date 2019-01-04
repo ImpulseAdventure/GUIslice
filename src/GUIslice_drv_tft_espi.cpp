@@ -1156,11 +1156,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // For resistive displays, perform constraint and scaling
     #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE)
       // Perform scaling from input to output
-      nOutputX = map(nInputX, ADATOUCH_X_MIN, ADATOUCH_X_MAX, 0, nDispOutMaxX);
-      nOutputY = map(nInputY, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX, 0, nDispOutMaxY);
+      nOutputX = map(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,nDispOutMaxX);
+      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);
       // Perform constraining to OUTPUT boundaries
-      nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
-      nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
+      nOutputX = constrain(nOutputX,0,nDispOutMaxX);
+      nOutputY = constrain(nOutputY,0,nDispOutMaxY);
     #else
       // No scaling from input to output
       nOutputX = nInputX;
