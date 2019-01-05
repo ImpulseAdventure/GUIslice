@@ -3730,6 +3730,9 @@ void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef s
   // Update the normal and glowing images
   gslc_DrvSetElemImageNorm(pGui,pElem,sImgRef);
   gslc_DrvSetElemImageGlow(pGui,pElem,sImgRefSel);
+
+  // Mark as needing redraw
+  gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_FULL);
 }
 
 bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)

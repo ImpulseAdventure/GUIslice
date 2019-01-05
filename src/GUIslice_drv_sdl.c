@@ -427,9 +427,10 @@ bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 
 bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef)
 {
-  if (pElem->sImgRefNorm.pvImgRaw != NULL) {
-    GSLC_DEBUG_PRINT("ERROR: DrvSetElemImageNorm(%s) with pvImgRaw already set\n","");
-    return false;
+  // Dispose of previous image
+  if (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE) {
+    gslc_DrvImageDestruct(pElem->sImgRefNorm.pvImgRaw);
+    pElem->sImgRefNorm = gslc_ResetImage();
   }
 
   pElem->sImgRefNorm = sImgRef;
@@ -444,9 +445,10 @@ bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
 
 bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef)
 {
-  if (pElem->sImgRefGlow.pvImgRaw != NULL) {
-    GSLC_DEBUG_PRINT("ERROR: DrvSetElemImageGlow(%s) with pvImgRaw already set\n","");
-    return false;
+  // Dispose of previous image
+  if (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE) {
+    gslc_DrvImageDestruct(pElem->sImgRefGlow.pvImgRaw);
+    pElem->sImgRefGlow = gslc_ResetImage();
   }
 
   pElem->sImgRefGlow = sImgRef;
