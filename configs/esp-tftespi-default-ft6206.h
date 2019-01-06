@@ -111,7 +111,7 @@ extern "C" {
 
   // Set Default rotation of the touch overlay
   // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_TOUCH_ROTATE 1
+  #define GSLC_TOUCH_ROTATE 3
 
   // -----------------------------------------------------------------------------
   // Touch Handling
@@ -127,6 +127,9 @@ extern "C" {
 
   // TFT_eSPI: Chip Select for Touch Device
   // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)
+
+  // Touch sensitivity for DRV_TOUCH_FT6206 (capacitive touch)
+  #define ADATOUCH_SENSITIVITY  40
 
   // -----------------------------------------------------------------------------
   // Diagnostics
