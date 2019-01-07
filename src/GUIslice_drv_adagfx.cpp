@@ -289,8 +289,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       pGui->nDispH = SSD1306_LCDHEIGHT;
 
     #elif defined(DRV_DISP_ADAGFX_ST7735)
-      m_disp.initR(INITR_144GREENTAB);  // 1.44"
-      //m_disp.initR(INITR_BLACKTAB);     // 1.8" [TODO]
+      // ST7735 requires additional initialization depending on
+      // display type. Enable the user to specify the
+      // configuration via DRV_DISP_ADAGFX_ST7735_INIT.
+      #ifndef DRV_DISP_ADAGFX_ST7735_INIT
+        m_disp.initR(INITR_144GREENTAB);  // Default to Green Tab 1.44"
+      #else
+        m_disp.initR(DRV_DISP_ADAGFX_ST7735_INIT);
+      #endif
+      m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = m_disp.width();
       pGui->nDispH = m_disp.height();
 
