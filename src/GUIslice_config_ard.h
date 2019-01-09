@@ -415,9 +415,12 @@ extern "C" {
   // Error reporting
   // - Set DEBUG_ERR to 1 to enable error reporting via the Serial connection
   // - Enabling DEBUG_ERR increases FLASH memory consumption which may be
-  //   limited on the baseline Arduino (ATmega328P) devices.
+  //   limited on the baseline Arduino (ATmega328P) devices. Therefore it
+  //   is recommended to disable DEBUG_ERR (set to 0) on baseline Arduino
+  //   once initial device operation confirmed to work in examples ex01 and ex02.
+  //   
   #if defined(__AVR__)
-    #define DEBUG_ERR               0   // Debugging disabled by default on low-mem Arduino
+    #define DEBUG_ERR               1   // Debugging enabled by default
   #else
     // For all other devices, DEBUG_ERR is enabled by default.
     // Since this mode increases FLASH memory considerably, it may be
