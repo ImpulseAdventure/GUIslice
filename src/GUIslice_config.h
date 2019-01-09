@@ -39,6 +39,51 @@ extern "C" {
 #endif // __cplusplus
 
 // -----------------------------------------------------------------------------------------
+// SELECT ONE OF THE FOLLOWING EXAMPLE CONFIGURATIONS OR ADD YOUR OWN
+// - Uncomment one of the following lines
+// - These example configurations are located in the /configs folder
+// - To add your own, make a copy of an example config, rename it
+//   and add it to the list here.
+// - If no line is uncommented, then the default combined configuration
+//   file will be used, ie. GUIslice_config_ard.h / GUIslice_config_linux.h
+//   which is selected at the bottom of this file
+// - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
+//   to help identify a suitable config for your MCU shield / display
+// -----------------------------------------------------------------------------------------
+
+  // Add your own here:
+  //#include "../configs/my-config.h"
+
+  // Example configs included in library /configs:
+  //#include "../configs/ard-adagfx-hx8357-ft6206.h"
+  //#include "../configs/ard-adagfx-hx8357-notouch.h"
+  //#include "../configs/ard-adagfx-hx8357-simple.h"
+  //#include "../configs/ard-adagfx-hx8357-stmpe610.h"
+  //#include "../configs/ard-adagfx-ili9341-ft6206.h"
+  //#include "../configs/ard-adagfx-ili9341-input.h"
+  //#include "../configs/ard-adagfx-ili9341-notouch.h"
+  //#include "../configs/ard-adagfx-ili9341-simple.h"
+  //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
+  //#include "../configs/ard-adagfx-mcufriend-simple.h"
+  //#include "../configs/ard-adagfx-shld-tft18v2.h"
+  //#include "../configs/esp-tftespi-default-ft6206.h"
+  //#include "../configs/esp-tftespi-default-notouch.h"
+  //#include "../configs/esp-tftespi-default-simple.h"
+  //#include "../configs/esp-tftespi-default-stmpe610.h"
+  //#include "../configs/esp-tftespi-default-xpt2046.h"
+  //#include "../configs/linux-sdl1-default-mouse.h"
+  //#include "../configs/m5-m5-default-btn3.h"
+  //#include "../configs/m5-m5-default-notouch.h"
+  //#include "../configs/misc-adagfx-shld-featherwing24.h"
+  //#include "../configs/ttgo-adagfx-ili9341-notouch.h"
+
+
+// -----------------------------------------------------------------------------------------
+// DEFAULT COMBINED CONFIGURATION FILE
+// - If no user configuration has been selected, a default config will be selected here
+// - Note that the include guard _GUISLICE_CONFIG_ARD_H_ and _GUISLICE_CONFIG_LINUX_H_
+//   will prevent these from loading if any of the user configs have been loaded
+// -----------------------------------------------------------------------------------------
 
 // Import user configuration depending on device type
 #if defined(__linux__)
@@ -61,6 +106,7 @@ extern "C" {
   #error "Unknown device platform"
 #endif
 
+// -----------------------------------------------------------------------------------------
 
 #ifdef __cplusplus
 }
