@@ -64,6 +64,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ili9341-notouch.h"
   //#include "../configs/ard-adagfx-ili9341-simple.h"
   //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
+  //#include "../configs/ard-adagfx-mcufriend-notouch.h"
   //#include "../configs/ard-adagfx-mcufriend-simple.h"
   //#include "../configs/ard-adagfx-shld-tft18v2.h"
   //#include "../configs/esp-tftespi-default-ft6206.h"
