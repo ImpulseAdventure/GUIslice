@@ -1158,12 +1158,44 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
     } else {
-      // Touch release
-      // Indicate old coordinate but with pressure=0
-      m_nLastRawPress = 0;
-      m_bLastTouched = false;
-      bValid = true;
-    }
+      // Unfortunately, the Adafruit_TouchScreen has a few issues that
+      // make it hard to deal with reliably. The most difficult problem
+      // involves the ambiguous return state from getTouch().
+      // Without handling this in a special way, we might see spurious
+      // touch-release events.
+      //
+      // Upon entering this clause, we can infer Adafruit_TouchScreen returned z=0
+      // - This either means:
+      //   a) Touch was released (z is 0 due to integer overflow, div/0)
+      //   b) Touch still active but filtered due to noisy read
+      //
+      // Because of case (b) returning the same signature as case (a), we
+      // need to take an additional step to differentiate the two cases
+      // otherwise we might interpret spurious "touch release" events.
+      //
+      // In order to differentiate these cases, we can call the Adafruit
+      // getPressure() API since it does not include the filtering for (b).
+      // Therefore, if we see that the pressure is non-zero, and less than
+      // the max pressure threshold, we can re-interpret our original reading
+      // as (b), wherein we would still want to treat as a touch pressed event.
+
+      uint16_t nPressCur = m_touch.pressure();
+      if ((nPressCur > ADATOUCH_PRESS_MIN) && (nPressCur < ADATOUCH_PRESS_MAX)) {
+        // The unfiltered result is that the display is still pressed
+        // Therefore we are likely in case (b) and should return our
+        // last saved result (with touch pressure still active)
+        bValid = true;
+      } else {
+        // The unfiltered result is that the display is not pressed
+        // Therefore we are likely in case (a) and should force
+        // the touch pressure to be deactivated
+
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      } // nPressCur
+    } // m_bLastTouched
   }
 
   // ----------------------------------------------------------------
