@@ -1133,13 +1133,18 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
   TSPoint p = m_touch.getPoint();
 
+  // Restore pin modes in case pins are shared
   pinMode(ADATOUCH_PIN_XM, OUTPUT);
   pinMode(ADATOUCH_PIN_YP, OUTPUT);
 
-  // Select reasonable touch pressure thresholds
-  // Note that the minimum is not "> 0" as some
-  // displays may produce a (small) non-zero value
-  // when not touched.
+  // Select reasonable touch pressure threshold range.
+  // Note that the Adafruit_TouchScreen library appears to
+  // return the following:
+  // - 0:     If no touch (results from integer overflow, div/0)
+  // - 0:     If touch active but filtered due to noise
+  // - small: If touch active and hard
+  // - large: If touch active and soft
+  // Note that the "pressure" (z) value is inverted in interpretation
   if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
     nRawX = p.x;
     nRawY = p.y;
@@ -1189,7 +1194,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         m_nLastRawPress = 0;
         m_bLastTouched = false;
         bValid = true;
+        #ifdef DBG_TOUCH
+        GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+            m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+       #endif
       } // nPressCur
+
+      // TODO: Implement touch debouncing
+
     } // m_bLastTouched
   }
 
@@ -1201,11 +1213,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    #if defined(ADATOUCH_PRESS_MIN)
     if (p.z > ADATOUCH_PRESS_MIN) {
-    #else
-    if (p.z > 0) {
-    #endif
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
