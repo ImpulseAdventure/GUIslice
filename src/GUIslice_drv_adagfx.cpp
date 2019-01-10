@@ -1129,7 +1129,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
 
   uint16_t  nRawX,nRawY;
-  uint8_t   nRawPress;
+  int16_t   nRawPress;
 
   TSPoint p = m_touch.getPoint();
 
@@ -1140,12 +1140,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // Note that the minimum is not "> 0" as some
   // displays may produce a (small) non-zero value
   // when not touched.
-  #if defined(ADATOUCH_PRESS_MIN) && defined(ADATOUCH_PRESS_MAX)
   if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
-  #else
-  if ((p.z > 10) && (p.z < 1000)) {
-  #endif
-
     nRawX = p.x;
     nRawY = p.y;
     nRawPress = p.z;
