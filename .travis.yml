@@ -1,8 +1,11 @@
 language: c
 sudo: false
+branches:
+  except:
+    - gh-pages
 env:
   global:
-    - PRETTYNAME="GUIslice embedded GUI library for Arduino & Raspberry Pi"
+    - PRETTYNAME="GUIslice embedded GUI library for Arduino & Raspberry Pi
 addons:
   apt:
     packages:
