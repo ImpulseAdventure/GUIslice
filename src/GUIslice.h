@@ -326,6 +326,13 @@ typedef enum {
 
 } gslc_teTouch;
 
+/// Status of a module's initialization
+typedef enum {
+  GSLC_INITSTAT_UNDEF = 0,       ///< Module status has not been defined yet
+  GSLC_INITSTAT_INACTIVE,        ///< Module is not enabled
+  GSLC_INITSTAT_FAIL,            ///< Module is enabled but failed to init
+  GSLC_INITSTAT_ACTIVE           ///< Module is enabled and initalized OK
+} gslc_teInitStat;
 
 
 
@@ -702,6 +709,8 @@ typedef struct {
 #endif
 
   gslc_tsElem         sElemTmpProg;     ///< Temporary element for Flash compatibility
+
+  gslc_teInitStat     eInitStatTouch;   ///< Status of touch initialization
   int16_t             nTouchLastX;      ///< Last touch event X coord
   int16_t             nTouchLastY;      ///< Last touch event Y coord
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))

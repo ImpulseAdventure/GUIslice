@@ -96,6 +96,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 {
   unsigned  nInd;
   bool      bOk = true;
+  bool      bTouchOk = true;
+
+  pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
   // Initialize state
   pGui->nDispW          = 0;
@@ -160,10 +163,26 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   // Initialize the display and touch drivers
   if (bOk) { bOk &= gslc_DrvInit(pGui); }
-  #if !defined(DRV_TOUCH_NONE)
-  if (bOk) { bOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH); }
+  #if defined(DRV_TOUCH_NONE)
+    pGui->eInitStatTouch = GSLC_INITSTAT_INACTIVE;
+  #else
+    if (bOk) {
+      // Touch initialization is not made to be a fatal error
+      // Instead, a flag is set that can be used to alert the
+      // user on their display (in case the debug messaging was
+      // not enabled)
+      bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
+      if (bTouchOk) {
+        pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
+      } else {
+        pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
+      }
+    }
   #endif
 
+  // If the display didn't initialize properly, then return
+  // false which should mark it as a fatal error. Note that
+  // touch handler errors are not included as fatal errors.
   if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
   return bOk;
 }
@@ -450,6 +469,13 @@ void gslc_Update(gslc_tsGui* pGui)
   // The touch handling logic is used by both the touchscreen
   // handler as well as the GPIO/pin/keyboard input controller
   #if !defined(DRV_TOUCH_NONE)
+
+  // Check to see if we had a touch initialization error
+  // if so, mark this on the display.
+  if (pGui->eInitStatTouch == GSLC_INITSTAT_FAIL) {
+    gslc_DrvDrawTxt(pGui,5,5,NULL,(char*)"ERROR: InitTouch",
+      GSLC_TXT_DEFAULT, GSLC_COL_RED, GSLC_COL_BLACK);
+  }
 
   // ---------------------------------------------
   // Touch handling
