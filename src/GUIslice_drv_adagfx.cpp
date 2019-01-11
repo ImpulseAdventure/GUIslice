@@ -299,6 +299,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.initR(DRV_DISP_ADAGFX_ST7735_INIT);
       #endif
+      // TODO: To support ST7789, init() is called with the display dimensions
+      //       instead of initR() with the initialization enumeration.
       m_disp.setRotation( pGui->nRotation );
       pGui->nDispW = m_disp.width();
       pGui->nDispH = m_disp.height();
