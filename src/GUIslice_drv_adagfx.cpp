@@ -1162,6 +1162,22 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
     } else {
+
+      #if !defined(FIX_4WIRE)
+      // Original behavior without touch pressure workaround
+
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+      #ifdef DBG_TOUCH
+      GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+          m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+      #endif
+
+      #else
+      // Apply touch pressure workaround
+
       // Unfortunately, the Adafruit_TouchScreen has a few issues that
       // make it hard to deal with reliably. The most difficult problem
       // involves the ambiguous return state from getTouch().
@@ -1189,6 +1205,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         // Therefore we are likely in case (b) and should return our
         // last saved result (with touch pressure still active)
         bValid = true;
+        #ifdef DBG_TOUCH
+        // Give indication that workaround applied: continue press
+        GSLC_DEBUG_PRINT("DBG: Touch Cont =%u Raw[%d,%d]\n",
+            m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+        #endif
       } else {
         // The unfiltered result is that the display is not pressed
         // Therefore we are likely in case (a) and should force
@@ -1201,8 +1222,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         #ifdef DBG_TOUCH
         GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
             m_nLastRawPress,m_nLastRawX,m_nLastRawY);
-       #endif
+        #endif
       } // nPressCur
+      #endif // FIX_4WIRE
 
       // TODO: Implement touch debouncing
 
