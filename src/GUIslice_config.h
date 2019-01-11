@@ -38,7 +38,7 @@
 extern "C" {
 #endif // __cplusplus
 
-// -----------------------------------------------------------------------------------------
+// =========================================================================================
 // SELECT ONE OF THE FOLLOWING EXAMPLE CONFIGURATIONS OR ADD YOUR OWN
 // - Uncomment one of the following lines
 // - These example configurations are located in the /configs folder
@@ -49,12 +49,19 @@ extern "C" {
 //   which is selected at the bottom of this file
 // - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
 //   to help identify a suitable config for your MCU shield / display
-// -----------------------------------------------------------------------------------------
+// =========================================================================================
 
-  // Add your own here:
+  // ---------------------------------------------------------------------------------------
+  // Add your own configs here:
+  // ---------------------------------------------------------------------------------------
   //#include "../configs/my-config.h"
 
+  // ---------------------------------------------------------------------------------------
   // Example configs included in library /configs:
+  // ---------------------------------------------------------------------------------------
+
+  // Arduino, ARM SAMD, Cortex M0/M4, nRF52:
+  // ------------------------------------------------------
   //#include "../configs/ard-adagfx-hx8357-ft6206.h"
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
   //#include "../configs/ard-adagfx-hx8357-simple.h"
@@ -68,25 +75,35 @@ extern "C" {
   //#include "../configs/ard-adagfx-mcufriend-simple.h"
   //#include "../configs/ard-adagfx-pcd8544-notouch.h"
   //#include "../configs/ard-adagfx-shld-tft18v2.h"
+  //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
+
+  // ESP-8266, ESP32, M5stack, TTGO:
+  // ------------------------------------------------------
   //#include "../configs/esp-tftespi-default-ft6206.h"
   //#include "../configs/esp-tftespi-default-notouch.h"
   //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
-  //#include "../configs/linux-sdl1-default-mouse.h"
   //#include "../configs/m5-m5-default-btn3.h"
   //#include "../configs/m5-m5-default-notouch.h"
-  //#include "../configs/misc-adagfx-shld-featherwing24.h"
   //#include "../configs/ttgo-adagfx-ili9341-notouch.h"
 
+  // Multi-device shields:
+  // ------------------------------------------------------
+  //#include "../configs/misc-adagfx-shld-featherwing24.h"
 
-// -----------------------------------------------------------------------------------------
+  // Raspberry Pi / LINUX:
+  // ------------------------------------------------------
+  //#include "../configs/linux-sdl1-default-mouse.h"
+
+
+// =========================================================================================
 // DEFAULT COMBINED CONFIGURATION FILE
 // - If no user configuration has been selected, a default config will be selected here
 // - Note that the include guard _GUISLICE_CONFIG_ARD_H_ and _GUISLICE_CONFIG_LINUX_H_
 //   will prevent these from loading if any of the user configs have been loaded
-// -----------------------------------------------------------------------------------------
+// =========================================================================================
 
 // Import user configuration depending on device type
 #if defined(__linux__)
