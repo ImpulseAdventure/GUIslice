@@ -10,7 +10,7 @@
 //   - Wiring:  Manual
 //
 //   - Example display:
-//     - 
+//     - Nokia 5110/3310 monochrome LCD
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"

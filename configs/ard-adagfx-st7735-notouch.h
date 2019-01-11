@@ -10,7 +10,9 @@
 //   - Wiring:  Manual
 //
 //   - Example display:
-//     - 
+//     - Adafruit 1.8" Color TFT LCD display with MicroSD Card Breakout
+//     - Adafruit 1.44" Color TFT LCD Display with MicroSD Card Breakout
+//     - Adafruit 0.96" 160x80 Color TFT DIsplay w/ MicroSD Card Breakout
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
