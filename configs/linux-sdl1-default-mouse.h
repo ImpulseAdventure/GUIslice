@@ -9,8 +9,7 @@
 //   - Wiring:  None
 //
 // DIRECTIONS:
-// - To use this example configuration, rename the file as "GUIslice_config_linux.h"
-//   and copy into the GUIslice/src directory.
+// - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
 // - None

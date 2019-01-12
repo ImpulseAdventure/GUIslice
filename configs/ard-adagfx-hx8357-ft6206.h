@@ -3,8 +3,9 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     - Arduino & compatible devices
+//              - ARM Cortex M0/M4, SAMD, Feather
+//              - nRF52
 //   - Display: HX8357
 //   - Touch:   FT6206 (Capacitive)
 //   - Wiring:  Uno/MEGA shield
@@ -13,8 +14,7 @@
 //     - 
 //
 // DIRECTIONS:
-// - To use this example configuration, rename the file as "GUIslice_config_ard.h"
-//   and copy into the GUIslice/src directory.
+// - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
 // - The pinout configuration may need to be modified to match your wiring
@@ -82,8 +82,6 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)

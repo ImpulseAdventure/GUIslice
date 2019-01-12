@@ -13,8 +13,7 @@
 //     - 
 //
 // DIRECTIONS:
-// - To use this example configuration, rename the file as "GUIslice_config_ard.h"
-//   and copy into the GUIslice/src directory.
+// - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
 // - As this config file is designed for a shield, no additional
@@ -83,8 +82,6 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
-  #define ADAGFX_PIN_WR       A1    // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD       A0    // Display read pin (for parallel displays)
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)

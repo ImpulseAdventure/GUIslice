@@ -9,8 +9,7 @@
 //   - Wiring:  Integrated device shield
 //
 // DIRECTIONS:
-// - To use this example configuration, rename the file as "GUIslice_config_ard.h"
-//   and copy into the GUIslice/src directory.
+// - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
 // - As this config file is designed for a shield, no additional
