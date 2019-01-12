@@ -95,6 +95,7 @@ extern "C" {
 
   // Raspberry Pi / LINUX:
   // ------------------------------------------------------
+  //#include "../configs/rpi-sdl1-default-tslib.h"
   //#include "../configs/linux-sdl1-default-mouse.h"
 
 
