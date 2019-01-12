@@ -1406,7 +1406,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // Since we are only requesting at most 1 sample, the return
   // value should either be 0 (no samples) or 1 (sample success)
 
-  if (nRet >= 0) {
+  if (nRet > 0) {
     // Sample successfully fetched
     (*pnX)          = pSamp.x;
     (*pnY)          = pSamp.y;
