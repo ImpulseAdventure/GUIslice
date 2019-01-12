@@ -1001,6 +1001,69 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
+
+#if defined(DRV_TOUCH_ADA_SIMPLE)
+
+  // Enable workaround for Adafruit_TouchScreen pressure readings?
+  // - See Issue #96
+  #define FIX_4WIRE // Comment out to disable
+
+  // NOTE: The Adafruit_TouchScreen library alters the state of several
+  //       pins during the course of reading the touch coordinates and
+  //       pressure. Unfortunately, it does not restore the prior state
+  //       which can impact other processes such as graphics drivers which
+  //       may share the same pins. The following routines are responsible
+  //       for saving and restoring the pin state and will wrap the
+  //       touch polling logic. If a future release of the Adafruit_TouchScreen
+  //       library addresses this issue, this wrapper logic can be removed.
+  //       For further reference, please refer to Issue #96.
+
+  /// Structure used to retain a port state (mode and level)
+  /// so that it can be restored later.
+  struct gslc_tsPinState
+  {
+    int     nMode;     // OUTPUT, INPUT, INPUT_PULLUP
+    bool    bIsHigh;   // Is an output and HIGH?
+  };
+
+  /// Return the current pinMOde() for a pin
+  int gslc_TDrvGetPinMode(uint8_t nPin)
+  {
+    if (nPin >= NUM_DIGITAL_PINS) {
+      return (-1);
+    }
+    uint8_t nBit            = digitalPinToBitMask(nPin);
+    uint8_t nPort           = digitalPinToPort(nPin);
+
+    // Determine if port is an output
+    volatile uint8_t *nReg  = portModeRegister(nPort);
+    if (*nReg & nBit) {
+      return (OUTPUT);
+    }
+
+    // Determine if port is an input and whether pullup is active
+    volatile  uint8_t *nOut = portOutputRegister(nPort);
+    return ((*nOut & nBit) ? INPUT_PULLUP : INPUT);
+  }
+
+  /// Fetch the current pin mode and level
+  inline void gslc_TDrvSavePinState(int nPin, gslc_tsPinState &sPinState)
+  {
+    sPinState.nMode = gslc_TDrvGetPinMode(nPin);
+    sPinState.bIsHigh = digitalRead(nPin);
+  }
+
+  /// Restore the pin mode and level
+  inline void gslc_TDrvRestorePinState(int nPin,gslc_tsPinState sPinState)
+  {
+    pinMode(nPin,sPinState.nMode);
+    if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
+  }
+
+#endif // DRV_TOUCH_ADA_SIMPLE
+
+
+
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
     defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_INPUT) || defined(DRV_TOUCH_HANDLER)
 
@@ -1040,7 +1103,6 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #endif
 
 }
-
 
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
@@ -1135,11 +1197,19 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   uint16_t  nRawX,nRawY;
   int16_t   nRawPress;
 
-  TSPoint p = m_touch.getPoint();
+  // Saved pin state
+  gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
 
-  // Restore pin modes in case pins are shared
-  pinMode(ADATOUCH_PIN_XM, OUTPUT);
-  pinMode(ADATOUCH_PIN_YP, OUTPUT);
+  // As Adafruit_TouchScreen polling will alter the pin state and some
+  // of these pins may be shared with the display, we need to save and
+  // then later restore the pin state.
+  gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
+  
+  // Perform the polling of touch coordinate & pressure
+  TSPoint p = m_touch.getPoint();
 
   // Select reasonable touch pressure threshold range.
   // Note that the Adafruit_TouchScreen library appears to
@@ -1163,8 +1233,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // Wasn't touched before; do nothing
     } else {
 
-      #if !defined(FIX_4WIRE)
-      // Original behavior without touch pressure workaround
+      #if !defined(FIX_4WIRE) // Original behavior without touch pressure workaround
 
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
@@ -1175,8 +1244,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
           m_nLastRawPress,m_nLastRawX,m_nLastRawY);
       #endif
 
-      #else
-      // Apply touch pressure workaround
+      #else // Apply touch pressure workaround
 
       // Unfortunately, the Adafruit_TouchScreen has a few issues that
       // make it hard to deal with reliably. The most difficult problem
@@ -1199,7 +1267,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // the max pressure threshold, we can re-interpret our original reading
       // as (b), wherein we would still want to treat as a touch pressed event.
 
+      // Read the touch pressure
+      // Note that we will need to restore the pin status later
+      // once we are done with our polling.
       uint16_t nPressCur = m_touch.pressure();
+
       if ((nPressCur > ADATOUCH_PRESS_MIN) && (nPressCur < ADATOUCH_PRESS_MAX)) {
         // The unfiltered result is that the display is still pressed
         // Therefore we are likely in case (b) and should return our
@@ -1230,6 +1302,13 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     } // m_bLastTouched
   }
+
+  // Now that we have completed our polling into Adafruit_TouchScreen,
+  // we need to restore the original pin state.
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046)
