@@ -747,14 +747,14 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem)
 {
   // AdaFruit GFX doesn't have a routine for this so we output pixel by pixel
-  unsigned short* pImage= (unsigned short*)pBitmap;
+  const int16_t* pImage = (const int16_t*)pBitmap;
   int16_t h, w;
   if (bProgMem) {
-    h = (int16_t)pgm_read_word(pImage++);
-    w = (int16_t)pgm_read_word(pImage++);
+    h = pgm_read_word(pImage++);
+    w = pgm_read_word(pImage++);
   } else {
-    h = (int16_t)pImage++;
-    w = (int16_t)pImage++;
+    h = *(pImage++);
+    w = *(pImage++);
   }
   int row, col;
   for (row=0; row<h; row++) { // For each scanline...
@@ -764,7 +764,7 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
         //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
         m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
       } else {
-        m_disp.drawPixel(nDstX+col, nDstY+row, pImage++);
+        m_disp.drawPixel(nDstX+col, nDstY+row, *(pImage++));
       }
     } // end pixel
   }
@@ -926,10 +926,13 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
+  #if defined(DBG_DRIVER)
   char addr[6];
-  GSLC_DEBUG_PRINT("ENTER: gslc_DrvDrawImage() %s\n","");
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage(%s) with ImgBuf address=\n","");
   sprintf(addr,"%04X",sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
+  #endif
+
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
