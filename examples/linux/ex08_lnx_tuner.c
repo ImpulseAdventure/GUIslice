@@ -15,7 +15,7 @@
 
 // Defines for resources
 #define MAX_PATH  255
-#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 #define IMG_GRAD_BACK   "/res/grad-blue1.bmp"
 #define IMG_GRADBAR_TOP "/res/gradbar-purple-top.bmp"
 #define IMG_GRADBAR_BOT "/res/gradbar-purple-bot.bmp"

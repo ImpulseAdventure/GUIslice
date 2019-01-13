@@ -13,7 +13,7 @@
 #include "unistd.h"   // For usleep() //xxx
 
 // Defines for resources
-#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};

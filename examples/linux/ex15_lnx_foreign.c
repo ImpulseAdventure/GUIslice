@@ -11,7 +11,7 @@
 
 
 // Defines for resources
-#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 // Define additional font with foreign characters
 // - NOTE: This font will require manual installation
 #define FONT_AMIKO "/usr/share/fonts/truetype/amiko/Amiko-Regular.ttf"

@@ -17,7 +17,7 @@
 
 // Defines for resources
 #define MAX_PATH  255
-#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 #define IMG_LOGO        "/res/logo1-200x40.bmp"
 char m_strImgLogo[MAX_PATH];
 
