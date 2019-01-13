@@ -1106,7 +1106,11 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #if defined(DRV_TOUCH_ADA_STMPE610)
+    #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
+    #else
+    if (!m_touch.begin()) {
+    #endif
       GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() failed to init STMPE610\n",0);
       return false;
     } else {
@@ -1556,6 +1560,9 @@ bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY
 ///
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
+    // TODO: Define an alternate case for DRV_TOUCH_NONE so that the
+    //       the ADATOUCH_*, TOUCH_ROTATION_* and GSLC_TOUCH_ROTATE
+    //       don't need to be defined in the config.
     uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
     uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
     uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
