@@ -508,6 +508,24 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 }
 // ----- REFERENCE CODE end
 
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem)
+{
+  const int16_t* pImage = (const int16_t*)pBitmap;
+  int16_t h = *(pImage++);
+  int16_t w = *(pImage++);
+  int row, col;
+  for (row=0; row<h; row++) { // For each scanline...
+    for (col=0; col<w; col++) { // For each pixel...
+      if (bProgMem) {
+        //To read from Flash Memory, pgm_read_XXX is required.
+        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
+        m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+      } else {
+        m_disp.drawPixel(nDstX+col, nDstY+row, *(pImage++));
+      }
+    } // end pixel
+  }
+}
 
 #if (GSLC_SD_EN)
 // ----- REFERENCE CODE begin
@@ -680,6 +698,10 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in ram
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
+      return true;
     } else {
       return false; // TODO: not yet supported
     }
@@ -691,6 +713,10 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // Draw a monochrome bitmap from program memory
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
+      return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in flash
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
     } else {
       return false; // TODO: not yet supported

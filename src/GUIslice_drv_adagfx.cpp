@@ -744,6 +744,34 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 }
 // ----- REFERENCE CODE end
 
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem)
+{
+  // AdaFruit GFX doesn't have a routine for this so we output pixel by pixel
+  const int16_t* pImage = (const int16_t*)pBitmap;
+  int16_t h, w;
+  if (bProgMem) {
+    h = pgm_read_word(pImage++);
+    w = pgm_read_word(pImage++);
+  } else {
+    h = *(pImage++);
+    w = *(pImage++);
+  }
+  #if defined(DBG_DRIVER)
+  GSLC_DEBUG_PRINT("DBG: DrvDrawBmp24FromMem() w=%d h=%d\n", w, h);
+  #endif
+  int row, col;
+  for (row=0; row<h; row++) { // For each scanline...
+    for (col=0; col<w; col++) { // For each pixel...
+      if (bProgMem) {
+        //To read from Flash Memory, pgm_read_XXX is required.
+        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
+        m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+      } else {
+        m_disp.drawPixel(nDstX+col, nDstY+row, *(pImage++));
+      }
+    } // end pixel
+  }
+}
 
 #if (GSLC_SD_EN)
 // ----- REFERENCE CODE begin
@@ -901,6 +929,13 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
+  #if defined(DBG_DRIVER)
+  char addr[6];
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
+  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  GSLC_DEBUG_PRINT("%s\n",addr);
+  #endif
+
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
@@ -916,22 +951,30 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       // - Dimensions and output color are defined in arrray header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in ram
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
+      return true;
     } else {
       return false; // TODO: not yet supported
     }
-
+#if (GSLC_USE_PROGMEM)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     // TODO: Probably need to fix this to work with PROGMEM,
     //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from program memory
-      // - Dimensions and output color are defined in arrray header
+      // - Dimensions and output color are defined in array header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
+      return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // 24-bit Bitmap in flash
+      gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
       return true;
     } else {
       return false; // TODO: not yet supported
     }
-
+#endif
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_SD) {
     // Load image from SD media
     #if (GSLC_SD_EN)
@@ -950,6 +993,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 
   } else {
     // Unsupported source
+    GSLC_DEBUG_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
     return false;
   }
 }

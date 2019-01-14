@@ -459,6 +459,24 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 
 
 ///
+/// Draw a color 24-bit depth bitmap from a memory array
+/// - Note that users must convert images from their native
+///   format (eg. BMP, PNG, etc.) into a C array. Please
+///   refer to the following guide for details:
+///   https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Images-from-FLASH
+/// - The converted file (c array) can then be included in the sketch.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nDstX:       X coord for copy
+/// \param[in]  nDstY:       Y coord for copy
+/// \param[in]  pBitmap:     Pointer to bitmap buffer
+/// \param[in]  bProgMem:    Bitmap is stored in Flash if true, RAM otherwise
+///
+/// \return none
+///
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem);
+
+///
 /// Copy the background image to destination screen
 ///
 /// \param[in]  pGui:        Pointer to GUI
