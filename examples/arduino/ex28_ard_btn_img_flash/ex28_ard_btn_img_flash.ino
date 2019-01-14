@@ -3,21 +3,23 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 03 (Arduino):
-//   - Accept touch input, graphic button
+// - Example 28 (Arduino):
+//   - Accept touch input, graphic button (from FLASH)
 //   - Expected behavior: Clicking on button terminates program
+//   - Based on Example 03
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
-//   - IMPORTANT: This sketch uses graphics located on an external SD card
-//     accessed via a SPI interface. The GUIslice_config.h needs to set
-//     #define GSLC_SD_EN 1
-// - This example assumes that two image files have been created in the
-//   root of the SD card directory: "exit_n24.bmp" and "exit_g24.bmp"
-//   representing the quit button normal and glowing states. The file
-//   format is 24-bit BMP. These files have been included for reference in
-//   /arduino/res/
+// - IMPORTANT: This sketch uses graphics located in FLASH memory. Users must
+//   convert images from their native format (eg. BMP, PNG, etc.) into a
+//   C array. Please refer to the following guide for details:
+//   https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Images-from-FLASH
+//   The converted file must be included in the sketch as shown below.
+// - This example assumes that two image files have been created and
+//   imported: "exit_n24.bmp" and "exit_g24.bmp"
+//   representing the quit button normal and glowing states. Reference
+//   24-bit BMP versions of these files have been included in /arduino/res
 
 
 #include "GUIslice.h"
