@@ -756,6 +756,9 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
     h = *(pImage++);
     w = *(pImage++);
   }
+  #if defined(DBG_DRIVER)
+  GSLC_DEBUG_PRINT("DBG: DrvDrawBmp24FromMem() w=%d h=%d\n", w, h);
+  #endif
   int row, col;
   for (row=0; row<h; row++) { // For each scanline...
     for (col=0; col<w; col++) { // For each pixel...
@@ -928,7 +931,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 {
   #if defined(DBG_DRIVER)
   char addr[6];
-  GSLC_DEBUG_PRINT("DBG: DrvDrawImage(%s) with ImgBuf address=\n","");
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
   sprintf(addr,"%04X",sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
@@ -990,6 +993,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 
   } else {
     // Unsupported source
+    GSLC_DEBUG_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
     return false;
   }
 }

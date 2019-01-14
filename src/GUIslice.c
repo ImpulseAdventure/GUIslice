@@ -856,7 +856,12 @@ gslc_tsImgRef gslc_GetImageFromRam(unsigned char* pImgBuf,gslc_teImgRefFlags eFm
 gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFlags eFmt)
 {
   gslc_tsImgRef sImgRef;
+#if (GSLC_USE_PROGMEM)
   sImgRef.eImgFlags = GSLC_IMGREF_SRC_PROG | (GSLC_IMGREF_FMT & eFmt);
+#else
+  // Fallback to RAM if PROGMEM not implemented
+  sImgRef.eImgFlags = GSLC_IMGREF_SRC_RAM | (GSLC_IMGREF_FMT & eFmt);
+#endif
   sImgRef.pFname    = NULL;
   sImgRef.pImgBuf   = pImgBuf;
   sImgRef.pvImgRaw  = NULL;
