@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.10.5   (2018/12/02)
+// - Version 0.11.0-pre   (2019/01/15)
 // =======================================================================
 //
 // The MIT License
@@ -59,7 +59,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.10.5"
+#define GUISLICE_VER "0.11.0-pre"
 
 
 // ========================================================================
@@ -97,6 +97,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   unsigned  nInd;
   bool      bOk = true;
   bool      bTouchOk = true;
+
+  // Provide indication that debug messaging is active
+  GSLC_DEBUG_PRINT("GUIslice version [%s]:\n", gslc_GetVer(pGui));
 
   pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
@@ -162,9 +165,17 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   #endif
 
   // Initialize the display and touch drivers
-  if (bOk) { bOk &= gslc_DrvInit(pGui); }
+  if (bOk) {
+    bOk &= gslc_DrvInit(pGui);
+    if (bOk) {
+      GSLC_DEBUG_PRINT("- Initialized display handler OK\n", "");
+    } else {
+      GSLC_DEBUG_PRINT("- Initialized display handler FAIL\n", "");
+    }
+  }
   #if defined(DRV_TOUCH_NONE)
     pGui->eInitStatTouch = GSLC_INITSTAT_INACTIVE;
+    GSLC_DEBUG_PRINT("- No touch handler enabled\n", "");
   #else
     if (bOk) {
       // Touch initialization is not made to be a fatal error
@@ -173,8 +184,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       // not enabled)
       bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
+        GSLC_DEBUG_PRINT("- Initialized touch handler OK\n", "");
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
+        GSLC_DEBUG_PRINT("- Initialized touch handler FAIL\n", "");
         pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
       }
     }
