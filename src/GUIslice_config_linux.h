@@ -79,6 +79,13 @@ extern "C" {
 // - Set DEBUG_ERR to 1 to enable error reporting via the console
 #define DEBUG_ERR                   1   // Enable by default
 
+// Debug initialization message
+// - By default, GUIslice outputs a message in DEBUG_ERR mode
+//   to indicate the initialization status, even during success.
+// - To disable the messages during successful initialization,
+//   uncomment the following line.
+//#define INIT_MSG_DISABLE
+
 // -----------------------------------------------------------------------------------------
 
 // Graphics display driver-specific additional configuration

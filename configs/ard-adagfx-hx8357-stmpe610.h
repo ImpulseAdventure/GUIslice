@@ -147,6 +147,13 @@ extern "C" {
   //   confirmed basic operation of the library is successful.
   #define DEBUG_ERR               1   // 1 to enable, 0 to disable
 
+  // Debug initialization message
+  // - By default, GUIslice outputs a message in DEBUG_ERR mode
+  //   to indicate the initialization status, even during success.
+  // - To disable the messages during successful initialization,
+  //   uncomment the following line.
+  //#define INIT_MSG_DISABLE
+
   // -----------------------------------------------------------------------------
   // Optional Features
   // -----------------------------------------------------------------------------

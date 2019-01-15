@@ -99,7 +99,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   bool      bTouchOk = true;
 
   // Provide indication that debug messaging is active
+  #if !defined(INIT_MSG_DISABLE)
   GSLC_DEBUG_PRINT("GUIslice version [%s]:\n", gslc_GetVer(pGui));
+  #endif
 
   pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
@@ -168,7 +170,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   if (bOk) {
     bOk &= gslc_DrvInit(pGui);
     if (bOk) {
+      #if !defined(INIT_MSG_DISABLE)
       GSLC_DEBUG_PRINT("- Initialized display handler OK\n", "");
+      #endif
     } else {
       GSLC_DEBUG_PRINT("- Initialized display handler FAIL\n", "");
     }
@@ -184,7 +188,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       // not enabled)
       bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
+        #if !defined(INIT_MSG_DISABLE)
         GSLC_DEBUG_PRINT("- Initialized touch handler OK\n", "");
+        #endif
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
         GSLC_DEBUG_PRINT("- Initialized touch handler FAIL\n", "");

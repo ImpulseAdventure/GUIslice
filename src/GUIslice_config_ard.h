@@ -428,6 +428,13 @@ extern "C" {
     #define DEBUG_ERR               1   // Debugging enabled by default
   #endif
 
+  // Debug initialization message
+  // - By default, GUIslice outputs a message in DEBUG_ERR mode
+  //   to indicate the initialization status, even during success.
+  // - To disable the messages during successful initialization,
+  //   uncomment the following line.
+  //#define INIT_MSG_DISABLE
+
 
   // Enable of optional features
   // - For memory constrained devices such as Arduino, it is best to
