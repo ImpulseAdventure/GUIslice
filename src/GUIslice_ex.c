@@ -729,6 +729,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
   pXData->bChecked        = bChecked;
   pXData->colCheck        = colCheck;
   pXData->nStyle          = nStyle;
+  pXData->pfuncXToggle    = NULL;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw        = &gslc_ElemXCheckboxDraw;
@@ -811,6 +812,19 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   return pFoundElemRef;
 }
 
+// Assign the callback function for checkbox/radio state change events
+void gslc_ElemXCheckboxSetStateFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_XCHECKBOX pfuncCb)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetStateFunc";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
+  pCheckbox->pfuncXToggle = pfuncCb;
+}
+
 // Helper routine for gslc_ElemXCheckboxSetState()
 // - Updates the checkbox/radio control's state but does
 //   not touch any other controls in the group
@@ -835,6 +849,46 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 
+  // If any state callback is defined, call it now
+  // - In all cases, return the ElementRef of the element that issued the callback
+  //
+  // For checkbox:
+  // - If not selected:  return ID_NONE     and state=false
+  // - If     selected:  return current ID  and state=true
+  // For radio button:
+  // - If none selected: return ID_NONE     and state=false
+  // - If one  selected: return selected ID and state=true
+  if (pCheckbox->pfuncXToggle != NULL) {
+    gslc_tsElemRef* pRetRef = NULL;
+    int16_t nGroup = GSLC_GROUP_ID_NONE;
+    int16_t nSelId = GSLC_ID_NONE;
+    if (!pCheckbox->bRadio) {
+      // Checkbox
+      if (bChecked) {
+        nSelId = pElem->nId;
+      } else {
+        nSelId = GSLC_ID_NONE;
+      }
+    } else {
+      // Radio button
+      // - Determine the group that the radio button belongs to
+      nGroup = pElem->nGroup;
+      // Determine if any radio button in the group has been selected
+      pRetRef = gslc_ElemXCheckboxFindChecked(pGui, nGroup);
+      if (pRetRef != NULL) {
+        // One has been selected, return its ID
+        bChecked = true;
+        nSelId = pRetRef->pElem->nId;
+      } else {
+        // No radio button selected, return ID NONE
+        bChecked = false;
+        nSelId = GSLC_ID_NONE;
+      }
+    }
+    // Now send the callback notification
+    (*pCheckbox->pfuncXToggle)((void*)(pGui), (void*)(pElemRef), nSelId, bChecked);
+  } // pfuncXToggle
+
 }
 
 // Update the checkbox/radio control's state. If it is a radio button
@@ -856,11 +910,22 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
   int16_t             nGroup    = pElem->nGroup;
   int16_t             nElemId   = pElem->nId;
 
-  // If radio-button style and we are selecting an element
-  // then proceed to deselect any other selected items in the group.
-  // Note that SetState calls itself to deselect other items so it
-  // is important to qualify this logic with bChecked=true
+  // Special handling when we select a radio button
   if (bRadio && bChecked) {
+
+    // If we are selecting a radio button that is already
+    // selected, then skip further update events.
+    // NOTE: This check is not very efficient, but it avoids
+    // the creation of extra events.
+    gslc_tsElemRef* pTmpRef = gslc_ElemXCheckboxFindChecked(pGui, nGroup);
+    if (pTmpRef == pElemRef) {
+      // Same element, so skip
+      return;
+    }
+
+    // Proceed to deselect any other selected items in the group.
+    // Note that SetState calls itself to deselect other items so it
+    // is important to qualify this logic with bChecked=true
     int16_t           nCurInd;
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;

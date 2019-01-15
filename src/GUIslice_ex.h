@@ -270,12 +270,18 @@ typedef enum {
   GSLCX_CHECKBOX_STYLE_ROUND,               ///< Circular
 } gslc_teXCheckboxStyle;
 
+/// Callback function for checkbox/radio element state change
+/// - nSelId:   Selected element's ID or GSLC_ID_NONE
+/// - bChecked: Element was selected if true, false otherwise
+typedef bool (*GSLC_CB_XCHECKBOX)(void* pvGui,void* pvElemRef,int16_t nSelId, bool bChecked);
+
 /// Extended data for Checkbox element
 typedef struct {
   bool                        bRadio;       ///< Radio-button operation if true
   gslc_teXCheckboxStyle       nStyle;       ///< Drawing style for element
   bool                        bChecked;     ///< Indicates if it is selected (checked)
   gslc_tsColor                colCheck;     ///< Color of checked inner fill
+  GSLC_CB_XCHECKBOX           pfuncXToggle; ///< Callback event to say element has changed
 } gslc_tsXCheckbox;
 
 
@@ -339,6 +345,17 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 /// \return none
 ///
 void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Assign the state callback function for a checkbox/radio button
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  funcCb:      Function pointer to callback routine (or NULL for none)
+///
+/// \return none
+///
+void gslc_ElemXCheckboxSetStateFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_XCHECKBOX pfuncCb);
 
 ///
 /// Draw a Checkbox element on the screen
