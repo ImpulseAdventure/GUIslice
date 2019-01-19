@@ -516,11 +516,12 @@ public class TreeView extends JInternalFrame implements iSubscriber {
       // do not allow drop past end of branch
       int childIndex = dropLocation.getChildIndex();
       int parentIndex = parentNode.getChildCount();
-      if (parentIndex == childIndex) return false;
+      
+      if (childIndex+1 >= parentIndex) return false;
 
       DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
       TreePath dropPath = new TreePath(selectedNode.getPath());
-      
+
       // Do not allow MOVE-action drops if a non-leaf node is selected
       // non-leaf node?
       if(!selectedNode.isLeaf()) return false;
