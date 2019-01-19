@@ -114,6 +114,8 @@ extern "C" {
 
   // -----------------------------------------------------------------------------
   // Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // TFT_eSPI: Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)

@@ -105,6 +105,8 @@ extern "C" {
 
   // -----------------------------------------------------------------------------
   // Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen

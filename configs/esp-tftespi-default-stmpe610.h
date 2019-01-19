@@ -114,6 +114,8 @@ extern "C" {
 
   // -----------------------------------------------------------------------------
   // Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // Select touch device wiring method by setting one of the following to 1, others to 0
