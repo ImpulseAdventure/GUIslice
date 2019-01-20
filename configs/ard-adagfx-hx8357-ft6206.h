@@ -117,26 +117,8 @@ extern "C" {
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
-  #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
-
-  // Touch bus & pinout
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
-
-  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
-  // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
-  //#define ADATOUCH_X_MIN 230
-  //#define ADATOUCH_Y_MIN 260
-  //#define ADATOUCH_X_MAX 3800
-  //#define ADATOUCH_Y_MAX 3700
+  // Touch sensitivity for DRV_TOUCH_FT6206 (capacitive touch)
+  #define ADATOUCH_SENSITIVITY  40
 
   // -----------------------------------------------------------------------------
   // Diagnostics

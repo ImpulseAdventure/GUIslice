@@ -118,14 +118,6 @@ extern "C" {
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS / TOUCH_CS)
-  #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
-
-  // Touch bus & pinout
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-
   // TFT_eSPI: Chip Select for Touch Device
   // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)
 
