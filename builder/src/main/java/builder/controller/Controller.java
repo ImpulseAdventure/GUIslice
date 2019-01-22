@@ -61,6 +61,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 
 import builder.Builder;
 import builder.commands.AddPageCommand;
@@ -862,35 +863,88 @@ public class Controller extends JInternalFrame
   }
 
   /**
+   * Checks, whether the child directory is a subdirectory of the base 
+   * directory.
+   *
+   * @param base the base directory.
+   * @param child the suspected child directory.
+   * @return true, if the child is a subdirectory of the base directory.
+   * @throws IOException if an IOError occured during the test.
+   */
+  public boolean isSubDirectory(File base, File child) {
+
+    boolean res = false;
+    try {
+      base = base.getCanonicalFile();
+      if (child != null) {
+        if (child.isDirectory()) {
+          child = child.getCanonicalFile();
+          File parentFile = child;
+          while (!res && parentFile != null) {
+              if (base.equals(parentFile)) {
+                  res = true;
+              }
+              parentFile = parentFile.getParentFile();
+          }
+        }
+      }
+    } catch (IOException e) {
+       e.printStackTrace();
+    }
+    return res;
+  }
+
+  /**
    * Create folder dialog.
    * 
    * @return the <code>file</code> object
    */
   public File createFolderDialog() {
-    String name = (String) JOptionPane.showInputDialog(null,
-        "Enter Name of Project Folder",
-        "Create Project Folder", JOptionPane.PLAIN_MESSAGE);
-    if (name == null) // operation cancelled
-        return null;
     File currentDirectory;
-    String projectDir = ((GeneralModel) generalEditor.getModel()).getProjectDir();
-    projectDir = projectDir + System.getProperty("file.separator") + name;
+    String folderPath = ((GeneralModel) generalEditor.getModel()).getProjectDir();
     // absolute path or relative?
-    Path path = Paths.get(projectDir);
+    Path path = Paths.get(folderPath);
     if (path.isAbsolute()) {
-      currentDirectory = new File(projectDir);
+      currentDirectory = new File(folderPath);
     } else {
       String workingDir = CommonUtil.getInstance().getWorkingDir();
-      projectDir = workingDir + projectDir;
-      currentDirectory = new File(projectDir);
+      folderPath = workingDir + folderPath;
+      currentDirectory = new File(folderPath);
     }
-    if(!currentDirectory.exists()){
-      currentDirectory.mkdir();
+    File directorylock = new File(folderPath);
+    JFileChooser chooser = new JFileChooser(folderPath);
+    // lock the user into only using the project directory or its sub-directories
+    chooser.setFileView(new FileView() {
+        @Override
+        public Boolean isTraversable(File f) {
+             return isSubDirectory(directorylock, f);
+        }
+    });
+    chooser.addChoosableFileFilter(new FileFilter() {
+      public String getDescription() {
+        String descr = new String("GUIslice Builder Project Folder");
+        return descr;
+      }
+      public boolean accept(File f) {
+          return f.isDirectory();
+      }
+    });
+    chooser.setDialogTitle("Choose your Project Folder");
+    chooser.setApproveButtonText("Select Folder");
+    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    chooser.setAcceptAllFileFilterUsed(false);
+    chooser.setAcceptAllFileFilterUsed(false);
+    // Open Dialog  
+    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
+      currentDirectory = chooser.getSelectedFile();
+    } else {
+      return null;
     }
     projectFolder = currentDirectory;
-    File project = new File(new String(projectDir 
+    File project = new File(new String(currentDirectory.toString() 
         + System.getProperty("file.separator")
-        + name + ".prj"));
+        + currentDirectory.getName() + ".prj"));
+    System.out.println("New project file: " + project.toString());
     return project;
   }
 
@@ -980,7 +1034,7 @@ public class Controller extends JInternalFrame
     // System.out.println("command: " + command);
     switch(command) {
     case "about":
-    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.10.4-beta7", "About", JOptionPane.INFORMATION_MESSAGE);
+    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.11.0-rc1", "About", JOptionPane.INFORMATION_MESSAGE);
 //      JOptionPane.showMessageDialog(null, "GUIsliceBuider ver SNAPSHOT", "About", JOptionPane.INFORMATION_MESSAGE);
       break;
     
