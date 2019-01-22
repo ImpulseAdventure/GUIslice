@@ -31,6 +31,8 @@ import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -208,6 +210,17 @@ public class Builder  extends JDesktopPane {
             SwingUtilities.updateComponentTreeUI(frame);
           } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
           }
+          frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+              String title = "Confirm Dialog";
+              String message = "You're about to quit the application -- are you sure?";
+              int answer = JOptionPane.showConfirmDialog(null,message,title, JOptionPane.YES_NO_OPTION); 
+              if(answer == JOptionPane.YES_OPTION)
+              {
+                System.exit(0);
+              }
+            }
+          });
           frame.setVisible(true);
         }
     });
