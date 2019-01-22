@@ -641,6 +641,18 @@ public class CodeGenerator {
       // Make a backup copy of projectFile and overwrite backup file if it exists.
       backupName = new String(skeletonName + ".bak");
       backupFile = new File(backupName);
+      if (backupFile.exists()) {
+        // rename previous backup files so we don't lose them
+        String newTemplate = new String(skeletonName + ".ba");
+        int idx = 0;
+        String newName = newTemplate + String.valueOf(++idx);
+        File newFile = new File(newName);
+        while (newFile.exists()) {
+          newName = newTemplate + String.valueOf(++idx);
+          newFile = new File(newName);
+        }
+        backupFile.renameTo(newFile);
+      }
       copyFile(projectFile, backupFile);
     }
     
