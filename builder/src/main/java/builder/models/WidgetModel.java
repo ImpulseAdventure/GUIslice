@@ -183,12 +183,23 @@ public class WidgetModel extends AbstractTableModel {
   }
   
   /**
-   * getRowCount
-   *
+   * getRowCount gives back the number of user visible properties
+   * @return the row count
    * @see javax.swing.table.TableModel#getRowCount()
    */
   @Override
   public int getRowCount() {
+    return data.length;  
+  }
+
+  /**
+   * getPropertyCount gives the actual number of properties
+   * while getRowCount gives back the number of user visible
+   * properties allowing us to hide some at the end of data[][].
+   *
+   * @see javax.swing.table.TableModel#getRowCount()
+   */
+  public int getPropertyCount() {
     return data.length;  
   }
 

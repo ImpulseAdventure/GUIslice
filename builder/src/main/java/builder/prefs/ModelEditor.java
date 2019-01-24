@@ -140,7 +140,7 @@ public class ModelEditor extends Observable {
    * Save preferences.
    */
   public void savePreferences(){
-    int rows = model.getRowCount();
+    int rows = model.getPropertyCount();
     for (int i=0; i<rows; i++) {
       String key = (String) model.getValueAt(i, WidgetModel.COLUMN_NAME);
       Object o = model.getValueAt(i, WidgetModel.COLUMN_VALUE);
@@ -166,7 +166,7 @@ public class ModelEditor extends Observable {
    * Save data.
    */
   public void saveData(){
-    int rows = model.getRowCount();
+    int rows = model.getPropertyCount();
     Object[][] data = model.getData();
     save_data = new Object[rows][2];
     for (int i=0; i<rows; i++) {
@@ -179,7 +179,7 @@ public class ModelEditor extends Observable {
    * Restore data.
    */
   public void restoreData(){
-    int rows = model.getRowCount();
+    int rows = model.getPropertyCount();
     Object[][] data = model.getData();
     for (int i=0; i<rows; i++) {
       if (save_data[i][0].equals(data[i][WidgetModel.PROP_VAL_ID])) {
@@ -192,7 +192,7 @@ public class ModelEditor extends Observable {
    * Update model.
    */
   public void updateModel() {
-    int rows = model.getRowCount();
+    int rows = model.getPropertyCount();
     for (int i=0; i<rows; i++) {
       String key = (String) model.getValueAt(i, WidgetModel.COLUMN_NAME);
       Object o = model.getValueAt(i, WidgetModel.COLUMN_VALUE);

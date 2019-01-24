@@ -28,14 +28,11 @@ package builder.controller;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +40,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import builder.Builder;
 import builder.common.ColorFactory;
@@ -82,7 +81,6 @@ import builder.widgets.Widget;
  * <li>arduino.t for arduino code templates
  * <li>arduino_min.t for arduino flash code templates
  * <li>linux.t for linux code templates
- * </ul>
  * 
  * Kind of a Quick and Dirty implementation.
  * 
@@ -160,6 +158,9 @@ public class CodeGenerator {
   /** The Constant COLOR_TEMPLATE. */
   private final static String COLOR_TEMPLATE         = "<COLOR>";
   
+  /** The Constant DEFINE_PG_MAX */
+  private final static String DEFINE_PG_MAX_TEMPLATE = "<DEFINE_PG_MAX>";
+  
   /** The Constant DRAWFUNC_TEMPLATE. */
   private final static String DRAWFUNC_TEMPLATE      = "<DRAWFUNC>";
   
@@ -171,6 +172,9 @@ public class CodeGenerator {
   
   /** The Constant GRAPH_TEMPLATE. */
   private final static String GRAPH_TEMPLATE         = "<GRAPH>";
+  
+  /** The Constant GUI_ELEMENT_TEMPLATE. */
+  private final static String GUI_ELEMENT_TEMPLATE   = "<GUI_ELEMENT>";
   
   /** The Constant GROUP_TEMPLATE. */
   private final static String GROUP_TEMPLATE         = "<GROUP>";
@@ -184,6 +188,9 @@ public class CodeGenerator {
   /** The Constant IMAGETRANSPARENT_TEMPLATE. */
   private final static String IMAGETRANSPARENT_TEMPLATE = "<IMAGETRANSPARENT>";
   
+  /** The Constant PAGEADD_TEMPLATE. */
+  private final static String PAGEADD_TEMPLATE       = "<PAGEADD>"; 
+  
   /** The Constant PROGMEM_TEMPLATE. */
   private final static String PROGMEM_TEMPLATE       = "<PROGMEM>"; 
   
@@ -193,6 +200,9 @@ public class CodeGenerator {
   /** The Constant RADIOBUTTON_TEMPLATE. */
   private final static String RADIOBUTTON_TEMPLATE   = "<RADIOBUTTON>";
   
+  /** The Constant ROTATE_TEMPLATE. */
+  private final static String ROTATE_TEMPLATE        = "<ROTATE>";
+  
   /** The Constant SLIDER_TEMPLATE. */
   private final static String SLIDER_TEMPLATE        = "<SLIDER>";
   
@@ -201,6 +211,9 @@ public class CodeGenerator {
   
   /** The Constant SLIDER_LOOP_TEMPLATE. */
   private final static String SLIDER_LOOP_TEMPLATE   = "<SLIDER_CB_LOOP>";
+  
+  /** The Constant STARTUP_TEMPLATE. */
+  private final static String STARTUP_TEMPLATE       = "<STARTUP>";
   
   /** The Constant TEXT_TEMPLATE. */
   private final static String TEXT_TEMPLATE          = "<TEXT>";
@@ -337,14 +350,17 @@ public class CodeGenerator {
   /** The Constant SLIDER_ENUMS_END. */
   private final static String SLIDER_ENUMS_END       = "//<Slider Enums !End!>";
   
+  /** The Constant STARTUP_SECTION. */
+  private final static String STARTUP_SECTION         = "//<Startup !Start!>";
+  
+  /** The Constant STARTUP_END. */
+  private final static String STARTUP_END             = "//<Startup !End!>";
+  
   /** The Constant TICK_CB_SECTION. */
   private final static String TICK_CB_SECTION        = "//<Tick Callback !Start!>";
   
   /** The Constant TICK_CB_END. */
   private final static String TICK_CB_END            = "//<Tick Callback !End!>";
-  
-  /** The Constant PAGE_ENUM_MACRO. */
-  private final static String PAGE_ENUM_MACRO        = "PAGE_ENUM";
   
   /** The Constant BACKGROUND_COLOR_MACRO. */
   private final static String BACKGROUND_COLOR_MACRO = "BACKGROUND_COLOR";
@@ -369,6 +385,9 @@ public class CodeGenerator {
   
   /** The Constant DRAWFUNC_MACRO. */
   private final static String DRAWFUNC_MACRO         = "DRAWFUNC";
+  
+  /** The Constant FLASH_MACRO. */
+  private final static String FLASH_MACRO            = "FLASH";
   
   /** The Constant FILL_COLOR_MACRO. */
   private final static String FILL_COLOR_MACRO       = "FILL_COLOR";
@@ -424,11 +443,20 @@ public class CodeGenerator {
   /** The Constant MAX_MACRO. */
   private final static String MAX_MACRO              = "MAX";
   
+  /** The Constant PAGE_ENUM_MACRO. */
+  private final static String PAGE_ENUM_MACRO        = "PAGE_ENUM";
+  
+  /** The Constant ROTATION_MACRO. */
+  private final static String ROTATION_MACRO         = "ROTATION";
+  
   /** The Constant ROWS_MACRO. */
   private final static String ROWS_MACRO             = "ROWS";
   
   /** The Constant SIZE_MACRO. */
   private final static String SIZE_MACRO             = "SIZE";
+  
+  /** The Constant STRIP_ENUM_MACRO. */
+  private final static String STRIP_ENUM_MACRO        = "STRIP_ENUM";
   
   /** The Constant STYLE_MACRO. */
   private final static String STYLE_MACRO            = "STYLE";
@@ -466,6 +494,9 @@ public class CodeGenerator {
   /** The Constant Y_MACRO. */
   private final static String Y_MACRO                = "Y";
   
+  /** The Constant MACRO_PATTERN is our regex search pattern '$<xxx>'. */
+  private static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\<(.+?)\\>");
+
   /** The Constant BEGIN_LINE. */
   // finite state machine for printing enums
   private final static int BEGIN_LINE    = 0;
@@ -555,6 +586,18 @@ public class CodeGenerator {
   /** The background color */
   private Color background;
   
+  /** The Screen Width 
+   * Set here for JUnit testing 
+   * Otherwise set by GeneralModel values
+   */
+  private int screenWidth = 320;
+  
+  /** The Screen Height 
+   * Set here for JUnit testing 
+   * Otherwise set by GeneralModel values
+   */
+  private int screenHeight = 240;
+  
   /**
    * Gets the single instance of CodeGenerator.
    *
@@ -599,6 +642,8 @@ public class CodeGenerator {
   public String generateCode(String folder, String fileName, List<PagePane> pages) {
     this.pages = pages;
     GeneralModel generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
+    screenWidth = generalModel.getWidth();
+    screenHeight = generalModel.getHeight();
     cf = ColorFactory.getInstance();
     ff = FontFactory.getInstance();
     target = generalModel.getTarget();
@@ -609,7 +654,7 @@ public class CodeGenerator {
     target = generalModel.getTarget();
     maxstr_len = generalModel.getMaxStr();
     background = generalModel.getFillColor();
-    listOfTemplates = new ArrayList[32];
+    listOfTemplates = new ArrayList[64];
     switch(target) {
       case "linux":
         defaultFileName = LINUX_FILE;
@@ -637,25 +682,7 @@ public class CodeGenerator {
     String tmp = fileName.substring(0,n);
     String skeletonName = new String(folder + System.getProperty("file.separator") + tmp + fileExtension);
     projectFile = new File(skeletonName);
-    if(projectFile.exists()) {
-      // Make a backup copy of projectFile and overwrite backup file if it exists.
-      backupName = new String(skeletonName + ".bak");
-      backupFile = new File(backupName);
-      if (backupFile.exists()) {
-        // rename previous backup files so we don't lose them
-        String newTemplate = new String(skeletonName + ".ba");
-        int idx = 0;
-        String newName = newTemplate + String.valueOf(++idx);
-        File newFile = new File(newName);
-        while (newFile.exists()) {
-          newName = newTemplate + String.valueOf(++idx);
-          newFile = new File(newName);
-        }
-        backupFile.renameTo(newFile);
-      }
-      copyFile(projectFile, backupFile);
-    }
-    
+    CommonUtil.getInstance().backupFile(projectFile);
     try {
       // Here we are either going to use a previously generated file as input
       // or we are generating a brand new file from one of our templates.
@@ -748,6 +775,9 @@ public class CodeGenerator {
 			pw = new PrintWriter(fw);
       while ((line = br.readLine()) != null) {
         if (!line.startsWith(PREFIX)) {
+          // we need to remove old artifacts
+          if (line.startsWith("gslc_tsElem") && line.contains("m_asMainElem"))
+            continue;
           pw.printf("%s%n",line);
         } else {
           if (line.equals(FONT_SECTION)) {
@@ -768,6 +798,8 @@ public class CodeGenerator {
             drawCbSection();
           } else if (line.equals(SLIDER_CB_SECTION)) {
             sliderCbSection();
+          } else if (line.equals(STARTUP_SECTION)) {
+            startupSection();
           } else if (line.equals(TICK_CB_SECTION)) {
             tickCbSection();
           } else if (line.equals(INITGUI_SECTION)) {
@@ -840,7 +872,7 @@ public class CodeGenerator {
     for (WidgetModel m : modelList) {
       strKey = m.getKey();
       int n = strKey.indexOf("$");
-      strCount = strKey.substring(n+1, strKey.length());
+      strCount = strKey.substring(n+1);
       if (m.getType().equals(EnumFactory.IMAGE)) {
         pw.printf("char m_strImgPath%s[MAX_PATH];%n", strCount);
       } else { // must be EnumFactory.IMAGEBUTTON
@@ -986,7 +1018,7 @@ public class CodeGenerator {
           ref = "E_SCROLLBAR";
           strKey = w.getModel().getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = ref + strCount;
           enumList.add(ref);
         }
@@ -1017,6 +1049,9 @@ public class CodeGenerator {
    */
   private void definesSection() throws IOException {
     pw.printf("%s%n",line);
+    List<String> templateLines = null;
+    List<String> outputLines = null;
+    int i;
     // output number of pages
     String elemTitle = "MAX_PAGE";
     pw.printf("#define %-24s%d%n", elemTitle, pages.size());
@@ -1026,7 +1061,7 @@ public class CodeGenerator {
     // build up a list of counts for out various UI widgets
     // build up a list of counts for out various UI widgets
     // first are we doing arduino minimum? if so, count _P functions stored in flash
-    int i = 0;
+    i = 0;
     if (targetPlatform == ARDUINO_MIN_PLATFORM) {
       int[] elem_cnt = new int[pages.size()];
       int[] flash_cnt = new int[pages.size()];
@@ -1038,59 +1073,31 @@ public class CodeGenerator {
       widgetTypes.add(EnumFactory.SLIDER);
       widgetTypes.add(EnumFactory.TEXT);
       widgetTypes.add(EnumFactory.TEXTBUTTON);
+      i=0;
       for (PagePane p : pages) {
         flash_cnt[i] = countByType(p.getWidgets(), widgetTypes);
         elem_cnt[i] = p.getWidgets().size();
         i++;
       }
       // we also need to output some comments
-      List<String> templateLines = loadTemplate(PROGMEM_TEMPLATE);
+      templateLines = loadTemplate(PROGMEM_TEMPLATE);
       writeTemplate(templateLines);
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN";
+      templateLines = loadTemplate(DEFINE_PG_MAX_TEMPLATE);
+      i=0;
       for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, elem_cnt[i]);
-        }
+        macro[0] = STRIP_ENUM_MACRO;
+        replacement[0] = convertEnum(p.getEnum());
+        macro[1] = COUNT_MACRO;
+        replacement[1] = String.valueOf(elem_cnt[i]);
+        macro[2] = FLASH_MACRO;
+        replacement[2] = String.valueOf(flash_cnt[i]);
+        macro[3] = null;
+        outputLines = expandMacros(templateLines, macro, replacement);
+        writeTemplate(outputLines);
         i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
-      }
-      pw.printf("#if (GSLC_USE_PROGMEM)%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_PROG";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, flash_cnt[i]);
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_PROG", i);
-      }
-      pw.printf("#else%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_PROG";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, 0);
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_PROG", i);
-      }
-      pw.printf("#endif%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_RAM";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          if (i==0) {
-            pw.printf("#define %-24sMAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG%n", elemTitle);
-          } else {
-            pw.printf("#define %-24sMAX_ELEM_PG_EXTRA%d - MAX_ELEM_PG_EXTRA_PROG%d%n", elemTitle,i,i);
-          }
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_RAM", i);
       }
     } else {
-      elemTitle = "MAX_ELEM_PG_MAIN";
+      templateLines = loadTemplate(DEFINE_PG_MAX_TEMPLATE);
       for (PagePane p : pages) {
         int count = 0;
         for (Widget w : p.getWidgets()) {
@@ -1100,40 +1107,39 @@ public class CodeGenerator {
             count++;
           }
         }
-        if (count > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, count);
-          if (i==0) {
-            pw.printf("#define %s %s%n", "MAX_ELEM_PG_MAIN_RAM",elemTitle);
-          } else {
-            pw.printf("#define %s%d %s%n", "MAX_ELEM_PG_EXTRA_RAM",i,elemTitle);
-          }
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
+        macro[0] = STRIP_ENUM_MACRO;
+        replacement[0] = convertEnum(p.getEnum());
+        macro[1] = COUNT_MACRO;
+        replacement[1] = String.valueOf(count);
+        macro[2] = null;
+        outputLines = expandMacros(templateLines, macro, replacement);
+        writeTemplate(outputLines);
       }
     }
     readPassString(DEFINES_END);
   }
   
   /**
-   * Gui section.
+   * Gui Elements section.
    *
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
   private void guiSection() throws IOException {
     pw.printf("%s%n",line);
-    // output GUI extra elements,if we have more than one page
+    // output GUI elements
     String strElement = "";
-    if (pages.size() > 1) {
-      for (int i=1; i<pages.size(); i++) {
-        if (pages.get(i).getWidgets().size() > 0) {
-          strElement = "gslc_tsElem";
-          pw.printf("%-25sm_asExtraElem[MAX_ELEM_PG_EXTRA_RAM%d];%n", strElement, i);
-          strElement = "gslc_tsElemRef";
-          pw.printf("%-25sm_asExtraElemRef[MAX_ELEM_PG_EXTRA%d];%n", strElement, i);
-        }
-      }
+    List<String> templateLines = loadTemplate(GUI_ELEMENT_TEMPLATE);
+    List<String> outputLines = null;
+    int i=0;
+    for (PagePane p : pages) {
+      macro[0] = STRIP_ENUM_MACRO;
+      replacement[0] = convertEnum(p.getEnum());
+      macro[1] = COUNT_MACRO;
+      replacement[1] = String.valueOf(++i);
+      macro[2] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
     }
     // extension widgets have separate storage
     // Except, for reasons unknown to me extra storage isn't used by arduino min
@@ -1156,7 +1162,7 @@ public class CodeGenerator {
           nCols = ((TextBoxModel)w.getModel()).getNumTextColumns();
           strKey = w.getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = "m_sTextbox" + strCount;
           strElement = "gslc_tsXTextbox";
           pw.printf("%-32s%s;%n", strElement, ref);
@@ -1174,7 +1180,7 @@ public class CodeGenerator {
           nRows = ((GraphModel)w.getModel()).getNumRows();
           strKey = w.getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = "m_sGraph" + strCount;
           strElement = "gslc_tsXGraph";
           pw.printf("%-32s%s;%n", strElement, ref);
@@ -1336,6 +1342,35 @@ public class CodeGenerator {
   }
   
   /**
+   * Startup section.
+   *
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  private void startupSection() throws IOException {
+    pw.printf("%s%n",line);
+    // set gslc_SetPageCur() to our first page's ENUM
+    List<String> templateLines = loadTemplate(STARTUP_TEMPLATE);
+    List<String> outputLines;
+    macro[0] = PAGE_ENUM_MACRO;
+    replacement[0] = pages.get(0).getEnum();
+    macro[1] = null;
+    outputLines = expandMacros(templateLines, macro, replacement);
+    writeTemplate(outputLines);
+    // do we need to rotate display?
+    if (screenHeight > screenWidth) {
+      templateLines = loadTemplate(ROTATE_TEMPLATE);
+      // need to store the value inside general model someday
+      macro[0] = ROTATION_MACRO;
+      replacement[0] = "0";
+      macro[1] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
+    }
+    readPassString(STARTUP_END);
+  }
+  
+  /**
    * Draw cb section.
    *
    * @throws IOException
@@ -1417,25 +1452,27 @@ public class CodeGenerator {
    */
   private void initGUISection() throws IOException {
     pw.printf("%s%n",line);
-    String strMaxElem = "MAX_ELEM_PG_MAIN";
-    String strMaxRam = "MAX_ELEM_PG_MAIN_RAM";
-    pw.printf("  gslc_PageAdd(&m_gui,%s,m_asMainElem,%s,m_asMainElemRef,%s);%n", 
-        pages.get(0).getEnum(), strMaxRam, strMaxElem);
-    if (pages.size() > 1) {
-      for (int i=1; i<pages.size(); i++) {
-        strMaxElem = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
-        strMaxRam = String.format("%s%d", "MAX_ELEM_PG_EXTRA_RAM", i);
-        pw.printf("  gslc_PageAdd(&m_gui,%s,m_asExtraElem,%s,m_asExtraElemRef,%s);%n", 
-          pages.get(i).getEnum(), strMaxRam, strMaxElem);
-      }
+    List<String> templateLines = loadTemplate(PAGEADD_TEMPLATE);
+    List<String> outputLines = null;
+    int i=0;
+    for (PagePane p : pages) {
+      macro[0] = PAGE_ENUM_MACRO;
+      replacement[0] = p.getEnum();
+      macro[1] = STRIP_ENUM_MACRO;
+      replacement[1] = convertEnum(p.getEnum());
+      macro[2] = COUNT_MACRO;
+      replacement[2] = String.valueOf(++i);
+      macro[3] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
     }
     // deal with background
     String color = cf.colorAsString(background);
     macro[0] = BACKGROUND_COLOR_MACRO;
     macro[1] = null;
     replacement[0] = color;
-    List<String> templateLines = loadTemplate(BACKGROUND_TEMPLATE);
-    List<String> outputLines = expandMacros(templateLines, macro, replacement);
+    templateLines = loadTemplate(BACKGROUND_TEMPLATE);
+    outputLines = expandMacros(templateLines, macro, replacement);
     writeTemplate(outputLines);
     for (PagePane p : pages) {
       pw.printf("%n  // -----------------------------------%n");
@@ -1890,7 +1927,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     int n = commonAPI(pageEnum, m);
     strKey = m.getKey();
     int ts = strKey.indexOf("$");
-    strCount = strKey.substring(ts+1, strKey.length());
+    strCount = strKey.substring(ts+1);
     macro[n] = ID_MACRO;
     replacement[n++] = strCount;
     macro[n] = FONT_ID_MACRO;
@@ -2278,7 +2315,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       replacement[n++] = strText;
       strKey = m.getKey();
       ts = strKey.indexOf("$");
-      strCount = strKey.substring(ts+1, strKey.length());
+      strCount = strKey.substring(ts+1);
       macro[n] = ID_MACRO;
       replacement[n++] = strCount;
       templateFile = TEXT_UPDATE_TEMPLATE;
@@ -2389,7 +2426,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       replacement[n++] = strText;
       strKey = m.getKey();
       ts = strKey.indexOf("$");
-      strCount = strKey.substring(ts+1, strKey.length());
+      strCount = strKey.substring(ts+1);
       macro[n] = ID_MACRO;
       replacement[n++] = strCount;
       templateFile = TEXT_UPDATE_TEMPLATE;
@@ -2430,7 +2467,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = String.valueOf(((TextBoxModel)m).wrapText());
     strKey = m.getKey();
     int tb = strKey.indexOf("$");
-    strCount = strKey.substring(tb+1, strKey.length());
+    strCount = strKey.substring(tb+1);
     macro[n] = ID_MACRO; 
     replacement[n++] = strCount;
     macro[n] = COUNT_MACRO; 
@@ -2676,7 +2713,7 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
        ref = "E_SCROLLBAR";
        strKey = m.getKey();
        n = strKey.indexOf("$");
-       strCount = strKey.substring(n+1, strKey.length());
+       strCount = strKey.substring(n+1);
        ref = ref + strCount;
        eList.add(ref);
      } else {
@@ -2707,35 +2744,6 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    return false;
  }
  
-  /**
-   * Copy file.
-   *
-   * @param inFile
-   *          the in file
-   * @param outFile
-   *          the out file
-   */
-  public void copyFile(File inFile, File outFile)
-  {	
-    InputStream inStream = null;
-    OutputStream outStream = null;
-    try{
-      inStream = new FileInputStream(inFile);
-      outStream = new FileOutputStream(outFile);
-      byte[] buffer = new byte[1024];
-      int length;
-      //copy the file content in bytes 
-      while ((length = inStream.read(buffer)) > 0){
-        outStream.write(buffer, 0, length);
-      }
-      inStream.close();
-      outStream.close();
-//      System.out.println("File is copied successfully!");
-    }catch(IOException e){
-      e.printStackTrace();
-    }
-  }
-  
   /**
    * Read pass string.
    *
@@ -2821,26 +2829,20 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    */
   private List<String> expandMacros(List<String> lines, String[] search, String[] replace) {
     List<String> outputList = new ArrayList<String>();
-    String l = "";
-    String r = "";
-    boolean bFoundMatch = false;
-    for (int i=0; i<lines.size(); i++) {
-      l = lines.get(i);
-      r = new String();
-      String tokens[] = l.split("[$]");
-      for (String t : tokens) {
-        bFoundMatch = false;
+    for (String l : lines) {
+      Matcher m = MACRO_PATTERN.matcher(l);
+      StringBuffer sb = new StringBuffer();
+      while (m.find()) {
+        String value = m.group(1);
         for (int j=0; search[j]!=null; j++) {
-          if(t.equals(search[j])) {
-            r = r + replace[j];
-            bFoundMatch = true;
+          if(value.equals(search[j])) {
+            m.appendReplacement(sb, replace[j]);
             break;
           } 
         }
-        if (!bFoundMatch) 
-          r = r + t;
-      }      
-      outputList.add(r);
+      }
+      m.appendTail(sb);
+      outputList.add(sb.toString());
     }
     return outputList;
   }
@@ -2966,6 +2968,21 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
     return i;
   }
 
+  /**
+   * Convert enum 
+   * strips leading "E_" off of ENUM.
+   *
+   * @param enum
+   *          the enum
+   * @return the <code>String</code> without 'E_' at beginning
+   */
+  private String convertEnum(String strEnum) {
+    if (strEnum.startsWith("E_")) {
+      return strEnum.substring(2);
+    }
+    return strEnum;
+  }
+  
   /**
    * Convert alignment.
    *

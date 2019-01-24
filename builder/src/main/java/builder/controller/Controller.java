@@ -421,7 +421,7 @@ public class Controller extends JInternalFrame
     if (page.getKey().equals("Page$1")) {
       // error can't remove first page
       JOptionPane.showMessageDialog(topFrame, 
-          "Sorry, You can't remove PAGE_1", "Error",
+          "Sorry, You can't remove Page$1", "Error",
           JOptionPane.ERROR_MESSAGE);
       return;
     } 
@@ -607,6 +607,7 @@ public class Controller extends JInternalFrame
     String pageKey = null;
     String pageEnum = null;
     PagePane p = null;
+    String firstPage = null;
     try {
       // Read in version number
       String strVersion = (String)in.readObject();
@@ -625,6 +626,7 @@ public class Controller extends JInternalFrame
 //    System.out.println("pages: " + cnt);
       for (int i=0; i<cnt; i++) {
         pageKey = (String)in.readObject();
+        if (i == 0) firstPage = pageKey;
 //      System.out.println("restore page: " + pageKey);
         pageEnum = (String)in.readObject();
 //      System.out.println("restore page: " + pageEnum);
@@ -632,7 +634,6 @@ public class Controller extends JInternalFrame
         p.restore((String)in.readObject());
       }
       String tree_backup = (String)in.readObject();
-      
       TreeView.getInstance().restore(tree_backup);
       String enum_backup = (String)in.readObject();
       EnumFactory.getInstance().restore(enum_backup);
@@ -643,11 +644,12 @@ public class Controller extends JInternalFrame
       MsgBoard.getInstance().publish(ev);
       ev.code = MsgEvent.OBJECT_UNSELECT_TREEVIEW;
       MsgBoard.getInstance().publish(ev);
+      changePage(currentPageKey);
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
     }
     in.close();
-    changePage(currentPageKey);
+    changePage(firstPage);
     this.setVisible(true);
   }
 
@@ -1115,6 +1117,7 @@ public class Controller extends JInternalFrame
         topFrame.setTitle(frameTitle);
       }
       try {
+        CommonUtil.getInstance().backupFile(projectFile);
         out = new ObjectOutputStream(new FileOutputStream(projectFile));
         saveProject(out);
         JOptionPane.showMessageDialog(null, "Project Saved into " + projectFile.getName(), null, JOptionPane.INFORMATION_MESSAGE);
@@ -1156,28 +1159,8 @@ public class Controller extends JInternalFrame
         else 
           JOptionPane.showMessageDialog(null, "Code Generation Failed " + skeleton, "Error", JOptionPane.ERROR_MESSAGE);
       } else {
-        if (projectFolder == null) {
-          projectFile = createFolderDialog();
-          if (projectFile != null) {
-            frameTitle = Builder.PROGRAM_TITLE + " - " + projectFile.getName();
-            topFrame.setTitle(frameTitle);
-          } else {
-            JOptionPane.showMessageDialog(topFrame, "Sorry, You must Create Project Folder before asking for code generation",
-                "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-        }
-        try {
-          out = new ObjectOutputStream(new FileOutputStream(projectFile));
-          saveProject(out);
-          skeleton = cg.generateCode(projectFolder.toString(), projectFile.getName(), pages);
-          if (skeleton != null)
-            JOptionPane.showMessageDialog(null, "Code Generated into " + skeleton, null, JOptionPane.INFORMATION_MESSAGE);
-          else 
-            JOptionPane.showMessageDialog(null, "Code Generation Failed " + skeleton, "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e1) {
-          e1.printStackTrace();
-        }
+          JOptionPane.showMessageDialog(topFrame, "Sorry, You must Save Project once before asking for code generation",
+              "Error", JOptionPane.ERROR_MESSAGE);
       }
       break;
     
@@ -1196,6 +1179,7 @@ public class Controller extends JInternalFrame
             }
           } 
           try {
+            CommonUtil.getInstance().backupFile(projectFile);
             out = new ObjectOutputStream(new FileOutputStream(projectFile));
             saveProject(out);
             JOptionPane.showMessageDialog(null, "Project Saved into " + projectFile.getName(), null, JOptionPane.INFORMATION_MESSAGE);
@@ -1226,6 +1210,7 @@ public class Controller extends JInternalFrame
           } 
         }
         try {
+          CommonUtil.getInstance().backupFile(projectFile);
           out = new ObjectOutputStream(new FileOutputStream(projectFile));
           saveProject(out);
         } catch (IOException e1) {

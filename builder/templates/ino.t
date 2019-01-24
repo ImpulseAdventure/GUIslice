@@ -43,8 +43,7 @@ gslc_tsGui                      m_gui;
 gslc_tsDriver                   m_drv;
 gslc_tsFont                     m_asFont[MAX_FONT];
 gslc_tsPage                     m_asPage[MAX_PAGE];
-gslc_tsElem                     m_asMainElem[MAX_ELEM_PG_MAIN_RAM];
-gslc_tsElemRef                  m_asMainElemRef[MAX_ELEM_PG_MAIN];
+
 //<GUI_Extra_Elements !Start!>
 //<GUI_Extra_Elements !End!>
 
@@ -117,10 +116,8 @@ void setup()
 //<Quick_Access !Start!>
 //<Quick_Access !End!>
 
-  // ------------------------------------------------
-  // Start up display on main page
-  // ------------------------------------------------
-  gslc_SetPageCur(&m_gui,E_PG_MAIN);
+//<Startup !Start!>
+//<Startup !End!>
 
 }
 
