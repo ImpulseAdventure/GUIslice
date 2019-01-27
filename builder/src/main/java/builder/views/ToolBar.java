@@ -48,7 +48,8 @@ public class ToolBar extends JToolBar {
   private static final long serialVersionUID = 1L;
   
   /** The btn exit. */
-  public JButton btn_new, btn_open, btn_close,btn_save,btn_saveas,btn_code, btn_exit;
+  public JButton btn_new, btn_open, btn_close,btn_save,btn_saveas,
+    btn_import, btn_code, btn_exit;
   
   /** The undo, redo, and delete buttons. */
   public JButton btn_undo,btn_redo,btn_delete;
@@ -146,6 +147,11 @@ public class ToolBar extends JToolBar {
    * Initializes the quit buttons.
    */
   public void initQuitButtons() {
+    btn_import = new JButton(new ImageIcon(Builder.class.getResource("/resources/icons/import.png")));
+    btn_import.setToolTipText("Import");
+    btn_import.setActionCommand("import");
+    add(btn_import);
+
     btn_code = new JButton(new ImageIcon(Builder.class.getResource("/resources/icons/export.png")));
     btn_code.setToolTipText("Generate Code");
     btn_code.setActionCommand("code");
@@ -266,6 +272,7 @@ public class ToolBar extends JToolBar {
     btn_close.addActionListener(al);
     btn_saveas.addActionListener(al);
 
+    btn_import.addActionListener(al);
     btn_code.addActionListener(al);
     btn_exit.addActionListener(al);
  

@@ -59,20 +59,23 @@ public class TextBoxModel extends WidgetModel {
   /** The Constant PROP_FONT. */
   static private final int PROP_FONT              = 7;
   
+  /** The Constant PROP_FONT_ENUM. */
+  static private final int PROP_FONT_ENUM         = 8;
+  
   /** The Constant PROP_WRAP. */
-  static private final int PROP_WRAP              = 8;
+  static private final int PROP_WRAP              = 9;
   
   /** The Constant PROP_ROWS. */
-  static private final int PROP_ROWS              = 9;
+  static private final int PROP_ROWS              = 10;
   
   /** The Constant PROP_COLS. */
-  static private final int PROP_COLS              = 10;
+  static private final int PROP_COLS              = 11;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 11;
+  static private final int PROP_FRAME_COLOR       = 12;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 12;
+  static private final int PROP_FILL_COLOR        = 13;
   
   /** The Constant PROP_SELECTED_COLOR. */
   static private final int PROP_SELECTED_COLOR    = 14;
@@ -103,12 +106,13 @@ public class TextBoxModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.TEXTBOX;
-    data = new Object[14][5];
+    data = new Object[15][5];
     
     initCommonProps(DEF_WIDTH, DEF_HEIGHT);
     
     initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
     initProp(PROP_FONT, JTextField.class, "TXT-200", Boolean.FALSE,"Font",ff.getDefFontName());
+    initProp(PROP_FONT_ENUM, String.class, "TXT-211", Boolean.FALSE,"Font Enum",ff.getDefFontEnum());
     initProp(PROP_WRAP, Boolean.class, "TXT-208", Boolean.FALSE,"Wrap Text",Boolean.TRUE);
     initProp(PROP_ROWS, Integer.class, "TXT-209", Boolean.FALSE,"Text Rows",Integer.valueOf(0));
     initProp(PROP_COLS, Integer.class, "TXT-210", Boolean.FALSE,"Text Columns",Integer.valueOf(0));
@@ -126,17 +130,33 @@ public class TextBoxModel extends WidgetModel {
    */
   @Override
   public void changeValueAt(Object value, int row) {
+    boolean bChangeFontEnum = true;
     // The test for Integer supports copy and paste from clipboard.
     // Otherwise we get a can't cast class String to Integer fault
     if ( (getClassAt(row) == Integer.class) && (value instanceof String)) {
         data[row][PROP_VAL_VALUE] = Integer.valueOf(Integer.parseInt((String)value));
     } else {
+      if (row == PROP_FONT) {
+        // check to see if user defined this font enum, if so we won't change it
+        if (!ff.getFontEnum((String)value).equals(getFontEnum())) bChangeFontEnum=false;
+      }
       data[row][PROP_VAL_VALUE] = value;
     }
     fireTableCellUpdated(row, COLUMN_VALUE);
+    if (row == PROP_FONT_ENUM) {
+      String strName = ff.getFontDisplayName(getFontEnum());
+      if (strName != null && !strName.equals(getFontDisplayName())) {
+        data[PROP_FONT][PROP_VAL_VALUE]=strName;
+        fireTableCellUpdated(PROP_FONT, COLUMN_VALUE);
+      }
+    }
     if (row == PROP_WIDTH  ||
         row == PROP_HEIGHT ||
         row == PROP_FONT ) {
+      if (bChangeFontEnum) {
+        setFontEnum(ff.getFontEnum(getFontDisplayName()));
+        fireTableCellUpdated(PROP_FONT_ENUM, COLUMN_VALUE);
+      }
       // re-calc number of text rows and columns
       calcSizes();
       fireTableCellUpdated(PROP_ROWS, COLUMN_VALUE);
@@ -177,6 +197,25 @@ public class TextBoxModel extends WidgetModel {
    */
   public String getFontDisplayName() {
     return (String) ((String)data[PROP_FONT][PROP_VAL_VALUE]);
+  }
+  
+  /**
+   * Gets the font enum.
+   *
+   * @return the font enum
+   */
+  public String getFontEnum() {
+    return (String) ((String)data[PROP_FONT_ENUM][PROP_VAL_VALUE]);
+  }
+  
+  /**
+   * Sets the font enum.
+   *
+   * @param s
+   *          the new font enum.
+   */
+  public void setFontEnum(String s) { 
+    shortcutValue(s, PROP_FONT_ENUM);
   }
   
   /**
@@ -241,8 +280,10 @@ public class TextBoxModel extends WidgetModel {
     int nCols = (getWidth() - 33) / nChSz.width;
     // rows must be greater than actual or the scroll bar will be disabled
     int nRows = ((getHeight() - 18) / nChSz.height) + 1; 
-    data[PROP_ROWS][PROP_VAL_VALUE]= Integer.valueOf(nRows);
-    data[PROP_COLS][PROP_VAL_VALUE]=Integer.valueOf(nCols);
+    if (nCols > getNumTextColumns())
+      data[PROP_ROWS][PROP_VAL_VALUE]= Integer.valueOf(nRows);
+    if (nRows > getNumTextRows())
+      data[PROP_COLS][PROP_VAL_VALUE]=Integer.valueOf(nCols);
   }
 
   /**

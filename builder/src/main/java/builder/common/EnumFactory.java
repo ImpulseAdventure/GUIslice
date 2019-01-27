@@ -51,9 +51,6 @@ public class EnumFactory {
   /** The count keys. */
   private static int[] countKeys;
   
-  /** The count enums. */
-  private static int[] countEnums;
-  
   /** The Constant numberOfTypes. */
   static final public int numberOfTypes  = 16;
   
@@ -151,7 +148,6 @@ public class EnumFactory {
    */
   public EnumFactory() {
     countKeys = new int[EnumFactory.numberOfTypes];
-    countEnums = new int[EnumFactory.numberOfTypes];
     clearCounts();
   }
 
@@ -204,10 +200,9 @@ public class EnumFactory {
         break;
       }
     }
-    countEnums[i]++;
-    if (type == PAGE && countEnums[i] == 1)
+    if (type == PAGE && countKeys[i] == 1)
       return EnumFactory.PAGE_MAIN;
-    return String.format("%s%d", strEnum,countEnums[i]);
+    return String.format("%s%d", strEnum,countKeys[i]);
   }
   
   /**
@@ -216,7 +211,6 @@ public class EnumFactory {
   public void clearCounts() {
     for (int i=0; i<(EnumFactory.numberOfTypes); i++) {
       countKeys[i]= 0;
-      countEnums[i]= 0;
     }
   }
 
@@ -234,7 +228,7 @@ public class EnumFactory {
       out.writeInt(nodeCount);
       for(int i=0; i<nodeCount; i++) {
         out.writeInt(countKeys[i]);
-        out.writeInt(countEnums[i]);
+        out.writeInt(countKeys[i]);
       }
       out.close();
       return Base64.getEncoder().encodeToString(baos.toByteArray());
@@ -255,12 +249,14 @@ public class EnumFactory {
   public void restore(String state) {
     try {
 //      System.out.println("enum restore====");
+      @SuppressWarnings("unused")
+      int skip=0;
       byte[] data = Base64.getDecoder().decode(state);
       ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
       int nodeCount = in.readInt();
       for (int i=0; i<nodeCount; i++) {
         countKeys[i] = in.readInt();
-        countEnums[i] = in.readInt();
+        skip = in.readInt();
       }
       in.close();
     } catch (IOException e) {

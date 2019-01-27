@@ -110,7 +110,7 @@ public class ProgressBarModel extends WidgetModel {
     initProp(PROP_MAX, Integer.class, "BAR-103", Boolean.FALSE,"Maximum Value",Integer.valueOf(100));
     initProp(PROP_VALUE, Integer.class, "BAR-104", Boolean.FALSE,"Starting Value",Integer.valueOf(0));
 
-    initProp(PROP_GAUGE_COLOR, Color.class, "COL_308", Boolean.FALSE,"Gauge Indicator Color",Color.GREEN);
+    initProp(PROP_GAUGE_COLOR, Color.class, "COL-308", Boolean.FALSE,"Gauge Indicator Color",Color.GREEN);
     initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
     initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",cf.getDefFrameCol());
     initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",cf.getDefFillCol());

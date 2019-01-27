@@ -249,7 +249,11 @@ public class TreeView extends JInternalFrame implements iSubscriber {
       node.removeAllChildren(); //this removes all nodes
       delObject(root, pageID);
     }
-    currentPage = findNode("Page$1");
+    List<DefaultMutableTreeNode> searchNodes = getSearchNodes((DefaultMutableTreeNode) tree.getModel().getRoot());
+    currentPage = searchNodes.get(1);
+    TreePath path = new TreePath(currentPage.getPath());
+    tree.setSelectionPath(path);
+    tree.scrollPathToVisible(path);
   }
   
   /**
@@ -370,6 +374,8 @@ public class TreeView extends JInternalFrame implements iSubscriber {
     int bookmark = -1;
 
     if (currentNode != null) {
+      if (currentNode.toString().equals(searchString))
+        return currentNode;
       for (int index = 0; index < searchNodes.size(); index++) {
         if (searchNodes.get(index) == currentNode) {
           bookmark = index;

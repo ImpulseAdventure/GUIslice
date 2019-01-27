@@ -485,16 +485,18 @@ public class PagePane extends JPanel implements iSubscriber {
     while (itr.hasNext())
     {
         Widget x = (Widget)itr.next();
-        if (x.getEnum().equals(w.getEnum()))
+        if (x.getEnum().equals(w.getEnum())) {
             itr.remove();
+            break;
+        }
     }
     TreeView.getInstance().delWidget(getKey(), w.getKey());
+    repaint();
     MsgEvent ev = new MsgEvent();
     ev.message =  w.getKey();
     ev.parent = getKey();
     ev.code = MsgEvent.WIDGET_DELETE;
     MsgBoard.getInstance().publish(ev);
-    repaint();
   }
 
   /**

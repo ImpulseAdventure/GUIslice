@@ -552,8 +552,8 @@ public class CodeGenerator {
   /** The template file name. */
   String templateFileName = null;
   
-  /** The font list. */
-  List<FontItem> fontList = new ArrayList<FontItem>();
+  /** The font list of enums. */
+  List<Pair> fontEnums = new ArrayList<Pair>();
   
   /** The template map. */
   HashMap<String, Integer> templateMap;
@@ -768,7 +768,7 @@ public class CodeGenerator {
    * doCodeGen is the main code generation loop.
    */
   public void doCodeGen() { 
-    fontList.clear();
+    fontEnums.clear();
     refList.clear();
     try {
 			fw = new FileWriter(projectFile);
@@ -896,26 +896,68 @@ public class CodeGenerator {
     // Find our Text, TextButton, and TextBox models
     // and pull out from the models the font keys that we can map 
     // to something GUIslice API can understand.
-    List<String> fontNames = new ArrayList<String>();
     for (PagePane p : pages) {
       for (Widget w : p.getWidgets()) {
         if (w.getType().equals(EnumFactory.TEXT)) {
-          fontNames.add(((TextModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TextModel)w.getModel()).getFontDisplayName(),
+                                 ((TextModel)w.getModel()).getFontEnum()));
         } else if (w.getType().equals(EnumFactory.TEXTBUTTON)) {
-          fontNames.add(((TxtButtonModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TxtButtonModel)w.getModel()).getFontDisplayName(),
+                                 ((TxtButtonModel)w.getModel()).getFontEnum()));
         } else if (w.getType().equals(EnumFactory.TEXTBOX)) {
-          fontNames.add(((TextBoxModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TextBoxModel)w.getModel()).getFontDisplayName(),
+                                 ((TextBoxModel)w.getModel()).getFontEnum()));
         }
       }
     }
-    // Now we have a full list of font names but we also may have duplicates
-    // so we sort the list in order and remove duplicates.
-    sortListandRemoveDups(fontNames);
-    // Now make pass using our now compact set of font names to 
-    // grab all of our font data (FontItem) for each font in use.
-    for (String fName : fontNames) {
-      FontItem item = ff.getFontItem(fName);
+    if (fontEnums.size() > 1) {
+      // Now we have a full list of font enums but we also may have duplicates
+      // so we sort the list in order and remove duplicates.
+      Collections.sort(fontEnums, new Comparator<Pair>() {
+          public int compare(Pair one, Pair other) {
+              return one.getValue().compareTo(other.getValue());
+          }
+      }); 
+      Pair pairCur = null;
+      Pair pairPrev = new Pair("","");
+      ListIterator<Pair> pairIter = fontEnums.listIterator();
+      while(pairIter.hasNext()) {
+        pairCur = pairIter.next();
+        if (pairCur.getValue().equals(pairPrev.getValue())) {
+          if (!pairCur.getKey().equals(pairPrev.getKey())) {
+            pw.printf("// Warning: Found Duplicate Font Enum with different Fonts <%s -> %s> mapping ignored%n", 
+                      pairCur.getValue(), pairCur.getKey());
+          }
+          pairIter.remove();
+        } else {
+          pairPrev = pairCur;
+        }
+      }
+    }
+    // Now make pass using our now compact set of font enums to 
+    // create a compact list of font names and since many enums 
+    // may point to a single font name we will sort and remove dups.
+    List<FontItem> fontList = new ArrayList<FontItem>();
+    for (Pair pair : fontEnums) {
+      FontItem item = ff.getFontItem(pair.getKey());
       fontList.add(item);
+    }
+    if (fontList.size() > 1) {
+      Collections.sort(fontList, new Comparator<FontItem>() {
+          public int compare(FontItem one, FontItem other) {
+              return one.getDisplayName().compareTo(other.getDisplayName());
+          }
+      }); 
+      FontItem itemCur = null;
+      FontItem itemPrev = null;
+      ListIterator<FontItem> itemIter = fontList.listIterator();
+      while(itemIter.hasNext()) {
+        itemCur = itemIter.next();
+        if (itemPrev != null && itemCur.getDisplayName().equals(itemPrev.getDisplayName()))
+          itemIter.remove();
+        else 
+          itemPrev = itemCur;
+      }
     }
     // finish off by outputting font includes or defines, if any
     List<String> dups = new ArrayList<String>();
@@ -1030,10 +1072,10 @@ public class CodeGenerator {
       // Now output the list
       printEnums(enumList);
     }
-    enumList.clear();
     // Final pass output any font enums
-    for (FontItem f : fontList) {
-        enumList.add(f.getFontId());
+    enumList.clear();
+    for (Pair pair : fontEnums) {
+        enumList.add(pair.getValue());
     }
     if (enumList.size() > 0) 
       printEnums(enumList);
@@ -1057,7 +1099,7 @@ public class CodeGenerator {
     pw.printf("#define %-24s%d%n", elemTitle, pages.size());
     // output number of fonts
     elemTitle = "MAX_FONT";
-    pw.printf("#define %-24s%d%n", elemTitle, fontList.size());
+    pw.printf("#define %-24s%d%n", elemTitle, fontEnums.size());
     // build up a list of counts for out various UI widgets
     // build up a list of counts for out various UI widgets
     // first are we doing arduino minimum? if so, count _P functions stored in flash
@@ -1529,11 +1571,12 @@ public class CodeGenerator {
     macro[2] = FONT_REF_MACRO;
     macro[3] = FONT_SZ_MACRO;
     macro[4] = null;
-    for (FontItem f : fontList) {
-      replacement[0] = f.getFontId();
-      replacement[1] = f.getFontRefType();
-      replacement[2] = f.getFontRef();
-      replacement[3] = f.getFontSz();
+    for (Pair pair : fontEnums) {
+      FontItem item = ff.getFontItem(pair.getKey());
+      replacement[0] = pair.getValue();
+      replacement[1] = item.getFontRefType();
+      replacement[2] = item.getFontRef();
+      replacement[3] = item.getFontSz();
       outputLines = expandMacros(templateLines, macro, replacement);
       writeTemplate(outputLines);
     }
@@ -2300,7 +2343,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = HEIGHT_MACRO;
     replacement[n++] = String.valueOf(m.getTargetHeight());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2402,7 +2445,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = HEIGHT_MACRO;
     replacement[n++] = String.valueOf(m.getTargetHeight());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2478,7 +2521,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = COLS_MACRO;
     replacement[n++] = String.valueOf(((TextBoxModel)m).getNumTextColumns());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(((TextBoxModel)m).getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FILL_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getFillColor());
@@ -2507,7 +2550,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2562,7 +2605,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2959,8 +3002,8 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    */
   private int getFontIndex(String fontId) {
     int i = 0;
-    for (FontItem f : fontList) {
-      if (f.getFontId().equals(fontId)) {
+    for (Pair f : fontEnums) {
+      if (f.getValue().equals(fontId)) {
         break;
       }
       i++;
@@ -3003,5 +3046,59 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
         return "UNKOWN_ALIGNMENT";
     }
   }
-  
+ 
+  /**
+   * The Private Class Pair used to store Font Enum (ID) and Font Display Name relationship.
+   * It allows the Code Generator to create the gslc_FontAdd() mapping.
+   */
+  private class Pair {
+    
+    /** The key. */
+    String key;
+    
+    /** The value. */
+    String value;
+
+    /**
+     * Instantiates a new pair.
+     *
+     * @param key
+     *          the key
+     * @param value
+     *          the value
+     */
+    Pair(String key, String value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    /**
+     * Gets the key.
+     *
+     * @return the key
+     */
+    private String getKey() {
+      return key;
+    }
+    
+    /**
+     * Gets the value.
+     *
+     * @return the value
+     */
+    private String getValue() {
+      return value;
+    }
+
+    /**
+     * toString
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return String.format("%s->%s",getKey(),getValue());
+    }
+  }
+ 
 }

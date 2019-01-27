@@ -31,6 +31,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 
 import builder.Builder;
 
@@ -50,7 +51,7 @@ public class MenuBar extends JMenuBar {
   
   /** The exit menu item. */
   private JMenuItem newMenuItem, openMenuItem, saveMenuItem, 
-    saveAsMenuItem, codeMenuItem, closeMenuItem, exitMenuItem;
+    saveAsMenuItem, importMenuItem, codeMenuItem, closeMenuItem, exitMenuItem;
   
   /** The delete menu item. */
   private JMenuItem optionsMenuItem, deleteMenuItem;
@@ -93,16 +94,24 @@ public class MenuBar extends JMenuBar {
     saveMenuItem.setActionCommand("save");
     mbFile.add(saveMenuItem);
     
-    
     saveAsMenuItem = new JMenuItem("Save As...", 
         new ImageIcon(Builder.class.getResource("/resources/icons/saveas.png")));
     saveAsMenuItem.setActionCommand("saveas");
     mbFile.add(saveAsMenuItem);
     
+    mbFile.add(new JSeparator()); 
+    
+    importMenuItem = new JMenuItem("Import", 
+        new ImageIcon(Builder.class.getResource("/resources/icons/import.png")));
+    importMenuItem.setActionCommand("import");
+    mbFile.add(importMenuItem);
+    
     codeMenuItem = new JMenuItem("Generate Code", 
         new ImageIcon(Builder.class.getResource("/resources/icons/export.png")));
     codeMenuItem.setActionCommand("code");
     mbFile.add(codeMenuItem);
+    
+    mbFile.add(new JSeparator()); 
     
     exitMenuItem = new JMenuItem("Exit", 
         new ImageIcon(Builder.class.getResource("/resources/icons/logout.png")));
@@ -157,6 +166,7 @@ public class MenuBar extends JMenuBar {
     openMenuItem.addActionListener(al); 
     saveMenuItem.addActionListener(al);
     saveAsMenuItem.addActionListener(al);
+    importMenuItem.addActionListener(al);
     codeMenuItem.addActionListener(al);
     deleteMenuItem.addActionListener(al); 
     optionsMenuItem.addActionListener(al); 

@@ -197,7 +197,7 @@ public class ImgButtonModel extends WidgetModel {
         data[PROP_PAGE][PROP_VAL_VALUE]="";
         data[PROP_PAGE][PROP_VAL_READONLY]=Boolean.TRUE;
       }
-      fireTableCellUpdated(PROP_PAGE, 1);
+      fireTableCellUpdated(PROP_PAGE, COLUMN_VALUE);
     }
     if (bSendEvents) {
       event = new MsgEvent();
