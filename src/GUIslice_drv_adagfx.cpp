@@ -132,18 +132,22 @@ extern "C" {
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ILI9341(SPI-HW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_ILI9341(SPI-SW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+  const char* m_acDrvDisp = "ADA_ILI9341_8b";
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-HW)";
     //PIN_RST=-1 doesn't give same behavior as 2-param function variant, therefore use different functions
     #if ADAGFX_PIN_RST==-1
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
@@ -151,43 +155,53 @@ extern "C" {
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
     #endif
   #else
+    const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-SW)";
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_SSD1306(SPI-HW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
+    const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ST7735(SPI-HW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_ST7735(SPI-SW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_HX8357)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_HX8357(SPI-HW)";
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_HX8357(SPI-SW)";
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_PCD8544)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_PCD8544(SPI-HW)";
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_PCD8544(SPI-SW)";
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, DAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+  const char* m_acDrvDisp = "ADA_MCUFRIEND";
   MCUFRIEND_kbv m_disp;
 
 // ------------------------------------------------------------------------
@@ -198,28 +212,37 @@ extern "C" {
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
   #if (ADATOUCH_I2C_HW) // Use I2C
+    const char* m_acDrvTouch = "STMPE610(I2C-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
+    const char* m_acDrvTouch = "STMPE610(SPI-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
+    const char* m_acDrvTouch = "STMPE610(SPI-SW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #else // No interface flag set
     #error "DRV_TOUCH_ADA_STMPE610 but no ADATOUCH_I2C_* or ADATOUCH_SPI_* set in config"
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
+    const char* m_acDrvTouch = "FT6206(I2C)";
     // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+  const char* m_acDrvTouch = "SIMPLE";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
+  const char* m_acDrvTouch = "XPT2046";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
   // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 #elif defined(DRV_TOUCH_HANDLER)
+  const char* m_acDrvTouch = "Handler";
+#elif defined(DRV_TOUCH_NONE)
+  const char* m_acDrvTouch = "NONE";
 
 #endif // DRV_TOUCH_*
 
@@ -346,6 +369,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions

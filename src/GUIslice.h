@@ -768,6 +768,23 @@ typedef struct {
 ///
 char* gslc_GetVer(gslc_tsGui* pGui);
 
+///
+/// Get the GUIslice display driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_GetNameDisp();
+
+///
+/// Get the GUIslice touch driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_GetNameTouch();
 
 ///
 /// Initialize the GUIslice library

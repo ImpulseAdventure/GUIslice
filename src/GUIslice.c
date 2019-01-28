@@ -90,6 +90,16 @@ char* gslc_GetVer(gslc_tsGui* pGui)
   return (char*)GUISLICE_VER;
 }
 
+const char* gslc_GetNameDisp()
+{
+  return gslc_DrvGetNameDisp();
+}
+
+const char* gslc_GetNameTouch()
+{
+  return gslc_DrvGetNameTouch();
+}
+
 
 
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
@@ -171,10 +181,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
     bOk &= gslc_DrvInit(pGui);
     if (bOk) {
       #if !defined(INIT_MSG_DISABLE)
-      GSLC_DEBUG_PRINT("- Initialized display handler OK\n", "");
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] OK\n", gslc_GetNameDisp());
       #endif
     } else {
-      GSLC_DEBUG_PRINT("- Initialized display handler FAIL\n", "");
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] FAIL\n", gslc_GetNameDisp());
     }
   }
   #if defined(DRV_TOUCH_NONE)
@@ -189,11 +199,11 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
         #if !defined(INIT_MSG_DISABLE)
-        GSLC_DEBUG_PRINT("- Initialized touch handler OK\n", "");
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch());
         #endif
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
-        GSLC_DEBUG_PRINT("- Initialized touch handler FAIL\n", "");
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] FAIL\n", gslc_GetNameTouch());
         pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
       }
     }
