@@ -359,7 +359,8 @@ extern "C" {
   #define ADATOUCH_Y_MAX 3805
 
   // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN 0
+  #define ADATOUCH_PRESS_MIN 10
+  #define ADATOUCH_PRESS_MAX 1000
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_INPUT)
