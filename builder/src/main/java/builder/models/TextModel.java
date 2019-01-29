@@ -156,8 +156,8 @@ public class TextModel extends WidgetModel {
 
     initProp(PROP_FILL_EN, Boolean.class, "TXT-204", Boolean.FALSE,"Fill Enabled?",Boolean.TRUE);
     initProp(PROP_TEXT_SZ, Integer.class, "TXT-205", Boolean.FALSE,"External Storage Size",Integer.valueOf(0));
-    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.TRUE,"ElementRef","");
-    initProp(PROP_TEXT_ALIGN, String.class, "TXT-207", Boolean.TRUE,"Text Alignment","Left");
+    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
+    initProp(PROP_TEXT_ALIGN, String.class, "TXT-207", Boolean.FALSE,"Text Alignment","Left");
 
     initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
     initProp(PROP_TEXT_COLOR, Color.class, "COL-301", Boolean.TRUE,"Text Color",cf.getDefTextCol());
@@ -217,34 +217,16 @@ public class TextModel extends WidgetModel {
       if (getTextStorage() > 0) {
         String strKey = getKey();
         int n = strKey.indexOf("$");
-        String strCount = strKey.substring(n+1, strKey.length());
+        String strCount = strKey.substring(n + 1, strKey.length());
         if (getElementRef().length() == 0) {
           setElementRef(new String("m_pElemTxt" + strCount));
+          fireTableCellUpdated(PROP_ELEMENTREF, COLUMN_VALUE);
         }
         if (getEnum().equals("GSLC_ID_AUTO")) {
           setEnum(new String("E_TXT" + strCount));
           fireTableCellUpdated(PROP_ENUM, COLUMN_VALUE);
         }
-        data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.FALSE; 
-        data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.FALSE; 
-        data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.FALSE;
-        data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.FALSE; 
-      } else {  
-        if (!getEnum().equals("GSLC_ID_AUTO")) {
-          setEnum("GSLC_ID_AUTO");
-          fireTableCellUpdated(PROP_ENUM, COLUMN_VALUE);
-        }
-        setElementRef(new String(""));
-        setEnum("GSLC_ID_AUTO");
-        data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.TRUE; 
-        data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.TRUE; 
-        data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.TRUE;
-        data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.TRUE; 
       }
-      fireTableCellUpdated(PROP_WIDTH, COLUMN_VALUE);
-      fireTableCellUpdated(PROP_HEIGHT, COLUMN_VALUE);
-      fireTableCellUpdated(PROP_ELEMENTREF, COLUMN_VALUE);
-      fireTableCellUpdated(PROP_TEXT_ALIGN, COLUMN_VALUE);
     }
     if (row == PROP_DEFAULT_COLORS) {
       // check for switching back and forth
@@ -268,9 +250,7 @@ public class TextModel extends WidgetModel {
       fireTableCellUpdated(PROP_FILL_COLOR, COLUMN_VALUE);
       fireTableCellUpdated(PROP_SELECTED_COLOR, COLUMN_VALUE);
     }     
-//    fireTableDataChanged();
-    
-    if (bSendEvents) {
+  if (bSendEvents) {
       event = new MsgEvent();
       event.code = MsgEvent.WIDGET_REPAINT;
       event.message = getKey();
@@ -285,11 +265,9 @@ public class TextModel extends WidgetModel {
    */
   public int getWidth() {
     // this is complicated by users needing to change size
-    if (getTextStorage() > 0) {
-      // return the larger value, either the scaled value or user defined
-      if (getTargetWidth() > scaledWidth)
-        return getTargetWidth();
-    } 
+    // return the larger value, either the scaled value or user defined
+    if (getTargetWidth() > scaledWidth)
+      return getTargetWidth();
     return scaledWidth;
   }
   
@@ -300,11 +278,9 @@ public class TextModel extends WidgetModel {
    */
   public int getHeight() {
     // this is complicated by users needing to change size
-    if (getTextStorage() > 0) {
-      // return the larger value, either the scaled value or user defined
-      if (getTargetHeight() > scaledHeight)
-        return getTargetHeight();
-    } 
+    // return the larger value, either the scaled value or user defined
+    if (getTargetHeight() > scaledHeight)
+      return getTargetHeight();
     return scaledHeight;
   }
 
@@ -481,17 +457,6 @@ public class TextModel extends WidgetModel {
  public void readModel(ObjectInputStream in, String widgetType) 
      throws IOException, ClassNotFoundException {
    super.readModel(in,  widgetType);
-   if (getTextStorage() > 0) {
-     data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.FALSE; 
-     data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.FALSE; 
-     data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.FALSE;
-     data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.FALSE; 
-   } else {  
-     data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.TRUE; 
-     data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.TRUE; 
-     data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.TRUE;
-     data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.TRUE; 
-   }
    if (useDefaultColors()) {
      data[PROP_TEXT_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 

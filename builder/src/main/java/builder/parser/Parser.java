@@ -178,11 +178,15 @@ public class Parser {
         "gslc_ElemXGaugeCreate",
         "gslc_ElemXGaugeCreate_P",
         "gslc_ElemXGaugeSetStyle",
+        "gslc_ElemXGaugeSetIndicator",
+        "gslc_ElemXGaugeSetTicks",
         "gslc_ElemXGraphCreate",
         "gslc_ElemXGraphSetStyle",
         "gslc_ElemXSliderCreate",
         "gslc_ElemXSliderCreate_P",        
         "gslc_ElemXSliderSetStyle",
+        "gslc_ElemXTextboxCreate",
+        "gslc_ElemXTextboxWrapSet",
         "gslc_ElemSetTxtAlign",
         "gslc_ElemSetFillEn",
         "gslc_FontAdd",
@@ -269,6 +273,8 @@ public class Parser {
         graph_parser();
       } else if (token.getToken().equals("gslc_ElemXSliderCreate")) {
         slider_parser();
+      } else if (token.getToken().equals("gslc_ElemXTextboxCreate")) {
+        textbox_parser();
       } else if (token.getToken().equals("gslc_ElemXSliderCreate_P")) {
         slider_p_parser();
       } else if (token.getToken().equals("gslc_FontAdd")) {
@@ -303,341 +309,6 @@ public class Parser {
     fontEnumList.add("NONE");
     // now loop until we find a ';'
     parse_EOS();
-  }
-
-  /**
-   * Text parser.
-   *
-   * @throws ParserException
-   *           the parser exception
-   */
-  public void text_parser() throws ParserException {
-    TextNode node = new TextNode();
-    // skip over Pointer to GUI
-    parse_pGUI();
-    // now grab and set the ENUM
-    token = tokenizer.nextToken();
-    String strEnum = token.getToken();
-    if (token.getType() != Parser.WORD) {
-      if (token.getType() != Parser.INTEGER) parseError("enum");
-      strEnum = "E_" + strEnum;
-    }
-    node.setEnum(strEnum);
-    // now grab page enum
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("page enum");
-    node.setPageEnum(token.getToken());
-    // pull out location (x,y), width and height of widget
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    parse_tsRect(node);
-    // grab our text
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() == Parser.OPEN_PARENTHESIS) {
-      // format must be (char*)"text",
-      while ((token = tokenizer.nextToken()).getType() != Parser.CLOSE_PARENTHESIS) {}
-      token = tokenizer.nextToken();
-    }
-    // NOTE: if the token is not a string its most likely storage mstr type
-    if (token.getType() == Parser.STRING) {
-      String noQuotes = token.getToken().replaceAll("\"", "");
-      if (noQuotes.length() > 0)
-        node.setText(noQuotes);
-    }
-    if (token.getType() == Parser.WORD) {
-      if (storageName != null && storageName.equals(token.getToken())) {
-        node.setTextStorage(storageSz);
-        if (storageValue != null) 
-          node.setText(storageValue);
-      }
-    }
-    // go pass storage - most often 0
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    // save font enum
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("font enum");
-    fontEnumList.add(token.getToken());
-    node.setFontEnum(token.getToken());
-    // node is complete
-    nodeList.add(node);
-    storageName=null;
-    storageValue=null;
-    storageSz=null;
-    // now loop until we find a ';'
-    parse_EOS();
-    // now parse any extra calls that might affect this node
-    while (parse_text_extras(node)) { }
-  }
-
-  /**
-   * Text p parser.
-   *
-   * @throws ParserException
-   *           the parser exception
-   */
-  public void text_p_parser() throws ParserException {
-    TextNode node = new TextNode();
-    // parse pGui,x,y,w,h,
-    parse_ard_min(node);
-    // grab text
-    token = tokenizer.nextToken();
-    if (token.getType() == Parser.STRING) {
-      // remove all quote marks and check for empty string
-      String noQuotes = token.getToken().replaceAll("\"", "");
-      if (noQuotes.length() > 0)
-        node.setText(noQuotes);
-    }
-    // skip over Pointer to font resource since we have no semantic information to guide us
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    // text color
-    Color c = parse_color();
-    node.setTextColor(c);
-    node.setDefaultColors("false");
-    // frame color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFrameColor(c);
-    // fill color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFillColor(c);
-    // text alignment
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("alignment keyword");
-    if (token.getToken().equals("GSLC_ALIGN_MID_MID"))
-      node.setAlignment("Center");
-    else if (token.getToken().equals("GSLC_ALIGN_MID_RIGHT"))
-      node.setAlignment("Right");
-    else 
-      node.setAlignment("Left");
-    // bFrameEn - ignored for the moment
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
-    // bFillEn
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
-    node.setFillEnabled(token.getToken());
-    // node is complete
-    nodeList.add(node);
-    fontEnumList.add("NONE");
-    storageName=null;
-    storageValue=null;
-    storageSz=null;
-    // now loop until we find a ';'
-    parse_EOS();
-    // now parse any extra calls that might affect this node
-    while (parse_text_extras(node)) { }
-  }
-
-  /**
-   * Text p r parser.
-   *
-   * @throws ParserException
-   *           the parser exception
-   */
-  public void text_p_r_parser() throws ParserException {
-    TextNode node = new TextNode();
-    // parse pGui,x,y,w,h,
-    parse_ard_min(node);
-    // text here is actual storage like mstr
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("mstr?");
-    if (storageName != null && storageName.equals(token.getToken())) {
-      node.setTextStorage(storageSz);
-      if (storageValue != null) 
-        node.setText(storageValue);
-    }
-    // next should be storage size
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() == Parser.INTEGER) {
-      node.setTextStorage(token.getToken());
-    } else {
-      // not integer so skip pass storage - might be sizeof(mstrxxx)
-      while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    }
-    // skip over Pointer to font resource since we have no semantic information to guide us
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    // text color
-    Color c = parse_color();
-    node.setTextColor(c);
-    node.setDefaultColors("false");
-    // frame color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFrameColor(c);
-    // fill color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFillColor(c);
-    // text alignment
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("alignment keyword");
-    if (token.getToken().equals("GSLC_ALIGN_MID_MID"))
-      node.setAlignment("Center");
-    else if (token.getToken().equals("GSLC_ALIGN_MID_RIGHT"))
-      node.setAlignment("Right");
-    else 
-      node.setAlignment("Left");
-    // bFrameEn - ignored for the moment
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
-    // bFillEn
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
-    node.setFillEnabled(token.getToken());
-    // node is complete
-    nodeList.add(node);
-    fontEnumList.add("NONE");
-    storageName=null;
-    storageValue=null;
-    storageSz=null;
-    // now loop until we find a ';'
-    parse_EOS();
-    // now parse any extra calls that might affect this node
-    while (parse_text_extras(node)) { }
-  }
-
-  /**
-   * Txtbutton parser.
-   *
-   * @throws ParserException
-   *           the parser exception
-   */
-  public void txtbutton_parser() throws ParserException {
-    TxtButtonNode node = new TxtButtonNode();
-    // skip over Pointer to GUI
-    parse_pGUI();
-    // now grab and set the ENUM
-    token = tokenizer.nextToken();
-    String strEnum = token.getToken();
-    if (token.getType() != Parser.WORD) {
-      if (token.getType() != Parser.INTEGER) parseError("enum");
-      strEnum = "E_" + strEnum;
-    }
-    node.setEnum(strEnum);
-    // now grab page enum
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("page enum");
-    node.setPageEnum(token.getToken());
-    // pull out location (x,y), width and height of widget
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    parse_tsRect(node);
-    // grab our button label
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    token = tokenizer.nextToken();
-    if (token.getType() == Parser.OPEN_PARENTHESIS) {
-      // format must be (char*)"text",
-      while ((token = tokenizer.nextToken()).getType() != Parser.CLOSE_PARENTHESIS) {}
-      token = tokenizer.nextToken();
-    }
-    if (token.getType() == Parser.STRING) {
-      // remove all quote marks and check for empty string
-      String noQuotes = token.getToken().replaceAll("\"", "");
-      if (noQuotes.length() > 0)
-        node.setText(noQuotes);
-    }
-    // go pass storage - most often 0
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    // save font enum
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.WORD) parseError("font enum");
-    fontEnumList.add(token.getToken());
-    node.setFontEnum(token.getToken());
-    // node is complete
-    nodeList.add(node);
-    // now loop until we find a ';'
-    parse_EOS();
-    // now parse any extra calls that might affect this node
-    while (parse_txtbutton_extras(node)) { }
-  }
-
-  /**
-   * Txtbutton p parser.
-   *
-   * @throws ParserException
-   *           the parser exception
-   */
-  public void txtbutton_p_parser() throws ParserException {
-    TxtButtonNode node = new TxtButtonNode();
-    // parse pGui,x,y,w,h,
-    parse_ard_min(node);
-    // grab text
-    token = tokenizer.nextToken();
-    if (token.getType() == Parser.STRING) {
-      // remove all quote marks and check for empty string
-      String noQuotes = token.getToken().replaceAll("\"", "");
-      if (noQuotes.length() > 0)
-        node.setText(noQuotes);
-    }
-    // skip over Pointer to font resource since we have no semantic information to guide us
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
-    // text color
-    Color c = parse_color();
-    node.setTextColor(c);
-    node.setDefaultColors("false");
-    // frame color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFrameColor(c);
-    // fill color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setFillColor(c);
-    // frame when glowing color - ignored
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    // fill when glowing color
-    token = tokenizer.nextToken();
-    if (token.getType() != Parser.COMMA) parseError(",");
-    c = parse_color();
-    node.setSelectedColor(c);
-    // skip over over the rest
-    // node is complete
-    nodeList.add(node);
-    fontEnumList.add("NONE");
-    // now loop until we find a ';'
-    parse_EOS();
-    // now parse any extra calls that might affect this node
-    while (parse_txtbutton_extras(node)) { }
   }
 
   /**
@@ -1196,6 +867,403 @@ public class Parser {
   }
   
   /**
+   * Text parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void text_parser() throws ParserException {
+    TextNode node = new TextNode();
+    // skip over Pointer to GUI
+    parse_pGUI();
+    // now grab and set the ENUM
+    token = tokenizer.nextToken();
+    String strEnum = token.getToken();
+    if (token.getType() != Parser.WORD) {
+      if (token.getType() != Parser.INTEGER) parseError("enum");
+      strEnum = "E_" + strEnum;
+    }
+    node.setEnum(strEnum);
+    // now grab page enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("page enum");
+    node.setPageEnum(token.getToken());
+    // pull out location (x,y), width and height of widget
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    parse_tsRect(node);
+    // grab our text
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() == Parser.OPEN_PARENTHESIS) {
+      // format must be (char*)"text",
+      while ((token = tokenizer.nextToken()).getType() != Parser.CLOSE_PARENTHESIS) {}
+      token = tokenizer.nextToken();
+    }
+    // NOTE: if the token is not a string its most likely storage mstr type
+    if (token.getType() == Parser.STRING) {
+      String noQuotes = token.getToken().replaceAll("\"", "");
+      if (noQuotes.length() > 0)
+        node.setText(noQuotes);
+    }
+    if (token.getType() == Parser.WORD) {
+      if (storageName != null && storageName.equals(token.getToken())) {
+        node.setTextStorage(storageSz);
+        if (storageValue != null) 
+          node.setText(storageValue);
+      }
+    }
+    // go pass storage - most often 0
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // save font enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("font enum");
+    fontEnumList.add(token.getToken());
+    node.setFontEnum(token.getToken());
+    // node is complete
+    nodeList.add(node);
+    storageName=null;
+    storageValue=null;
+    storageSz=null;
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_text_extras(node)) { }
+  }
+
+  /**
+   * Text p parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void text_p_parser() throws ParserException {
+    TextNode node = new TextNode();
+    // parse pGui,x,y,w,h,
+    parse_ard_min(node);
+    // grab text
+    token = tokenizer.nextToken();
+    if (token.getType() == Parser.STRING) {
+      // remove all quote marks and check for empty string
+      String noQuotes = token.getToken().replaceAll("\"", "");
+      if (noQuotes.length() > 0)
+        node.setText(noQuotes);
+    }
+    // skip over Pointer to font resource since we have no semantic information to guide us
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // text color
+    Color c = parse_color();
+    node.setTextColor(c);
+    node.setDefaultColors("false");
+    // frame color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFrameColor(c);
+    // fill color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFillColor(c);
+    // text alignment
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("alignment keyword");
+    if (token.getToken().equals("GSLC_ALIGN_MID_MID"))
+      node.setAlignment("Center");
+    else if (token.getToken().equals("GSLC_ALIGN_MID_RIGHT"))
+      node.setAlignment("Right");
+    else 
+      node.setAlignment("Left");
+    // bFrameEn - ignored for the moment
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
+    // bFillEn
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
+    node.setFillEnabled(token.getToken());
+    // node is complete
+    nodeList.add(node);
+    fontEnumList.add("NONE");
+    storageName=null;
+    storageValue=null;
+    storageSz=null;
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_text_extras(node)) { }
+  }
+
+  /**
+   * Text p r parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void text_p_r_parser() throws ParserException {
+    TextNode node = new TextNode();
+    // parse pGui,x,y,w,h,
+    parse_ard_min(node);
+    // text here is actual storage like mstr
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("mstr?");
+    if (storageName != null && storageName.equals(token.getToken())) {
+      node.setTextStorage(storageSz);
+      if (storageValue != null) 
+        node.setText(storageValue);
+    }
+    // next should be storage size
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() == Parser.INTEGER) {
+      node.setTextStorage(token.getToken());
+    } else {
+      // not integer so skip pass storage - might be sizeof(mstrxxx)
+      while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    }
+    // skip over Pointer to font resource since we have no semantic information to guide us
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // text color
+    Color c = parse_color();
+    node.setTextColor(c);
+    node.setDefaultColors("false");
+    // frame color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFrameColor(c);
+    // fill color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFillColor(c);
+    // text alignment
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("alignment keyword");
+    if (token.getToken().equals("GSLC_ALIGN_MID_MID"))
+      node.setAlignment("Center");
+    else if (token.getToken().equals("GSLC_ALIGN_MID_RIGHT"))
+      node.setAlignment("Right");
+    else 
+      node.setAlignment("Left");
+    // bFrameEn - ignored for the moment
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
+    // bFillEn
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("bFrameEn true|false");
+    node.setFillEnabled(token.getToken());
+    // node is complete
+    nodeList.add(node);
+    fontEnumList.add("NONE");
+    storageName=null;
+    storageValue=null;
+    storageSz=null;
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_text_extras(node)) { }
+  }
+
+  /**
+   * Txtbutton parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void txtbutton_parser() throws ParserException {
+    TxtButtonNode node = new TxtButtonNode();
+    // skip over Pointer to GUI
+    parse_pGUI();
+    // now grab and set the ENUM
+    token = tokenizer.nextToken();
+    String strEnum = token.getToken();
+    if (token.getType() != Parser.WORD) {
+      if (token.getType() != Parser.INTEGER) parseError("enum");
+      strEnum = "E_" + strEnum;
+    }
+    node.setEnum(strEnum);
+    // now grab page enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("page enum");
+    node.setPageEnum(token.getToken());
+    // pull out location (x,y), width and height of widget
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    parse_tsRect(node);
+    // grab our button label
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() == Parser.OPEN_PARENTHESIS) {
+      // format must be (char*)"text",
+      while ((token = tokenizer.nextToken()).getType() != Parser.CLOSE_PARENTHESIS) {}
+      token = tokenizer.nextToken();
+    }
+    if (token.getType() == Parser.STRING) {
+      // remove all quote marks and check for empty string
+      String noQuotes = token.getToken().replaceAll("\"", "");
+      if (noQuotes.length() > 0)
+        node.setText(noQuotes);
+    }
+    // go pass storage - most often 0
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // save font enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("font enum");
+    fontEnumList.add(token.getToken());
+    node.setFontEnum(token.getToken());
+    // node is complete
+    nodeList.add(node);
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_txtbutton_extras(node)) { }
+  }
+
+  /**
+   * Txtbutton p parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void txtbutton_p_parser() throws ParserException {
+    TxtButtonNode node = new TxtButtonNode();
+    // parse pGui,x,y,w,h,
+    parse_ard_min(node);
+    // grab text
+    token = tokenizer.nextToken();
+    if (token.getType() == Parser.STRING) {
+      // remove all quote marks and check for empty string
+      String noQuotes = token.getToken().replaceAll("\"", "");
+      if (noQuotes.length() > 0)
+        node.setText(noQuotes);
+    }
+    // skip over Pointer to font resource since we have no semantic information to guide us
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // text color
+    Color c = parse_color();
+    node.setTextColor(c);
+    node.setDefaultColors("false");
+    // frame color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFrameColor(c);
+    // fill color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setFillColor(c);
+    // frame when glowing color - ignored
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    // fill when glowing color
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    c = parse_color();
+    node.setSelectedColor(c);
+    // skip over over the rest
+    // node is complete
+    nodeList.add(node);
+    fontEnumList.add("NONE");
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_txtbutton_extras(node)) { }
+  }
+
+  /**
+   * Text Box parser.
+   *
+   * @throws ParserException
+   *           the parser exception
+   */
+  public void textbox_parser() throws ParserException {
+    TextBoxNode node = new TextBoxNode();
+    // skip over Pointer to GUI
+    parse_pGUI();
+    // now grab and set the ENUM
+    token = tokenizer.nextToken();
+    String strEnum = token.getToken();
+    if (token.getType() != Parser.WORD) {
+      if (token.getType() != Parser.INTEGER) parseError("enum");
+      strEnum = "E_" + strEnum;
+    }
+    node.setEnum(strEnum);
+    // now grab page enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("page enum");
+    node.setPageEnum(token.getToken());
+    // skip over pointer to extended element data structure
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // pull out location (x,y), width and height of widget
+    parse_tsRect(node);
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    // save font enum
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.WORD) parseError("font enum");
+    node.setFontEnum(token.getToken());
+    // skip over storage since we can't map it
+    token = tokenizer.nextToken();
+    if (token.getType() != Parser.COMMA) parseError(",");
+    while ((token=tokenizer.nextToken()).getType() != Parser.COMMA) { }
+    // pull out rows and columns
+    try {
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.INTEGER) parseError("rows value");
+      node.setNumTextRows(token.getToken());
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.INTEGER) parseError("columns value");
+      node.setNumTextColumns(token.getToken());
+    } catch (NumberFormatException e) {
+      throw new ParserException("NumberFormatException: " + e.toString());
+    }
+    // node is complete
+    fontEnumList.add(node.getFontEnum());
+    nodeList.add(node);
+    // now loop until we find a ';'
+    parse_EOS();
+    // now parse any extra calls that might affect this node
+    while (parse_textbox_extras(node)) { }
+  }
+
+  /**
    * Font parser.
    *
    * @throws ParserException
@@ -1472,10 +1540,188 @@ public class Parser {
       } else if (token.getToken().equals("GSLCX_GRAPH_STYLE_FILL")) {
         node.setGraphStyle("Fill");
       } else if (token.getToken().equals("GSLCX_GRAPH_STYLE_LINE")) {
-        node.setGraphStyle("Dot");  // currently unimplemented in GUIslice api
+        node.setGraphStyle("Line");  // currently unimplemented in GUIslice api
       } else parseError("graph style");
       parse_EOS();
       return true;
+    }
+    tokenizer.pushToken();
+    return false;
+  }
+  
+  /**
+   * Parses the progress bar extras.
+   *
+   * @param node
+   *          the node
+   * @return <code>true</code>, if successful
+   * @throws ParserException
+   *           the parser exception
+   */
+  public boolean parse_progressbar_extras(ProgressBarNode node) throws ParserException {
+    Color c = null;
+    token = tokenizer.nextToken();
+    if (token.getToken().equals("gslc_ElemXGaugeSetStyle")) {
+      parse_pGUI_and_pElemRef(); 
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.WORD) parseError("gauge style"); 
+      if (token.getToken().equals("GSLCX_GAUGE_STYLE_RAMP"))
+        node.setGaugeStyle(token.getToken());
+      else if (token.getToken().equals("GSLCX_GAUGE_STYLE_PROG_BAR"))
+        node.setGaugeStyle(token.getToken());
+      else if (token.getToken().equals("GSLCX_GAUGE_STYLE_RADIAL"))
+        node.setGaugeStyle(token.getToken());
+      else
+        parseError("gauge style");
+      parse_EOS();
+      return true;
+    } else if (token.getToken().equals("gslc_ElemSetCol")) {
+      parse_pGUI_and_pElemRef();
+      c = parse_color();
+      node.setDefaultColors("false");
+      node.setFrameColor(c);
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setFillColor(c);
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setSelectedColor(c);
+      parse_EOS();
+      return true;
+    } else if (token.getToken().equals("gslc_ElemXGaugeSetIndicator")) {
+      parse_pGUI_and_pElemRef();
+      c = parse_color();
+      node.setIndicatorColor(c);
+      try {
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("divsions?");
+        node.setIndicatorSize(token.getToken());
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("tick size?");
+        node.setIndicatorTipSize(token.getToken());
+      } catch (NumberFormatException e) {
+        throw new ParserException("gslc_ElemXSliderSetStyle NumberFormatException: " + e.toString());
+      }
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.WORD) parseError("indicator fill true|false");
+      node.setIndicatorFill(token.getToken());
+      parse_EOS();
+      return true;
+    } else if (token.getToken().equals("gslc_ElemXGaugeSetTicks")) {
+      parse_pGUI_and_pElemRef();
+      c = parse_color();
+      node.setTickColor(c);
+      try {
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("divsions?");
+        node.setDivisions (token.getToken());
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("tick size?");
+        node.setTickSize(token.getToken());
+      } catch (NumberFormatException e) {
+        throw new ParserException("gslc_ElemXSliderSetStyle NumberFormatException: " + e.toString());
+      }
+      parse_EOS();
+      return true;
+    } else if (token.getType() == Parser.WORD) {
+      // scan for something like: m_pElemProgress = pElemRef;
+      String strElemRef = token.getToken();
+      token = tokenizer.nextToken();
+      if (token.getType() == Parser.EQUALS) {
+        token = tokenizer.nextToken();
+        if (token.getType() == Parser.WORD && token.getToken().equals("pElemRef")) {
+          node.setElementRef(strElemRef);
+          parse_EOS();
+          return true;
+        }
+      }
+    } 
+    tokenizer.pushToken();
+    return false;
+  }
+  
+  /**
+   * Parses the slider extras.
+   *
+   * @param node
+   *          the node
+   * @return <code>true</code>, if successful
+   * @throws ParserException
+   *           the parser exception
+   */
+  public boolean parse_slider_extras(SliderNode node) throws ParserException {
+    Color c = null;
+    token = tokenizer.nextToken();
+    if (token.getToken().equals("gslc_ElemXSliderSetStyle")) {
+      parse_pGUI_and_pElemRef(); 
+      // look for trim style
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.WORD) parseError("trim style?");
+      node.setTrimStyle(token.getToken());
+      // grab trim color
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setTrimColor(c);
+      try {
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("divsions?");
+        node.setDivisions(token.getToken());
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.COMMA) parseError(",");
+        token = tokenizer.nextToken();
+        if (token.getType() != Parser.INTEGER) parseError("tick size?");
+        node.setTickSize(token.getToken());
+      } catch (NumberFormatException e) {
+        throw new ParserException("gslc_ElemXSliderSetStyle NumberFormatException: " + e.toString());
+      }
+      // grab tick color
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setTickColor(c);
+      parse_EOS();
+      return true;
+    } else if (token.getToken().equals("gslc_ElemSetCol")) {
+      parse_pGUI_and_pElemRef();
+      c = parse_color();
+      node.setFrameColor(c);
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setFillColor(c);
+      token = tokenizer.nextToken();
+      if (token.getType() != Parser.COMMA) parseError(",");
+      c = parse_color();
+      node.setSelectedColor(c);
+      parse_EOS();
+      return true;
+    } else if (token.getType() == Parser.WORD) {
+      // scan for something like: m_pElemSlider = pElemRef;
+      String strElemRef = token.getToken();
+      token = tokenizer.nextToken();
+      if (token.getType() == Parser.EQUALS) {
+        token = tokenizer.nextToken();
+        if (token.getType() == Parser.WORD && token.getToken().equals("pElemRef")) {
+          node.setElementRef(strElemRef);
+          parse_EOS();
+          return true;
+        }
+      }
     }
     tokenizer.pushToken();
     return false;
@@ -1605,7 +1851,7 @@ public class Parser {
   }
   
   /**
-   * Parses the progressbar extras.
+   * Parses the text box extras.
    *
    * @param node
    *          the node
@@ -1613,97 +1859,15 @@ public class Parser {
    * @throws ParserException
    *           the parser exception
    */
-  public boolean parse_progressbar_extras(ProgressBarNode node) throws ParserException {
+  public boolean parse_textbox_extras(TextBoxNode node) throws ParserException {
     Color c = null;
     token = tokenizer.nextToken();
-    if (token.getToken().equals("gslc_ElemXGaugeSetStyle")) {
-      parse_pGUI_and_pElemRef(); 
-      token = tokenizer.nextToken();
-      if (token.getType() != Parser.WORD) parseError("gauge style"); 
-      if (token.getToken().equals("GSLCX_GAUGE_STYLE_RAMP"))
-        node.setRampStyle("true");
-      else if (token.getToken().equals("GSLCX_GAUGE_STYLE_PROG_BAR"))
-        node.setRampStyle("false");
-      else if (token.getToken().equals("GSLCX_GAUGE_STYLE_RADIAL"))
-        node.setRampStyle("false");
-      else
-        node.setRampStyle("false");
-      parse_EOS();
-      return true;
-    } else if (token.getToken().equals("gslc_ElemSetCol")) {
-      parse_pGUI_and_pElemRef();
-      c = parse_color();
-      node.setDefaultColors("false");
-      node.setFrameColor(c);
-      token = tokenizer.nextToken();
-      if (token.getType() != Parser.COMMA) parseError(",");
-      c = parse_color();
-      node.setFillColor(c);
-      token = tokenizer.nextToken();
-      if (token.getType() != Parser.COMMA) parseError(",");
-      c = parse_color();
-      node.setSelectedColor(c);
-      parse_EOS();
-      return true;
-    } else if (token.getType() == Parser.WORD) {
-      // scan for something like: m_pElemProgress = pElemRef;
-      String strElemRef = token.getToken();
-      token = tokenizer.nextToken();
-      if (token.getType() == Parser.EQUALS) {
-        token = tokenizer.nextToken();
-        if (token.getType() == Parser.WORD && token.getToken().equals("pElemRef")) {
-          node.setElementRef(strElemRef);
-          parse_EOS();
-          return true;
-        }
-      }
-    } 
-    tokenizer.pushToken();
-    return false;
-  }
-  
-  /**
-   * Parses the slider extras.
-   *
-   * @param node
-   *          the node
-   * @return <code>true</code>, if successful
-   * @throws ParserException
-   *           the parser exception
-   */
-  public boolean parse_slider_extras(SliderNode node) throws ParserException {
-    Color c = null;
-    token = tokenizer.nextToken();
-    if (token.getToken().equals("gslc_ElemXSliderSetStyle")) {
+    if (token.getToken().equals("gslc_ElemXTextboxWrapSet")) {
       parse_pGUI_and_pElemRef(); 
       // look for trim style
       token = tokenizer.nextToken();
-      if (token.getType() != Parser.WORD) parseError("trim style?");
-      node.setTrimStyle(token.getToken());
-      // grab trim color
-      token = tokenizer.nextToken();
-      if (token.getType() != Parser.COMMA) parseError(",");
-      c = parse_color();
-      node.setTrimColor(c);
-      try {
-        token = tokenizer.nextToken();
-        if (token.getType() != Parser.COMMA) parseError(",");
-        token = tokenizer.nextToken();
-        if (token.getType() != Parser.INTEGER) parseError("divsions?");
-        node.setDivisions(token.getToken());
-        token = tokenizer.nextToken();
-        if (token.getType() != Parser.COMMA) parseError(",");
-        token = tokenizer.nextToken();
-        if (token.getType() != Parser.INTEGER) parseError("tick size?");
-        node.setTickSize(token.getToken());
-      } catch (NumberFormatException e) {
-        throw new ParserException("gslc_ElemXSliderSetStyle NumberFormatException: " + e.toString());
-      }
-      // grab tick color
-      token = tokenizer.nextToken();
-      if (token.getType() != Parser.COMMA) parseError(",");
-      c = parse_color();
-      node.setTickColor(c);
+      if (token.getType() != Parser.WORD) parseError("Enable line wrap?");
+      node.setWrapText(token.getToken());
       parse_EOS();
       return true;
     } else if (token.getToken().equals("gslc_ElemSetCol")) {

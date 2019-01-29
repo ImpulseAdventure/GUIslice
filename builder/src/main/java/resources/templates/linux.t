@@ -154,6 +154,12 @@ gslc_tsElemRef              m_asPage$<COUNT>ElemRef[MAX_ELEM_$<STRIP_ENUM>];
   pElemRef = gslc_ElemXGaugeCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sXGauge[$<COUNT>],
     (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},$<MIN>,$<MAX>,$<VALUE>,$<MARK_COLOR>,$<CHECKED>);
 <STOP>
+<PROGRESSBARSTYLE>
+  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef, $<STYLE>);
+<STOP>
+<PROGRESSBARIND>
+  gslc_ElemXGaugeSetIndicator(&m_gui,pElemRef,$<MARK_COLOR>,$<SIZE>,$<TIPSZ>,$<CHECKED>));
+<STOP>
 <RADIOBUTTON>
   
   // Create radio button $<WIDGET_ENUM>

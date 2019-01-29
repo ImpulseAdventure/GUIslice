@@ -5,6 +5,7 @@ COM-003,X
 COM-004,Y
 COM-005,Width
 COM-006,HEIGHT
+COM-010,Frame Enable
 TXT-200,Font
 TXT-201,Text
 TXT-202,Label
@@ -16,6 +17,8 @@ TXT-207,Text Alignment
 TXT-208,Wrap Text
 TXT-209,Text Rows
 TXT-210,Text Columns
+TXT-211,Font Enum
+TXT-212,Text Margin
 COL-300,Use Default Colors?
 COL-301,Text Color
 COL-302,Frame Color
@@ -23,8 +26,8 @@ COL-303,Fill Color
 COL-304,Selected Color
 COL-305,Check Mark Color
 COL-306,Tick Color
-COL-307,Trim Color
-COL-308,Gauge Color
+COL_307,Trim Color
+COL_308,Gauge Color
 COL-309,Graph Color
 COL-310,Background Color
 COL-311,Grid Major Color
@@ -55,10 +58,17 @@ SLD-105,Tick Divisions
 SLD-106,Tick Size
 SLD-107,Trim Style
 BAR-100,Vertical?
-BAR-101,Ramp Style
+BAR-101,Ramp Style (not used)
 BAR-102,Min
 BAR-103,Max
 BAR-104,Value
+BAR-105,Style
+BAR-106,Tick Divisions
+BAR-107,Tick Size
+BAR-108,Tick Color
+BAR-109,Indicator Length
+BAR-110,Indicator Tip Size
+BAR-111,Indicator Fill?
 IMG-100,Image
 IMG-101,Image #defines
 IMG-102,Image Format

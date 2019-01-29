@@ -42,8 +42,8 @@ public class ProgressBarNode extends ApiNode {
   /** The Constant PROP_VERTICAL. */
   static private final int PROP_VERTICAL          =6;
   
-  /** The Constant PROP_RAMP. */
-  static private final int PROP_RAMP              =7;
+  /** The Constant PROP_STYLE. */
+  static private final int PROP_STYLE             =7;
   
   /** The Constant PROP_MIN. */
   static private final int PROP_MIN               =8;
@@ -54,20 +54,38 @@ public class ProgressBarNode extends ApiNode {
   /** The Constant PROP_VALUE. */
   static private final int PROP_CURVALUE          =10;
   
+  /** The Constant PROP_DIVISIONS. */
+  static private final int PROP_DIVISIONS         =11;
+  
+  /** The Constant PROP_TICKSZ. */
+  static private final int PROP_TICKSZ            =12;
+  
+  /** The Constant PROP_TICK_COLOR. */
+  static private final int PROP_TICK_COLOR        =13;
+  
+  /** The Constant PROP_INDICATOR_SIZE. */
+  static private final int PROP_INDICATOR_SZ      =14;
+  
+  /** The Constant PROP_INDICATOR_SIZE. */
+  static private final int PROP_INDICATOR_TIP_SZ  =15;
+
+  /** The Constant PROP_INDICATOR_FILL. */
+  static private final int PROP_INDICATOR_FILL    =16;
+  
   /** The Constant PROP_GAUGE_COLOR. */
-  static private final int PROP_GAUGE_COLOR       =11;
+  static private final int PROP_GAUGE_COLOR       =17;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    =12;
+  static private final int PROP_DEFAULT_COLORS    =18;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       =13;
+  static private final int PROP_FRAME_COLOR       =19;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        =14;
+  static private final int PROP_FILL_COLOR        =20;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    =15;
+  static private final int PROP_SELECTED_COLOR    =21;
     
   /**
    * Instantiates a new progress bar node.
@@ -83,17 +101,24 @@ public class ProgressBarNode extends ApiNode {
   {
     apiType = ApiNode.PROGRESSBAR;
     widgetType = "ProgressBar";
-    data = new Object[16][3];
+    data = new Object[22][3];
     
     initCommonProps();
     
     initProp(PROP_ELEMENTREF, "TXT-206","ElementRef");
     initProp(PROP_VERTICAL, "BAR-100","Vertical?");
-    initProp(PROP_RAMP, "BAR-101","Ramp Style?");
+    initProp(PROP_STYLE, "BAR-105", "Graph Style");
 
     initProp(PROP_MIN, "BAR-102","Minimum Value");
     initProp(PROP_MAX, "BAR-103","Maximum Value");
     initProp(PROP_CURVALUE, "BAR-104", "Starting Value");
+
+    initProp(PROP_DIVISIONS, "BAR-106", "Tick Divisions");
+    initProp(PROP_TICKSZ, "BAR-107", "Tick Size");
+    initProp(PROP_TICK_COLOR, "BAR-108","Tick Color");
+    initProp(PROP_INDICATOR_SZ, "BAR-109", "Indicator Length");
+    initProp(PROP_INDICATOR_TIP_SZ, "BAR-110", "Indicator Tip Size");
+    initProp(PROP_INDICATOR_FILL, "BAR-111", "Indicator Fill?");
 
     initProp(PROP_GAUGE_COLOR, "COL_308", "Gauge Indicator Color");
     initProp(PROP_DEFAULT_COLORS, "COL-300", "Use Default Colors?");
@@ -112,6 +137,60 @@ public class ProgressBarNode extends ApiNode {
     setValue(s, PROP_ELEMENTREF);
   }
   
+  /**
+   * sets the divisions.
+   *
+   * @param the divisions
+   */
+  public void setDivisions(String string) {
+    setValue(Integer.valueOf(string),PROP_DIVISIONS);
+  }
+  
+  /**
+   * sets the tick size.
+   *
+   * @param the tick size
+   */
+  public void setTickSize(String v) {
+    setValue(Integer.valueOf(v),PROP_TICKSZ);
+  }
+
+  /**
+   * sets the tick color.
+   *
+   * @return the tick color
+   */
+  public void setTickColor(Color c) {
+    setValue(c, PROP_TICK_COLOR);
+  }
+
+  /**
+   * sets the indicator size.
+   *
+   * @param the indicator size
+   */
+  public void setIndicatorSize(String v) {
+    setValue(Integer.valueOf(v),PROP_INDICATOR_SZ);
+  }
+
+  /**
+   * sets the indicator tip size.
+   *
+   * @param the indicator tip size
+   */
+  public void setIndicatorTipSize(String v) {
+    setValue(Integer.valueOf(v),PROP_INDICATOR_TIP_SZ);
+  }
+
+  /**
+   * sets if is indicator fill.
+   *
+   * @param true, if is indicator fill
+   */
+  public void setIndicatorFill(String s) {
+    setValue(Boolean.valueOf(s), PROP_INDICATOR_FILL);
+  }
+
   /**
    * sets the indicator color.
    *
@@ -132,13 +211,12 @@ public class ProgressBarNode extends ApiNode {
   }
   
   /**
-  * sets the ramp style color.
-  *
-  * @param true, if use ramp style, false otherwise
-  */
-  public void setRampStyle(String value) 
-  {
-    setValue(Boolean.valueOf(value), PROP_RAMP);
+   * sets the Gauge style.
+   *
+   * @param the Gauge style
+   */
+  public void setGaugeStyle(String s) {
+    setValue(s, PROP_STYLE);
   }
   
   /**

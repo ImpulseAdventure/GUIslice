@@ -122,6 +122,7 @@ public class GraphModel extends WidgetModel {
     cbStyle = new JComboBox<String>();
     cbStyle.addItem("Dot");
     cbStyle.addItem("Fill");
+    cbStyle.addItem("Line");
     styleCellEditor = new DefaultCellEditor(cbStyle);
   }
 

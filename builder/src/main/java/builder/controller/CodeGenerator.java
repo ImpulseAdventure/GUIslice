@@ -197,6 +197,15 @@ public class CodeGenerator {
   /** The Constant PROGRESSBAR_TEMPLATE. */
   private final static String PROGRESSBAR_TEMPLATE   = "<PROGRESSBAR>";
   
+  /** The Constant PROGRESSBARSTYLE_TEMPLATE. */
+  private final static String PROGRESSBARSTYLE_TEMPLATE = "<PROGRESSBARSTYLE>";
+  
+  /** The Constant PROGRESSBARIND_TEMPLATE. */
+  private final static String PROGRESSBARIND_TEMPLATE   = "<PROGRESSBARIND>";
+  
+  /** The Constant PROGRESSBARTICKS_TEMPLATE. */
+  private final static String PROGRESSBARTICKS_TEMPLATE = "<PROGRESSBARTICKS>";
+  
   /** The Constant RADIOBUTTON_TEMPLATE. */
   private final static String RADIOBUTTON_TEMPLATE   = "<RADIOBUTTON>";
   
@@ -478,6 +487,9 @@ public class CodeGenerator {
   
   /** The Constant TICKSZ_MACRO. */
   private final static String TICKSZ_MACRO           = "TICKSZ";
+  
+  /** The Constant TIPSZ_MACRO. */
+  private final static String TIPSZ_MACRO            = "TIPSZ";
   
   /** The Constant TRIM_COLOR_MACRO. */
   private final static String TRIM_COLOR_MACRO       = "TRIM_COLOR";
@@ -2098,25 +2110,22 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = MARK_COLOR_MACRO;
-    replacement[n++] = cf.colorAsString(((ProgressBarModel)m).getIndicatorColor());
+    replacement[n++] = cf.colorAsString(m.getIndicatorColor());
     macro[n] = CHECKED_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).isVertical());
+    replacement[n++] = String.valueOf(m.isVertical());
     macro[n] = COUNT_MACRO; 
     replacement[n++] = String.valueOf(countGauges);
     countGauges++;
     macro[n] = MIN_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMin());
+    replacement[n++] = String.valueOf(m.getMin());
     macro[n] = MAX_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMax());
+    replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = null;
     template = loadTemplate(PROGRESSBAR_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
-    if (m.isRampStyle()) {
-      pw.printf("  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RAMP);%n");
-    }
     if (!m.useDefaultColors()) {
       n = 0;
       macro[n] = FILL_COLOR_MACRO;
@@ -2129,6 +2138,53 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       template = loadTemplate(COLOR_TEMPLATE);
       outputLines = expandMacros(template, macro, replacement);
       writeTemplate(outputLines);
+    }
+    if (!m.getGaugeStyle().equals("Bar")) {
+      n=0;
+      macro[n] = STYLE_MACRO;
+      if (m.getGaugeStyle().equals("Ramp")) {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RAMP";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      } else {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RADIAL";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+        // now to check for indicator and ticks, only works with Radial
+        // only output if different from default values
+        if (m.getIndicatorSize() != 10 && m.getIndicatorTipSize() != 3) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getIndicatorColor());
+          macro[n] = SIZE_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorSize());
+          macro[n] = TIPSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorTipSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARIND_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+        if (!m.getTickColor().equals(Color.GRAY) &&
+             m.getDivisions() != 8 && 
+             m.getTickSize() != 5) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getTickColor());
+          macro[n] = DIVISIONS_MACRO;
+          replacement[n++] = String.valueOf(m.getDivisions());
+          macro[n] = TICKSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getTickSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARTICKS_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+      }
     }
   }   
   
@@ -2146,18 +2202,18 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = MARK_COLOR_MACRO;
-    replacement[n++] = cf.colorAsString(((ProgressBarModel)m).getIndicatorColor());
+    replacement[n++] = cf.colorAsString(m.getIndicatorColor());
     macro[n] = CHECKED_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).isVertical());
+    replacement[n++] = String.valueOf(m.isVertical());
     macro[n] = COUNT_MACRO; 
     replacement[n++] = String.valueOf(countGauges);
     countGauges++;
     macro[n] = MIN_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMin());
+    replacement[n++] = String.valueOf(m.getMin());
     macro[n] = MAX_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMax());
+    replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = FILL_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getFillColor());
     macro[n] = FRAME_COLOR_MACRO;
@@ -2166,8 +2222,52 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(PROGRESSBAR_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
-    if (m.isRampStyle()) {
-      pw.printf("  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RAMP);%n");
+    if (!m.getGaugeStyle().equals("Bar")) {
+      n=0;
+      macro[n] = STYLE_MACRO;
+      if (m.getGaugeStyle().equals("Ramp")) {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RAMP";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      } else {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RADIAL";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+        // now to check for indicator and ticks, only works with Radial
+        // only output if different from default values
+        if (m.getIndicatorSize() != 10 && m.getIndicatorTipSize() != 3) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getIndicatorColor());
+          macro[n] = SIZE_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorSize());
+          macro[n] = TIPSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorTipSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARIND_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+        if (!m.getTickColor().equals(Color.GRAY) &&
+             m.getDivisions() != 8 && 
+             m.getTickSize() != 5) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getTickColor());
+          macro[n] = DIVISIONS_MACRO;
+          replacement[n++] = String.valueOf(m.getDivisions());
+          macro[n] = TICKSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getTickSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARTICKS_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+      }
     }
   }   
   
@@ -2289,7 +2389,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = MAX_MACRO;
     replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(m.getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = STYLE_MACRO;
     replacement[n++] = String.valueOf(m.isTrimStyle());
     macro[n] = TRIM_COLOR_MACRO;

@@ -57,8 +57,8 @@ public class SliderModel extends WidgetModel {
   /** The Constant PROP_MAX. */
   static private final int PROP_MAX            =8;
   
-  /** The Constant PROP_VALUE. */
-  static private final int PROP_VALUE          =9;
+  /** The Constant PROP_CURVALUE. */
+  static private final int PROP_CURVALUE          =9;
   
   /** The Constant PROP_THUMBSZ. */
   static private final int PROP_THUMBSZ        =10;
@@ -114,7 +114,7 @@ public class SliderModel extends WidgetModel {
     initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
     initProp(PROP_MIN, Integer.class, "SLD-100", Boolean.FALSE,"Minimum Value",Integer.valueOf(0));
     initProp(PROP_MAX, Integer.class, "SLD-101", Boolean.FALSE,"Maximum Value",Integer.valueOf(255));
-    initProp(PROP_VALUE, Integer.class, "SLD-102", Boolean.FALSE,"Starting Value",Integer.valueOf(0));
+    initProp(PROP_CURVALUE, Integer.class, "SLD-102", Boolean.FALSE,"Starting Value",Integer.valueOf(0));
     initProp(PROP_THUMBSZ, Integer.class, "SLD-103", Boolean.FALSE,"Thumb Size",Integer.valueOf(5));
     initProp(PROP_VERTICAL, Boolean.class, "SLD-104", Boolean.FALSE,"Vertical?",Boolean.FALSE);
     initProp(PROP_DIVISIONS, Integer.class, "SLD-105", Boolean.FALSE,"Tick Divisions",Integer.valueOf(10));
@@ -239,8 +239,8 @@ public class SliderModel extends WidgetModel {
    *
    * @return the value
    */
-  public int getValue() {
-    return (((Integer) (data[PROP_VALUE][PROP_VAL_VALUE])).intValue());
+  public int getCurValue() {
+    return (((Integer) (data[PROP_CURVALUE][PROP_VAL_VALUE])).intValue());
   }
 
   /**
