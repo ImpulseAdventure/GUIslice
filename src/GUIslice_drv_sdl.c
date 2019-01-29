@@ -56,7 +56,18 @@
   #define DRV_SDL_FIX_TTY      "/dev/tty0"
 #endif
 
+// Define driver names
+#if defined(DRV_DISP_SDL1)
+  const char* m_acDrvDisp = "SDL1";
+#elif defined(DRV_DISP_SDL2)
+  const char* m_acDrvDisp = "SDL2";
+#endif
 
+#if defined(DRV_TOUCH_TSLIB)
+  const char* m_acDrvTouch = "TSLIB";
+#else
+  const char* m_acDrvTouch = "SDL";
+#endif
 
 
 // =======================================================================
@@ -246,6 +257,17 @@ void gslc_DrvDestruct(gslc_tsGui* pGui)
   // Close down SDL
   SDL_Quit();
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions

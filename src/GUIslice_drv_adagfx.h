@@ -138,6 +138,7 @@ bool gslc_DrvInitTs(gslc_tsGui* pGui,const char* acDev);
 ///
 void gslc_DrvDestruct(gslc_tsGui* pGui);
 
+
 ///
 /// Get the display driver name
 ///
@@ -146,6 +147,7 @@ void gslc_DrvDestruct(gslc_tsGui* pGui);
 /// \return String containing driver name
 ///
 const char* gslc_DrvGetNameDisp();
+
 
 ///
 /// Get the touch driver name

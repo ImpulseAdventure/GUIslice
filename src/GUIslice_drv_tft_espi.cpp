@@ -69,6 +69,8 @@ extern "C" {
 #endif // __cplusplus
 
 
+  // Define display driver naming
+  const char* m_acDrvDisp = "TFT_eSPI";
 
 // ------------------------------------------------------------------------
 // Use default pin settings as defined in TFT_eSPI/User_Setup.h
@@ -79,22 +81,27 @@ TFT_eSPI m_disp = TFT_eSPI();
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
   #if (ADATOUCH_I2C_HW) // Use I2C
+    const char* m_acDrvTouch = "STMPE610(I2C-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
     // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
     //       instead of the GUIslice ADATOUCH_PIN_CS.
+    const char* m_acDrvTouch = "STMPE610(SPI-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
     // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
     //       instead of the GUIslice ADATOUCH_PIN_CS.
+    const char* m_acDrvTouch = "STMPE610(SPI-SW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
     // Always use I2C
+    const char* m_acDrvTouch = "FT6206(I2C)";
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+  const char* m_acDrvTouch = "SIMPLE";
   #if defined(ADATOUCH_PIN_XP) && defined(ADATOUCH_PIN_YP) && defined(ADATOUCH_PIN_XM) && defined(ADATOUCH_PIN_YM) && defined(ADATOUCH_RX)
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
   #else
@@ -103,14 +110,19 @@ TFT_eSPI m_disp = TFT_eSPI();
   #endif // defined(ADATOUCH_*)
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
+  const char* m_acDrvTouch = "XPT2046";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
   // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
-    // Define the XPT2046 calibration data
-    uint16_t m_anCalData[5] = TFT_ESPI_TOUCH_CALIB;
+  const char* m_acDrvTouch = "TFT_eSPI(XPT2046)";
+  // Define the XPT2046 calibration data
+  uint16_t m_anCalData[5] = TFT_ESPI_TOUCH_CALIB;
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_NONE)
+  const char* m_acDrvTouch = "NONE";
 // ------------------------------------------------------------------------
 #endif // DRV_TOUCH_*
 
@@ -158,6 +170,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions

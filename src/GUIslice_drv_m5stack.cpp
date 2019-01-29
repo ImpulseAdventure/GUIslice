@@ -53,6 +53,10 @@ extern "C" {
 #endif // __cplusplus
 
 
+  // Define driver naming
+  const char* m_acDrvDisp = "M5STACK";
+  const char* m_acDrvTouch = "M5STACK(NONE)";
+
 
 // ------------------------------------------------------------------------
 // Use default pin settings as defined in M5Stack/src/utility/Config.h
@@ -104,6 +108,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
