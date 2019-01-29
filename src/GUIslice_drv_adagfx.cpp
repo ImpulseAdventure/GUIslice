@@ -241,6 +241,8 @@ extern "C" {
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 #elif defined(DRV_TOUCH_HANDLER)
   const char* m_acDrvTouch = "Handler";
+#elif defined(DRV_TOUCH_INPUT)
+  const char* m_acDrvTouch = "INPUT";
 #elif defined(DRV_TOUCH_NONE)
   const char* m_acDrvTouch = "NONE";
 
