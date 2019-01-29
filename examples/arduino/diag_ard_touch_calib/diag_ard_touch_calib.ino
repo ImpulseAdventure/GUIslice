@@ -162,6 +162,8 @@ uint16_t m_nTouchCalYMaxRaw;
 int16_t m_nTouchCalXRngRaw;
 int16_t m_nTouchCalYRngRaw;
 
+int m_anTouchXPeak[POINT__NUM];
+int m_anTouchYPeak[POINT__NUM];
 
 // ----------------------------------------------------------------------------
 
@@ -176,9 +178,6 @@ int16_t   m_nTouchYMin;
 int16_t   m_nTouchYMax;
 int16_t   m_nTouchZMin;
 int16_t   m_nTouchZMax;
-
-int m_anTouchXPeak[POINT__NUM];
-int m_anTouchYPeak[POINT__NUM];
 
 
 // Reset to calibration defaults from configuration
