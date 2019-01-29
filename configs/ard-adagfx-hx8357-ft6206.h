@@ -107,10 +107,6 @@ extern "C" {
   //   orientation matches the display.
   #define GSLC_ROTATE     1
 
-  // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_TOUCH_ROTATE 1
-
   // -----------------------------------------------------------------------------
   // Touch Handling
   // - Documentation for configuring touch support can be found at:
@@ -169,22 +165,6 @@ extern "C" {
   // -----------------------------------------------------------------------------
   // Touch Handling
   // -----------------------------------------------------------------------------
-
-  // Define how touch orientation changes with display orientation
-  #define TOUCH_ROTATION_DATA 0x6350
-  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
-
-  // - Set any of the following to 1 to perform touch display
-  //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
-  //   remapping modes should be enabled for your display
-  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied, 
-  //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
-  #define ADATOUCH_SWAP_XY  0
-  #define ADATOUCH_FLIP_X   0
-  #define ADATOUCH_FLIP_Y   0
 
   // Define the maximum number of touch events that are handled
   // per gslc_Update() call. Normally this can be set to 1 but certain
