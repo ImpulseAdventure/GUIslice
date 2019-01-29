@@ -704,6 +704,10 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
       RedrawStatus("GUIslice Calibration");
       DrawBackgroundStart();
       ResetDatapoints();
+
+      // Initialize the calibration to arbitrary defaults
+      ResetCalib();
+      ResetMax();
     }
     // Need to disable any touch remapping during calibration
     gslc_SetTouchRemapEn(&m_gui, false);
@@ -880,10 +884,8 @@ void setup()
   // Force orientation to native rotation for calibration purposes
   gslc_GuiRotate(&m_gui, 0);
 
-  // Initialize calibration and display
+  // Initialize the display
   DrawBackground();
-  ResetCalib();
-  ResetMax();
 
   // Report initialization settings
   GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
