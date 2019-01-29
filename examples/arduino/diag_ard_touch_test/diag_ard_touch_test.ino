@@ -15,6 +15,15 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
+// Ensure touch support has been enabled
+#if defined(DRV_TOUCH_NONE)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_NONE was set"
+#elif defined(DRV_TOUCH_INPUT)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_INPUT was set"
+#elif defined(DRV_TOUCH_M5STACK)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_M5STACK was set"
+#endif
+
 
 // Import optional libraries
 #if defined(DRV_DISP_ADAGFX_MCUFRIEND)

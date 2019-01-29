@@ -16,12 +16,20 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
+// Ensure touch support has been enabled
+#if defined(DRV_TOUCH_NONE)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_NONE was set"
+#elif defined(DRV_TOUCH_INPUT)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_INPUT was set"
+#elif defined(DRV_TOUCH_M5STACK)
+  #error "Calibration testing requires a touch driver but DRV_TOUCH_M5STACK was set"
+#endif
+
+
 // ------------------------------------------------------------
 // CALIB: Check configuration settings
 // ------------------------------------------------------------
-#if defined(DRV_TOUCH_NONE)
-  #error "Calibration requires a touch driver but DRV_TOUCH_NONE was set"
-#elif !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && !defined(DRV_TOUCH_XPT2046)
+#if !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && !defined(DRV_TOUCH_XPT2046)
   #error "Calibration only supported for resistive touch displays"
 #endif
 // ------------------------------------------------------------
