@@ -64,16 +64,6 @@ extern "C" {
 #endif
 
 
-// Detect cases where recently added config parameters are missing
-// as this would indicate that the config file is out-of-date and needs
-// updating. Flag this to the user with a compiler warning and offer default.
-// NOTE: In the future, these checks may be removed.
-#ifndef GSLC_TOUCH_ROTATE
-  #warning "Config: GSLC_TOUCH_ROTATE not defined. Please update GUIslice_config to latest. Using default."
-  // Apply a backward-compatible default to allow compilation to proceed
-  #define GSLC_TOUCH_ROTATE 0
-#endif
-
 
 // -----------------------------------------------------------------------
 // Globals
@@ -690,13 +680,25 @@ typedef struct {
 
   uint16_t            nDispW;           ///< Width of the display (pixels)
   uint16_t            nDispH;           ///< Height of the display (pixels)
+  uint16_t            nDisp0W;          ///< Width of the display (pixels) in native orientation
+  uint16_t            nDisp0H;          ///< Height of the display (pixels) in native orientation
   uint8_t             nDispDepth;       ///< Bit depth of display (bits per pixel)
 
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
     uint8_t           nRotation;       ///< Adafruit GFX Rotation of display
-    uint8_t           nSwapXY;         ///< Adafruit GFX Touch Swap x and y axes
-    uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
-    uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
+
+    #if !defined(DRV_TOUCH_NONE)
+      // Touch remapping
+      uint8_t           nTouchRotation;  ///< Touchscreen rotation offset vs display 
+      uint8_t           nSwapXY;         ///< Adafruit GFX Touch Swap x and y axes
+      uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
+      uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
+      // Calibration for resistive touch displays
+      uint16_t          nTouchCalXMin;
+      uint16_t          nTouchCalXMax;
+      uint16_t          nTouchCalYMin;
+      uint16_t          nTouchCalYMax;
+    #endif
   #endif
 
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
@@ -711,9 +713,12 @@ typedef struct {
   gslc_tsElem         sElemTmpProg;     ///< Temporary element for Flash compatibility
 
   gslc_teInitStat     eInitStatTouch;   ///< Status of touch initialization
+  // TODO: exclude these in DRV_TOUCH_NONE
   int16_t             nTouchLastX;      ///< Last touch event X coord
   int16_t             nTouchLastY;      ///< Last touch event Y coord
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
+  bool                bTouchRemapEn;    ///< Enable touch remapping?
+
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
   bool                bRedrawPartialEn; ///< Driver supports partial page redraw.
@@ -1901,6 +1906,12 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
 /// @{
 // ------------------------------------------------------------------------
 
+// Define the transformation matrix from rotation (0..3) to SWAP / FLIPX / FLIPY
+#define TOUCH_ROTATION_DATA 0x6350
+#define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
+#define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
+#define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
+
 
 ///
 /// Initialize the touchscreen device driver
@@ -1927,6 +1938,21 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \todo Doc
 ///
 bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
+
+
+///
+/// Configure touchscreen remapping
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bEn:         Enable touchscreen remapping?
+///
+/// \return none
+///
+void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn);
+
+/// \todo doc
+void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint16_t nYMin, uint16_t nYMax);
+
 
 #endif // !DRV_TOUCH_NONE
 

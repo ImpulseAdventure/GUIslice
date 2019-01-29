@@ -453,6 +453,21 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
 
 
+// -----------------------------------------------------------------------
+// Dynamic Screen rotation and Touch axes swap/flip functions
+// -----------------------------------------------------------------------
+
+///
+/// Change rotation, automatically adapt touchscreen axes swap/flip
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if successful
+///
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation);
+
+
 // =======================================================================
 // Private Functions
 // - These functions are not included in the scope of APIs used by

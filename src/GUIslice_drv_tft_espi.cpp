@@ -154,13 +154,10 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     pGui->bRedrawPartialEn = true;
 
     m_disp.init();
-    m_disp.setRotation( pGui->nRotation );
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
 
-    // Defaults for clipping region
-    gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-    gslc_DrvSetClipRect(pGui,&rClipRect);
+    // Now that we have initialized the display, we can assign
+    // the rotation parameters and clipping region
+    gslc_DrvRotate(pGui,GSLC_ROTATE);
 
   }
   return true;
@@ -1111,12 +1108,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // Note that the minimum is not "> 0" as some
   // displays may produce a (small) non-zero value
   // when not touched.
-  #if defined(ADATOUCH_PRESS_MIN) && defined(ADATOUCH_PRESS_MAX)
   if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
-  #else
-  if ((p.z > 10) && (p.z < 1000)) {
-  #endif
-
     nRawX = p.x;
     nRawY = p.y;
     nRawPress = p.z;
@@ -1145,11 +1137,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    #if defined(ADATOUCH_PRESS_MIN)
     if (p.z > ADATOUCH_PRESS_MIN) {
-    #else
-    if (p.z > 0) {
-    #endif
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
@@ -1188,40 +1176,72 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     nRawX = m_nLastRawX;
     nRawY = m_nLastRawY;
 
-    // Perform any requested swapping of input axes
-    if( pGui->nSwapXY ) {
-      nInputX = nRawY;
-      nInputY = nRawX;
-    } else {
-      nInputX = nRawX;
-      nInputY = nRawY;
-    }
+    nInputX = nRawX;
+    nInputY = nRawY;
 
-    // Define maximum bounds for display
-    nDispOutMaxX = pGui->nDispW-1;
-    nDispOutMaxY = pGui->nDispH-1;
+
+    // Define maximum bounds for display in native orientation
+    nDispOutMaxX = pGui->nDisp0W-1;
+    nDispOutMaxY = pGui->nDisp0H-1;
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE)
-      // Perform scaling from input to output
-      nOutputX = map(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,nDispOutMaxX);
-      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);
-      // Perform constraining to OUTPUT boundaries
-      nOutputX = constrain(nOutputX,0,nDispOutMaxX);
-      nOutputY = constrain(nOutputY,0,nDispOutMaxY);
+    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+      if (pGui->bTouchRemapEn) {
+        // Perform scaling from input to output
+        // - Calibration done in native orientation (GSLC_ROTATE=0)
+        // - Input to map() is done with raw unswapped X,Y
+        // - map() and constrain() done with native dimensions and
+        //   native calibration
+        // - Swap & Flip done to output of map/constrain according
+        //   to GSLC_ROTATE
+        //
+        nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+        nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+        // Perform constraining to OUTPUT boundaries .kbv
+        nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
+        nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
+      } else {
+        // No scaling from input to output
+        nOutputX = nInputX;
+        nOutputY = nInputY;
+      }
     #else
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
     #endif
+	
+    #ifdef DBG_TOUCH
+    GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
+    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+      pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #endif // DBG_TOUCH
 
-    // Perform any requested output axis flipping
-    if( pGui->nFlipX ) {
-      nOutputX = nDispOutMaxX - nOutputX;
-    }
-    if( pGui->nFlipY ) {
-      nOutputY = nDispOutMaxY - nOutputY;
+    // Perform remapping due to current orientation
+    if (pGui->bTouchRemapEn) {
+      // Perform any requested swapping of input axes
+      if (pGui->nSwapXY) {
+        int16_t nOutputXTmp = nOutputX;
+        nOutputX = nOutputY;
+        nOutputY = nOutputXTmp;
+        // Perform any requested output axis flipping
+        // TODO: Collapse these cases
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxY - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxX - nOutputY;
+        }
+      } else {
+        // Perform any requested output axis flipping
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxX - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxY - nOutputY;
+        }
+      }
     }
 
     // Final assignment
@@ -1236,7 +1256,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
-
 
     // Return with indication of new value
     return true;
@@ -1253,68 +1272,59 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 // Dynamic Screen rotation and Touch axes swap/flip functions
 // -----------------------------------------------------------------------
 
-///
-/// Change rotation and axes swap/flip
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-/// \param[in]  nSwapXY:     Touchscreen Swap X/Y axes
-/// \param[in]  nFlipX:      Touchscreen Flip X axis
-/// \param[in]  nFlipY:      Touchscreen Flip Y axis
-///
-/// \return true if successful
-///
-bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
-{
-    bool bRedraw      = pGui->nRotation != nRotation;
-    bool bSwapDisplay = (nRotation ^ pGui->nRotation) & 0x01;
-    pGui->nRotation   = nRotation;
-    pGui->nSwapXY     = nSwapXY;
-    pGui->nFlipX      = nFlipX;
-    pGui->nFlipY      = nFlipY;
-
-    m_disp.setRotation( pGui->nRotation );
-
-    // Redraw the current page if rotation value changed
-    if( bRedraw ) {
-        gslc_PageRedrawSet( pGui, true );
-        gslc_PageRedrawGo( pGui );
-    }
-
-    // change between portrait <=> landscape
-    if( bSwapDisplay ) {
-        // exchange pGui->nDispH <=> pGui->nDispW
-        uint16_t nTmpW = pGui->nDispW;
-        pGui->nDispW = pGui->nDispH;
-        pGui->nDispH = nTmpW;
-
-        // new defaults for clipping region
-        gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-        gslc_DrvSetClipRect(pGui,&rClipRect);
-    }
-
-    return( true );
-}
-
-
-///
-/// Change rotation, automatically adapt touchscreen axes swap/flip based on nRotation vs GLSC_TOUCH_ROTATE
-///
-/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h
-/// are valid for the rotation defined in GUIslice_config_ard.h
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-///
-/// \return true if successful
-///
+/// Change display rotation and any associated touch orientation
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
-    uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
-    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+  bool bChange = true;
+
+  // Determine if the new orientation has swapped axes
+  // versus the native orientation (0)
+  bool bSwap = false;
+  if ((nRotation == 1) || (nRotation == 3)) {
+    bSwap = true;
+  }
+
+  // Did the orientation change?
+  if (nRotation == pGui->nRotation) {
+    // Orientation did not change -- indicate this by returning
+    // false so that we can avoid a redraw
+    bChange = false;
+  }
+
+  // Update the GUI rotation member
+  pGui->nRotation = nRotation;
+
+  // Inform the display to adjust the orientation and
+  // update the saved display dimensions
+
+  // DRV_DISP_TFT_ESPI
+  // Capture display dimensions in native orientation
+  m_disp.setRotation(0);
+  pGui->nDisp0W = m_disp.width();
+  pGui->nDisp0H = m_disp.height();
+  // Capture display dimensions in selected orientation
+  m_disp.setRotation(pGui->nRotation);
+  pGui->nDispW = m_disp.width();
+  pGui->nDispH = m_disp.height();
+
+  // Update the clipping region
+  gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+  gslc_DrvSetClipRect(pGui,&rClipRect);
+
+  // Now update the touch remapping
+  #if !defined(DRV_TOUCH_NONE)
+    pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
+    pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
+    pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
+  #endif // !DRV_TOUCH_NONE
+
+  // Mark the current page ask requiring redraw
+  // if the rotation value changed
+  if (bChange) {
+    gslc_PageRedrawSet( pGui, true );
+  }
+
+  return true;
 }
 
 

@@ -1005,6 +1005,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 }
 
 
+/// Change display rotation and any associated touch orientation
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
+{
+  // TODO: Implement support for display rotation
+  GSLC_DEBUG_PRINT("ERROR: DrvRotate(%s) not supported in current DRV_DISP_SDL* mode yet\n","");
+  return false;
+}
+
 // =======================================================================
 // Private Functions
 // =======================================================================
