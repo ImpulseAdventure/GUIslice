@@ -684,21 +684,19 @@ typedef struct {
   uint16_t            nDisp0H;          ///< Height of the display (pixels) in native orientation
   uint8_t             nDispDepth;       ///< Bit depth of display (bits per pixel)
 
-  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
-    uint8_t           nRotation;       ///< Adafruit GFX Rotation of display
-
-    #if !defined(DRV_TOUCH_NONE)
-      // Touch remapping
-      uint8_t           nTouchRotation;  ///< Touchscreen rotation offset vs display 
-      uint8_t           nSwapXY;         ///< Adafruit GFX Touch Swap x and y axes
-      uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
-      uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
-      // Calibration for resistive touch displays
-      uint16_t          nTouchCalXMin;
-      uint16_t          nTouchCalXMax;
-      uint16_t          nTouchCalYMin;
-      uint16_t          nTouchCalYMax;
-    #endif
+  // NOTE: The following config is currently only used by the Adafruit-GFX & TFT_eSPI drivers
+  uint8_t             nRotation;       ///< Adafruit GFX Rotation of display
+  #if !defined(DRV_TOUCH_NONE)
+    // Touch remapping
+    uint8_t           nTouchRotation;  ///< Touchscreen rotation offset vs display 
+    uint8_t           nSwapXY;         ///< Adafruit GFX Touch Swap x and y axes
+    uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
+    uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
+    // Calibration for resistive touch displays
+    uint16_t          nTouchCalXMin;   ///< Calibration X minimum reading
+    uint16_t          nTouchCalXMax;   ///< Calibration X maximum reading
+    uint16_t          nTouchCalYMin;   ///< Calibration Y minimum reading
+    uint16_t          nTouchCalYMax;   ///< Calibration Y maximum reading
   #endif
 
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
