@@ -16,12 +16,15 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-// Check configuration settings
+// ------------------------------------------------------------
+// CALIB: Check configuration settings
+// ------------------------------------------------------------
 #if defined(DRV_TOUCH_NONE)
   #error "Calibration requires a touch driver but DRV_TOUCH_NONE was set"
 #elif !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && !defined(DRV_TOUCH_XPT2046)
   #error "Calibration only supported for resistive touch displays"
 #endif
+// ------------------------------------------------------------
 
 // Import optional libraries
 #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
@@ -31,7 +34,7 @@
 #endif
 
 // ------------------------------------------------------------
-// Additional configuration:
+// CALIB: Additional configuration:
 // ------------------------------------------------------------
 
 // Uncomment the following line to display additional debug info
@@ -55,6 +58,7 @@ bool  m_bQuit = false; // Quit flag (unused)
 // State machine settings
 typedef enum {
   STATE_CAL_UNDEF = 0,
+  // CALIB:
   STATE_CAL_START_MSG,
   STATE_CAPT_TL_MSG,
   STATE_CAPT_TL_DO,
@@ -70,6 +74,7 @@ typedef enum {
   STATE_CAL_REPORT,
   STATE_CAL_DONE_MSG,
   STATE_CAL_DONE_END,
+  // TEST:
   STATE_CAL_SET,
   STATE_TEST_MSG,
   STATE_TEST_DO,
@@ -79,6 +84,9 @@ typedef enum {
 } teState;
 teState m_eState = STATE_CAL_START_MSG;
 
+// ------------------------------------------------------------
+// CALIB:
+// ------------------------------------------------------------
 // Definitions for calibration points
 typedef enum {
   POINT_TL = 0,
@@ -90,6 +98,7 @@ typedef enum {
   POINT__NUM,
 } teCalibPt;
 teCalibPt   m_eCalibPt = POINT_TL;
+// ------------------------------------------------------------
 
 typedef enum {
   E_ROT_NORMAL = 0,
@@ -100,6 +109,10 @@ typedef enum {
 } teRotSpecial;
 teRotSpecial m_eRotSpecial = E_ROT_UNDEF;
 
+
+// ----------------------------------------------------------------------------
+// CALIB:
+// ----------------------------------------------------------------------------
 typedef struct {
   bool          bXLeft;
   bool          bYTop;
@@ -117,31 +130,14 @@ tsCalibStage m_asCalibStage[5] = {
   {true, true, "Capture TL (Rotated)",STATE_CAPT_ROT_TL_DO,STATE_CAL_REPORT},
 };
 
-
-teState     m_eStateOld = STATE_CAL_UNDEF;
-bool        m_bStateBegin = true;
-
 // Define calibration target display
 #define TARGET_MARGIN 10
 #define TARGET_SIZE   10
-
-// Calibration data
-int16_t   m_nTouchXMin;
-int16_t   m_nTouchXMax;
-int16_t   m_nTouchYMin;
-int16_t   m_nTouchYMax;
-int16_t   m_nTouchZMin;
-int16_t   m_nTouchZMax;
-
-int m_anTouchXPeak[POINT__NUM];
-int m_anTouchYPeak[POINT__NUM];
 
 // Storage for touch averaging
 int32_t m_nPointBufX = 0;
 int32_t m_nPointBufY = 0;
 uint16_t m_nPointBufCnt = 0;
-
-
 
 // For exponential averaging, define the time constant
 // and precision used in the calculation.
@@ -157,12 +153,6 @@ uint16_t m_nPointBufCnt = 0;
 int16_t m_nPointFinalX = -1;
 int16_t m_nPointFinalY = -1;
 
-// Reset to calibration defaults from configuration
-// - These values will be overwritten after calibration
-uint16_t m_nTouchCalXMin = ADATOUCH_X_MIN;
-uint16_t m_nTouchCalXMax = ADATOUCH_X_MAX;
-uint16_t m_nTouchCalYMin = ADATOUCH_Y_MIN;
-uint16_t m_nTouchCalYMax = ADATOUCH_Y_MAX;
 // Corner readings before adjusting for offsets
 uint16_t m_nTouchCalXMinRaw;
 uint16_t m_nTouchCalXMaxRaw;
@@ -171,6 +161,32 @@ uint16_t m_nTouchCalYMaxRaw;
 // Preserve reading ranges
 int16_t m_nTouchCalXRngRaw;
 int16_t m_nTouchCalYRngRaw;
+
+
+// ----------------------------------------------------------------------------
+
+teState     m_eStateOld = STATE_CAL_UNDEF;
+bool        m_bStateBegin = true;
+
+
+// Calibration data
+int16_t   m_nTouchXMin;
+int16_t   m_nTouchXMax;
+int16_t   m_nTouchYMin;
+int16_t   m_nTouchYMax;
+int16_t   m_nTouchZMin;
+int16_t   m_nTouchZMax;
+
+int m_anTouchXPeak[POINT__NUM];
+int m_anTouchYPeak[POINT__NUM];
+
+
+// Reset to calibration defaults from configuration
+// - These values will be overwritten after calibration
+uint16_t m_nTouchCalXMin = ADATOUCH_X_MIN;
+uint16_t m_nTouchCalXMax = ADATOUCH_X_MAX;
+uint16_t m_nTouchCalYMin = ADATOUCH_Y_MIN;
+uint16_t m_nTouchCalYMax = ADATOUCH_Y_MAX;
 
 
 
@@ -209,6 +225,9 @@ gslc_tsFont*                m_pFont = NULL;
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
+// ----------------------------------------------------------------------------
+// CALIB:
+// ----------------------------------------------------------------------------
 void ResetCalib()
 {
   // Reset the calibration ranges to enable min/max determination
@@ -225,26 +244,6 @@ void ResetCalib()
   m_eRotSpecial = E_ROT_UNDEF;
 }
 
-void ResetMax()
-{
-  m_nTouchXMin = 9999;
-  m_nTouchXMax = 0;
-  m_nTouchYMin = 9999;
-  m_nTouchYMax = 0;
-  m_nTouchZMin = 9999;
-  m_nTouchZMax = 0;
-
-  m_bTouchCoordValid = false;
-}
-
-void DrawBackground()
-{
-  gslc_tsRect rBack = (gslc_tsRect) { 0, 0, 0, 0 };
-  rBack.w = m_gui.nDispW;
-  rBack.h = m_gui.nDispH;
-  gslc_DrawFillRect(&m_gui, rBack, GSLC_COL_BLACK);
-}
-
 void DrawBackgroundStart()
 {
   int16_t nPosX = m_rReport.x;
@@ -256,76 +255,13 @@ void DrawBackgroundStart()
   gslc_DrvDrawTxt(&m_gui, nPosX, nPosY + 60, m_pFont, "Click to start", GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
 }
 
-void DrawPageCoords()
-{
-  gslc_DrvDrawTxt(&m_gui, m_rLblX.x, m_rLblX.y, m_pFont, "X:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rLblY.x, m_rLblY.y, m_pFont, "Y:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rLblZ.x, m_rLblZ.y, m_pFont, "Z:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-}
-
-
-void RedrawStatus(const char* pStatus)
-{
-  gslc_DrvDrawTxt(&m_gui, m_rLblStatus.x, m_rLblStatus.y, m_pFont, "Status:", GSLC_TXT_DEFAULT, GSLC_COL_WHITE, GSLC_COL_BLACK);
-
-  gslc_DrawFillRect(&m_gui, m_rCurStatus, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rCurStatus.x, m_rCurStatus.y, m_pFont, pStatus, GSLC_TXT_DEFAULT, GSLC_COL_PURPLE, GSLC_COL_BLACK);
-}
-
-void DrawTarget(int16_t nX, int16_t nY, uint16_t nSize, gslc_tsColor nColOut, gslc_tsColor nColIn)
-{
-  gslc_tsRect rRect;
-  rRect.x = nX - nSize;
-  rRect.y = nY - nSize;
-  rRect.w = nSize * 2;
-  rRect.h = nSize * 2;
-  gslc_DrawFrameRect(&m_gui, rRect, nColOut);
-  gslc_DrawLine(&m_gui, nX - (nSize / 2), nY, nX + (nSize / 2) - 1, nY, nColIn);
-  gslc_DrawLine(&m_gui, nX, nY - (nSize / 2), nX, nY + (nSize / 2) - 1, nColIn);
-}
-
-// This function updates the coordinate text
-// - Background redraw is used to limit the update area
-void RedrawCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
-{
-  // X
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchX);
-  gslc_DrawFillRect(&m_gui, m_rCurX, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rCurX.x, m_rCurX.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchXMin, m_nTouchXMax);
-  gslc_DrawFillRect(&m_gui, m_rRngX, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rRngX.x, m_rRngX.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
-
-  // Y
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchY);
-  gslc_DrawFillRect(&m_gui, m_rCurY, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rCurY.x, m_rCurY.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchYMin, m_nTouchYMax);
-  gslc_DrawFillRect(&m_gui, m_rRngY, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rRngY.x, m_rRngY.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
-
-  // Z
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchZ);
-  gslc_DrawFillRect(&m_gui, m_rCurZ, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rCurZ.x, m_rCurZ.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchZMin, m_nTouchZMax);
-  gslc_DrawFillRect(&m_gui, m_rRngZ, GSLC_COL_BLACK);
-  gslc_DrvDrawTxt(&m_gui, m_rRngZ.x, m_rRngZ.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
-}
-
-
-void DrawTracer(int16_t nTouchX, int16_t nTouchY)
-{
-  // Render marker
-  gslc_DrawSetPixel(&m_gui, nTouchX, nTouchY, GSLC_COL_RED);
-}
-
 void ResetDatapoints()
 {
   m_nPointBufX = 0;
   m_nPointBufY = 0;
   m_nPointBufCnt = 0;
 }
+
 
 void AddDatapoint(int16_t nTouchX, int16_t nTouchY)
 {
@@ -370,18 +306,6 @@ void CalcDatapoint(teCalibPt ePoint)
   m_anTouchYPeak[ePoint] = m_nPointFinalY;
 
 }
-
-void CalcMaxCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
-{
-  // Capture maximums (for current step)
-  m_nTouchXMin = (nTouchX < m_nTouchXMin) ? nTouchX : m_nTouchXMin;
-  m_nTouchXMax = (nTouchX > m_nTouchXMax) ? nTouchX : m_nTouchXMax;
-  m_nTouchYMin = (nTouchY < m_nTouchYMin) ? nTouchY : m_nTouchYMin;
-  m_nTouchYMax = (nTouchY > m_nTouchYMax) ? nTouchY : m_nTouchYMax;
-  m_nTouchZMin = (nTouchZ < m_nTouchZMin) ? nTouchZ : m_nTouchZMin;
-  m_nTouchZMax = (nTouchZ > m_nTouchZMax) ? nTouchZ : m_nTouchZMax;
-}
-
 
 void CalcCalib()
 {
@@ -661,11 +585,116 @@ void DrawCalibResult()
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 140, m_pFont, "Click to continue", GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
 }
 
+
+// ----------------------------------------------------------------------------
+
+void ResetMax()
+{
+  m_nTouchXMin = 9999;
+  m_nTouchXMax = 0;
+  m_nTouchYMin = 9999;
+  m_nTouchYMax = 0;
+  m_nTouchZMin = 9999;
+  m_nTouchZMax = 0;
+
+  m_bTouchCoordValid = false;
+}
+
+void DrawBackground()
+{
+  gslc_tsRect rBack = (gslc_tsRect) { 0, 0, 0, 0 };
+  rBack.w = m_gui.nDispW;
+  rBack.h = m_gui.nDispH;
+  gslc_DrawFillRect(&m_gui, rBack, GSLC_COL_BLACK);
+}
+
+
+void DrawPageCoords()
+{
+  gslc_DrvDrawTxt(&m_gui, m_rLblX.x, m_rLblX.y, m_pFont, "X:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rLblY.x, m_rLblY.y, m_pFont, "Y:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rLblZ.x, m_rLblZ.y, m_pFont, "Z:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+}
+
+
+void RedrawStatus(const char* pStatus)
+{
+  gslc_DrvDrawTxt(&m_gui, m_rLblStatus.x, m_rLblStatus.y, m_pFont, "Status:", GSLC_TXT_DEFAULT, GSLC_COL_WHITE, GSLC_COL_BLACK);
+
+  gslc_DrawFillRect(&m_gui, m_rCurStatus, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rCurStatus.x, m_rCurStatus.y, m_pFont, pStatus, GSLC_TXT_DEFAULT, GSLC_COL_PURPLE, GSLC_COL_BLACK);
+}
+
+void DrawTarget(int16_t nX, int16_t nY, uint16_t nSize, gslc_tsColor nColOut, gslc_tsColor nColIn)
+{
+  gslc_tsRect rRect;
+  rRect.x = nX - nSize;
+  rRect.y = nY - nSize;
+  rRect.w = nSize * 2;
+  rRect.h = nSize * 2;
+  gslc_DrawFrameRect(&m_gui, rRect, nColOut);
+  gslc_DrawLine(&m_gui, nX - (nSize / 2), nY, nX + (nSize / 2) - 1, nY, nColIn);
+  gslc_DrawLine(&m_gui, nX, nY - (nSize / 2), nX, nY + (nSize / 2) - 1, nColIn);
+}
+
+// This function updates the coordinate text
+// - Background redraw is used to limit the update area
+void RedrawCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
+{
+  // X
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchX);
+  gslc_DrawFillRect(&m_gui, m_rCurX, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rCurX.x, m_rCurX.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchXMin, m_nTouchXMax);
+  gslc_DrawFillRect(&m_gui, m_rRngX, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rRngX.x, m_rRngX.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
+
+  // Y
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchY);
+  gslc_DrawFillRect(&m_gui, m_rCurY, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rCurY.x, m_rCurY.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchYMin, m_nTouchYMax);
+  gslc_DrawFillRect(&m_gui, m_rRngY, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rRngY.x, m_rRngY.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
+
+  // Z
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u" : "-", nTouchZ);
+  gslc_DrawFillRect(&m_gui, m_rCurZ, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rCurZ.x, m_rCurZ.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  snprintf(m_acTxt, MAX_STR, (m_bTouchCoordValid) ? "%u..%u" : "-", m_nTouchZMin, m_nTouchZMax);
+  gslc_DrawFillRect(&m_gui, m_rRngZ, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rRngZ.x, m_rRngZ.y, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_BLUE, GSLC_COL_BLACK);
+}
+
+
+void DrawTracer(int16_t nTouchX, int16_t nTouchY)
+{
+  // Render marker
+  gslc_DrawSetPixel(&m_gui, nTouchX, nTouchY, GSLC_COL_RED);
+}
+
+
+void CalcMaxCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
+{
+  // Capture maximums (for current step)
+  m_nTouchXMin = (nTouchX < m_nTouchXMin) ? nTouchX : m_nTouchXMin;
+  m_nTouchXMax = (nTouchX > m_nTouchXMax) ? nTouchX : m_nTouchXMax;
+  m_nTouchYMin = (nTouchY < m_nTouchYMin) ? nTouchY : m_nTouchYMin;
+  m_nTouchYMax = (nTouchY > m_nTouchYMax) ? nTouchY : m_nTouchYMax;
+  m_nTouchZMin = (nTouchZ < m_nTouchZMin) ? nTouchZ : m_nTouchZMin;
+  m_nTouchZMax = (nTouchZ > m_nTouchZMax) ? nTouchZ : m_nTouchZMax;
+}
+
+
 // Implement State Machine
 void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
 {
   // Save state
   m_eStateOld = m_eState;
+
+  // ----------------------------------------------------------------------------
+  // CALIB:
+  // ----------------------------------------------------------------------------
   tsCalibStage sCalibStage;
 
   // Determine which calibration point we are handling
@@ -695,9 +724,14 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     m_eCalibPt = POINT_TEST;
     break;
   } // m_eState
+  // ----------------------------------------------------------------------------
 
   // Handle state machine
   switch (m_eState) {
+
+  // ----------------------------------------------------------------------------
+  // CALIB:
+  // ----------------------------------------------------------------------------
 
   case STATE_CAL_START_MSG:
     if (m_bStateBegin) {
@@ -708,6 +742,13 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
       // Initialize the calibration to arbitrary defaults
       ResetCalib();
       ResetMax();
+
+      #if defined(CALC_EXP_AVG)
+      GSLC_DEBUG_PRINT("CALIB: Averaging mode: EXP\n", "");
+      #elif defined(CALC_BASIC_AVG)
+      GSLC_DEBUG_PRINT("CALIB: Averaging mode: BASIC\n", "");
+      #endif      
+      GSLC_DEBUG_PRINT("\n", "");
     }
     // Need to disable any touch remapping during calibration
     gslc_SetTouchRemapEn(&m_gui, false);
@@ -801,6 +842,8 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     if (bTouchUp) { m_eState = STATE_CAL_SET; }
     break;
 
+  // ----------------------------------------------------------------------------
+
   case STATE_CAL_SET:
     GSLC_DEBUG_PRINT("\nCALIB: Apply calibration\n", "");
 
@@ -818,8 +861,6 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
 
     snprintf(m_acTxt, MAX_STR, "Test Rotate=%u", m_gui.nRotation);
     RedrawStatus(m_acTxt);
-
-    m_eCalibPt = POINT_TEST;
 
     // Clear stats
     ResetMax();
@@ -891,11 +932,6 @@ void setup()
   GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
   GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
     ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
-  #if defined(CALC_EXP_AVG)
-    GSLC_DEBUG_PRINT("CALIB: Averaging mode: EXP\n", "");
-  #elif defined(CALC_BASIC_AVG)
-    GSLC_DEBUG_PRINT("CALIB: Averaging mode: BASIC\n", "");
-  #endif
   GSLC_DEBUG_PRINT("\n", "");
 }
 
