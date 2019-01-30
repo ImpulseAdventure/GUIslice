@@ -84,7 +84,7 @@ extern "C" {
   // For UNO/MEGA shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
-  #define ADAGFX_PIN_RST      0     // Display Reset
+  #define ADAGFX_PIN_RST      8     // Display Reset
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
@@ -114,9 +114,9 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // Touch bus & pinout
-  #define XPT2046_DEFINE_DPICLASS 
-  #define XPT2046_spi SPI  
-  #define XPT2046_CS 3
+  #define XPT2046_DEFINE_DPICLASS
+  #define XPT2046_spi    SPI
+  #define XPT2046_CS     3
 
   // Calibration for resistive touch displays
   // - These values may need to be updated to match your display

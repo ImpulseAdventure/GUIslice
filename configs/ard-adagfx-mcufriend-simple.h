@@ -104,48 +104,116 @@ extern "C" {
 
   // -----------------------------------------------------------------------------
   // Include some default configurations for various MCUFRIEND displays
-  // - Uncomment one of the following:
+  // - Set the following to match the ID reported by the mcufriend_kbv
+  //   library, or reported by the GUIslice diag_ard_touch_calib sketch.
   // - Add your own configuration if needed
-  #define MCUFRIEND_ID 9341
-  //#define MCUFRIEND_ID 7783
+  #define MCUFRIEND_ID 0x9341
   // -----------------------------------------------------------------------------
 
   // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen
 
-  // - Included sample pinout wiring for a couple MCUFRIEND variants
-  #if (MCUFRIEND_ID == 9341)
-    // (MCUFRIEND ID=0x9341)
-    #define ADATOUCH_PIN_YP   A1    // "Y+": Must be an analog pin
-    #define ADATOUCH_PIN_XM   A2    // "X-": Must be an analog pin
-    #define ADATOUCH_PIN_YM   7     // "Y-": Can be a digital pin
-    #define ADATOUCH_PIN_XP   6     // "X+": Can be a digital pin
-  #elif (MCUFRIEND_ID == 7783)
-    // (MCUFRIEND ID=0x7783)
-    #define ADATOUCH_PIN_YP   A2    // "Y+": Must be an analog pin
-    #define ADATOUCH_PIN_XM   A1    // "X-": Must be an analog pin
-    #define ADATOUCH_PIN_YM   6     // "Y-": Can be a digital pin
-    #define ADATOUCH_PIN_XP   7     // "X+": Can be a digital pin
+  // - Included sample pinout wiring for a few MCUFRIEND variants
+  //     ADATOUCH_PIN_YP      // "Y+": Must be an analog pin
+  //     ADATOUCH_PIN_XM      // "X-": Must be an analog pin
+  //     ADATOUCH_PIN_YM      // "Y-": Can be a digital pin
+  //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
+
+  #if (MCUFRIEND_ID == 0x1520)
+    #define ADATOUCH_PIN_YP   A1
+    #define ADATOUCH_PIN_XM   A2
+    #define ADATOUCH_PIN_YM   7
+    #define ADATOUCH_PIN_XP   6
+  #elif (MCUFRIEND_ID == 0x2053)
+    #define ADATOUCH_PIN_YP   A2
+    #define ADATOUCH_PIN_XM   A1
+    #define ADATOUCH_PIN_YM   6
+    #define ADATOUCH_PIN_XP   7
+  #elif (MCUFRIEND_ID == 0x7783) // TESTED
+    #define ADATOUCH_PIN_YP   A2
+    #define ADATOUCH_PIN_XM   A1
+    #define ADATOUCH_PIN_YM   6
+    #define ADATOUCH_PIN_XP   7
+  #elif (MCUFRIEND_ID == 0x7789)
+    #define ADATOUCH_PIN_YP   A2
+    #define ADATOUCH_PIN_XM   A1
+    #define ADATOUCH_PIN_YM   7
+    #define ADATOUCH_PIN_XP   6
+  #elif (MCUFRIEND_ID == 0x8031)
+    #define ADATOUCH_PIN_YP   A1
+    #define ADATOUCH_PIN_XM   A2
+    #define ADATOUCH_PIN_YM   7
+    #define ADATOUCH_PIN_XP   6
+  #elif (MCUFRIEND_ID == 0x9320)
+    #define ADATOUCH_PIN_YP   A3
+    #define ADATOUCH_PIN_XM   A2
+    #define ADATOUCH_PIN_YM   9
+    #define ADATOUCH_PIN_XP   8
+  #elif (MCUFRIEND_ID == 0x9341) // TESTED
+    #define ADATOUCH_PIN_YP   A1
+    #define ADATOUCH_PIN_XM   A2
+    #define ADATOUCH_PIN_YM   7
+    #define ADATOUCH_PIN_XP   6
+  #elif (MCUFRIEND_ID == 0x9320)
+    #define ADATOUCH_PIN_YP   A3
+    #define ADATOUCH_PIN_XM   A2
+    #define ADATOUCH_PIN_YM   9
+    #define ADATOUCH_PIN_XP   8
+  #elif (MCUFRIEND_ID == 0x9327)
+    #define ADATOUCH_PIN_YP   A2
+    #define ADATOUCH_PIN_XM   A1
+    #define ADATOUCH_PIN_YM   6
+    #define ADATOUCH_PIN_XP   7
   #endif // MCUFRIEND_ID
 
   #define ADATOUCH_RX       300   // "rxplate"
 
   // Calibration for resistive displays
   // - These values may need to be updated to match your display
-  // - Run /examples/diag_ard_touch_calib.ino to determine these values
+  // - Run /examples/arduino/diag_ard_touch_calib to determine these values
 
-  // - Included sample calibration values for a couple MCUFRIEND variants
-  #if (MCUFRIEND_ID == 9341)
-    // DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9341) (XP=6,XM=A2,YP=A1,YM=7) 
-    #define ADATOUCH_X_MIN    905
-    #define ADATOUCH_Y_MIN    950
-    #define ADATOUCH_X_MAX    187
-    #define ADATOUCH_Y_MAX    202
-  #elif (MCUFRIEND_ID == 7783)
+  // - Included sample calibration values for a few MCUFRIEND variants
+  #if (MCUFRIEND_ID == 0x1520)
+    #define ADATOUCH_X_MIN    893
+    #define ADATOUCH_Y_MIN    99
+    #define ADATOUCH_X_MAX    104
+    #define ADATOUCH_Y_MAX    892
+  #elif (MCUFRIEND_ID == 0x2053)
+    #define ADATOUCH_X_MIN    138
+    #define ADATOUCH_Y_MIN    132
+    #define ADATOUCH_X_MAX    891
+    #define ADATOUCH_Y_MAX    909
+  #elif (MCUFRIEND_ID == 0x7783) // TESTED
     // DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x7783) (XP=7,XM=A1,YP=A2,YM=6) 
     #define ADATOUCH_X_MIN    181
     #define ADATOUCH_Y_MIN    934
     #define ADATOUCH_X_MAX    937
     #define ADATOUCH_Y_MAX    219
+  #elif (MCUFRIEND_ID == 0x7789)
+    #define ADATOUCH_X_MIN    885
+    #define ADATOUCH_Y_MIN    111
+    #define ADATOUCH_X_MAX    148
+    #define ADATOUCH_Y_MAX    902
+  #elif (MCUFRIEND_ID == 0x8031)
+    #define ADATOUCH_X_MIN    889
+    #define ADATOUCH_Y_MIN    121
+    #define ADATOUCH_X_MAX    151
+    #define ADATOUCH_Y_MAX    886
+  #elif (MCUFRIEND_ID == 0x9320)
+    #define ADATOUCH_X_MIN    897
+    #define ADATOUCH_Y_MIN    944
+    #define ADATOUCH_X_MAX    122
+    #define ADATOUCH_Y_MAX    141
+  #elif (MCUFRIEND_ID == 0x9327)
+    #define ADATOUCH_X_MIN    126
+    #define ADATOUCH_Y_MIN    106
+    #define ADATOUCH_X_MAX    905
+    #define ADATOUCH_Y_MAX    966
+  #elif (MCUFRIEND_ID == 0x9341) // TESTED
+    // DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9341) (XP=6,XM=A2,YP=A1,YM=7) 
+    #define ADATOUCH_X_MIN    905
+    #define ADATOUCH_Y_MIN    950
+    #define ADATOUCH_X_MAX    187
+    #define ADATOUCH_Y_MAX    202
   #endif // MCUFRIEND_ID
 
 
