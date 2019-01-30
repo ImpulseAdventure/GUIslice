@@ -135,7 +135,10 @@ public class ToolBar extends JToolBar {
     add(btn_redo);
     
     btn_delete = new JButton(new ImageIcon(Builder.class.getResource("/resources/icons/delete.png")));
-    btn_delete.setDisabledIcon(new ImageIcon(Builder.class.getResource("/resources/icons/disable_delete.png")));
+/* The builder's pagepane doesn't know if its selected or not and so we can't
+ *  dynamically turn Delete button on/off. Symptoms: Users can't delete empty page
+ *  btn_delete.setDisabledIcon(new ImageIcon(Builder.class.getResource("/resources/icons/disable_delete.png")));
+ */
     btn_delete.setToolTipText("Delete Widget");
     btn_delete.setActionCommand("delete");
     add(btn_delete);
@@ -323,7 +326,6 @@ public class ToolBar extends JToolBar {
     btn_aligncenter.setEnabled(true);
     btn_alignleft.setEnabled(true);
     btn_alignright.setEnabled(true);
-    btn_delete.setEnabled(true);
   }
   
   public void disableSingleEdits() {
@@ -336,7 +338,6 @@ public class ToolBar extends JToolBar {
     btn_alignvspace.setEnabled(false);
     btn_alignwidth.setEnabled(false);
     btn_alignheight.setEnabled(false);
-    btn_delete.setEnabled(false);
   }
 
   public void enableMultiEdits() {
@@ -349,7 +350,6 @@ public class ToolBar extends JToolBar {
     btn_alignvspace.setEnabled(true);
     btn_alignwidth.setEnabled(true);
     btn_alignheight.setEnabled(true);
-    btn_delete.setEnabled(true);
   }
   
   public void disableMultiEdits() {

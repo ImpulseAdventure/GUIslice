@@ -401,13 +401,6 @@ public class PagePane extends JPanel implements iSubscriber {
     w.unSelect();
     doSelectedCount(w);
     toolBar.setEditButtons(selectedCnt, selectedGroupCnt);
-    if (selectedCnt == 0) {
-      MsgEvent ev = new MsgEvent();
-      ev.message ="";
-      ev.parent = getKey();
-      ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
-      MsgBoard.getInstance().publish(ev);
-    }
   }
   
   /**
@@ -428,6 +421,13 @@ public class PagePane extends JPanel implements iSubscriber {
             if (selectedGroupCnt > 0) selectedGroupCnt--;
       }
       if (selectedCnt > 0) selectedCnt--;
+    }
+    if (selectedCnt == 0) {
+      MsgEvent ev = new MsgEvent();
+      ev.message ="";
+      ev.parent = getKey();
+      ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
+      MsgBoard.getInstance().publish(ev);
     }
   }
 
@@ -675,6 +675,12 @@ public class PagePane extends JPanel implements iSubscriber {
         selectNone();
         if (w == null) {
           bMultiSelectionBox = true;
+          toolBar.setEditButtons(selectedCnt, selectedGroupCnt);
+          MsgEvent ev = new MsgEvent();
+          ev.message ="";
+          ev.parent = getKey();
+          ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
+          MsgBoard.getInstance().publish(ev);
         } else {
           selectWidget(w);
           MsgEvent ev = new MsgEvent();

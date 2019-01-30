@@ -408,7 +408,7 @@ public class Controller extends JInternalFrame
     if (list.size() < 1) { // could be a widget or page selected in TreeView
       // ask tree view if anyone selected?
       String selected = TreeView.getInstance().getSelectedWidget();
-      if (selected != null) {
+      if (selected != null && !selected.isEmpty()) {
         if (selected.startsWith("Page")) {
           PagePane p = findPage(selected);
           if (p != null) {
@@ -423,6 +423,7 @@ public class Controller extends JInternalFrame
           return;
         }
       }
+
     } else {  // widget removal
         delWidget(list);
         return;
