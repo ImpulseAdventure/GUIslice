@@ -1544,6 +1544,18 @@ public class Parser {
       } else parseError("graph style");
       parse_EOS();
       return true;
+    } else if (token.getType() == Parser.WORD) {
+      // scan for something like: m_pElemCnt = pElemRef;
+      String strElemRef = token.getToken();
+      token = tokenizer.nextToken();
+      if (token.getType() == Parser.EQUALS) {
+        token = tokenizer.nextToken();
+        if (token.getType() == Parser.WORD && token.getToken().equals("pElemRef")) {
+          node.setElementRef(strElemRef);
+          parse_EOS();
+          return true;
+        }
+      }
     }
     tokenizer.pushToken();
     return false;
@@ -1975,6 +1987,9 @@ public class Parser {
     } else if (a.getType() == ApiNode.TXTBUTTON) {
       if (((TxtButtonNode) a).getFontDisplayName() == null)
         ((TxtButtonNode) a).setFontDisplayName(strFontRef);
+    } else if (a.getType() == ApiNode.TEXTBOX) {
+      if (((TextBoxNode) a).getFontDisplayName() == null)
+        ((TextBoxNode) a).setFontDisplayName(strFontRef);
     }
   }
   
@@ -1995,6 +2010,8 @@ public class Parser {
       ((SliderNode) a).setElementRef(strElemRef);
     } else if (a.getType() == ApiNode.GRAPH) {
       ((GraphNode) a).setElementRef(strElemRef);
+    } else if (a.getType() == ApiNode.TEXTBOX) {
+      ((TextBoxNode) a).setElementRef(strElemRef);
     }
   }
   

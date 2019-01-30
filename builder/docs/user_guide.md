@@ -27,7 +27,7 @@
 
 **Publication date and software version**
 
-Published January, 2019. Based on GUIslice API Library 0.11.5
+Published february, 2019. Based on GUIslice API Library 0.11.5
 
 **Copyright**
 
@@ -596,6 +596,8 @@ The following lists GUIsliceBuilder UI Widgets that are supported along with the
 - gslc_ElemXGraphCreate
 - gslc_ElemXGraphSetStyle
 - gslc_ElemSetCol
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
 
 ## 5.4 PROGRESS BAR
 
@@ -604,6 +606,8 @@ The following lists GUIsliceBuilder UI Widgets that are supported along with the
 - gslc_ElemSetCol
 - gslc_ElemXGaugeSetIndicator
 - gslc_ElemXGaugeSetTicks
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
 
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
@@ -614,6 +618,8 @@ The following lists GUIsliceBuilder UI Widgets that are supported along with the
 - gslc_ElemXSliderCreate_P
 - gslc_ElemSetCol
 - gslc_ElemXSliderSetStyle
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
 
 ## 5.6 TEXT
 
@@ -624,6 +630,9 @@ The following lists GUIsliceBuilder UI Widgets that are supported along with the
 - gslc_ElemSetTxtCol
 - gslc_ElemSetTxtAlign
 - gslc_ElemSetFillEn
+- gslc_FontAdd
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
 
 ## 5.7 TEXT BUTTON
 
@@ -631,21 +640,66 @@ The following lists GUIsliceBuilder UI Widgets that are supported along with the
 - gslc_ElemCreateBtnTxt_P
 - gslc_ElemSetCol
 - gslc_ElemSetTxtCol
+- gslc_FontAdd
 
 ## 5.8 TEXT BOX
 
 - gslc_ElemXTextboxCreate
 - gslc_ElemSetCol
 - gslc_ElemXTextboxWrapSet
+- gslc_FontAdd
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
 
-## 5.9 UI Widgets not supported by import
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
+
+## 5.9 Not supported by import
+
+### 5.9.1 IMAGES
 
 - IMAGE
 - IMAGE BUTTON
 
-Images are problematic due to complexity of parsing the source code and gaining access to the images from the builders platform.
+### 5.9.2 C Language Issues
 
+Since the Builder has a simple parser not a full C Language preprocessor certain constructs will cause import issues.
+The most common causes are things like:
 
+Usuage of #ifdef and #endif pairs
+
+```
+  #ifdef USE_EXTRA_FONTS
+    // Demonstrate the use of additional fonts (must have #include)
+    if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,&FreeSansBold12pt7b,1)) 
+      { return; }
+  #else
+    // Use default font
+    if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) 
+      { return; }
+  #endif
+```
+
+Likewise using Variable Names instead of constants like:
+
+```
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck[1],
+    (gslc_tsRect){60,nPosY,20,20},
+    false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
+```
+
+Will cause a parsing error on nPosY.
+
+Doing arithmetic with constants like:
+
+```
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
+    (gslc_tsRect){9,57,177,80-57}, "Now Playing",0,E_FONT_HEAD);
+```
+
+Causes an parsing error on '-57'.
+
+All of these can easily be corrected by hand editing the file and re-doing the import.
 
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
