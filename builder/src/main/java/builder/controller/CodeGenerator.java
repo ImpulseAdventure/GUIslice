@@ -694,7 +694,13 @@ public class CodeGenerator {
     String tmp = fileName.substring(0,n);
     String skeletonName = new String(folder + System.getProperty("file.separator") + tmp + fileExtension);
     projectFile = new File(skeletonName);
-    CommonUtil.getInstance().backupFile(projectFile);
+    backupName = null;
+    backupFile = null;
+    if(projectFile.exists()) {
+      // Make a backup copy of projectFile
+      backupName = new String(skeletonName + ".bak");
+      CommonUtil.getInstance().backupFile(projectFile);
+    }
     try {
       // Here we are either going to use a previously generated file as input
       // or we are generating a brand new file from one of our templates.

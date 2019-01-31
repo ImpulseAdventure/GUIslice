@@ -186,7 +186,7 @@ public class TextModel extends WidgetModel {
    */
   @Override
   public void changeValueAt(Object value, int row) {
-    boolean bChangeFontEnum = true;
+    boolean bChangeFontEnum = false;
     // The test for Integer supports copy and paste from clipboard.
     // Otherwise we get a can't cast class String to Integer fault
     if ( (getClassAt(row) == Integer.class) && (value instanceof String)) {
@@ -194,7 +194,7 @@ public class TextModel extends WidgetModel {
     } else {
       if (row == PROP_FONT) {
         // check to see if user defined this font enum, if so we won't change it
-        if (!ff.getFontEnum((String)value).equals(getFontEnum())) bChangeFontEnum=false;
+        if (!ff.getFontEnum((String)value).equals(getFontEnum())) bChangeFontEnum=true;
       }
       data[row][PROP_VAL_VALUE] = value;
     }

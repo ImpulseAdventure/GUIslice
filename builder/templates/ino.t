@@ -92,9 +92,8 @@ void setup()
   // ------------------------------------------------
   Serial.begin(9600);
   // Wait for USB Serial 
-  while (!Serial) {
-    yield();
-  }
+  //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
+
   gslc_InitDebug(&DebugOut);
 
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
