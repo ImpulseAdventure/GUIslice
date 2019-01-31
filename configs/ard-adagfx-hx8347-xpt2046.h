@@ -5,7 +5,7 @@
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     Arduino UNO (ATmega328P)
 //              Arduino Mega2560 (ATmega2560)
-//   - Display: ILI9341
+//   - Display: HX8347D
 //   - Touch:   XPT2046 (Resistive)
 //   - Wiring:  Uno/MEGA shield
 //              - Pinout:
@@ -13,7 +13,7 @@
 //                  ----    -------  --------  -----
 //
 //   - Example display:
-//     - 
+//     - Waveshare 2.8" TFT Touch Shield
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -73,7 +73,7 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
+  #define DRV_DISP_ADAGFX_HX8347    // prenticedavid/HX8347D_kbv
   #define DRV_TOUCH_XPT2046         // Serasidis XPT2046 touch driver (<Arduino_STM32/XPT2046_touch.h>)
 
 
@@ -116,7 +116,7 @@ extern "C" {
   // Touch bus & pinout
   #define XPT2046_DEFINE_DPICLASS
   #define XPT2046_spi    SPI
-  #define XPT2046_CS     3
+  #define XPT2046_CS     4
 
   // Calibration for resistive touch displays
   // - These values may need to be updated to match your display

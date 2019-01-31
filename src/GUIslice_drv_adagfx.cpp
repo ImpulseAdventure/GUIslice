@@ -69,6 +69,12 @@
   #elif defined(DRV_DISP_ADAGFX_ST7735)
     #include <Adafruit_ST7735.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_HX8347)
+    #include <HX8347D_kbv.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8357)
     #include <Adafruit_HX8357.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
@@ -178,6 +184,11 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_ST7735(SPI-SW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST);
   #endif
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_HX8347)
+  const char* m_acDrvDisp = "ADA_HX8347(SPI-HW)";
+  HX8347D_kbv m_disp;
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_HX8357)
@@ -300,6 +311,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.initR(DRV_DISP_ADAGFX_ST7735_INIT);
       #endif
+
+    #elif defined(DRV_DISP_ADAGFX_HX8347)
+      m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_HX8357)
       m_disp.begin(HX8357D);
@@ -559,7 +573,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || \
+    defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || \
+    defined(DRV_DISP_ADAGFX_HX8347) || defined(DRV_DISP_ADAGFX_HX8357)
     // Nothing to do as we're not double-buffered
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -1371,7 +1387,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    if (p.z > ADATOUCH_PRESS_MIN) {
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
@@ -1605,6 +1621,14 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
   #elif defined(DRV_DISP_ADAGFX_ST7735)
     // TODO: To support ST7789, init() is called with the display dimensions
     //       instead of initR() with the initialization enumeration.
+    m_disp.setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_ADAGFX_HX8347)
     m_disp.setRotation(0);
     pGui->nDisp0W = m_disp.width();
     pGui->nDisp0H = m_disp.height();
