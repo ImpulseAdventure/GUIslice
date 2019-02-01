@@ -59,8 +59,14 @@
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   #include <stdint.h>
   #include <TouchScreen.h>
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  // NOTE: This file is located in the Arduino_STM32 library:
+  //       Arduino_STM32/STM32F1/libraries/Serasidis_XPT2046_touch/src/XPT2046_touch.h
   #include <XPT2046_touch.h>
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  #include <XPT2046_Touchscreen.h>
+#elif defined(DRV_TOUCH_HANDLER)
+  #include <GUIslice_th.h>
 #endif
 
 
@@ -93,38 +99,47 @@ TFT_eSPI m_disp = TFT_eSPI();
     //       instead of the GUIslice ADATOUCH_PIN_CS.
     const char* m_acDrvTouch = "STMPE610(SPI-SW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
+  #else // No interface flag set
+    #error "DRV_TOUCH_ADA_STMPE610 but no ADATOUCH_I2C_* or ADATOUCH_SPI_* set in config"
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
-    // Always use I2C
     const char* m_acDrvTouch = "FT6206(I2C)";
+    // Always use I2C
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
-  const char* m_acDrvTouch = "SIMPLE";
-  #if defined(ADATOUCH_PIN_XP) && defined(ADATOUCH_PIN_YP) && defined(ADATOUCH_PIN_XM) && defined(ADATOUCH_PIN_YM) && defined(ADATOUCH_RX)
+  const char* m_acDrvTouch = "SIMPLE(Analog)";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
-  #else
-  // Config fields not defined, so use arbitrary default pinout
-  TouchScreen m_touch = TouchScreen(27, 14, 12, 13, 300);
-  #endif // defined(ADATOUCH_*)
 // ------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
-  const char* m_acDrvTouch = "XPT2046";
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  const char* m_acDrvTouch = "XPT2046_STM(SPI-HW)";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
-  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
+  // XPT2046 driver from Arduino_STM32 by Serasidis (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
+  // Use SPI, no IRQs
+  XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
   const char* m_acDrvTouch = "TFT_eSPI(XPT2046)";
   // Define the XPT2046 calibration data
   uint16_t m_anCalData[5] = TFT_ESPI_TOUCH_CALIB;
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_HANDLER)
+  const char* m_acDrvTouch = "Handler";
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_INPUT)
+  const char* m_acDrvTouch = "INPUT";
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_NONE)
   const char* m_acDrvTouch = "NONE";
 // ------------------------------------------------------------------------
 #endif // DRV_TOUCH_*
+
 
 
 // =======================================================================
@@ -446,7 +461,20 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  // Nothing to do as we're not double-buffered
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || \
+    defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || \
+    defined(DRV_DISP_ADAGFX_HX8347) || defined(DRV_DISP_ADAGFX_HX8357)
+    // Nothing to do as we're not double-buffered
+
+  #elif defined(DRV_DISP_ADAGFX_SSD1306)
+    // Show the display buffer on the hardware.
+    // NOTE: You _must_ call display after making any drawing commands
+    // to make them visible on the display hardware!
+    m_disp.display();
+
+    // TODO: Might need to call m_disp.clearDisplay() now?
+
+  #endif
 }
 
 
@@ -795,6 +823,13 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
+  #if defined(DBG_DRIVER)
+  char addr[6];
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
+  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  GSLC_DEBUG_PRINT("%s\n",addr);
+  #endif
+
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
@@ -823,7 +858,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from program memory
-      // - Dimensions and output color are defined in arrray header
+      // - Dimensions and output color are defined in array header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
       return true;
     } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
@@ -852,6 +887,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 
   } else {
     // Unsupported source
+    GSLC_DEBUG_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
     return false;
   }
 }
@@ -971,6 +1007,68 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 // Touch Functions (via external touch driver)
 // ------------------------------------------------------------------------
 
+
+#if defined(DRV_TOUCH_ADA_SIMPLE)
+
+  // Enable workaround for Adafruit_TouchScreen pressure readings?
+  // - See Issue #96
+  #define FIX_4WIRE // Comment out to disable
+
+  // NOTE: The Adafruit_TouchScreen library alters the state of several
+  //       pins during the course of reading the touch coordinates and
+  //       pressure. Unfortunately, it does not restore the prior state
+  //       which can impact other processes such as graphics drivers which
+  //       may share the same pins. The following routines are responsible
+  //       for saving and restoring the pin state and will wrap the
+  //       touch polling logic. If a future release of the Adafruit_TouchScreen
+  //       library addresses this issue, this wrapper logic can be removed.
+  //       For further reference, please refer to Issue #96.
+
+  /// Structure used to retain a port state (mode and level)
+  /// so that it can be restored later.
+  struct gslc_tsPinState
+  {
+    int     nMode;     // OUTPUT, INPUT, INPUT_PULLUP
+    bool    bIsHigh;   // Is an output and HIGH?
+  };
+
+  /// Return the current pinMOde() for a pin
+  int gslc_TDrvGetPinMode(uint8_t nPin)
+  {
+    if (nPin >= NUM_DIGITAL_PINS) {
+      return (-1);
+    }
+    uint8_t nBit            = digitalPinToBitMask(nPin);
+    uint8_t nPort           = digitalPinToPort(nPin);
+
+    // Determine if port is an output
+    volatile uint8_t *nReg  = portModeRegister(nPort);
+    if (*nReg & nBit) {
+      return (OUTPUT);
+    }
+
+    // Determine if port is an input and whether pullup is active
+    volatile  uint8_t *nOut = portOutputRegister(nPort);
+    return ((*nOut & nBit) ? INPUT_PULLUP : INPUT);
+  }
+
+  /// Fetch the current pin mode and level
+  inline void gslc_TDrvSavePinState(int nPin, gslc_tsPinState &sPinState)
+  {
+    sPinState.nMode = gslc_TDrvGetPinMode(nPin);
+    sPinState.bIsHigh = digitalRead(nPin);
+  }
+
+  /// Restore the pin mode and level
+  inline void gslc_TDrvRestorePinState(int nPin,gslc_tsPinState sPinState)
+  {
+    pinMode(nPin,sPinState.nMode);
+    if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
+  }
+
+#endif // DRV_TOUCH_ADA_SIMPLE
+
+
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
@@ -994,8 +1092,25 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     }
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
     return true;
-  #elif defined(DRV_TOUCH_XPT2046)
+  #elif defined(DRV_TOUCH_XPT2046_STM)
     m_touch.begin();
+    return true;
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    m_touch.begin();
+    // Since this XPT2046 library supports "touch rotation", and defaults
+    // to landscape orientation, rotate to traditional portrait orientation
+    // for consistency with other handlers.
+    //
+    // Unfortunately, this API (from 2018/01/04) is not available in the
+    // latest tagged release of XPT2046 in the Library Manager. Therefore,
+    // we can't use this API and instead need to hardcode the mapping
+    // during the DrvGetTouch() function.
+    //m_touch.setRotation(0);
+    return true;
+  #elif defined(DRV_TOUCH_INPUT)
+    // Nothing more to initialize for GPIO input control mode
+    return true;
+  #elif defined(DRV_TOUCH_HANDLER)
     return true;
   #else
     // ERROR: Unsupported driver mode
@@ -1005,12 +1120,11 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
 }
 
-
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
 
   #if defined(DRV_TOUCH_NONE)
-  return false;
+    return false;
   #endif
 
   // As the STMPE610 hardware driver doesn't appear to return
@@ -1097,17 +1211,30 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
 
   uint16_t  nRawX,nRawY;
-  uint8_t   nRawPress;
+  int16_t   nRawPress;
 
+  // Saved pin state
+  gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
+
+  // As Adafruit_TouchScreen polling will alter the pin state and some
+  // of these pins may be shared with the display, we need to save and
+  // then later restore the pin state.
+  gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
+  gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
+  
+  // Perform the polling of touch coordinate & pressure
   TSPoint p = m_touch.getPoint();
 
-  pinMode(ADATOUCH_PIN_XM, OUTPUT);
-  pinMode(ADATOUCH_PIN_YP, OUTPUT);
-
-  // Select reasonable touch pressure thresholds
-  // Note that the minimum is not "> 0" as some
-  // displays may produce a (small) non-zero value
-  // when not touched.
+  // Select reasonable touch pressure threshold range.
+  // Note that the Adafruit_TouchScreen library appears to
+  // return the following:
+  // - 0:     If no touch (results from integer overflow, div/0)
+  // - 0:     If touch active but filtered due to noise
+  // - small: If touch active and hard
+  // - large: If touch active and soft
+  // Note that the "pressure" (z) value is inverted in interpretation
   if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
     nRawX = p.x;
     nRawY = p.y;
@@ -1121,23 +1248,97 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
     } else {
-      // Touch release
+
+      #if !defined(FIX_4WIRE) // Original behavior without touch pressure workaround
+
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
       m_bLastTouched = false;
       bValid = true;
-    }
+      #ifdef DBG_TOUCH
+      GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+          m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+      #endif
+
+      #else // Apply touch pressure workaround
+
+      // Unfortunately, the Adafruit_TouchScreen has a few issues that
+      // make it hard to deal with reliably. The most difficult problem
+      // involves the ambiguous return state from getTouch().
+      // Without handling this in a special way, we might see spurious
+      // touch-release events.
+      //
+      // Upon entering this clause, we can infer Adafruit_TouchScreen returned z=0
+      // - This either means:
+      //   a) Touch was released (z is 0 due to integer overflow, div/0)
+      //   b) Touch still active but filtered due to noisy read
+      //
+      // Because of case (b) returning the same signature as case (a), we
+      // need to take an additional step to differentiate the two cases
+      // otherwise we might interpret spurious "touch release" events.
+      //
+      // In order to differentiate these cases, we can call the Adafruit
+      // getPressure() API since it does not include the filtering for (b).
+      // Therefore, if we see that the pressure is non-zero, and less than
+      // the max pressure threshold, we can re-interpret our original reading
+      // as (b), wherein we would still want to treat as a touch pressed event.
+
+      // Read the touch pressure
+      // Note that we will need to restore the pin status later
+      // once we are done with our polling.
+      uint16_t nPressCur = m_touch.pressure();
+
+      if ((nPressCur > ADATOUCH_PRESS_MIN) && (nPressCur < ADATOUCH_PRESS_MAX)) {
+        // The unfiltered result is that the display is still pressed
+        // Therefore we are likely in case (b) and should return our
+        // last saved result (with touch pressure still active)
+        bValid = true;
+        #ifdef DBG_TOUCH
+        // Give indication that workaround applied: continue press
+        GSLC_DEBUG_PRINT("DBG: Touch Cont =%u Raw[%d,%d]\n",
+            m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+        #endif
+      } else {
+        // The unfiltered result is that the display is not pressed
+        // Therefore we are likely in case (a) and should force
+        // the touch pressure to be deactivated
+
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+        #ifdef DBG_TOUCH
+        GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+            m_nLastRawPress,m_nLastRawX,m_nLastRawY);
+        #endif
+      } // nPressCur
+      #endif // FIX_4WIRE
+
+      // TODO: Implement touch debouncing
+
+    } // m_bLastTouched
   }
 
-  // ----------------------------------------------------------------
-  #elif defined(DRV_TOUCH_XPT2046)
+  // Now that we have completed our polling into Adafruit_TouchScreen,
+  // we need to restore the original pin state.
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
+  gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
-    uint16_t  nRawX,nRawY;
-    uint8_t   nRawPress;
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046_STM)
+    // NOTE: XPT2046_STM returns pressure (z) values with a reversed
+    //       convention versus other touch libraries (ie. a small
+    //       non-zero z value means light touch, whereas a large
+    //       value means a hard / wide touch).
+
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
 
     TS_Point p = m_touch.getPoint();
 
-    if (p.z > ADATOUCH_PRESS_MIN) {
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
@@ -1159,6 +1360,81 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         bValid = true;
       }
     }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
+
+    TS_Point p = m_touch.getPoint();
+
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+      // PaulStoffregen/XPT2046 appears to use a different orientation
+      // than other libraries. Therefore, we will remap it here
+      // to match the default portrait orientation.
+      nRawX = 4095-p.y;
+      nRawY = p.x;
+
+      nRawPress = p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_HANDLER)
+
+    uint16_t  nRawX,nRawY;
+    uint16_t  nRawPress; 
+  
+    TouchHandler *pTH = gslc_getTouchHandler();
+    THPoint p(0,0,0);
+    //if no TouchHandler was defined use (0,0,0)
+    if (pTH!=NULL)
+        p = pTH->getPoint();
+    
+    if (p.z > 0) {
+      nRawX=p.x;
+      nRawY=p.y;
+      nRawPress=p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+      //Serial.print("pTH= ");Serial.print(p.x);Serial.print(" ");Serial.print(p.y);Serial.print(" ");Serial.println(p.z);
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_INPUT)
+    // No more to do for GPIO-only mode since gslc_Update() already
+    // looks for GPIO inputs before calling TDrvGetTouch().
+    // bValid will default to false
 
   // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
@@ -1186,7 +1462,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
+        defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
