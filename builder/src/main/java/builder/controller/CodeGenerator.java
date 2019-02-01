@@ -1309,21 +1309,51 @@ public class CodeGenerator {
     // save page enum for our quick access code generation section
     
     // quick access may be needed for progressbars, sliders, and text that is changed dynamically at runtime.
+    String ref = null;
     for (PagePane p : pages) {
       for (Widget w : p.getWidgets()) {
         if (w.getType().equals(EnumFactory.TEXT)) {
-          if (((TextModel)w.getModel()).getTextStorage() > 0) {
+          ref = ((TextModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
             refList.add(w.getModel());
             w.getModel().setPageEnum(p.getEnum());
           }
-        } else if (w.getType().equals(EnumFactory.PROGRESSBAR) || 
-                   w.getType().equals(EnumFactory.TEXTBOX)      ||
-                   w.getType().equals(EnumFactory.GRAPH)      ||
-                   w.getType().equals(EnumFactory.IMAGE)      ||
-                   w.getType().equals(EnumFactory.IMAGEBUTTON)      ||
-                   w.getType().equals(EnumFactory.SLIDER)) {
-          refList.add(w.getModel());
-          w.getModel().setPageEnum(p.getEnum());
+        } else if (w.getType().equals(EnumFactory.PROGRESSBAR)) {
+          ref = ((ProgressBarModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.TEXTBOX)) {
+          ref = ((GraphModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.GRAPH)) {
+          ref = ((TextModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.SLIDER)) {
+          ref = ((SliderModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
         }
       }
     }
@@ -1334,7 +1364,6 @@ public class CodeGenerator {
               return one.getKey().compareTo(other.getKey());
           }
       }); 
-      String ref = "";
       for (WidgetModel m : refList) {
         if (m.getType().equals(EnumFactory.TEXT)) {
             ref = ((TextModel) m).getElementRef();

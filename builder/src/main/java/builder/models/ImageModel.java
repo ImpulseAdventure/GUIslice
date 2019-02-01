@@ -34,7 +34,6 @@ import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
 
-import builder.common.ColorFactory;
 import builder.common.CommonUtil;
 import builder.common.EnumFactory;
 import builder.events.MsgBoard;
