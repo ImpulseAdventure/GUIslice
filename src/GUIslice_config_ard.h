@@ -90,7 +90,7 @@ extern "C" {
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
   //  #define DRV_TOUCH_M5STACK         // M5stack integrated button driver
   //  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
-  //  #define DRV_TOUCH_XPT2046         // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
+  //  #define DRV_TOUCH_XPT2046_STM     // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
   //  #define DRV_TOUCH_INPUT           // No touchscreen support, but input only (GPIO / keyboard)
   //  #define DRV_TOUCH_HANDLER         // touch handler class
 
@@ -357,7 +357,7 @@ extern "C" {
   #define ADATOUCH_PRESS_MAX 1000
 
 // -----------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_STM)
   // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
   // NOTE: This touch library is included in the Arduino_STM32 library
   //       While it still works on many non-STM32 targets, it is recommended

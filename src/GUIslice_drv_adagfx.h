@@ -540,8 +540,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
 // Touch Functions (if using external touch driver library)
 // -----------------------------------------------------------------------
 
+// Check for deprecated config option
+// - This check will be removed in future releases
+#if defined(DRV_TOUCH_XPT2046)
+  #error "NOTE: DRV_TOUCH_XPT2046 has been renamed to DRV_TOUCH_XPT2046_STM. Please update your config."
+#endif
+
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
+    defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
     defined(DRV_TOUCH_HANDLER)
 
 ///

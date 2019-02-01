@@ -122,7 +122,9 @@
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   #include <stdint.h>
   #include <TouchScreen.h>
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  // NOTE: This file is located in the Arduino_STM32 library:
+  //       Arduino_STM32/STM32F1/libraries/Serasidis_XPT2046_touch/src/XPT2046_touch.h
   #include <XPT2046_touch.h>
 #elif defined(DRV_TOUCH_XPT2046_PS)
   #include <XPT2046_Touchscreen.h>
@@ -246,11 +248,11 @@ extern "C" {
   const char* m_acDrvTouch = "SIMPLE(Analog)";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
 // ------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
-  const char* m_acDrvTouch = "XPT2046(SPI-HW)";
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  const char* m_acDrvTouch = "XPT2046_STM(SPI-HW)";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
-  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
+  // XPT2046 driver from Arduino_STM32 by Serasidis (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046_PS)
@@ -266,7 +268,7 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_NONE)
   const char* m_acDrvTouch = "NONE";
-
+// ------------------------------------------------------------------------
 #endif // DRV_TOUCH_*
 
 
@@ -392,6 +394,8 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     return NULL;  // No image preload done
   }
+
+  // Default
   return NULL;
 }
 
@@ -750,7 +754,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t nByte=0;
+  uint8_t nByte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
@@ -1056,7 +1060,12 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
+    return false;
+  }
   // TODO
+  // Perform any driver-specific touchscreen init here
   return true;
 }
 
@@ -1135,14 +1144,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
+    defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
     defined(DRV_TOUCH_HANDLER)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
   // Capture default calibration settings for resistive displays
   #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-      defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS)
+      defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS)
   pGui->nTouchCalXMin = ADATOUCH_X_MIN;
   pGui->nTouchCalXMax = ADATOUCH_X_MAX;
   pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
@@ -1169,7 +1178,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     }
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
     return true;
-  #elif defined(DRV_TOUCH_XPT2046)
+  #elif defined(DRV_TOUCH_XPT2046_STM)
     m_touch.begin();
     return true;
   #elif defined(DRV_TOUCH_XPT2046_PS)
@@ -1404,8 +1413,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
   // ----------------------------------------------------------------
-  #elif defined(DRV_TOUCH_XPT2046)
-    // NOTE: XPT2046 returns pressure (z) values with a reversed
+  #elif defined(DRV_TOUCH_XPT2046_STM)
+    // NOTE: XPT2046_STM returns pressure (z) values with a reversed
     //       convention versus other touch libraries (ie. a small
     //       non-zero z value means light touch, whereas a large
     //       value means a hard / wide touch).
@@ -1440,11 +1449,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046_PS)
-    // NOTE: XPT2046 returns pressure (z) values with a reversed
-    //       convention versus other touch libraries (ie. a small
-    //       non-zero z value means light touch, whereas a large
-    //       value means a hard / wide touch).
-
     uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
     uint16_t  nRawPress;   //XPT2046 returns values up to 4095
 
@@ -1545,7 +1549,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     // For resistive displays, perform constraint and scaling
     #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-        defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS)
+        defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
