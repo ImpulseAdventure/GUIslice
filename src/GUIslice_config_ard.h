@@ -338,7 +338,7 @@ extern "C" {
 
 
 // -----------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_PS)
   // PaulStoffregen/XPT2046_Touchscreen
 
   // Chip select pin for touch
