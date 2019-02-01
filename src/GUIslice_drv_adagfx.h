@@ -541,7 +541,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
 // -----------------------------------------------------------------------
 
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_INPUT) || defined(DRV_TOUCH_HANDLER)
+    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
+    defined(DRV_TOUCH_HANDLER)
 
 ///
 /// Perform any touchscreen-specific initialization

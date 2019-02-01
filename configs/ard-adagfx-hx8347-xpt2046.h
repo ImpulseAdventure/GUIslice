@@ -74,7 +74,7 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_HX8347    // prenticedavid/HX8347D_kbv
-  #define DRV_TOUCH_XPT2046         // Serasidis XPT2046 touch driver (<Arduino_STM32/XPT2046_touch.h>)
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ extern "C" {
   #define ADAGFX_PIN_RST      8     // Display Reset
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
 
   // Display interface type
   #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
@@ -114,8 +114,6 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // Touch bus & pinout
-  #define XPT2046_DEFINE_DPICLASS
-  #define XPT2046_spi    SPI
   #define XPT2046_CS     4
 
   // Calibration for resistive touch displays
@@ -123,10 +121,10 @@ extern "C" {
   // - Run /examples/diag_ard_touch_calib.ino to determine these values
 
   // DRV_TOUCH_XPT2046:
-  #define ADATOUCH_X_MIN    398
-  #define ADATOUCH_Y_MIN    280
-  #define ADATOUCH_X_MAX    3877
-  #define ADATOUCH_Y_MAX    3805
+  #define ADATOUCH_X_MIN    246
+  #define ADATOUCH_Y_MIN    3925
+  #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MAX    370
 
   // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN  10

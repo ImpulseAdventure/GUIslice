@@ -29,7 +29,8 @@
 // ------------------------------------------------------------
 // CALIB: Check configuration settings
 // ------------------------------------------------------------
-#if !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && !defined(DRV_TOUCH_XPT2046)
+#if !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && \
+    !defined(DRV_TOUCH_XPT2046) && !defined(DRV_TOUCH_XPT2046_PS)
   #error "Calibration only supported for resistive touch displays"
 #endif
 // ------------------------------------------------------------

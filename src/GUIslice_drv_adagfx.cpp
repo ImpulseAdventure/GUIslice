@@ -124,6 +124,8 @@
   #include <TouchScreen.h>
 #elif defined(DRV_TOUCH_XPT2046)
   #include <XPT2046_touch.h>
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  #include <XPT2046_Touchscreen.h>
 #elif defined(DRV_TOUCH_HANDLER)
   #include <GUIslice_th.h>
 #endif
@@ -241,19 +243,27 @@ extern "C" {
     Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
-  const char* m_acDrvTouch = "SIMPLE";
+  const char* m_acDrvTouch = "SIMPLE(Analog)";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046)
-  const char* m_acDrvTouch = "XPT2046";
+  const char* m_acDrvTouch = "XPT2046(SPI-HW)";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
   // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
+  // Use SPI, no IRQs
+  XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_HANDLER)
   const char* m_acDrvTouch = "Handler";
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_INPUT)
   const char* m_acDrvTouch = "INPUT";
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_NONE)
   const char* m_acDrvTouch = "NONE";
 
@@ -1125,12 +1135,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 
 #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_INPUT) || defined(DRV_TOUCH_HANDLER)
+    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
+    defined(DRV_TOUCH_HANDLER)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
   // Capture default calibration settings for resistive displays
-  #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+  #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
+      defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS)
   pGui->nTouchCalXMin = ADATOUCH_X_MIN;
   pGui->nTouchCalXMax = ADATOUCH_X_MAX;
   pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
@@ -1159,6 +1171,18 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     return true;
   #elif defined(DRV_TOUCH_XPT2046)
     m_touch.begin();
+    return true;
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    m_touch.begin();
+    // Since this XPT2046 library supports "touch rotation", and defaults
+    // to landscape orientation, rotate to traditional portrait orientation
+    // for consistency with other handlers.
+    //
+    // Unfortunately, this API (from 2018/01/04) is not available in the
+    // latest tagged release of XPT2046 in the Library Manager. Therefore,
+    // we can't use this API and instead need to hardcode the mapping
+    // during the DrvGetTouch() function.
+    //m_touch.setRotation(0);
     return true;
   #elif defined(DRV_TOUCH_INPUT)
     // Nothing more to initialize for GPIO input control mode
@@ -1381,6 +1405,10 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046)
+    // NOTE: XPT2046 returns pressure (z) values with a reversed
+    //       convention versus other touch libraries (ie. a small
+    //       non-zero z value means light touch, whereas a large
+    //       value means a hard / wide touch).
 
     uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
     uint16_t  nRawPress;   //XPT2046 returns values up to 4095
@@ -1390,6 +1418,45 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
       nRawX = p.x;
       nRawY = p.y;
+      nRawPress = p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    // NOTE: XPT2046 returns pressure (z) values with a reversed
+    //       convention versus other touch libraries (ie. a small
+    //       non-zero z value means light touch, whereas a large
+    //       value means a hard / wide touch).
+
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
+
+    TS_Point p = m_touch.getPoint();
+
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+      // PaulStoffregen/XPT2046 appears to use a different orientation
+      // than other libraries. Therefore, we will remap it here
+      // to match the default portrait orientation.
+      nRawX = 4095-p.y;
+      nRawY = p.x;
+
       nRawPress = p.z;
       m_nLastRawX = nRawX;
       m_nLastRawY = nRawY;
@@ -1477,7 +1544,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
+        defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_XPT2046_PS)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
