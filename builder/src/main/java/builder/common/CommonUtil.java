@@ -57,6 +57,9 @@ public class CommonUtil {
   /** The instance. */
   private static CommonUtil instance = null;
   
+  /** Backup Folder Name */
+  private static final String BACKUP_FOLDER = "gui_backup";
+  
   /** The offset x. */
   private static int offset_x; // Window offset of coordinate system along x axis
   
@@ -294,12 +297,22 @@ public class CommonUtil {
     File backupFile = null;
     File newFile = null;
     if(file.exists()) {
-      // Make a backup copy of projectFile and overwrite backup file if it exists.
+      // first check to see if we have a backup folder
+      String strBackupDir = file.getParent() + System.getProperty("file.separator") 
+          + BACKUP_FOLDER;
+      File backupDir = new File(strBackupDir);
+      if (!backupDir.exists()) {
+        backupDir.mkdir();
+      }
+      // Make a backup copy of file and overwrite backup file if it exists.
       backupName = new String(file.getAbsolutePath() + ".bak");
       backupFile = new File(backupName);
       if (backupFile.exists()) {
         // rename previous backup files so we don't lose them
-        newTemplate = new String(file.getAbsolutePath() + ".##");
+        newTemplate = new String(strBackupDir +
+            System.getProperty("file.separator") +
+            file.getName() +
+            ".##");
         int idx = 0;
         String newName = newTemplate + String.valueOf(++idx);
         newFile = new File(newName);

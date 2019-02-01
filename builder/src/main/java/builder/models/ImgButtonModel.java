@@ -25,6 +25,7 @@
  */
 package builder.models;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
 
+import builder.common.ColorFactory;
 import builder.common.CommonUtil;
 import builder.common.EnumFactory;
 import builder.events.MsgBoard;
@@ -74,6 +76,21 @@ public class ImgButtonModel extends WidgetModel {
   /** The Constant PROP_PAGE. */
   static private final int PROP_PAGE         =13;
   
+  /** The Constant PROP_ELEMENTREF. */
+  static private final int PROP_ELEMENTREF        = 14;
+  
+  /** The Constant PROP_DEFAULT_COLORS. */
+  static private final int PROP_DEFAULT_COLORS    = 15;
+  
+  /** The Constant PROP_FRAME_COLOR. */
+  static private final int PROP_FRAME_COLOR       = 16;
+  
+  /** The Constant PROP_FILL_COLOR. */
+  static private final int PROP_FILL_COLOR        = 17;
+  
+  /** The Constant PROP_SELECTED_COLOR. */
+  static private final int PROP_SELECTED_COLOR    = 18;
+
 
   /** The general model. */
   private GeneralModel generalModel;
@@ -88,8 +105,9 @@ public class ImgButtonModel extends WidgetModel {
    * Instantiates a new img button model.
    */
   public ImgButtonModel() {
-    initProperties();
+    cf = ColorFactory.getInstance();
     generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
+    initProperties();
   }
   
   /**
@@ -98,7 +116,7 @@ public class ImgButtonModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.IMAGEBUTTON;
-    data = new Object[14][5];
+    data = new Object[19][5];
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
     initProp(PROP_ENUM, String.class, "COM-002", Boolean.FALSE,"ENUM",widgetType);
@@ -115,9 +133,24 @@ public class ImgButtonModel extends WidgetModel {
     initProp(PROP_TRANSPARENCY, Boolean.class, "IBTN-107", Boolean.FALSE,"Transparent?",Boolean.FALSE);
     initProp(PROP_CHANGE_PAGE, Boolean.class, "IBTN-105", Boolean.FALSE,"Change Page Funct?",Boolean.FALSE);
     initProp(PROP_PAGE, String.class, "IBNT-106", Boolean.TRUE,"Jump to Page Enum","");
+    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
+
+    initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
+    initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",cf.getDefFrameCol());
+    initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",cf.getDefFillCol());
+    initProp(PROP_SELECTED_COLOR, Color.class, "COL-304", Boolean.TRUE,"Selected Color",cf.getDefGlowCol());
 
   }
 
+  /**
+   * Gets the element ref.
+   *
+   * @return the element ref
+   */
+  public String getElementRef() {
+    return (String) data[PROP_ELEMENTREF][PROP_VAL_VALUE];
+  }
+  
   /**
    * Sets the image name.
    *
@@ -158,15 +191,6 @@ public class ImgButtonModel extends WidgetModel {
   }
 
   /**
-   * Use default colors.
-   *
-   * @return <code>true</code>, if successful
-   */
-  public boolean useDefaultColors() {
-    return true;
-  }
-  
-  /**
    * is Transparent?
    *
    * @return <code>true</code>, if successful
@@ -175,6 +199,42 @@ public class ImgButtonModel extends WidgetModel {
     return (((Boolean) data[PROP_TRANSPARENCY][PROP_VAL_VALUE]).booleanValue());
   }
   
+  /**
+   * Use default colors.
+   *
+   * @return <code>true</code>, if successful
+   */
+  public boolean useDefaultColors() {
+    return ((Boolean) data[PROP_DEFAULT_COLORS][PROP_VAL_VALUE]).booleanValue();
+  }
+  
+  /**
+   * Gets the fill color.
+   *
+   * @return the fill color
+   */
+  public Color getFillColor() {
+    return (((Color) data[PROP_FILL_COLOR][PROP_VAL_VALUE]));
+  }
+
+  /**
+   * Gets the frame color.
+   *
+   * @return the frame color
+   */
+  public Color getFrameColor() {
+    return (((Color) data[PROP_FRAME_COLOR][PROP_VAL_VALUE]));
+  }
+
+  /**
+   * Gets the selected color.
+   *
+   * @return the selected color
+   */
+  public Color getSelectedColor() {
+    return (((Color) data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]));
+  }
+
   /**
    * changeValueAt
    *
@@ -199,6 +259,24 @@ public class ImgButtonModel extends WidgetModel {
       }
       fireTableCellUpdated(PROP_PAGE, COLUMN_VALUE);
     }
+    if (row == PROP_DEFAULT_COLORS) {
+      // check for switching back and forth
+      if (useDefaultColors()) {
+        data[PROP_FRAME_COLOR][PROP_VAL_VALUE]=cf.getDefFrameCol(); 
+        data[PROP_FILL_COLOR][PROP_VAL_VALUE]=cf.getDefFillCol();
+        data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]=cf.getDefGlowCol(); 
+        data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+        data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;
+        data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+      } else {
+        data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+        data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.FALSE;
+        data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+      }
+      fireTableCellUpdated(PROP_FRAME_COLOR, COLUMN_VALUE);
+      fireTableCellUpdated(PROP_FILL_COLOR, COLUMN_VALUE);
+      fireTableCellUpdated(PROP_SELECTED_COLOR, COLUMN_VALUE);
+    }     
     if (bSendEvents) {
       event = new MsgEvent();
       event.code = MsgEvent.WIDGET_REPAINT;
@@ -317,7 +395,12 @@ public class ImgButtonModel extends WidgetModel {
    * @return the image name
    */
   public String getImageName() {
-    return (String) data[PROP_IMAGE][PROP_VAL_VALUE];
+    String dir = generalModel.getImageDir();
+    String name = (String) data[PROP_IMAGE][PROP_VAL_VALUE];
+    // do we need to add a relative path for code generation?
+    if (dir.length() > 0)
+      name = dir + name;
+    return name;
   }
   
   /**
@@ -326,7 +409,13 @@ public class ImgButtonModel extends WidgetModel {
    * @return the select image name
    */
   public String getSelectImageName() {
-    return (String) data[PROP_IMAGE_SEL][PROP_VAL_VALUE];
+    String dir = generalModel.getImageDir();
+    String name = (String) data[PROP_IMAGE_SEL][PROP_VAL_VALUE];
+    // do we need to add a relative path for code generation?
+    if (dir.length() > 0)
+      name = dir + name;
+
+    return name;
   }
   
   /**
@@ -335,12 +424,7 @@ public class ImgButtonModel extends WidgetModel {
    * @return the define
    */
   public String getDefine() {
-    String dir = generalModel.getImageDir();
-    String fileName = (String) data[PROP_DEFINE][PROP_VAL_VALUE];
-    // do we need to add a relative path for code generation?
-    if (dir.length() > 0)
-      fileName = dir + fileName;
-    return fileName;
+    return (String) data[PROP_DEFINE][PROP_VAL_VALUE];
   }
   
   /**
@@ -359,12 +443,7 @@ public class ImgButtonModel extends WidgetModel {
    * @return the sel define
    */
   public String getSelDefine() {
-    String dir = generalModel.getImageDir();
-    String fileName = (String) data[PROP_DEFINE_SEL][PROP_VAL_VALUE];
-    // do we need to add a relative path for code generation?
-    if (dir.length() > 0)
-      fileName = dir + fileName;
-    return fileName;
+    return (String) data[PROP_DEFINE_SEL][PROP_VAL_VALUE];
   }
   
   /**
@@ -419,6 +498,15 @@ public class ImgButtonModel extends WidgetModel {
     } else {
       data[PROP_PAGE][PROP_VAL_READONLY]=Boolean.TRUE;
     }
+    if (useDefaultColors()) {
+      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+      data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;
+      data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+    } else {
+      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+      data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.FALSE;
+      data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+    }   
   }     
 
 }

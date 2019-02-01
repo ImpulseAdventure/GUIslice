@@ -51,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
 import builder.common.CommonUtil;
 import builder.common.TestException;
@@ -216,9 +217,9 @@ public class Builder  extends JDesktopPane {
               String message = "You're about to quit the application -- are you sure?";
               int answer = JOptionPane.showConfirmDialog(null,message,title, JOptionPane.YES_NO_OPTION); 
               if(answer == JOptionPane.YES_OPTION)
-              {
-                System.exit(0);
-              }
+                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+              else
+                frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             }
           });
           frame.setVisible(true);

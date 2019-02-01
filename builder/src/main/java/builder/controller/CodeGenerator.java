@@ -1319,6 +1319,8 @@ public class CodeGenerator {
         } else if (w.getType().equals(EnumFactory.PROGRESSBAR) || 
                    w.getType().equals(EnumFactory.TEXTBOX)      ||
                    w.getType().equals(EnumFactory.GRAPH)      ||
+                   w.getType().equals(EnumFactory.IMAGE)      ||
+                   w.getType().equals(EnumFactory.IMAGEBUTTON)      ||
                    w.getType().equals(EnumFactory.SLIDER)) {
           refList.add(w.getModel());
           w.getModel().setPageEnum(p.getEnum());
@@ -1340,6 +1342,10 @@ public class CodeGenerator {
             ref = ((ProgressBarModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.GRAPH)) {
           ref = ((GraphModel) m).getElementRef();
         } else { // must be EnumFactory.SLIDER
@@ -1562,6 +1568,10 @@ public class CodeGenerator {
           ref = ((ProgressBarModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.GRAPH)) {
           ref = ((GraphModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
         } else { // must be EnumFactory.SLIDER
@@ -2066,6 +2076,23 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(IMAGETRANSPARENT_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
+    if (!m.useDefaultColors()) {
+      if (!cf.getDefFillCol().equals(m.getFillColor())    || 
+          !cf.getDefFrameCol().equals(m.getFrameColor())  ||
+          !cf.getDefGlowCol().equals(m.getSelectedColor())) {
+        n = 0;
+        macro[n] = FILL_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFillColor());
+        macro[n] = FRAME_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFrameColor());
+        macro[n] = GLOW_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getSelectedColor());
+        macro[n] = null;
+        template = loadTemplate(COLOR_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      }
+    }
   }
   
   /**
@@ -2100,6 +2127,23 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(IMAGETRANSPARENT_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
+    if (!m.useDefaultColors()) {
+      if (!cf.getDefFillCol().equals(m.getFillColor())    || 
+          !cf.getDefFrameCol().equals(m.getFrameColor())  ||
+          !cf.getDefGlowCol().equals(m.getSelectedColor())) {
+        n = 0;
+        macro[n] = FILL_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFillColor());
+        macro[n] = FRAME_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFrameColor());
+        macro[n] = GLOW_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getSelectedColor());
+        macro[n] = null;
+        template = loadTemplate(COLOR_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      }
+    }
   }
   
   /**

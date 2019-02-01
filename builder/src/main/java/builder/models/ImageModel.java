@@ -25,6 +25,7 @@
  */
 package builder.models;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,8 +34,11 @@ import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
 
+import builder.common.ColorFactory;
 import builder.common.CommonUtil;
 import builder.common.EnumFactory;
+import builder.events.MsgBoard;
+import builder.events.MsgEvent;
 import builder.prefs.GeneralEditor;
 
 /**
@@ -57,6 +61,21 @@ public class ImageModel extends WidgetModel {
   /** The Constant PROP_FORMAT. */
   static private final int PROP_TRANSPARENCY  =9;
 
+  /** The Constant PROP_ELEMENTREF. */
+  static private final int PROP_ELEMENTREF        = 10;
+  
+  /** The Constant PROP_DEFAULT_COLORS. */
+  static private final int PROP_DEFAULT_COLORS    = 11;
+  
+  /** The Constant PROP_FRAME_COLOR. */
+  static private final int PROP_FRAME_COLOR       = 12;
+  
+  /** The Constant PROP_FILL_COLOR. */
+  static private final int PROP_FILL_COLOR        = 13;
+  
+  /** The Constant PROP_SELECTED_COLOR. */
+  static private final int PROP_SELECTED_COLOR    = 14;
+
   /** The general model. */
   private GeneralModel generalModel;
   
@@ -67,8 +86,9 @@ public class ImageModel extends WidgetModel {
    * Instantiates a new image model.
    */
   public ImageModel() {
-    initProperties();
+    cf = ColorFactory.getInstance();
     generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
+    initProperties();
   }
   
   /**
@@ -77,7 +97,7 @@ public class ImageModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.IMAGE;
-    data = new Object[10][5];
+    data = new Object[15][5];
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
     initProp(PROP_ENUM, String.class, "COM-002", Boolean.FALSE,"ENUM",widgetType);
@@ -91,15 +111,62 @@ public class ImageModel extends WidgetModel {
     initProp(PROP_FORMAT, String.class, "IMG-102", Boolean.TRUE,"Image Format","");
     initProp(PROP_TRANSPARENCY, Boolean.class, "IMG-107", Boolean.FALSE,"Transparent?",Boolean.FALSE);
 
+    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
+
+    initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
+    initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",cf.getDefFrameCol());
+    initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",cf.getDefFillCol());
+    initProp(PROP_SELECTED_COLOR, Color.class, "COL-304", Boolean.TRUE,"Selected Color",cf.getDefGlowCol());
   }
 
   /**
-   * Use default colors.
+   * changeValueAt
    *
-   * @return <code>true</code>, if successful
+   * @see builder.models.WidgetModel#changeValueAt(java.lang.Object, int)
    */
-  public boolean useDefaultColors() {
-    return true;
+  @Override
+  public void changeValueAt(Object value, int row) {
+    // The test for Integer supports copy and paste from clipboard.
+    // Otherwise we get a can't cast class String to Integer fault
+    if ( (getClassAt(row) == Integer.class) && (value instanceof String)) {
+        data[row][PROP_VAL_VALUE] = Integer.valueOf(Integer.parseInt((String)value));
+    } else {
+      data[row][PROP_VAL_VALUE] = value;
+    }
+    fireTableCellUpdated(row, 1);
+    if (row == PROP_DEFAULT_COLORS) {
+      // check for switching back and forth
+      if (useDefaultColors()) {
+        data[PROP_FRAME_COLOR][PROP_VAL_VALUE]=cf.getDefFrameCol(); 
+        data[PROP_FILL_COLOR][PROP_VAL_VALUE]=cf.getDefFillCol();
+        data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]=cf.getDefGlowCol(); 
+        data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+        data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;
+        data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+      } else {
+        data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+        data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.FALSE;
+        data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+      }
+      fireTableCellUpdated(PROP_FRAME_COLOR, COLUMN_VALUE);
+      fireTableCellUpdated(PROP_FILL_COLOR, COLUMN_VALUE);
+      fireTableCellUpdated(PROP_SELECTED_COLOR, COLUMN_VALUE);
+    }     
+    if (bSendEvents) {
+      event = new MsgEvent();
+      event.code = MsgEvent.WIDGET_REPAINT;
+      event.message = getKey();
+      MsgBoard.getInstance().publish(event);
+    }
+  }
+
+  /**
+   * Gets the element ref.
+   *
+   * @return the element ref
+   */
+  public String getElementRef() {
+    return (String) data[PROP_ELEMENTREF][PROP_VAL_VALUE];
   }
   
  /**
@@ -108,7 +175,13 @@ public class ImageModel extends WidgetModel {
   * @return the image name
   */
  public String getImageName() {
-   return (String) data[PROP_IMAGE][PROP_VAL_VALUE];
+   String dir = generalModel.getImageDir();
+   String name = (String) data[PROP_IMAGE][PROP_VAL_VALUE];
+   // do we need to add a relative path for code generation?
+   if (dir.length() > 0)
+     name = dir + name;
+
+   return name;
  }
  
  /**
@@ -206,12 +279,7 @@ public class ImageModel extends WidgetModel {
    * @return the define
    */
   public String getDefine() {
-    String dir = generalModel.getImageDir();
-    String fileName = (String) data[PROP_DEFINE][PROP_VAL_VALUE];
-    // do we need to add a relative path for code generation?
-    if (dir.length() > 0)
-      fileName = dir + fileName;
-    return fileName;
+    return (String) data[PROP_DEFINE][PROP_VAL_VALUE];
   }
   
   /**
@@ -223,6 +291,45 @@ public class ImageModel extends WidgetModel {
   public void setDefine(String s) {
     shortcutValue(s, PROP_DEFINE);
   }
+  
+  /**
+   * Use default colors.
+   *
+   * @return <code>true</code>, if successful
+   */
+  public boolean useDefaultColors() {
+    return ((Boolean) data[PROP_DEFAULT_COLORS][PROP_VAL_VALUE]).booleanValue();
+  }
+  
+  /**
+   * Gets the fill color.
+   *
+   * @return the fill color
+   */
+  public Color getFillColor() {
+    return (((Color) data[PROP_FILL_COLOR][PROP_VAL_VALUE]));
+  }
+
+  /**
+   * Gets the frame color.
+   *
+   * @return the frame color
+   */
+  public Color getFrameColor() {
+    return (((Color) data[PROP_FRAME_COLOR][PROP_VAL_VALUE]));
+  }
+
+  /**
+   * Gets the selected color.
+   *
+   * @return the selected color
+   */
+  public Color getSelectedColor() {
+    return (((Color) data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]));
+  }
+
+  
+
 
   /**
    * writeModel
@@ -256,6 +363,15 @@ public class ImageModel extends WidgetModel {
     super.readModel(in,  widgetType);
     String imageString = (String) in.readObject();
     image = CommonUtil.getInstance().decodeToImage(imageString);
+    if (useDefaultColors()) {
+      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+      data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;
+      data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
+    } else {
+      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+      data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.FALSE;
+      data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.FALSE; 
+    }   
   }
 
 }
