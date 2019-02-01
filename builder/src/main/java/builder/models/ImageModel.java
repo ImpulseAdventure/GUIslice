@@ -86,7 +86,6 @@ public class ImageModel extends WidgetModel {
    * Instantiates a new image model.
    */
   public ImageModel() {
-    cf = ColorFactory.getInstance();
     generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
     initProperties();
   }
@@ -114,9 +113,9 @@ public class ImageModel extends WidgetModel {
     initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
 
     initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
-    initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",cf.getDefFrameCol());
-    initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",cf.getDefFillCol());
-    initProp(PROP_SELECTED_COLOR, Color.class, "COL-304", Boolean.TRUE,"Selected Color",cf.getDefGlowCol());
+    initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",Color.WHITE);
+    initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",Color.WHITE);
+    initProp(PROP_SELECTED_COLOR, Color.class, "COL-304", Boolean.TRUE,"Selected Color",Color.WHITE);
   }
 
   /**
@@ -137,9 +136,9 @@ public class ImageModel extends WidgetModel {
     if (row == PROP_DEFAULT_COLORS) {
       // check for switching back and forth
       if (useDefaultColors()) {
-        data[PROP_FRAME_COLOR][PROP_VAL_VALUE]=cf.getDefFrameCol(); 
-        data[PROP_FILL_COLOR][PROP_VAL_VALUE]=cf.getDefFillCol();
-        data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]=cf.getDefGlowCol(); 
+        data[PROP_FRAME_COLOR][PROP_VAL_VALUE]=Color.WHITE; 
+        data[PROP_FILL_COLOR][PROP_VAL_VALUE]=Color.WHITE;
+        data[PROP_SELECTED_COLOR][PROP_VAL_VALUE]=Color.WHITE; 
         data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
         data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;
         data[PROP_SELECTED_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
