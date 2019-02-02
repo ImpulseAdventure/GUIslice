@@ -26,9 +26,9 @@
 #endif
 
 #if defined(DRV_TOUCH_NONE)
-#error "Touch pin detection requires a touch driver but DRV_TOUCH_NONE was set"
+  #error "Touch pin detection requires a touch driver but DRV_TOUCH_NONE was set"
 #elif !defined(DRV_TOUCH_ADA_SIMPLE)
-#error "Only DRV_TOUCH_ADA_SIMPLE supports pin detection"
+  #error "Only DRV_TOUCH_ADA_SIMPLE supports pin detection"
 #endif
 
 #if defined(__arm__) || defined(ESP32)
@@ -38,8 +38,8 @@
 
 #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
   // Import MCUFRIEND to support ID reporting
-#include <MCUFRIEND_kbv.h>
-extern MCUFRIEND_kbv m_disp;
+  #include <MCUFRIEND_kbv.h>
+  extern MCUFRIEND_kbv m_disp;
 #endif
 
 #define MAX_STR             30

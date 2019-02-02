@@ -29,10 +29,13 @@
 // ------------------------------------------------------------
 // CALIB: Check configuration settings
 // ------------------------------------------------------------
-#if !defined(DRV_TOUCH_ADA_STMPE610) && !defined(DRV_TOUCH_ADA_SIMPLE) && \
-    !defined(DRV_TOUCH_XPT2046) && !defined(DRV_TOUCH_XPT2046_PS)
+#if   defined(DRV_TOUCH_ADA_STMPE610)
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+#elif defined(DRV_TOUCH_XPT2046_STM)
+#elif defined(DRV_TOUCH_XPT2046_PS)
+#else
   #error "Calibration only supported for resistive touch displays"
-#endif
+#endif // DRV_TOUCH_*
 // ------------------------------------------------------------
 
 // Import optional libraries
@@ -159,6 +162,20 @@ uint16_t m_nPointBufCnt = 0;
 //   locate a calibration point within 10% of the rotated click
 #define DET_ROT_TOLER_PCT 10
 
+// Define the minimum threshold in Min-Max raw range below
+// which we report that the calibration has failed. In most
+// displays, a typical range might be 200...3700, implying
+// a full-scale range of 3500. One would expect to obtain
+// calibration ranges in excess of 10% of the full-scale range.
+#define DET_RAW_RANGE_MIN 350
+
+// Define the maximum variance between readings that are
+// expected to be on the same side of the display (eg. X:TL/BL)
+// Exceeding this value will cause the sketch to report
+// that the calibration has failed, likely due to a pin
+// wiring issue.
+#define DET_RAW_VAR_MAX 350
+
 int16_t m_nPointFinalX = -1;
 int16_t m_nPointFinalY = -1;
 
@@ -170,6 +187,8 @@ uint16_t m_nTouchCalYMaxRaw;
 // Preserve reading ranges
 int16_t m_nTouchCalXRngRaw;
 int16_t m_nTouchCalYRngRaw;
+
+bool m_bTouchCalFail = false;
 
 int m_anTouchXPeak[POINT__NUM];
 int m_anTouchYPeak[POINT__NUM];
@@ -188,13 +207,10 @@ int16_t   m_nTouchYMax;
 int16_t   m_nTouchZMin;
 int16_t   m_nTouchZMax;
 
-
-// Reset to calibration defaults from configuration
-// - These values will be overwritten after calibration
-uint16_t m_nTouchCalXMin = ADATOUCH_X_MIN;
-uint16_t m_nTouchCalXMax = ADATOUCH_X_MAX;
-uint16_t m_nTouchCalYMin = ADATOUCH_Y_MIN;
-uint16_t m_nTouchCalYMax = ADATOUCH_Y_MAX;
+uint16_t  m_nTouchCalXMin;
+uint16_t  m_nTouchCalXMax;
+uint16_t  m_nTouchCalYMin;
+uint16_t  m_nTouchCalYMax;
 
 
 
@@ -238,18 +254,18 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 // ----------------------------------------------------------------------------
 void ResetCalib()
 {
-  // Reset the calibration ranges to enable min/max determination
-  m_nTouchCalXMin = 9999;
-  m_nTouchCalXMax = 0;
-  m_nTouchCalYMin = 9999;
-  m_nTouchCalYMax = 0;
+// Reset the calibration ranges to enable min/max determination
+m_nTouchCalXMin = 9999;
+m_nTouchCalXMax = 0;
+m_nTouchCalYMin = 9999;
+m_nTouchCalYMax = 0;
 
-  for (int nInd = 0; nInd < POINT__NUM; nInd++) {
-    m_anTouchXPeak[nInd] = 0;
-    m_anTouchYPeak[nInd] = 0;
-  }
+for (int nInd = 0; nInd < POINT__NUM; nInd++) {
+  m_anTouchXPeak[nInd] = 0;
+  m_anTouchYPeak[nInd] = 0;
+}
 
-  m_eRotSpecial = E_ROT_UNDEF;
+m_eRotSpecial = E_ROT_UNDEF;
 }
 
 void DrawBackgroundStart()
@@ -274,39 +290,39 @@ void ResetDatapoints()
 void AddDatapoint(int16_t nTouchX, int16_t nTouchY)
 {
   #if defined(CALC_EXP_AVG)
-    // Exponential moving average
-    m_nPointBufX = ((EXP_AVG_NUMER)* m_nPointBufX / EXP_AVG_DENOM) + (EXP_AVG_FIXPT * (EXP_AVG_DENOM - EXP_AVG_NUMER) * nTouchX / EXP_AVG_DENOM);
-    m_nPointBufY = ((EXP_AVG_NUMER)* m_nPointBufY / EXP_AVG_DENOM) + (EXP_AVG_FIXPT * (EXP_AVG_DENOM - EXP_AVG_NUMER) * nTouchY / EXP_AVG_DENOM);
+  // Exponential moving average
+  m_nPointBufX = ((EXP_AVG_NUMER)* m_nPointBufX / EXP_AVG_DENOM) + (EXP_AVG_FIXPT * (EXP_AVG_DENOM - EXP_AVG_NUMER) * nTouchX / EXP_AVG_DENOM);
+  m_nPointBufY = ((EXP_AVG_NUMER)* m_nPointBufY / EXP_AVG_DENOM) + (EXP_AVG_FIXPT * (EXP_AVG_DENOM - EXP_AVG_NUMER) * nTouchY / EXP_AVG_DENOM);
+  m_nPointBufCnt++;
+  #if defined(DEBUG_CALIB)
+  snprintf(m_acTxt, MAX_STR, "AddDatapoint(EXP): (%d,%d) => (%ld,%ld)", nTouchX, nTouchY, m_nPointBufX, m_nPointBufY);
+  GSLC_DEBUG_PRINT("%s\n", m_acTxt);
+  #endif // DEBUG_CALIB
+  #elif defined(CALC_BASIC_AVG)
+  // Simple averaging
+  // - Avoid integer overflow
+  if (m_nPointBufCnt < 10000) {
+    m_nPointBufX += nTouchX;
+    m_nPointBufY += nTouchY;
     m_nPointBufCnt++;
     #if defined(DEBUG_CALIB)
-      snprintf(m_acTxt, MAX_STR, "AddDatapoint(EXP): (%d,%d) => (%ld,%ld)", nTouchX, nTouchY, m_nPointBufX, m_nPointBufY);
-      GSLC_DEBUG_PRINT("%s\n", m_acTxt);
+    snprintf(m_acTxt, MAX_STR, "AddDatapoint(BASIC): (%d,%d) => (%ld,%ld,%d)", nTouchX, nTouchY, m_nPointBufX, m_nPointBufY, m_nPointBufCnt);
+    GSLC_DEBUG_PRINT("%s\n", m_acTxt);
     #endif // DEBUG_CALIB
-  #elif defined(CALC_BASIC_AVG)
-    // Simple averaging
-    // - Avoid integer overflow
-    if (m_nPointBufCnt < 10000) {
-      m_nPointBufX += nTouchX;
-      m_nPointBufY += nTouchY;
-      m_nPointBufCnt++;
-      #if defined(DEBUG_CALIB)
-        snprintf(m_acTxt, MAX_STR, "AddDatapoint(BASIC): (%d,%d) => (%ld,%ld,%d)", nTouchX, nTouchY, m_nPointBufX, m_nPointBufY, m_nPointBufCnt);
-        GSLC_DEBUG_PRINT("%s\n", m_acTxt);
-      #endif // DEBUG_CALIB
-    }
+  }
   #endif
 }
 
 void CalcDatapoint(teCalibPt ePoint)
 {
   #if defined(CALC_EXP_AVG)
-    m_nPointFinalX = m_nPointBufX / EXP_AVG_FIXPT;
-    m_nPointFinalY = m_nPointBufY / EXP_AVG_FIXPT;
+  m_nPointFinalX = m_nPointBufX / EXP_AVG_FIXPT;
+  m_nPointFinalY = m_nPointBufY / EXP_AVG_FIXPT;
   #elif defined(CALC_BASIC_AVG)
-    if (m_nPointBufCnt > 0) {
-      m_nPointFinalX = m_nPointBufX / m_nPointBufCnt;
-      m_nPointFinalY = m_nPointBufY / m_nPointBufCnt;
-    }
+  if (m_nPointBufCnt > 0) {
+    m_nPointFinalX = m_nPointBufX / m_nPointBufCnt;
+    m_nPointFinalY = m_nPointBufY / m_nPointBufCnt;
+  }
   #endif  
 
   // Record the final value in the corresponding touch point
@@ -335,12 +351,41 @@ void CalcCalib()
   m_nTouchCalXRngRaw = abs(m_nTouchCalXRngRaw);
   m_nTouchCalYRngRaw = abs(m_nTouchCalYRngRaw);
 
+  // If the pin configuration was incorrect, then the Left-Right or Top-Bottom
+  // ranges could be close to zero. Detect this condition and report it
+  if ((m_nTouchCalXRngRaw < DET_RAW_RANGE_MIN) || (m_nTouchCalYRngRaw < DET_RAW_RANGE_MIN)) {
+    m_bTouchCalFail = true;
+  }
+  // Similarly, if there was a large variance between the points being averaged
+  // (X:TL/BL, X:TR/BR, Y:TL/TR, Y:BL/BR), then it suggests we might also have
+  // a bad pin configuration (eg. perhaps pins were swapped).
+  int16_t nVarXMinRaw = (m_anTouchXPeak[POINT_TL] - m_anTouchXPeak[POINT_BL]);
+  int16_t nVarXMaxRaw = (m_anTouchXPeak[POINT_TR] - m_anTouchXPeak[POINT_BR]);
+  int16_t nVarYMinRaw = (m_anTouchYPeak[POINT_TL] - m_anTouchYPeak[POINT_TR]);
+  int16_t nVarYMaxRaw = (m_anTouchYPeak[POINT_BL] - m_anTouchYPeak[POINT_BR]);
+  nVarXMinRaw = abs(nVarXMinRaw);
+  nVarXMaxRaw = abs(nVarXMaxRaw);
+  nVarYMinRaw = abs(nVarYMinRaw);
+  nVarYMaxRaw = abs(nVarYMaxRaw);
+  if ((nVarXMinRaw > DET_RAW_VAR_MAX) || (nVarXMaxRaw > DET_RAW_VAR_MAX) || \
+      (nVarYMinRaw > DET_RAW_VAR_MAX) || (nVarYMaxRaw > DET_RAW_VAR_MAX)) {
+    m_bTouchCalFail = true;
+  }
+
+  if (m_bTouchCalFail) {
+    GSLC_DEBUG_PRINT("\nERROR: Calibration failed. Please check touch pin config ADATOUCH_PIN_*\n\n", "");
+  }
+
   // Apply correction factor for targets not at corners
 
   #if defined(DEBUG_CALIB)
     // Report raw calibration range prior to adjustment
-    GSLC_DEBUG_PRINT("CALIB: Range(raw) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
+    GSLC_DEBUG_PRINT("CALIB: Result(raw) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
       m_nTouchCalXMinRaw, m_nTouchCalYMinRaw, m_nTouchCalXMaxRaw, m_nTouchCalYMaxRaw);
+    GSLC_DEBUG_PRINT("CALIB: Range X=%d Y=%d. Expect > %d\n",
+      m_nTouchCalXRngRaw, m_nTouchCalYRngRaw, DET_RAW_RANGE_MIN);
+    GSLC_DEBUG_PRINT("CALIB: Var XMin=%d XMax=%d YMin=%d YMax=%d. Expect < %d\n",
+      nVarXMinRaw, nVarXMaxRaw, nVarYMinRaw, nVarYMaxRaw, DET_RAW_VAR_MAX);
   #endif // DEBUG_CALIB
 
 
@@ -366,7 +411,7 @@ void CalcCalib()
   m_nTouchCalXMax = nXMax;
   m_nTouchCalYMax = nYMax;
 
-  GSLC_DEBUG_PRINT("CALIB: Range(adj) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
+  GSLC_DEBUG_PRINT("CALIB: Result(adj) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
     m_nTouchCalXMin, m_nTouchCalYMin, m_nTouchCalXMax, m_nTouchCalYMax);
 
 }
@@ -528,9 +573,16 @@ void ReportCalibResult()
     GSLC_DEBUG_PRINT("\n", "");
   #elif defined(DRV_TOUCH_ADA_STMPE610)
     GSLC_DEBUG_PRINT("  // DRV_TOUCH_ADA_STMPE610 %s:\n", acDim);
-  #elif defined(DRV_TOUCH_ADA_XPT2046)
-    GSLC_DEBUG_PRINT("  // DRV_TOUCH_ADA_XPT2046 %s:\n", acDim);
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    GSLC_DEBUG_PRINT("  // DRV_TOUCH_XPT2046_PS %s:\n", acDim);
+  #elif defined(DRV_TOUCH_XPT2046_STM)
+    GSLC_DEBUG_PRINT("  // DRV_TOUCH_XPT2046_STM %s:\n", acDim);
   #endif // DRV_TOUCH_ADA_*
+
+  if (m_bTouchCalFail) {
+    GSLC_DEBUG_PRINT("*** ERROR: Calibration failed. Please check log.\n", "");
+    return;
+  }
 
   GSLC_DEBUG_PRINT("  #define ADATOUCH_X_MIN    %u\n", m_nTouchCalXMin);
   GSLC_DEBUG_PRINT("  #define ADATOUCH_Y_MIN    %u\n", m_nTouchCalYMin);
@@ -577,7 +629,10 @@ void DrawCalibResult()
   snprintf(m_acTxt, MAX_STR, "ADATOUCH_Y_MAX: %u", m_nTouchCalYMax);
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 60, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
 
-  if ((m_eRotSpecial == E_ROT_REVERSE) || (m_eRotSpecial == E_ROT_SWAP)) {
+  if (m_bTouchCalFail) {
+    gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 100, m_pFont, "ERROR: See serial log", GSLC_TXT_DEFAULT, GSLC_COL_RED, GSLC_COL_BLACK);
+  }
+  else if ((m_eRotSpecial == E_ROT_REVERSE) || (m_eRotSpecial == E_ROT_SWAP)) {
     gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 100, m_pFont, "ERROR: See serial log", GSLC_TXT_DEFAULT, GSLC_COL_RED, GSLC_COL_BLACK);
   }
   else if (m_eRotSpecial == E_ROT_NONE) {
@@ -936,10 +991,17 @@ void setup()
   // Initialize the display
   DrawBackground();
 
-  // Report initialization settings
-  GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
-  GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
-    ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+  // Initialize settings and report
+  GSLC_DEBUG_PRINT("\n=== Touch Calibration & Testing ===\n\n", "");
+  #if defined(DRV_TOUCH_TYPE_RES)
+    // Reset to calibration defaults from configuration
+    m_nTouchCalXMin = ADATOUCH_X_MIN;
+    m_nTouchCalXMax = ADATOUCH_X_MAX;
+    m_nTouchCalYMin = ADATOUCH_Y_MIN;
+    m_nTouchCalYMax = ADATOUCH_Y_MAX;
+    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
+      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+  #endif // DRV_TOUCH_TYPE_RES
   GSLC_DEBUG_PRINT("\n", "");
 }
 

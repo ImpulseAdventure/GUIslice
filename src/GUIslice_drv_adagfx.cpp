@@ -240,9 +240,9 @@ extern "C" {
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
-    const char* m_acDrvTouch = "FT6206(I2C)";
-    // Always use I2C
-    Adafruit_FT6206 m_touch = Adafruit_FT6206();
+  const char* m_acDrvTouch = "FT6206(I2C)";
+  // Always use I2C
+  Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   const char* m_acDrvTouch = "SIMPLE(Analog)";
@@ -1143,20 +1143,17 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
-    defined(DRV_TOUCH_HANDLER)
+#if defined(DRV_TOUCH_TYPE_EXTERNAL)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
   // Capture default calibration settings for resistive displays
-  #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-      defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS)
-  pGui->nTouchCalXMin = ADATOUCH_X_MIN;
-  pGui->nTouchCalXMax = ADATOUCH_X_MAX;
-  pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
-  pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
-  #endif
+  #if defined(DRV_TOUCH_TYPE_RES)
+    pGui->nTouchCalXMin = ADATOUCH_X_MIN;
+    pGui->nTouchCalXMax = ADATOUCH_X_MAX;
+    pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
+    pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
+  #endif // DRV_TOUCH_TYPE_RES
 
   #if defined(DRV_TOUCH_ADA_STMPE610)
     #if (ADATOUCH_I2C_HW)

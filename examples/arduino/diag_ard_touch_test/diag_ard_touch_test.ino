@@ -78,13 +78,10 @@ int16_t   m_nTouchYMax;
 int16_t   m_nTouchZMin;
 int16_t   m_nTouchZMax;
 
-
-// Reset to calibration defaults from configuration
-// - These values will be overwritten after calibration
-uint16_t m_nTouchCalXMin = ADATOUCH_X_MIN;
-uint16_t m_nTouchCalXMax = ADATOUCH_X_MAX;
-uint16_t m_nTouchCalYMin = ADATOUCH_Y_MIN;
-uint16_t m_nTouchCalYMax = ADATOUCH_Y_MAX;
+uint16_t  m_nTouchCalXMin;
+uint16_t  m_nTouchCalXMax;
+uint16_t  m_nTouchCalYMin;
+uint16_t  m_nTouchCalYMax;
 
 
 
@@ -317,10 +314,17 @@ void setup()
   // Initialize the display
   DrawBackground();
 
-  // Report initialization settings
-  GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
-  GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
-    ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+  // Initialize settings and report
+  GSLC_DEBUG_PRINT("\n=== Touch Calibration & Testing ===\n\n", "");
+  #if defined(DRV_TOUCH_TYPE_RES)
+    // Reset to calibration defaults from configuration
+    m_nTouchCalXMin = ADATOUCH_X_MIN;
+    m_nTouchCalXMax = ADATOUCH_X_MAX;
+    m_nTouchCalYMin = ADATOUCH_Y_MIN;
+    m_nTouchCalYMax = ADATOUCH_Y_MAX;
+    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
+      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+  #endif // DRV_TOUCH_TYPE_RES
   GSLC_DEBUG_PRINT("\n", "");
 }
 

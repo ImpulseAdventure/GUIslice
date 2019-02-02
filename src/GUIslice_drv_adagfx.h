@@ -48,6 +48,33 @@ extern "C" {
 #include <stdio.h>
 
 
+// Determine characteristics for configured touch driver
+// - DRV_TOUCH_TYPE_EXTERNAL: TDrv* external touch APIs are enabled
+// - DRV_TOUCH_TYPE_RES:      Resistive overlay
+// - DRV_TOUCH_TYPE_CAP:      Capacitive overlay
+// - DRV_TOUCH_TYPE_ANALOG:   Analog input
+#if defined(DRV_TOUCH_ADA_STMPE610)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_ADA_FT6206)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_CAP         // Capacitive
+#elif defined(DRV_TOUCH_ADA_SIMPLE)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
+  #define DRV_TOUCH_TYPE_ANALOG      // Analog
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_INPUT)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+#elif defined(DRV_TOUCH_HANDLER)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+#elif defined(DRV_TOUCH_NONE)
+#endif // DRV_TOUCH_*
 
 
 // =======================================================================
@@ -546,10 +573,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
   #error "NOTE: DRV_TOUCH_XPT2046 has been renamed to DRV_TOUCH_XPT2046_STM. Please update your config."
 #endif
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
-    defined(DRV_TOUCH_HANDLER)
-
+#if defined(DRV_TOUCH_TYPE_EXTERNAL)
 ///
 /// Perform any touchscreen-specific initialization
 ///
