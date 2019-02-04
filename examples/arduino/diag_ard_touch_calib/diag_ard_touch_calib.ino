@@ -852,7 +852,8 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     }
     if (bTouchUp) {
       CalcDatapoint(m_eCalibPt);
-      GSLC_DEBUG_PRINT("%s: X=%d Y=%d Cnt=%u\n", sCalibStage.acStr, m_nPointFinalX, m_nPointFinalY, m_nPointBufCnt);
+      GSLC_DEBUG_PRINT("%s: X=%d Y=%d Cnt=%u, Z=(%d..%d)\n", sCalibStage.acStr, m_nPointFinalX, m_nPointFinalY, m_nPointBufCnt,
+        m_nTouchZMin, m_nTouchZMax);
       m_eState = sCalibStage.eStateNxt;
     }
     break;
