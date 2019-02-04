@@ -119,6 +119,24 @@ public class CodeGenerator {
   /** The Constant LINUX_FONT_TEMPLATE. */
   public  final static String LINUX_FONT_TEMPLATE    = "linuxfonts.csv";
   
+  /** The Constant SRC_SD for reading image from SD card. */
+  public  final static String SRC_SD   = "gslc_GetImageFromSD((const char*)";
+  
+  /** The Constant SRC_PROG for reading image from FLASH or PROGMEM. */
+  public  final static String SRC_PROG = "gslc_GetImageFromProg((const unsigned char*)";
+
+  /** The Constant SRC_RAM for reading image from SRAM. */
+  public  final static String SRC_RAM  = "gslc_GetImageFromRam((unsigned char*)";
+  
+  /** The Constant FROM_SD for reading image from SD card. */
+  public  final static String FROM_SD   = "From File";
+  
+  /** The Constant FROM_PROG for reading image from FLASH or PROGMEM. */
+  public  final static String FROM_PROG = "From PROGMEM (FLASH)";
+
+  /** The Constant FROM_RAM for reading image from SRAM. */
+  public  final static String FROM_RAM  = "From SRAM";
+  
   /** The Constant ARDUINO_RES. */
   public  final static String ARDUINO_RES            = "arduino_res";
   
@@ -437,8 +455,17 @@ public class CodeGenerator {
   /** The Constant IMAGE_MACRO. */
   private final static String IMAGE_MACRO            = "IMAGE_DEFINE";
   
+  /** The Constant IMAGE_FROM_MACRO. */
+  private final static String IMAGE_FROM_MACRO       = "IMAGE_FROM_SRC";
+  
   /** The Constant IMAGE_SEL_MACRO. */
   private final static String IMAGE_SEL_MACRO        = "IMAGE_SEL_DEFINE";
+  
+  /** The Constant IMAGE_SOURCE_MACRO. */
+  private final static String IMAGE_SOURCE_MACRO     = "IMAGE_SOURCE";
+  
+  /** The Constant IMAGE_SOURCE_MACRO. */
+  private final static String IMAGE_SEL_SOURCE_MACRO = "IMAGE_SEL_SOURCE";
   
   /** The Constant IMAGE_FORMAT_MACRO. */
   private final static String IMAGE_FORMAT_MACRO     = "IMAGE_FORMAT";
@@ -1021,18 +1048,66 @@ public class CodeGenerator {
       getModelsByType(p.getWidgets(), widgetTypes, modelList);
     }
     // now pull out from the models the resources as strings that GUIslice can understand
+    String snorm = null;
+    String sel = null;
+    String sMemory = null;
+    String sCType = null;
     for (WidgetModel m : modelList) {
       if (m.getType().equals(EnumFactory.IMAGE)) {
-        String s = String.format("#define %-25s    \"%s\"", ((ImageModel) m).getDefine(),
-            ((ImageModel) m).getImageName());
-        resources.add(s);
+        if (!((ImageModel)m).getDefine().isEmpty()) {
+          snorm = String.format("#define %-25s    \"%s\"", 
+              ((ImageModel) m).getDefine(),
+              ((ImageModel) m).getImageName());
+          resources.add(snorm);
+        } else if (!((ImageModel)m).getExternName().isEmpty()) {
+          if (((ImageModel)m).getMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          snorm = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImageModel) m).getExternName(), sMemory);
+          resources.add(snorm);
+        }
       } else { // must be EnumFactory.IMAGEBUTTON
-        String s = String.format("#define %-25s    \"%s\"", ((ImgButtonModel) m).getDefine(),
-            ((ImgButtonModel) m).getImageName());
-        String sel = String.format("#define %-25s    \"%s\"", ((ImgButtonModel) m).getSelDefine(),
-            ((ImgButtonModel) m).getSelectImageName());
-        resources.add(s);
-        resources.add(sel);
+        if (!((ImgButtonModel)m).getDefine().isEmpty()) {
+          snorm = String.format("#define %-25s    \"%s\"", 
+              ((ImgButtonModel) m).getDefine(),
+              ((ImgButtonModel) m).getImageName());
+          resources.add(snorm);
+        }
+        if (!((ImgButtonModel)m).getSelDefine().isEmpty()) {
+          sel = String.format("#define %-25s    \"%s\"", 
+              ((ImgButtonModel) m).getSelDefine(),
+              ((ImgButtonModel) m).getSelectImageName());
+          resources.add(sel);
+        }
+        if (!((ImgButtonModel)m).getExternName().isEmpty()) {
+          if (((ImgButtonModel)m).getMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          snorm = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImgButtonModel) m).getExternName(), sMemory);
+          resources.add(snorm);
+        }
+        if (!((ImgButtonModel)m).getSelExternName().isEmpty()) {
+          if (((ImgButtonModel)m).getSelMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          sel = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImgButtonModel) m).getSelExternName(), sMemory);
+          resources.add(sel);
+        }
       }
     }
     // Sort the list in order then make another pass to remove dups.
@@ -2082,12 +2157,40 @@ private void outputAPI(String pageEnum, WidgetModel m) {
   private void outputAPI_ImgButton(String pageEnum, ImgButtonModel m) {
     List<String> template = null;
     List<String> outputLines = null;
-
     int n = commonAPI(pageEnum, m);
-    macro[n] = IMAGE_MACRO;
-    replacement[n++] = ((ImgButtonModel)m).getDefine();
-    macro[n] = IMAGE_SEL_MACRO;
-    replacement[n++] = ((ImgButtonModel)m).getSelDefine();
+    
+    // NOTE: at some point we need to check for SRAM
+    if (m.getDefine() != null && !m.getDefine().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getDefine();
+      macro[n] = IMAGE_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getExternName() != null && !m.getExternName().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getExternName();
+      macro[n] = IMAGE_SOURCE_MACRO;
+      if (m.getMemory().equals("PROGMEM")) 
+        replacement[n++] = SRC_PROG;
+      else 
+        replacement[n++] = SRC_RAM;
+    }
+    // NOTE: at some point we need to check for SRAM
+    if (m.getSelDefine() != null && !m.getSelDefine().isEmpty()) {
+      macro[n] = IMAGE_SEL_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getSelDefine();
+      macro[n] = IMAGE_SEL_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getSelExternName() != null && !m.getSelExternName().isEmpty()) {
+      macro[n] = IMAGE_SEL_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getSelExternName();
+      macro[n] = IMAGE_SEL_SOURCE_MACRO;
+      if (m.getSelMemory().equals("PROGMEM")) 
+        replacement[n++] = SRC_PROG;
+      else 
+        replacement[n++] = SRC_RAM;
+    }
     macro[n] = IMAGE_FORMAT_MACRO;
     replacement[n++] = ((ImgButtonModel)m).getImageFormat();
     macro[n] = null;
@@ -2137,11 +2240,32 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     List<String> outputLines = null;
 
     int n = commonAPI(pageEnum, m);
-    macro[n] = IMAGE_MACRO;
-    replacement[n++] = m.getDefine();
+    // NOTE: at some point we need to check for SRAM
+    if (m.getDefine() != null && !m.getDefine().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = m.getDefine();
+      macro[n] = IMAGE_FROM_MACRO;
+      replacement[n++] = FROM_SD;
+      macro[n] = IMAGE_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getExternName() != null && !m.getExternName().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = m.getExternName();
+      macro[n] = IMAGE_FROM_MACRO;
+      if (m.getMemory().equals("PROGMEM")) {
+        replacement[n++] = FROM_PROG;
+        macro[n] = IMAGE_SOURCE_MACRO;
+        replacement[n++] = SRC_PROG;
+      } else {
+        replacement[n++] = FROM_RAM;
+        macro[n] = IMAGE_SOURCE_MACRO;
+        replacement[n++] = SRC_RAM;
+      }
+    }
     macro[n] = IMAGE_FORMAT_MACRO;
     replacement[n++] = m.getImageFormat();
-    macro[8] = null;
+    macro[n] = null;
     template = loadTemplate(IMAGE_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);

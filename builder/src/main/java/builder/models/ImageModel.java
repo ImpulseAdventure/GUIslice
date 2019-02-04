@@ -33,9 +33,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.table.TableCellEditor;
 
 import builder.common.CommonUtil;
 import builder.common.EnumFactory;
+import builder.common.HexToImgConv;
 import builder.events.MsgBoard;
 import builder.events.MsgEvent;
 import builder.prefs.GeneralEditor;
@@ -49,31 +53,37 @@ public class ImageModel extends WidgetModel {
   private static final long serialVersionUID = 1L;
   
   /** The Constant PROP_IMAGE. */
-  static private final int PROP_IMAGE   =6;
+  static private final int PROP_IMAGE             = 6;
   
   /** The Constant PROP_DEFINE. */
-  static private final int PROP_DEFINE  =7;
+  static private final int PROP_DEFINE            = 7;
   
-  /** The Constant PROP_FORMAT. */
-  static private final int PROP_FORMAT  =8;
+  /** The Constant PROP_EXTERN. */
+  static private final int PROP_EXTERN            = 8;
+  
+  /** The Constant PROP_MEMORY PROGMEM or SRAM. */
+  static private final int PROP_MEMORY            = 9;
 
   /** The Constant PROP_FORMAT. */
-  static private final int PROP_TRANSPARENCY  =9;
+  static private final int PROP_FORMAT            = 10;
+
+  /** The Constant PROP_FORMAT. */
+  static private final int PROP_TRANSPARENCY      = 11;
 
   /** The Constant PROP_ELEMENTREF. */
-  static private final int PROP_ELEMENTREF        = 10;
+  static private final int PROP_ELEMENTREF        = 12;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    = 11;
+  static private final int PROP_DEFAULT_COLORS    = 13;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 12;
+  static private final int PROP_FRAME_COLOR       = 14;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 13;
+  static private final int PROP_FILL_COLOR        = 15;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    = 14;
+  static private final int PROP_SELECTED_COLOR    = 16;
 
   /** The general model. */
   private GeneralModel generalModel;
@@ -81,12 +91,19 @@ public class ImageModel extends WidgetModel {
   /** The image. */
   private BufferedImage image;
 
+  /** The cb memory. */
+  JComboBox<String> cbMemory;
+  
+  /** The align cell editor. */
+  DefaultCellEditor memoryCellEditor;
+
   /**
    * Instantiates a new image model.
    */
   public ImageModel() {
     generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
     initProperties();
+    initComboBoxes();
   }
   
   /**
@@ -95,7 +112,7 @@ public class ImageModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.IMAGE;
-    data = new Object[15][5];
+    data = new Object[17][5];
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
     initProp(PROP_ENUM, String.class, "COM-002", Boolean.FALSE,"ENUM",widgetType);
@@ -106,6 +123,8 @@ public class ImageModel extends WidgetModel {
 
     initProp(PROP_IMAGE, String.class, "IMG-100", Boolean.TRUE,"Image","");
     initProp(PROP_DEFINE, String.class, "IMG-101", Boolean.FALSE,"Image #defines","");
+    initProp(PROP_EXTERN, String.class, "IMG-108", Boolean.TRUE,"Image Extern","");
+    initProp(PROP_MEMORY, String.class, "IMG-109", Boolean.TRUE,"Image Memory","");
     initProp(PROP_FORMAT, String.class, "IMG-102", Boolean.TRUE,"Image Format","");
     initProp(PROP_TRANSPARENCY, Boolean.class, "IMG-107", Boolean.FALSE,"Transparent?",Boolean.FALSE);
 
@@ -115,6 +134,30 @@ public class ImageModel extends WidgetModel {
     initProp(PROP_FRAME_COLOR, Color.class, "COL-302", Boolean.TRUE,"Frame Color",Color.WHITE);
     initProp(PROP_FILL_COLOR, Color.class, "COL-303", Boolean.TRUE,"Fill Color",Color.WHITE);
     initProp(PROP_SELECTED_COLOR, Color.class, "COL-304", Boolean.TRUE,"Selected Color",Color.WHITE);
+  }
+
+  /**
+   * Initializes the comboboxes.
+   */
+  private void initComboBoxes()
+  {
+    cbMemory = new JComboBox<String>();
+    cbMemory.addItem("PROGMEM");
+    cbMemory.addItem("SRAM");
+    cbMemory.addItem("");
+    memoryCellEditor = new DefaultCellEditor(cbMemory);
+  }
+  
+  /**
+   * getEditorAt
+   *
+   * @see builder.models.WidgetModel#getEditorAt(int)
+   */
+  @Override
+  public TableCellEditor getEditorAt(int rowIndex) {
+    if (rowIndex == PROP_MEMORY)
+      return memoryCellEditor;
+    return null;
   }
 
   /**
@@ -165,6 +208,36 @@ public class ImageModel extends WidgetModel {
    */
   public String getElementRef() {
     return (String) data[PROP_ELEMENTREF][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Gets the extern name.
+   *
+   * @return the extern name
+   */
+  public String getExternName() {
+    return (String) data[PROP_EXTERN][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Sets the extern name.
+   *
+   * @param name
+   *          the new extern name
+   */
+  public void setExternName(String name) {
+    shortcutValue(name, PROP_EXTERN);
+//    data[PROP_MEMORY][PROP_VAL_READONLY]=Boolean.FALSE;
+    data[PROP_DEFINE][PROP_VAL_READONLY]=Boolean.TRUE;
+  }
+
+  /**
+   * Gets the memory type.
+   *
+   * @return the memory type
+   */
+  public String getMemory() {
+    return (String) data[PROP_MEMORY][PROP_VAL_VALUE];
   }
   
  /**
@@ -242,33 +315,44 @@ public class ImageModel extends WidgetModel {
    */
   public void setImage(File file, int x, int y) {
     image = null;
-    try {
-        image = ImageIO.read(file);
-    } catch(IOException e) {
-        System.out.println("read error: " + e.getMessage());
+    if (file.getName().toLowerCase().endsWith(".c")) {
+      HexToImgConv convert = new HexToImgConv();
+      image = convert.doConvert(file);
+      if (image != null) {
+        setImageFormat("GSLC_IMGREF_FMT_BMP24");
+        setExternName(convert.getExternName());
+        data[PROP_MEMORY][PROP_VAL_VALUE] = "PROGMEM";
+        setWidth(convert.getWidth());
+        setHeight(convert.getHeight());
+      }
+    } else {
+      try {
+          image = ImageIO.read(file);
+      } catch(IOException e) {
+          System.out.println("read error: " + e.getMessage());
+      }
+      setWidth(image.getWidth());
+      setHeight(image.getHeight());
+      if (image.getType() == BufferedImage.TYPE_3BYTE_BGR)
+        setImageFormat("GSLC_IMGREF_FMT_BMP24");
+      else if (image.getType() == BufferedImage.TYPE_USHORT_555_RGB) 
+        setImageFormat("GSLC_IMGREF_FMT_BMP16");
+      else
+        setImageFormat("GSLC_IMGREF_FMT_RAW1");
+      // now construct a #define to use during code generation
+      String fileName = file.getName();
+      int n = fileName.indexOf(".bmp");
+      if (n > 0) {
+        String tmp = fileName.substring(0,n);
+        fileName = tmp.toUpperCase();
+      }
+      // remove all special characters
+      fileName = fileName.replaceAll("\\W", ""); 
+      fileName = "IMG_" + fileName;
+      setDefine(fileName);
+      fileName = file.getName();
+      setImageName(fileName);
     }
-    setWidth(image.getWidth());
-    setHeight(image.getHeight());
-    if (image.getType() == BufferedImage.TYPE_3BYTE_BGR)
-      setImageFormat("GSLC_IMGREF_FMT_BMP24");
-    else if (image.getType() == BufferedImage.TYPE_USHORT_555_RGB) 
-      setImageFormat("GSLC_IMGREF_FMT_BMP16");
-    else
-      setImageFormat("GSLC_IMGREF_FMT_RAW1");
-    // now construct a #define to use during code generation
-    String fileName = file.getName();
-    int n = fileName.indexOf(".bmp");
-    if (n > 0) {
-      String tmp = fileName.substring(0,n);
-      fileName = tmp.toUpperCase();
-    }
-    // remove all special characters
-    fileName = fileName.replaceAll("\\W", ""); 
-    fileName = "IMG_" + fileName;
-    setDefine(fileName);
-    // do we need to add a relative path for code generation?
-    fileName = file.getName();
-    setImageName(fileName);
   }
  
   /**
@@ -361,6 +445,10 @@ public class ImageModel extends WidgetModel {
     super.readModel(in,  widgetType);
     String imageString = (String) in.readObject();
     image = CommonUtil.getInstance().decodeToImage(imageString);
+    if (getExternName() != null && !getExternName().isEmpty()) {
+//      data[PROP_MEMORY][PROP_VAL_READONLY]=Boolean.FALSE;
+      data[PROP_DEFINE][PROP_VAL_READONLY]=Boolean.TRUE;
+    }
     if (useDefaultColors()) {
       data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
       data[PROP_FILL_COLOR][PROP_VAL_READONLY]=Boolean.TRUE;

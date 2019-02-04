@@ -33,9 +33,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.table.TableCellEditor;
 
 import builder.common.CommonUtil;
 import builder.common.EnumFactory;
+import builder.common.HexToImgConv;
 import builder.events.MsgBoard;
 import builder.events.MsgEvent;
 import builder.prefs.GeneralEditor;
@@ -63,32 +67,44 @@ public class ImgButtonModel extends WidgetModel {
   /** The Constant PROP_DEFINE_SEL. */
   static private final int PROP_DEFINE_SEL   =9;
   
+  /** The Constant PROP_EXTERN. */
+  static private final int PROP_EXTERN       =10;
+  
+  /** The Constant PROP_MEMORY PROGMEM or SRAM. */
+  static private final int PROP_MEMORY       =11;
+
+  /** The Constant PROP_EXTERN_SEL. */
+  static private final int PROP_EXTERN_SEL   =12;
+  
+  /** The Constant PROP_MEMORY_SEL PROGMEM or SRAM. */
+  static private final int PROP_MEMORY_SEL   =13;
+
   /** The Constant PROP_FORMAT. */
-  static private final int PROP_FORMAT       =10;
+  static private final int PROP_FORMAT       =14;
   
   /** The Constant PROP_FORMAT. */
-  static private final int PROP_TRANSPARENCY =11;
+  static private final int PROP_TRANSPARENCY =15;
 
   /** The Constant PROP_CHANGE_PAGE. */
-  static private final int PROP_CHANGE_PAGE  =12;
+  static private final int PROP_CHANGE_PAGE  =16;
   
   /** The Constant PROP_PAGE. */
-  static private final int PROP_PAGE         =13;
+  static private final int PROP_PAGE         =17;
   
   /** The Constant PROP_ELEMENTREF. */
-  static private final int PROP_ELEMENTREF        = 14;
+  static private final int PROP_ELEMENTREF   =18;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    = 15;
+  static private final int PROP_DEFAULT_COLORS    = 19;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 16;
+  static private final int PROP_FRAME_COLOR       = 20;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 17;
+  static private final int PROP_FILL_COLOR        = 21;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    = 18;
+  static private final int PROP_SELECTED_COLOR    = 22;
 
 
   /** The general model. */
@@ -100,12 +116,19 @@ public class ImgButtonModel extends WidgetModel {
   /** The image selected. */
   private BufferedImage imageSelected;
   
+  /** The cb memory. */
+  JComboBox<String> cbMemory;
+  
+  /** The align cell editor. */
+  DefaultCellEditor memoryCellEditor;
+
   /**
    * Instantiates a new img button model.
    */
   public ImgButtonModel() {
     generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
     initProperties();
+    initComboBoxes();
   }
   
   /**
@@ -114,7 +137,7 @@ public class ImgButtonModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.IMAGEBUTTON;
-    data = new Object[19][5];
+    data = new Object[23][5];
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
     initProp(PROP_ENUM, String.class, "COM-002", Boolean.FALSE,"ENUM",widgetType);
@@ -127,6 +150,10 @@ public class ImgButtonModel extends WidgetModel {
     initProp(PROP_IMAGE_SEL, String.class, "IBTN-101", Boolean.TRUE,"Image When Selected","");
     initProp(PROP_DEFINE, String.class, "IBTN-102", Boolean.FALSE,"Image #defines","");
     initProp(PROP_DEFINE_SEL, String.class, "IBTN-103", Boolean.FALSE,"Select Image #defines","");
+    initProp(PROP_EXTERN, String.class, "IBTN-108", Boolean.TRUE,"Image Extern","");
+    initProp(PROP_MEMORY, String.class, "IBTN-110", Boolean.TRUE,"Image Memory","");
+    initProp(PROP_EXTERN_SEL, String.class, "IBTN-109", Boolean.TRUE,"Select Image Extern","");
+    initProp(PROP_MEMORY_SEL, String.class, "IBTN-111", Boolean.TRUE,"Select Image Memory","");
     initProp(PROP_FORMAT, String.class, "IBTN-104", Boolean.TRUE,"Image Format","");
     initProp(PROP_TRANSPARENCY, Boolean.class, "IBTN-107", Boolean.FALSE,"Transparent?",Boolean.FALSE);
     initProp(PROP_CHANGE_PAGE, Boolean.class, "IBTN-105", Boolean.FALSE,"Change Page Funct?",Boolean.FALSE);
@@ -141,12 +168,96 @@ public class ImgButtonModel extends WidgetModel {
   }
 
   /**
+   * Initializes the comboboxes.
+   */
+  private void initComboBoxes()
+  {
+    cbMemory = new JComboBox<String>();
+    cbMemory.addItem("PROGMEM");
+    cbMemory.addItem("SRAM");
+    cbMemory.addItem("");
+    memoryCellEditor = new DefaultCellEditor(cbMemory);
+  }
+  
+  /**
+   * getEditorAt
+   *
+   * @see builder.models.WidgetModel#getEditorAt(int)
+   */
+  @Override
+  public TableCellEditor getEditorAt(int rowIndex) {
+    if (rowIndex == PROP_MEMORY)
+      return memoryCellEditor;
+    return null;
+  }
+
+  /**
    * Gets the element ref.
    *
    * @return the element ref
    */
   public String getElementRef() {
     return (String) data[PROP_ELEMENTREF][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Gets the extern name.
+   *
+   * @return the extern name
+   */
+  public String getExternName() {
+    return (String) data[PROP_EXTERN][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Sets the extern name.
+   *
+   * @param name
+   *          the new extern name
+   */
+  public void setExternName(String name) {
+    shortcutValue(name, PROP_EXTERN);
+//    data[PROP_MEMORY][PROP_VAL_READONLY]=Boolean.FALSE;
+    data[PROP_DEFINE][PROP_VAL_READONLY]=Boolean.TRUE;
+  }
+
+  /**
+   * Gets the select extern name.
+   *
+   * @return the select extern name
+   */
+  public String getSelExternName() {
+    return (String) data[PROP_EXTERN_SEL][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Sets the select extern name.
+   *
+   * @param name
+   *          the new select extern name
+   */
+  public void setSelExternName(String name) {
+    shortcutValue(name, PROP_EXTERN_SEL);
+//    data[PROP_MEMORY_SEL][PROP_VAL_READONLY]=Boolean.FALSE;
+    data[PROP_DEFINE_SEL][PROP_VAL_READONLY]=Boolean.TRUE;
+  }
+
+  /**
+   * Gets the memory type.
+   *
+   * @return the memory type
+   */
+  public String getMemory() {
+    return (String) data[PROP_MEMORY][PROP_VAL_VALUE];
+  }
+  
+  /**
+   * Gets the memory type.
+   *
+   * @return the memory type
+   */
+  public String getSelMemory() {
+    return (String) data[PROP_MEMORY_SEL][PROP_VAL_VALUE];
   }
   
   /**
@@ -257,6 +368,9 @@ public class ImgButtonModel extends WidgetModel {
       }
       fireTableCellUpdated(PROP_PAGE, COLUMN_VALUE);
     }
+    if (row == PROP_CHANGE_PAGE) {
+      
+    }
     if (row == PROP_DEFAULT_COLORS) {
       // check for switching back and forth
       if (useDefaultColors()) {
@@ -322,32 +436,44 @@ public class ImgButtonModel extends WidgetModel {
    */
   public void setImage(File file, int x, int y) {
     image = null;
-    try {
-        image = ImageIO.read(file);
-    } catch(IOException e) {
-        System.out.println("read error: " + e.getMessage());
+    if (file.getName().toLowerCase().endsWith(".c")) {
+      HexToImgConv convert = new HexToImgConv();
+      image = convert.doConvert(file);
+      if (image != null) {
+        setImageFormat("GSLC_IMGREF_FMT_BMP24");
+        setExternName(convert.getExternName());
+        data[PROP_MEMORY][PROP_VAL_VALUE] = "PROGMEM";
+        setWidth(convert.getWidth());
+        setHeight(convert.getHeight());
+      }
+    } else {
+      try {
+          image = ImageIO.read(file);
+      } catch(IOException e) {
+          System.out.println("read error: " + e.getMessage());
+      }
+      setWidth(image.getWidth());
+      setHeight(image.getHeight());
+      if (image.getType() == BufferedImage.TYPE_3BYTE_BGR)
+        setImageFormat("GSLC_IMGREF_FMT_BMP24");
+      else if (image.getType() == BufferedImage.TYPE_USHORT_555_RGB) 
+        setImageFormat("GSLC_IMGREF_FMT_BMP16");
+      else
+        setImageFormat("GSLC_IMGREF_FMT_RAW1");
+      // now construct a #define to use during code generation
+      String fileName = file.getName();
+      int n = fileName.indexOf(".bmp");
+      if (n > 0) {
+        String tmp = fileName.substring(0,n);
+        fileName = tmp.toUpperCase();
+      }
+      // remove all special characters
+      fileName = fileName.replaceAll("\\W", ""); 
+      fileName = "IMG_" + fileName;
+      setDefine(fileName);
+      fileName = file.getName();
+      setImageName(fileName);
     }
-    setWidth(image.getWidth());
-    setHeight(image.getHeight());
-    if (image.getType() == BufferedImage.TYPE_3BYTE_BGR)
-      setImageFormat("GSLC_IMGREF_FMT_BMP24");
-    else if (image.getType() == BufferedImage.TYPE_USHORT_555_RGB) 
-      setImageFormat("GSLC_IMGREF_FMT_BMP16");
-    else
-      setImageFormat("GSLC_IMGREF_FMT_RAW1");
-    // now construct a #define to use during code generation
-    String fileName = file.getName();
-    int n = fileName.indexOf(".bmp");
-    if (n > 0) {
-      String tmp = fileName.substring(0,n);
-      fileName = tmp.toUpperCase();
-    }
-    // remove all special characters
-    fileName = fileName.replaceAll("\\W", ""); 
-    fileName = "IMG_" + fileName;
-    setDefine(fileName);
-    fileName = file.getName();
-    setImageName(fileName);
   }
 
   /**
@@ -367,24 +493,35 @@ public class ImgButtonModel extends WidgetModel {
    */
   public void setImageSelected(File file) {
     imageSelected = null;
-    try {
-      imageSelected = ImageIO.read(file);
-    } catch(IOException e) {
-        System.out.println("read error: " + e.getMessage());
+    if (file.getName().toLowerCase().endsWith(".c")) {
+      HexToImgConv convert = new HexToImgConv();
+      imageSelected = convert.doConvert(file);
+      if (imageSelected != null) {
+        setSelExternName(convert.getExternName());
+        data[PROP_MEMORY_SEL][PROP_VAL_VALUE] = "PROGMEM";
+        setWidth(convert.getWidth());
+        setHeight(convert.getHeight());
+      }
+    } else {
+      try {
+        imageSelected = ImageIO.read(file);
+      } catch(IOException e) {
+          System.out.println("read error: " + e.getMessage());
+      }
+      String fileName = file.getName();
+      // now construct a #define to use during code generation
+      int n = fileName.indexOf(".bmp");
+      if (n > 0) {
+        String tmp = fileName.substring(0,n);
+        fileName = tmp.toUpperCase();
+      }
+      // remove all special characters
+      fileName = fileName.replaceAll("\\W", ""); 
+      fileName = "IMG_BTN_" + fileName + "_SEL";
+      setSelDefine(fileName);
+      fileName = file.getName();
+      setImageSelectedName(fileName);
     }
-    String fileName = file.getName();
-    // now construct a #define to use during code generation
-    int n = fileName.indexOf(".bmp");
-    if (n > 0) {
-      String tmp = fileName.substring(0,n);
-      fileName = tmp.toUpperCase();
-    }
-    // remove all special characters
-    fileName = fileName.replaceAll("\\W", ""); 
-    fileName = "IMG_BTN_" + fileName + "_SEL";
-    setSelDefine(fileName);
-    fileName = file.getName();
-    setImageSelectedName(fileName);
   }
 
   /**
@@ -495,6 +632,14 @@ public class ImgButtonModel extends WidgetModel {
       data[PROP_PAGE][PROP_VAL_READONLY]=Boolean.FALSE;
     } else {
       data[PROP_PAGE][PROP_VAL_READONLY]=Boolean.TRUE;
+    }
+    if (getExternName() != null && !getExternName().isEmpty()) {
+//      data[PROP_MEMORY][PROP_VAL_READONLY]=Boolean.FALSE;
+      data[PROP_DEFINE][PROP_VAL_READONLY]=Boolean.TRUE;
+    }
+    if (getSelExternName() != null && !getSelExternName().isEmpty()) {
+//      data[PROP_MEMORY_SEL][PROP_VAL_READONLY]=Boolean.FALSE;
+      data[PROP_DEFINE_SEL][PROP_VAL_READONLY]=Boolean.TRUE;
     }
     if (useDefaultColors()) {
       data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 

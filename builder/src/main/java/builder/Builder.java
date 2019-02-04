@@ -216,9 +216,9 @@ public class Builder  extends JDesktopPane {
               String title = "Confirm Dialog";
               String message = "You're about to quit the application -- are you sure?";
               int answer = JOptionPane.showConfirmDialog(null,message,title, JOptionPane.YES_NO_OPTION); 
-              if(answer == JOptionPane.YES_OPTION)
-                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-              else
+              if(answer == JOptionPane.YES_OPTION) {
+                System.exit(0);
+              } else
                 frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             }
           });
