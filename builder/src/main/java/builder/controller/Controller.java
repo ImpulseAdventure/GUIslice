@@ -58,6 +58,7 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
@@ -192,7 +193,9 @@ public class Controller extends JInternalFrame
     MsgBoard.getInstance().subscribe(this);
     layout = new CardLayout();
     cards = new JPanel(layout);
-    this.add(cards);
+    JScrollPane scrollPane = new JScrollPane(cards);
+    
+    this.add(scrollPane);
     this.setTitle(title); 
     createFirstPage();
     this.setVisible(true);
@@ -853,28 +856,9 @@ public class Controller extends JInternalFrame
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
+    return new Dimension(1200,1200);
   }
 
-  /**
-   * getMaximumSize
-   *
-   * @see javax.swing.JComponent#getMaximumSize()
-   */
-  @Override
-  public Dimension getMaximumSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
-  }
-
-  /**
-   * getMinimumSize
-   *
-   * @see javax.swing.JComponent#getMinimumSize()
-   */
-  @Override
-  public Dimension  getMinimumSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
-  }
 
   /**
    * updateEvent
@@ -1322,15 +1306,26 @@ public class Controller extends JInternalFrame
           generalEditor.getHeight() != displayHeight) {
         displayWidth = generalEditor.getWidth();
         displayHeight = generalEditor.getHeight();
-        getPanel().setPreferredSize(new Dimension(displayWidth, displayHeight));
+//        getPanel().setPreferredSize(new Dimension(displayWidth, displayHeight));
         int width = Math.max(displayWidth + 600, 700);
         int height = Math.max(displayHeight + 40, 700);
         Dimension d = new Dimension(width, height);
         topFrame.setPreferredSize(d);
         topFrame.setMaximumSize(d);
         topFrame.setMinimumSize(d);
+        Builder.CANVAS_WIDTH = GeneralEditor.getInstance().getWidth()+205;
+        Builder.CANVAS_HEIGHT = GeneralEditor.getInstance().getHeight()+235;
+        Dimension canvasSz = new Dimension(Builder.CANVAS_WIDTH, Builder.CANVAS_HEIGHT);
+        CommonUtil.getInstance().setWinOffsets(canvasSz,
+            GeneralEditor.getInstance().getWidth(),
+            GeneralEditor.getInstance().getHeight());
+
         topFrame.revalidate();
-        CommonUtil.getInstance().setWinOffsets(getPanel().getSize(), displayWidth, displayHeight);
+        MsgEvent ev = new MsgEvent();
+        ev.message ="";
+        ev.parent = "";
+        ev.code = MsgEvent.CANVAS_MODEL_CHANGE;
+        MsgBoard.getInstance().publish(ev);
         topFrame.repaint();
       }
       refreshView();  // refresh view no matter what changed.
