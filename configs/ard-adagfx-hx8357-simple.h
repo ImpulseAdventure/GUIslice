@@ -114,9 +114,6 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // - Note that changing this value may require a change
-  //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
-  //   orientation matches the display.
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
@@ -134,11 +131,9 @@ extern "C" {
 
   // Calibration for resistive touch displays
   // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
+  // - Run /examples/diag_ard_touch_calib.ino to determine these values
+
+
   #define ADATOUCH_X_MIN    100
   #define ADATOUCH_Y_MIN    150
   #define ADATOUCH_X_MAX    900
