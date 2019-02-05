@@ -1545,8 +1545,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-        defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS)
+    #if defined(DRV_TOUCH_TYPE_RES)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
@@ -1570,7 +1569,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif
+    #endif  // DRV_TOUCH_TYPE_RES
 	
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
