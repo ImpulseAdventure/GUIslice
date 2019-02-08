@@ -89,7 +89,7 @@ extern "C" {
   // - Hardware SPI: the following definitions are unused
   // - Software SPI: the following pins need to be defined
   #define ADAGFX_PIN_MOSI     23
-  #define ADAGFX_PIN_MISO     112
+  #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      18
 
 
