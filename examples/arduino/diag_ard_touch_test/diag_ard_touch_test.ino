@@ -30,6 +30,7 @@
   // Import MCUFRIEND to support ID reporting
   #include <MCUFRIEND_kbv.h>
   extern MCUFRIEND_kbv m_disp;
+  int16_t m_nMcuFriendId = -1;
 #endif
 
 
@@ -106,6 +107,7 @@ gslc_tsRect m_rLblStatus = (gslc_tsRect) { 30, 20, 110, 10 };
 gslc_tsRect m_rCurStatus = (gslc_tsRect) { 100, 20, 120, 10 };
 
 gslc_tsRect m_rReport = (gslc_tsRect) { 40, 60, 140, 10 };
+gslc_tsRect m_rMessage = (gslc_tsRect) { 20, 160, 140, 10 };
 
 
 // Instantiate the GUI
@@ -149,6 +151,10 @@ void DrawPageCoords()
   gslc_DrvDrawTxt(&m_gui, m_rLblZ.x, m_rLblZ.y, m_pFont, "Z:", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
 }
 
+void DrawPageConfirm()
+{
+  gslc_DrvDrawTxt(&m_gui, m_rMessage.x, m_rMessage.y, m_pFont, "Confirm red dots match touches", GSLC_TXT_DEFAULT, GSLC_COL_ORANGE, GSLC_COL_BLACK);
+}
 
 void RedrawStatus(const char* pStatus)
 {
@@ -244,6 +250,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     // Reset the background
     DrawBackground();
     DrawPageCoords();
+    DrawPageConfirm();
 
     snprintf(m_acTxt, MAX_STR, "Test Rotate=%u", m_gui.nRotation);
     RedrawStatus(m_acTxt);
@@ -308,6 +315,11 @@ void setup()
   if (!gslc_FontAdd(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, NULL, 1)) { return; }
   m_pFont = gslc_FontGet(&m_gui, E_FONT_TXT);
 
+  #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    // For MCUFRIEND displays, detect the ID
+    m_nMcuFriendId = m_disp.readID();
+  #endif // DRV_DISP_ADAGFX_MCUFRIEND
+
   // Force orientation to native rotation for calibration purposes
   gslc_GuiRotate(&m_gui, 0);
 
@@ -324,6 +336,13 @@ void setup()
     m_nTouchCalYMax = ADATOUCH_Y_MAX;
     GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
       ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+
+    #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
+      // For MCUFRIEND displays, report the ID
+      snprintf(m_acTxt, MAX_STR, "- MCUFRIEND ID=0x%04X", m_nMcuFriendId);
+      GSLC_DEBUG_PRINT("%s ", m_acTxt);
+    #endif
+
   #endif // DRV_TOUCH_TYPE_RES
   GSLC_DEBUG_PRINT("\n", "");
 }
