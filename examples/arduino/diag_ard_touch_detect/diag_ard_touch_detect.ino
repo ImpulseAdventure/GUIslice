@@ -57,6 +57,7 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 
 char m_acTxt[MAX_STR];
 gslc_tsRect m_rStatus = (gslc_tsRect) { 40, 60, 50, 10 };
+gslc_tsRect m_rReport = (gslc_tsRect) { 40, 80, 140, 10 };
 gslc_tsFont* m_pFont = NULL;
 
 #define MAX_FONT                1
@@ -74,6 +75,7 @@ void DrawBackground()
 
   // Status
   gslc_DrvDrawTxt(&m_gui, m_rStatus.x, m_rStatus.y, m_pFont, "Detecing Pins", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y, m_pFont, "See Serial Monitor output...", GSLC_TXT_DEFAULT, GSLC_COL_GREEN, GSLC_COL_BLACK);
 }
 
 bool DetectPins()
@@ -84,6 +86,12 @@ bool DetectPins()
   int nPinYm = -1;
 
   int i, j, value, Apins[2], Dpins[2], Values[2], found = 0;
+  int nMcuFriendId = -1;
+
+  #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    // For MCUFRIEND displays, detect the ID
+    nMcuFriendId = m_disp.readID();
+  #endif // DRV_DISP_ADAGFX_MCUFRIEND
 
   GSLC_DEBUG_PRINT("Making all control and bus pins INPUT_PULLUP\n", "");
   GSLC_DEBUG_PRINT("Typical 30k Analog pullup with corresponding pin\n", "");
@@ -140,7 +148,7 @@ bool DetectPins()
     GSLC_DEBUG_PRINT("  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen\n", "");
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
       // For MCUFRIEND displays, report the ID
-      snprintf(m_acTxt, MAX_STR, "(MCUFRIEND ID=0x%04X)", m_disp.readID());
+      snprintf(m_acTxt, MAX_STR, "(MCUFRIEND ID=0x%04X)", nMcuFriendId);
       GSLC_DEBUG_PRINT("  // %s\n", m_acTxt);
     #endif
     GSLC_DEBUG_PRINT("  #define ADATOUCH_PIN_YP   A%d    // \"Y+\": Must be an analog pin\n", (nPinYp - A0));
