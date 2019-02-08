@@ -139,11 +139,12 @@ bool DetectPins()
       nPinYm = Dpins[1];
     }
     GSLC_DEBUG_PRINT("Final detection: YP=A%u XM=A%u YM=%u XP=%u\n", (nPinYp - A0), (nPinXm - A0), nPinYm, nPinXp);
+    GSLC_DEBUG_PRINT("\n\n", "");
 
 
     GSLC_DEBUG_PRINT("-----------------------------------------------\n", "");
     GSLC_DEBUG_PRINT("Recommended config settings:\n", "");
-    GSLC_DEBUG_PRINT("- Please copy these values over any existing ADATOUCH_PIN_* settings in your config.\n\n", "");
+    GSLC_DEBUG_PRINT("- Please copy these values over any existing ADATOUCH_PIN_* settings in your config (SECTION 4A).\n\n", "");
 
     GSLC_DEBUG_PRINT("  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen\n", "");
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
@@ -161,7 +162,7 @@ bool DetectPins()
     GSLC_DEBUG_PRINT("- YP=A%u XM=A%u YM=%u XP=%u\n",
       (ADATOUCH_PIN_YP - A0), (ADATOUCH_PIN_XM - A0), ADATOUCH_PIN_YM, ADATOUCH_PIN_XP);
     GSLC_DEBUG_PRINT("-----------------------------------------------\n", "");
-    GSLC_DEBUG_PRINT("Current config match recommendation?: ", "");
+    GSLC_DEBUG_PRINT("Current config match recommendation? ", "");
     // Check pins for a match
     if ((nPinXm != ADATOUCH_PIN_XM) || (nPinXp != ADATOUCH_PIN_XP) || \
       (nPinYp != ADATOUCH_PIN_YP) || (nPinYm != ADATOUCH_PIN_YM))
