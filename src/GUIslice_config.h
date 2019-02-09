@@ -79,6 +79,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-st7735-notouch.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
   //#include "../configs/ard-shld-mcufriend_4wire.h"
+  //#include "../configs/ard-shld-mcufriend_xpt2046.h"
 
   // ESP-8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
