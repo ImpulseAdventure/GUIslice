@@ -31,8 +31,8 @@
   #error "Only DRV_TOUCH_ADA_SIMPLE supports pin detection"
 #endif
 
-#if defined(__arm__) || defined(ESP32)
-#error "Pin detection not supported on ARM or ESP32 platforms"
+#if defined(__arm__) || defined(ESP32) || defined(ESP8266)
+#error "Pin detection not supported on ARM or ESP platforms"
 #endif
 
 
