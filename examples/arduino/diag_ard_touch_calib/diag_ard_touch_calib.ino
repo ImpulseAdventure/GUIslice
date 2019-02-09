@@ -97,6 +97,17 @@ typedef enum {
 } teState;
 teState m_eState = STATE_CAL_START_MSG;
 
+typedef enum {
+  DEBOUNCE_UNDEF = 0,
+  DEBOUNCE_UP,
+  DEBOUNCE_UP2DOWN,
+  DEBOUNCE_DOWN,
+  DEBOUNCE_DOWN2UP,
+} teDebounce;
+teDebounce m_eDebounce = DEBOUNCE_UP;
+
+#define DEBOUNCE_DELAY 50 // Delay (in ms) for debouncing touch events
+
 // ------------------------------------------------------------
 // CALIB:
 // ------------------------------------------------------------
@@ -754,6 +765,58 @@ void CalcMaxCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
   m_nTouchZMax = (nTouchZ > m_nTouchZMax) ? nTouchZ : m_nTouchZMax;
 }
 
+// Take raw input down / up events and update with debounced versions
+void DoDebounce(bool bRawDown, bool bRawUp, bool &bFiltDown, bool &bFiltUp)
+{
+  static uint32_t nTmStart = 0; // Timestamp of last transition event
+  bool bHeld = (millis() - nTmStart) > DEBOUNCE_DELAY;
+
+  switch (m_eDebounce) {
+  case DEBOUNCE_UP:
+    if (bRawDown) {
+      nTmStart = millis(); // Latch timestamp for start of transition
+      m_eDebounce = DEBOUNCE_UP2DOWN;
+    } else if (bRawUp) {
+      // Don't provide any touch events while continuing to be up
+    }
+    break;
+  case DEBOUNCE_UP2DOWN:
+    if (bRawUp) {
+      m_eDebounce = DEBOUNCE_UP;
+      #ifdef DBG_TOUCH
+      GSLC_DEBUG_PRINT("DBG: Touch bounce (up-down-up) detected\n", "");
+      #endif
+    } else if (bHeld) {
+      m_eDebounce = DEBOUNCE_DOWN; // Transition confirmed
+      bFiltDown = true;
+    }
+    break;
+  case DEBOUNCE_DOWN:
+    if (bRawUp) {
+      m_eDebounce = DEBOUNCE_DOWN2UP;
+      nTmStart = millis(); // Latch timestamp for start of transition
+    } else if (bRawDown) {
+      // Provide continuous touch events while continuing to be down
+      bFiltDown = true;
+    }
+    break;
+  case DEBOUNCE_DOWN2UP:
+    if (bRawDown) {
+      m_eDebounce = DEBOUNCE_DOWN;
+      #ifdef DBG_TOUCH
+      GSLC_DEBUG_PRINT("DBG: Touch bounce (down-up-down) detected\n", "");
+      #endif
+    } else if (bHeld) {
+      m_eDebounce = DEBOUNCE_UP; // Transition confirmed
+      bFiltUp = true;
+      nTmStart = millis(); // Latch timestamp for start of transition
+    }
+    break;
+  default:
+    break;
+  }
+
+}
 
 // Implement State Machine
 void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
@@ -1050,12 +1113,14 @@ void loop()
   // Detect transition events
   bool bTouchDown = (bTouchEvent && (nTouchZ > 0));
   bool bTouchUp = (bTouchEvent && (nTouchZ == 0));
+  bool bFiltDown = false;
+  bool bFiltUp = false;
+
+  // Perform debouncing
+  DoDebounce(bTouchDown, bTouchUp, bFiltDown, bFiltUp);
 
   // Step through the FSM
-  DoFsm(bTouchDown, bTouchUp, nTouchX, nTouchY, nTouchZ);
-
-  // Slow down updates 
-  delay(10);
+  DoFsm(bFiltDown, bFiltUp, nTouchX, nTouchY, nTouchZ);
 
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
