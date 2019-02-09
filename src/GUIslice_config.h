@@ -62,6 +62,12 @@ extern "C" {
 
   // Arduino, ARM SAMD, Cortex M0/M4, nRF52:
   // ------------------------------------------------------
+  //#include "../configs/ard-shld-adafruit_28_res.h"
+  //#include "../configs/ard-shld-mcufriend.h"
+  //#include "../configs/ard-shld-mcufriend_4wire.h"
+  //#include "../configs/ard-shld-mcufriend_xpt2046.h"
+  //#include "../configs/ard-shld-waveshare_28_touch.h"
+  //#include "../configs/ard-adagfx-hx8347-xpt2046.h"
   //#include "../configs/ard-adagfx-hx8357-ft6206.h"
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
   //#include "../configs/ard-adagfx-hx8357-simple.h"
@@ -71,15 +77,13 @@ extern "C" {
   //#include "../configs/ard-adagfx-ili9341-notouch.h"
   //#include "../configs/ard-adagfx-ili9341-simple.h"
   //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
+  //#include "../configs/ard-adagfx-ili9341-xpt2046.h"
   //#include "../configs/ard-adagfx-mcufriend-notouch.h"
   //#include "../configs/ard-adagfx-mcufriend-simple.h"
   //#include "../configs/ard-adagfx-pcd8544-notouch.h"
   //#include "../configs/ard-adagfx-shld-tft18v2.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
-  //#include "../configs/ard-shld-adafruit_28_res.h"
-  //#include "../configs/ard-shld-mcufriend_4wire.h"
-  //#include "../configs/ard-shld-mcufriend_xpt2046.h"
 
   // ESP-8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
