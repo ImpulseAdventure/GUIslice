@@ -148,8 +148,8 @@ task packageWinDistrib(type: Zip) {
   dependsOn buildWinInstall
   group = "build"
   description = "windows package distribution"
-  from "${buildDir}/innosetup/builder-" + "win64-" + version + ".exe"
-  archiveName = "builder-" + "win64-" + version + ".zip"
+  from "${buildDir}/innosetup/builder-" + "win-" + version + ".exe"
+  archiveName = "builder-" + "win-" + version + ".zip"
   destinationDir = file("${buildDir}/disp")
 }
 
@@ -166,7 +166,7 @@ task packageLinuxDistrib(type: Tar) {
    include ("**/*.sh")
    fileMode 0755
   }
-  baseName = "builder-" + "linux64"
+  baseName = "builder-" + "linux"
   destinationDir = file("${buildDir}/disp")
   extension = "tar.gz"
   compression = Compression.GZIP  
