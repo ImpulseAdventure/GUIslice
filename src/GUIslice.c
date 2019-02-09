@@ -90,6 +90,16 @@ char* gslc_GetVer(gslc_tsGui* pGui)
   return (char*)GUISLICE_VER;
 }
 
+const char* gslc_GetNameDisp()
+{
+  return gslc_DrvGetNameDisp();
+}
+
+const char* gslc_GetNameTouch()
+{
+  return gslc_DrvGetNameTouch();
+}
+
 
 
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
@@ -106,16 +116,34 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
   // Initialize state
+  pGui->nDisp0W         = 0;
+  pGui->nDisp0H         = 0;
   pGui->nDispW          = 0;
   pGui->nDispH          = 0;
   pGui->nDispDepth      = 0;
 
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
+
+    // Assign default orientation
     pGui->nRotation     = GSLC_ROTATE;
-    pGui->nSwapXY       = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE);
-    pGui->nFlipX        = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE);
-    pGui->nFlipY        = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE);
+
+    #if !defined(DRV_TOUCH_NONE)
+      // Assign arbitrary defaults
+      // These will be overwritten during DrvInit()
+      pGui->nSwapXY = 0;
+      pGui->nFlipX = 0;
+      pGui->nFlipY = 0;
+      pGui->nTouchCalXMin = 100;
+      pGui->nTouchCalXMax = 100;
+      pGui->nTouchCalYMin = 1000;
+      pGui->nTouchCalYMax = 1000;
+    #endif // !DRV_TOUCH_NONE
+
   #endif
+
+  // Default to remapping enabled
+  pGui->bTouchRemapEn = true;
+
 
   pGui->nPageMax        = nMaxPage;
   pGui->nPageCnt        = 0;
@@ -171,10 +199,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
     bOk &= gslc_DrvInit(pGui);
     if (bOk) {
       #if !defined(INIT_MSG_DISABLE)
-      GSLC_DEBUG_PRINT("- Initialized display handler OK\n", "");
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] OK\n", gslc_GetNameDisp());
       #endif
     } else {
-      GSLC_DEBUG_PRINT("- Initialized display handler FAIL\n", "");
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] FAIL\n", gslc_GetNameDisp());
     }
   }
   #if defined(DRV_TOUCH_NONE)
@@ -189,11 +217,11 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
         #if !defined(INIT_MSG_DISABLE)
-        GSLC_DEBUG_PRINT("- Initialized touch handler OK\n", "");
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch());
         #endif
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
-        GSLC_DEBUG_PRINT("- Initialized touch handler FAIL\n", "");
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] FAIL\n", gslc_GetNameTouch());
         pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
       }
     }
@@ -3425,6 +3453,30 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,
   return false;
 }
 
+
+void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->bTouchRemapEn = bEn;
+}
+
+void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint16_t nYMin, uint16_t nYMax)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapCal";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->nTouchCalXMin = nXMin;
+  pGui->nTouchCalXMax = nXMax;
+  pGui->nTouchCalYMin = nYMin;
+  pGui->nTouchCalYMax = nYMax;
+}
+
 #endif // !DRV_TOUCH_NONE
 
 // ------------------------------------------------------------------------
@@ -3806,14 +3858,7 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
   // Simple wrapper for driver-specific rotation
-
-  // TODO: For now, only DRV_DISP_ADAGFX supports dynamic rotation.
-  #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
-    return gslc_DrvRotate(pGui,nRotation);
-  #else
-    GSLC_DEBUG_PRINT("ERROR: GuiRotate(%s) not supported in current DRV_DISP_* mode yet\n","");
-    return false;
-  #endif
+  return gslc_DrvRotate(pGui,nRotation);
 }
 
 // Trigger a touch event on an element

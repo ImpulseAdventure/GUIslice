@@ -69,6 +69,12 @@
   #elif defined(DRV_DISP_ADAGFX_ST7735)
     #include <Adafruit_ST7735.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_HX8347)
+    #include <HX8347D_kbv.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8357)
     #include <Adafruit_HX8357.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
@@ -116,8 +122,12 @@
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   #include <stdint.h>
   #include <TouchScreen.h>
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  // NOTE: This file is located in the Arduino_STM32 library:
+  //       Arduino_STM32/STM32F1/libraries/Serasidis_XPT2046_touch/src/XPT2046_touch.h
   #include <XPT2046_touch.h>
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  #include <XPT2046_Touchscreen.h>
 #elif defined(DRV_TOUCH_HANDLER)
   #include <GUIslice_th.h>
 #endif
@@ -132,18 +142,22 @@ extern "C" {
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ILI9341(SPI-HW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_ILI9341(SPI-SW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+  const char* m_acDrvDisp = "ADA_ILI9341_8b";
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-HW)";
     //PIN_RST=-1 doesn't give same behavior as 2-param function variant, therefore use different functions
     #if ADAGFX_PIN_RST==-1
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC);
@@ -151,43 +165,58 @@ extern "C" {
       Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
     #endif
   #else
+    const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-SW)";
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_SSD1306(SPI-HW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
+    const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_ST7735(SPI-HW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_ST7735(SPI-SW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_HX8347)
+  const char* m_acDrvDisp = "ADA_HX8347(SPI-HW)";
+  HX8347D_kbv m_disp;
+
+// ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_HX8357)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_HX8357(SPI-HW)";
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_HX8357(SPI-SW)";
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_PCD8544)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_PCD8544(SPI-HW)";
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #else
+    const char* m_acDrvDisp = "ADA_PCD8544(SPI-SW)";
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, DAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+  const char* m_acDrvDisp = "ADA_MCUFRIEND";
   MCUFRIEND_kbv m_disp;
 
 // ------------------------------------------------------------------------
@@ -198,29 +227,48 @@ extern "C" {
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
   #if (ADATOUCH_I2C_HW) // Use I2C
+    const char* m_acDrvTouch = "STMPE610(I2C-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
+    const char* m_acDrvTouch = "STMPE610(SPI-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
+    const char* m_acDrvTouch = "STMPE610(SPI-SW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #else // No interface flag set
     #error "DRV_TOUCH_ADA_STMPE610 but no ADATOUCH_I2C_* or ADATOUCH_SPI_* set in config"
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
-    // Always use I2C
-    Adafruit_FT6206 m_touch = Adafruit_FT6206();
+  const char* m_acDrvTouch = "FT6206(I2C)";
+  // Always use I2C
+  Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+  const char* m_acDrvTouch = "SIMPLE(Analog)";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
 // ------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  const char* m_acDrvTouch = "XPT2046_STM(SPI-HW)";
   // Create an SPI class for XPT2046 access
   XPT2046_DEFINE_DPICLASS;
-  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
+  // XPT2046 driver from Arduino_STM32 by Serasidis (<XPT2046_touch.h>)
   XPT2046_touch m_touch(XPT2046_CS, XPT2046_spi); // Chip Select pin, SPI instance
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
+  // Use SPI, no IRQs
+  XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_HANDLER)
-
+  const char* m_acDrvTouch = "Handler";
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_INPUT)
+  const char* m_acDrvTouch = "INPUT";
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_NONE)
+  const char* m_acDrvTouch = "NONE";
+// ------------------------------------------------------------------------
 #endif // DRV_TOUCH_*
 
 
@@ -253,42 +301,18 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
       m_disp.begin();
-
       m_disp.readcommand8(ILI9341_RDMODE);
       m_disp.readcommand8(ILI9341_RDMADCTL);
       m_disp.readcommand8(ILI9341_RDPIXFMT);
       m_disp.readcommand8(ILI9341_RDIMGFMT);
       m_disp.readcommand8(ILI9341_RDSELFDIAG);
 
-      m_disp.setRotation( pGui->nRotation );
-      #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
-        pGui->nDispW = ILI9341_TFTWIDTH;
-        pGui->nDispH = ILI9341_TFTHEIGHT;
-      #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
-        pGui->nDispW = ILI9341_TFTHEIGHT;
-        pGui->nDispH = ILI9341_TFTWIDTH;
-      #else
-        #error "Wrong GLSC_ROTATE value"
-      #endif
-
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
-      m_disp.setRotation( pGui->nRotation );
-      #if (GSLC_ROTATE == 0) || (GSLC_ROTATE == 2)
-        pGui->nDispW = ILI9341_TFTWIDTH;
-        pGui->nDispH = ILI9341_TFTHEIGHT;
-      #elif (GSLC_ROTATE == 1) || (GSLC_ROTATE == 3)
-        pGui->nDispW = ILI9341_TFTHEIGHT;
-        pGui->nDispH = ILI9341_TFTWIDTH;
-      #else
-        #error "Wrong GLSC_ROTATE value"
-      #endif
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
-      pGui->nDispW = SSD1306_LCDWIDTH;
-      pGui->nDispH = SSD1306_LCDHEIGHT;
 
     #elif defined(DRV_DISP_ADAGFX_ST7735)
       // ST7735 requires additional initialization depending on
@@ -299,19 +323,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.initR(DRV_DISP_ADAGFX_ST7735_INIT);
       #endif
-      // TODO: To support ST7789, init() is called with the display dimensions
-      //       instead of initR() with the initialization enumeration.
-      m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = m_disp.width();
-      pGui->nDispH = m_disp.height();
+
+    #elif defined(DRV_DISP_ADAGFX_HX8347)
+      m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_HX8357)
       m_disp.begin(HX8357D);
-      // Rotate display from native portrait orientation to landscape
-      // NOTE: The touch events in gslc_TDrvGetTouch() will also need rotation
-      m_disp.setRotation( pGui->nRotation );
-      pGui->nDispW = HX8357_TFTHEIGHT;
-      pGui->nDispH = HX8357_TFTWIDTH;
 
     #elif defined(DRV_DISP_ADAGFX_PCD8544)
       m_disp.begin();
@@ -320,15 +337,13 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
-      m_disp.setRotation(pGui->nRotation);
-      pGui->nDispW = m_disp.width();
-      pGui->nDispH = m_disp.height();
 
     #endif
 
-    // Defaults for clipping region
-    gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-    gslc_DrvSetClipRect(pGui,&rClipRect);
+    // Now that we have initialized the display, we can assign
+    // the rotation parameters and clipping region
+    gslc_DrvRotate(pGui,GSLC_ROTATE);
+
 
     // Initialize SD card usage
     #if (GSLC_SD_EN)
@@ -346,6 +361,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
@@ -368,6 +394,8 @@ void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_PROG) {
     return NULL;  // No image preload done
   }
+
+  // Default
   return NULL;
 }
 
@@ -559,7 +587,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || defined(DRV_DISP_ADAGFX_HX8357)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || \
+    defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || \
+    defined(DRV_DISP_ADAGFX_HX8347) || defined(DRV_DISP_ADAGFX_HX8357)
     // Nothing to do as we're not double-buffered
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -724,7 +754,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t nByte=0;
+  uint8_t nByte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
@@ -1030,7 +1060,12 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+  if (pGui == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
+    return false;
+  }
   // TODO
+  // Perform any driver-specific touchscreen init here
   return true;
 }
 
@@ -1108,10 +1143,18 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
-    defined(DRV_TOUCH_XPT2046) || defined(DRV_TOUCH_INPUT) || defined(DRV_TOUCH_HANDLER)
+#if defined(DRV_TOUCH_TYPE_EXTERNAL)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+
+  // Capture default calibration settings for resistive displays
+  #if defined(DRV_TOUCH_TYPE_RES)
+    pGui->nTouchCalXMin = ADATOUCH_X_MIN;
+    pGui->nTouchCalXMax = ADATOUCH_X_MAX;
+    pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
+    pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
+  #endif // DRV_TOUCH_TYPE_RES
+
   #if defined(DRV_TOUCH_ADA_STMPE610)
     #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
@@ -1132,8 +1175,20 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     }
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
     return true;
-  #elif defined(DRV_TOUCH_XPT2046)
+  #elif defined(DRV_TOUCH_XPT2046_STM)
     m_touch.begin();
+    return true;
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    m_touch.begin();
+    // Since this XPT2046 library supports "touch rotation", and defaults
+    // to landscape orientation, rotate to traditional portrait orientation
+    // for consistency with other handlers.
+    //
+    // Unfortunately, this API (from 2018/01/04) is not available in the
+    // latest tagged release of XPT2046 in the Library Manager. Therefore,
+    // we can't use this API and instead need to hardcode the mapping
+    // during the DrvGetTouch() function.
+    //m_touch.setRotation(0);
     return true;
   #elif defined(DRV_TOUCH_INPUT)
     // Nothing more to initialize for GPIO input control mode
@@ -1355,16 +1410,54 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
   // ----------------------------------------------------------------
-  #elif defined(DRV_TOUCH_XPT2046)
+  #elif defined(DRV_TOUCH_XPT2046_STM)
+    // NOTE: XPT2046_STM returns pressure (z) values with a reversed
+    //       convention versus other touch libraries (ie. a small
+    //       non-zero z value means light touch, whereas a large
+    //       value means a hard / wide touch).
 
     uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
     uint16_t  nRawPress;   //XPT2046 returns values up to 4095
 
     TS_Point p = m_touch.getPoint();
 
-    if (p.z > ADATOUCH_PRESS_MIN) {
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
       nRawX = p.x;
       nRawY = p.y;
+      nRawPress = p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046_PS)
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
+
+    TS_Point p = m_touch.getPoint();
+
+    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+      // PaulStoffregen/XPT2046 appears to use a different orientation
+      // than other libraries. Therefore, we will remap it here
+      // to match the default portrait orientation.
+      nRawX = 4095-p.y;
+      nRawY = p.x;
+
       nRawPress = p.z;
       m_nLastRawX = nRawX;
       m_nLastRawY = nRawY;
@@ -1442,40 +1535,72 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     nRawX = m_nLastRawX;
     nRawY = m_nLastRawY;
 
-    // Perform any requested swapping of input axes
-    if( pGui->nSwapXY ) {
-      nInputX = nRawY;
-      nInputY = nRawX;
-    } else {
-      nInputX = nRawX;
-      nInputY = nRawY;
-    }
+    nInputX = nRawX;
+    nInputY = nRawY;
 
-    // Define maximum bounds for display
-    nDispOutMaxX = pGui->nDispW-1;
-    nDispOutMaxY = pGui->nDispH-1;
+
+    // Define maximum bounds for display in native orientation
+    nDispOutMaxX = pGui->nDisp0W-1;
+    nDispOutMaxY = pGui->nDisp0H-1;
 
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
-      // Perform scaling from input to output
-      nOutputX = map(nInputX,ADATOUCH_X_MIN,ADATOUCH_X_MAX,0,nDispOutMaxX);
-      nOutputY = map(nInputY,ADATOUCH_Y_MIN,ADATOUCH_Y_MAX,0,nDispOutMaxY);
-      // Perform constraining to OUTPUT boundaries .kbv
-      nOutputX = constrain(nOutputX,0,nDispOutMaxX);
-      nOutputY = constrain(nOutputY,0,nDispOutMaxY);
+    #if defined(DRV_TOUCH_TYPE_RES)
+      if (pGui->bTouchRemapEn) {
+        // Perform scaling from input to output
+        // - Calibration done in native orientation (GSLC_ROTATE=0)
+        // - Input to map() is done with raw unswapped X,Y
+        // - map() and constrain() done with native dimensions and
+        //   native calibration
+        // - Swap & Flip done to output of map/constrain according
+        //   to GSLC_ROTATE
+        //
+        nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+        nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+        // Perform constraining to OUTPUT boundaries .kbv
+        nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
+        nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
+      } else {
+        // No scaling from input to output
+        nOutputX = nInputX;
+        nOutputY = nInputY;
+      }
     #else
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif
+    #endif  // DRV_TOUCH_TYPE_RES
+	
+    #ifdef DBG_TOUCH
+    GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
+    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+      pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #endif // DBG_TOUCH
 
-    // Perform any requested output axis flipping
-    if( pGui->nFlipX ) {
-      nOutputX = nDispOutMaxX - nOutputX;
-    }
-    if( pGui->nFlipY ) {
-      nOutputY = nDispOutMaxY - nOutputY;
+    // Perform remapping due to current orientation
+    if (pGui->bTouchRemapEn) {
+      // Perform any requested swapping of input axes
+      if (pGui->nSwapXY) {
+        int16_t nOutputXTmp = nOutputX;
+        nOutputX = nOutputY;
+        nOutputY = nOutputXTmp;
+        // Perform any requested output axis flipping
+        // TODO: Collapse these cases
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxY - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxX - nOutputY;
+        }
+      } else {
+        // Perform any requested output axis flipping
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxX - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxY - nOutputY;
+        }
+      }
     }
 
     // Final assignment
@@ -1490,11 +1615,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
-
-    // Debug output
-    //Serial.print("p: ");Serial.print(nOutputX);Serial.print(",");Serial.print(nOutputY);Serial.print(",");Serial.println(m_nLastRawPress);
-    //Serial.print("nDispOutMaxX: ");Serial.println(nDispOutMaxX);
-    //Serial.print("nDispOutMaxY: ");Serial.println(nDispOutMaxY);
 
     // Return with indication of new value
     return true;
@@ -1511,70 +1631,123 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 // Dynamic Screen rotation and Touch axes swap/flip functions
 // -----------------------------------------------------------------------
 
-///
-/// Change rotation and axes swap/flip
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-/// \param[in]  nSwapXY:     Touchscreen Swap X/Y axes
-/// \param[in]  nFlipX:      Touchscreen Flip X axis
-/// \param[in]  nFlipY:      Touchscreen Flip Y axis
-///
-/// \return true if successful
-///
-bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
-{
-    bool bRedraw      = pGui->nRotation != nRotation;
-    bool bSwapDisplay = (nRotation ^ pGui->nRotation) & 0x01;
-    pGui->nRotation   = nRotation;
-    pGui->nSwapXY     = nSwapXY;
-    pGui->nFlipX      = nFlipX;
-    pGui->nFlipY      = nFlipY;
-
-    m_disp.setRotation( pGui->nRotation );
-
-    // Redraw the current page if rotation value changed
-    if( bRedraw ) {
-        gslc_PageRedrawSet( pGui, true );
-        gslc_PageRedrawGo( pGui );
-    }
-
-    // change between portrait <=> landscape
-    if( bSwapDisplay ) {
-        // exchange pGui->nDispH <=> pGui->nDispW
-        uint16_t nTmpW = pGui->nDispW;
-        pGui->nDispW = pGui->nDispH;
-        pGui->nDispH = nTmpW;
-        
-        // new defaults for clipping region
-        gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-        gslc_DrvSetClipRect(pGui,&rClipRect);
-    }
-
-    return( true );
-}
-
-///
-/// Change rotation, automatically adapt touchscreen axes swap/flip based on nRotation vs GLSC_TOUCH_ROTATE
-///
-/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h 
-/// are valid for the rotation defined in GUIslice_config_ard.h
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-///
-/// \return true if successful
-///
+/// Change display rotation and any associated touch orientation
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
-    // TODO: Define an alternate case for DRV_TOUCH_NONE so that the
-    //       the ADATOUCH_*, TOUCH_ROTATION_* and GSLC_TOUCH_ROTATE
-    //       don't need to be defined in the config.
-    uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
-    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+  bool bChange = true;
+
+  // Determine if the new orientation has swapped axes
+  // versus the native orientation (0)
+  bool bSwap = false;
+  if ((nRotation == 1) || (nRotation == 3)) {
+    bSwap = true;
+  }
+
+  // Did the orientation change?
+  if (nRotation == pGui->nRotation) {
+    // Orientation did not change -- indicate this by returning
+    // false so that we can avoid a redraw
+    bChange = false;
+  }
+
+  // Update the GUI rotation member
+  pGui->nRotation = nRotation;
+
+  // Inform the display to adjust the orientation and
+  // update the saved display dimensions
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+    pGui->nDisp0W = ILI9341_TFTWIDTH;
+    pGui->nDisp0H = ILI9341_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9341_TFTWIDTH;
+      pGui->nDispH = ILI9341_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9341_TFTHEIGHT;
+      pGui->nDispH = ILI9341_TFTWIDTH;
+    }
+
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+    pGui->nDisp0W = ILI9341_TFTWIDTH;
+    pGui->nDisp0H = ILI9341_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9341_TFTWIDTH;
+      pGui->nDispH = ILI9341_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9341_TFTHEIGHT;
+      pGui->nDispH = ILI9341_TFTWIDTH;
+    }
+
+  #elif defined(DRV_DISP_ADAGFX_SSD1306)
+    // No support for rotation in SSD1306 library
+    pGui->nDisp0W = SSD1306_LCDWIDTH;
+    pGui->nDisp0H = SSD1306_LCDHEIGHT;
+    pGui->nDispW = SSD1306_LCDWIDTH;
+    pGui->nDispH = SSD1306_LCDHEIGHT;
+
+  #elif defined(DRV_DISP_ADAGFX_ST7735)
+    // TODO: To support ST7789, init() is called with the display dimensions
+    //       instead of initR() with the initialization enumeration.
+    m_disp.setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_ADAGFX_HX8347)
+    m_disp.setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_ADAGFX_HX8357)
+    m_disp.setRotation(0);
+    pGui->nDisp0W = HX8357_TFTHEIGHT;
+    pGui->nDisp0H = HX8357_TFTWIDTH;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = HX8357_TFTHEIGHT;
+      pGui->nDispH = HX8357_TFTWIDTH;
+    } else {
+      pGui->nDispW = HX8357_TFTWIDTH;
+      pGui->nDispH = HX8357_TFTHEIGHT;
+    }
+
+  #elif defined(DRV_DISP_ADAGFX_PCD8544)
+    // No support for rotation in PCD8544 library
+
+  #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    m_disp.setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #endif
+
+  // Update the clipping region
+  gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+  gslc_DrvSetClipRect(pGui,&rClipRect);
+
+  // Now update the touch remapping
+  #if !defined(DRV_TOUCH_NONE)
+    pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
+    pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
+    pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
+  #endif // !DRV_TOUCH_NONE
+
+  // Mark the current page ask requiring redraw
+  // if the rotation value changed
+  if (bChange) {
+    gslc_PageRedrawSet( pGui, true );
+  }
+
+  return true;
 }
 
 

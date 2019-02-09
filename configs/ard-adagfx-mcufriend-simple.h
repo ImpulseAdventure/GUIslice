@@ -9,13 +9,6 @@
 //   - Touch:   Simple Analog (Resistive)
 //   - Wiring:  Uno/MEGA shield
 //              - Display pinout defined by mcufriend_kbv library
-//              - Touch pinout:
-//                  CPU     Touch
-//                  ----    -------
-//                  A1      YP / Y+
-//                  A2      XM / X-
-//                  7       YM / Y-
-//                  6       XP / X+
 //
 //   - Example display:
 //     - 
@@ -72,7 +65,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -82,56 +75,184 @@ extern "C" {
 
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // - Note that changing this value may require a change
-  //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
-  //   orientation matches the display.
   #define GSLC_ROTATE     1
 
-  // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_TOUCH_ROTATE 3
-
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen
-  #define ADATOUCH_PIN_YP   A1    // "Y+": Must be an analog pin
-  #define ADATOUCH_PIN_XM   A2    // "X-": Must be an analog pin
-  #define ADATOUCH_PIN_YM   7     // "Y-": Can be a digital pin
-  #define ADATOUCH_PIN_XP   6     // "X+": Can be a digital pin
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4A: Update your pin connections here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_PIN_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Set the pinout for the 4-wire resistive touchscreen
+  // - These settings describe the wiring between the MCU and the
+  //   resistive touch overlay.
+  // - MCUFRIEND shields vary widely in the pin connectivity, so
+  //   it is important to ensure that the connections are correct.
+  //
+  // - The diag_ard_touch_detect sketch can be used to detect the
+  //   pin connections (on Arduino devices) for your specific shield.
+  //
+  // - A number of example pin connections for common MCUFRIEND
+  //   shields have been provided in SECTION 4C, each marked with their
+  //   corresponding MCUFRIEND ID.
+  // - Many MCUFRIEND displays support the reading of an internal ID.
+  // - When the diagnostic sketches are run on MCUFRIEND displays,
+  //   the MCUFRIEND ID is reported.
+
+  // - Definition of the pinout configuration options:
+  //     ADATOUCH_PIN_YP      // "Y+": Must be an analog pin
+  //     ADATOUCH_PIN_XM      // "X-": Must be an analog pin
+  //     ADATOUCH_PIN_YM      // "Y-": Can be a digital pin
+  //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
+
+  // Pin connections from diag_ard_touch_detect:
+  #define ADATOUCH_PIN_YP   A1
+  #define ADATOUCH_PIN_XM   A2
+  #define ADATOUCH_PIN_YM   7
+  #define ADATOUCH_PIN_XP   6
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // - A number of example calibration settings for common MCUFRIEND
+  //   shields have been provided in SECTION 4C, each marked with their
+  //   corresponding MCUFRIEND ID. However, note that these example
+  //   calibration values may not provide accurate touch tracking, therefore
+  //   using the diag_ard_touch_calib utility is strongly recommended.
+
+  // Calibration settings from diag_ard_touch_calib:
+  #define ADATOUCH_X_MIN    905
+  #define ADATOUCH_Y_MIN    950
+  #define ADATOUCH_X_MAX    187
+  #define ADATOUCH_Y_MAX    202
+
+  // Touch overlay resistance value
+  // - In most cases, this value can be left as-is
   #define ADATOUCH_RX       300   // "rxplate"
 
-  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
-  // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN    100
-  #define ADATOUCH_Y_MIN    150
-  #define ADATOUCH_X_MAX    900
-  #define ADATOUCH_Y_MAX    900
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4C: Example pin configurations
+  // - This section lists a number of configurations detected from
+  //   various displays, along with the MCUFRIEND ID reported by the
+  //   display itself. If your particular display reports an ID that
+  //   matches one of the configurations below, you may be able to
+  //   copy the corresponding values to SECTION 4A/4B.
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  // DRV_TOUCH_SIMPLE: Define pressure threshold for detecting a touch
+  // MCUFRIEND_ID == 0x1520:
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    893
+  //#define ADATOUCH_Y_MIN    99
+  //#define ADATOUCH_X_MAX    104
+  //#define ADATOUCH_Y_MAX    892
+
+  // MCUFRIEND_ID == 0x2053:
+  //#define ADATOUCH_PIN_YP   A2
+  //#define ADATOUCH_PIN_XM   A1
+  //#define ADATOUCH_PIN_YM   6
+  //#define ADATOUCH_PIN_XP   7
+  //#define ADATOUCH_X_MIN    138
+  //#define ADATOUCH_Y_MIN    132
+  //#define ADATOUCH_X_MAX    891
+  //#define ADATOUCH_Y_MAX    909
+
+  // MCUFRIEND_ID == 0x7783:
+  // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x7783) (XP=7,XM=A1,YP=A2,YM=6) [TESTED]
+  //#define ADATOUCH_PIN_YP   A2
+  //#define ADATOUCH_PIN_XM   A1
+  //#define ADATOUCH_PIN_YM   6
+  //#define ADATOUCH_PIN_XP   7
+  //#define ADATOUCH_X_MIN    181
+  //#define ADATOUCH_Y_MIN    934
+  //#define ADATOUCH_X_MAX    937
+  //#define ADATOUCH_Y_MAX    219
+
+  // MCUFRIEND_ID == 0x7789:
+  //#define ADATOUCH_PIN_YP   A2
+  //#define ADATOUCH_PIN_XM   A1
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    885
+  //#define ADATOUCH_Y_MIN    111
+  //#define ADATOUCH_X_MAX    148
+  //#define ADATOUCH_Y_MAX    902
+
+  // MCUFRIEND_ID == 0x8031:
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    889
+  //#define ADATOUCH_Y_MIN    121
+  //#define ADATOUCH_X_MAX    151
+  //#define ADATOUCH_Y_MAX    886
+
+  // MCUFRIEND_ID == 0x9320:
+  //#define ADATOUCH_PIN_YP   A3
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   9
+  //#define ADATOUCH_PIN_XP   8
+  //#define ADATOUCH_X_MIN    897
+  //#define ADATOUCH_Y_MIN    944
+  //#define ADATOUCH_X_MAX    122
+  //#define ADATOUCH_Y_MAX    141
+
+  // MCUFRIEND_ID == 0x9327:
+  //#define ADATOUCH_PIN_YP   A2
+  //#define ADATOUCH_PIN_XM   A1
+  //#define ADATOUCH_PIN_YM   6
+  //#define ADATOUCH_PIN_XP   7
+  //#define ADATOUCH_X_MIN    126
+  //#define ADATOUCH_Y_MIN    106
+  //#define ADATOUCH_X_MAX    905
+  //#define ADATOUCH_Y_MAX    966
+
+  // MCUFRIEND_ID == 0x9341:
+  // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9341) (XP=6,XM=A2,YP=A1,YM=7)  [TESTED]
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    905
+  //#define ADATOUCH_Y_MIN    950
+  //#define ADATOUCH_X_MAX    187
+  //#define ADATOUCH_Y_MAX    202
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4C: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN  10
-  #define ADATOUCH_PRESS_MAX  1000
+  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -150,7 +271,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -172,29 +293,13 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
   // -----------------------------------------------------------------------------
   // Touch Handling
   // -----------------------------------------------------------------------------
-
-  // Define how touch orientation changes with display orientation
-  #define TOUCH_ROTATION_DATA 0x6350
-  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
-
-  // - Set any of the following to 1 to perform touch display
-  //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
-  //   remapping modes should be enabled for your display
-  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied, 
-  //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
-  #define ADATOUCH_SWAP_XY  0
-  #define ADATOUCH_FLIP_X   0
-  #define ADATOUCH_FLIP_Y   0
 
   // Define the maximum number of touch events that are handled
   // per gslc_Update() call. Normally this can be set to 1 but certain
