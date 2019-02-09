@@ -53,6 +53,10 @@ extern "C" {
 #endif // __cplusplus
 
 
+  // Define driver naming
+  const char* m_acDrvDisp = "M5STACK";
+  const char* m_acDrvTouch = "M5STACK(NONE)";
+
 
 // ------------------------------------------------------------------------
 // Use default pin settings as defined in M5Stack/src/utility/Config.h
@@ -104,6 +108,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
+
+const char* gslc_DrvGetNameDisp()
+{
+  return m_acDrvDisp;
+}
+
+const char* gslc_DrvGetNameTouch()
+{
+  return m_acDrvTouch;
+}
+
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
@@ -846,68 +861,60 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 // Dynamic Screen rotation and Touch axes swap/flip functions
 // -----------------------------------------------------------------------
 
-///
-/// Change rotation and axes swap/flip
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-/// \param[in]  nSwapXY:     Touchscreen Swap X/Y axes
-/// \param[in]  nFlipX:      Touchscreen Flip X axis
-/// \param[in]  nFlipY:      Touchscreen Flip Y axis
-///
-/// \return true if successful
-///
-bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY )
-{
-    bool bRedraw      = pGui->nRotation != nRotation;
-    bool bSwapDisplay = (nRotation ^ pGui->nRotation) & 0x01;
-    pGui->nRotation   = nRotation;
-    pGui->nSwapXY     = nSwapXY;
-    pGui->nFlipX      = nFlipX;
-    pGui->nFlipY      = nFlipY;
 
-    m_disp.setRotation( pGui->nRotation );
-
-    // Redraw the current page if rotation value changed
-    if( bRedraw ) {
-        gslc_PageRedrawSet( pGui, true );
-        gslc_PageRedrawGo( pGui );
-    }
-
-    // change between portrait <=> landscape
-    if( bSwapDisplay ) {
-        // exchange pGui->nDispH <=> pGui->nDispW
-        uint16_t nTmpW = pGui->nDispW;
-        pGui->nDispW = pGui->nDispH;
-        pGui->nDispH = nTmpW;
-
-        // new defaults for clipping region
-        gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-        gslc_DrvSetClipRect(pGui,&rClipRect);
-    }
-
-    return( true );
-}
-
-
-///
-/// Change rotation, automatically adapt touchscreen axes swap/flip based on nRotation vs GLSC_TOUCH_ROTATE
-///
-/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h
-/// are valid for the rotation defined in GUIslice_config_ard.h
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-///
-/// \return true if successful
-///
+/// Change display rotation and any associated touch orientation
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
-    uint8_t nSwapXY = ADATOUCH_SWAP_XY ^ TOUCH_ROTATION_SWAPXY(GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipX  = ADATOUCH_FLIP_X  ^ TOUCH_ROTATION_FLIPX (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    uint8_t nFlipY  = ADATOUCH_FLIP_Y  ^ TOUCH_ROTATION_FLIPY (GSLC_TOUCH_ROTATE - GSLC_ROTATE + nRotation);
-    //Serial.print("s,x,y=");Serial.print(nSwapXY);Serial.print(',');Serial.print(nFlipX);Serial.print(',');Serial.println(nFlipY);;
-    return gslc_DrvRotateSwapFlip(pGui, nRotation, nSwapXY, nFlipX, nFlipY);
+  bool bChange = true;
+
+  // Determine if the new orientation has swapped axes
+  // versus the native orientation (0)
+  bool bSwap = false;
+  if ((nRotation == 1) || (nRotation == 3)) {
+    bSwap = true;
+  }
+
+  // Did the orientation change?
+  if (nRotation == pGui->nRotation) {
+    // Orientation did not change -- indicate this by returning
+    // false so that we can avoid a redraw
+    bChange = false;
+  }
+
+  // Update the GUI rotation member
+  pGui->nRotation = nRotation;
+
+  // Inform the display to adjust the orientation and
+  // update the saved display dimensions
+
+  // DRV_DISP_M5STACK
+  // Capture display dimensions in native orientation
+  m_disp.setRotation(0);
+  pGui->nDisp0W = m_disp.width();
+  pGui->nDisp0H = m_disp.height();
+  // Capture display dimensions in selected orientation
+  m_disp.setRotation(pGui->nRotation);
+  pGui->nDispW = m_disp.width();
+  pGui->nDispH = m_disp.height();
+
+  // Update the clipping region
+  gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
+  gslc_DrvSetClipRect(pGui,&rClipRect);
+
+  // Now update the touch remapping
+  #if !defined(DRV_TOUCH_NONE)
+    pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
+    pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
+    pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
+  #endif // !DRV_TOUCH_NONE
+
+  // Mark the current page ask requiring redraw
+  // if the rotation value changed
+  if (bChange) {
+    gslc_PageRedrawSet( pGui, true );
+  }
+
+  return true;
 }
 
 

@@ -140,6 +140,26 @@ bool gslc_DrvInitTs(gslc_tsGui* pGui,const char* acDev);
 void gslc_DrvDestruct(gslc_tsGui* pGui);
 
 
+///
+/// Get the display driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_DrvGetNameDisp();
+
+
+///
+/// Get the touch driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_DrvGetNameTouch();
+
+
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
 // -----------------------------------------------------------------------
@@ -565,7 +585,15 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 // Touch Functions (if using external touch driver library)
 // -----------------------------------------------------------------------
 
-#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || defined(DRV_TOUCH_XPT2046)
+// Check for deprecated config option
+// - This check will be removed in future releases
+#if defined(DRV_TOUCH_XPT2046)
+  #error "NOTE: DRV_TOUCH_XPT2046 has been renamed to DRV_TOUCH_XPT2046_STM. Please update your config."
+#endif
+
+#if defined(DRV_TOUCH_ADA_STMPE610) || defined(DRV_TOUCH_ADA_FT6206) || defined(DRV_TOUCH_ADA_SIMPLE) || \
+    defined(DRV_TOUCH_XPT2046_STM) || defined(DRV_TOUCH_XPT2046_PS) || defined(DRV_TOUCH_INPUT) || \
+    defined(DRV_TOUCH_HANDLER)
 
 ///
 /// Perform any touchscreen-specific initialization
@@ -600,24 +628,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* p
 // -----------------------------------------------------------------------
 
 ///
-/// Change rotation and axes swap/flip
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
-/// \param[in]  nSwapXY:     Touchscreen Swap X/Y axes
-/// \param[in]  nFlipX:      Touchscreen Flip X axis
-/// \param[in]  nFlipY:      Touchscreen Flip Y axis
-///
-/// \return true if successful
-///
-bool gslc_DrvRotateSwapFlip(gslc_tsGui* pGui, uint8_t nRotation, uint8_t nSwapXY, uint8_t nFlipX, uint8_t nFlipY );
-
-
-///
 /// Change rotation, automatically adapt touchscreen axes swap/flip
-///
-/// The function assumes that the touchscreen settings for swap and flip in GUIslice_config_ard.h
-/// are valid for the rotation defined in GUIslice_config_ard.h
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)

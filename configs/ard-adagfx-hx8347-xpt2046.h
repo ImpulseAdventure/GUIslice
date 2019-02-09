@@ -3,29 +3,17 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     ESP8266 / ESP32
-//   - Display: Default (defined by TFT_eSPI config)
-//   - Touch:   None
-//   - Wiring:  Custom breakout:
-//              - Pinout defined by TFT_eSPI's User_Setup.h
+//   - CPU:     Arduino UNO (ATmega328P)
+//              Arduino Mega2560 (ATmega2560)
+//   - Display: HX8347D
+//   - Touch:   XPT2046 (Resistive)
+//   - Wiring:  Uno/MEGA shield
+//              - Pinout:
+//                  CPU     TFT      Touch     SD
+//                  ----    -------  --------  -----
 //
 //   - Example display:
-//     - 
-//
-// TFT_eSPI Notes:
-//   - When using the TFT_eSPI library, there are additional
-//     library-specific configuration files that may need
-//     customization (including pin configuration), such as
-//     "User_Setup_Select.h" (typically located in the
-//     Arduino /libraries/TFT_eSPI folder). Please refer to
-//     Bodmer's TFT_eSPI library for more details:
-//     https://github.com/Bodmer/TFT_eSPI
-//
-//   - To avoid potential SPI conflicts, it is recommended
-//     that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
-//
-//   - For touch support, note that TFT_eSPI's User_Setup.h must
-//     define TOUCH_CS (ie. not commented out).
+//     - Waveshare 2.8" TFT Touch Shield
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -84,18 +72,32 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
-  #define DRV_TOUCH_NONE            // No touch enabled
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_HX8347    // prenticedavid/HX8347D_kbv
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
+  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  #define ADAGFX_PIN_CS       10    // Display chip select
+  #define ADAGFX_PIN_DC       9     // Display SPI data/command
+  #define ADAGFX_PIN_RST      8     // Display Reset
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
+
+  // Display interface type
+  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
+  #define ADAGFX_PIN_MOSI     11
+  #define ADAGFX_PIN_MISO     12
+  #define ADAGFX_PIN_CLK      13
 
   // -----------------------------------------------------------------------------
   // Orientation
@@ -104,6 +106,29 @@ extern "C" {
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
+
+  // -----------------------------------------------------------------------------
+  // Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
+  // -----------------------------------------------------------------------------
+
+  // Touch bus & pinout
+  #define XPT2046_CS     4
+
+  // Calibration for resistive touch displays
+  // - These values may need to be updated to match your display
+  // - Run /examples/diag_ard_touch_calib.ino to determine these values
+
+  // DRV_TOUCH_XPT2046:
+  #define ADATOUCH_X_MIN    246
+  #define ADATOUCH_Y_MIN    3925
+  #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MAX    370
+
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN  10
+  #define ADATOUCH_PRESS_MAX  4000 // XPT2046 has wide range
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -180,7 +205,7 @@ extern "C" {
   #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 0
+  #define GSLC_USE_PROGMEM 1
 
   #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements

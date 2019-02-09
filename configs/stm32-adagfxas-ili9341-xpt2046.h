@@ -73,7 +73,7 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX_AS           // Adafruit-GFX-AS library (rogerclarkmelbourne/Arduino_STM32)
   #define DRV_DISP_ADAGFX_ILI9341_STM  // Adafruit ILI9341_STM    (rogerclarkmelbourne/Arduino_STM32)
-  #define DRV_TOUCH_XPT2046            // XPT2046 touch driver    (rogerclarkmelbourne/Arduino_STM32)
+  #define DRV_TOUCH_XPT2046_STM        // XPT2046 touch driver    (rogerclarkmelbourne/Arduino_STM32)
 
   // -----------------------------------------------------------------------------
   // Pinout
@@ -115,24 +115,23 @@ extern "C" {
 
   // -----------------------------------------------------------------------------
   // Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // Touch bus & pinout
   #define XPT2046_DEFINE_DPICLASS SPIClass XPT2046_spi(2); //Create an SPI instance on SPI2 port
   #define XPT2046_CS PA8
 
-  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
+  // Calibration for resistive touch displays
   // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
+  // - Run /examples/diag_ard_touch_calib.ino to determine these values
   #define ADATOUCH_X_MIN 150
   #define ADATOUCH_Y_MIN 130
   #define ADATOUCH_X_MAX 3800
   #define ADATOUCH_Y_MAX 4000
 
+  // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN 10
   #define ADATOUCH_PRESS_MAX 1000
 

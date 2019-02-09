@@ -3,36 +3,17 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     ESP8266 / ESP32
-//   - Display: Default (defined by TFT_eSPI config)
-//   - Touch:   Simple Analog (Resistive)
-//   - Wiring:  Custom breakout:
-//              - Display pinout defined by TFT_eSPI's User_Setup.h
-//              - Touch pinout:
-//                  CPU     Touch
-//                  ----    -------
-//                  4       YP / Y+
-//                  15      XM / X-
-//                  14      YM / Y-
-//                  27      XP / X+
+//   - CPU:     Arduino UNO (ATmega328P)
+//              Arduino Mega2560 (ATmega2560)
+//   - Display: ILI9341
+//   - Touch:   XPT2046 (Resistive)
+//   - Wiring:  Uno/MEGA shield
+//              - Pinout:
+//                  CPU     TFT      Touch     SD
+//                  ----    -------  --------  -----
 //
 //   - Example display:
 //     - 
-//
-// TFT_eSPI Notes:
-//   - When using the TFT_eSPI library, there are additional
-//     library-specific configuration files that may need
-//     customization (including pin configuration), such as
-//     "User_Setup_Select.h" (typically located in the
-//     Arduino /libraries/TFT_eSPI folder). Please refer to
-//     Bodmer's TFT_eSPI library for more details:
-//     https://github.com/Bodmer/TFT_eSPI
-//
-//   - To avoid potential SPI conflicts, it is recommended
-//     that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
-//
-//   - For touch support, note that TFT_eSPI's User_Setup.h must
-//     define TOUCH_CS (ie. not commented out).
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -91,18 +72,32 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
-  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit_TouchScreen touch driver
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
   // Pinout
   // -----------------------------------------------------------------------------
 
-  // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
+  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  #define ADAGFX_PIN_CS       10    // Display chip select
+  #define ADAGFX_PIN_DC       9     // Display SPI data/command
+  #define ADAGFX_PIN_RST      8     // Display Reset
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+  // Display interface type
+  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
+  #define ADAGFX_PIN_MOSI     11
+  #define ADAGFX_PIN_MISO     12
+  #define ADAGFX_PIN_CLK      13
 
   // -----------------------------------------------------------------------------
   // Orientation
@@ -110,14 +105,7 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // - Note that changing this value may require a change
-  //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
-  //   orientation matches the display.
   #define GSLC_ROTATE     1
-
-  // Set Default rotation of the touch overlay
-  // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_TOUCH_ROTATE 1
 
   // -----------------------------------------------------------------------------
   // Touch Handling
@@ -125,28 +113,22 @@ extern "C" {
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen
-  #define ADATOUCH_PIN_YP   4     // "Y+": Must be an analog pin
-  #define ADATOUCH_PIN_XM   15    // "X-": Must be an analog pin
-  #define ADATOUCH_PIN_YM   14    // "Y-": Can be a digital pin
-  #define ADATOUCH_PIN_XP   27    // "X+": Can be a digital pin
-  #define ADATOUCH_RX       300   // "rxplate"
+  // Touch bus & pinout
+  #define XPT2046_CS     3
 
-  // Calibration for DRV_TOUCH_STMPE610 & DRV_TOUCH_SIMPLE
+  // Calibration for resistive touch displays
   // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN    100
-  #define ADATOUCH_Y_MIN    150
-  #define ADATOUCH_X_MAX    900
-  #define ADATOUCH_Y_MAX    900
+  // - Run /examples/diag_ard_touch_calib.ino to determine these values
 
-  // DRV_TOUCH_SIMPLE: Define pressure threshold for detecting a touch
+  // DRV_TOUCH_XPT2046:
+  #define ADATOUCH_X_MIN    246
+  #define ADATOUCH_Y_MIN    3925
+  #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MAX    370
+
+  // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN  10
-  #define ADATOUCH_PRESS_MAX  1000
+  #define ADATOUCH_PRESS_MAX  4000 // XPT2046 has wide range
 
   // -----------------------------------------------------------------------------
   // Diagnostics
@@ -198,22 +180,6 @@ extern "C" {
   // Touch Handling
   // -----------------------------------------------------------------------------
 
-  // Define how touch orientation changes with display orientation
-  #define TOUCH_ROTATION_DATA 0x6350
-  #define TOUCH_ROTATION_SWAPXY(rotation) ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 2 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPX(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 1 ) & 0x01 )
-  #define TOUCH_ROTATION_FLIPY(rotation)  ((( TOUCH_ROTATION_DATA >> ((rotation&0x03)*4) ) >> 0 ) & 0x01 )
-
-  // - Set any of the following to 1 to perform touch display
-  //   remapping functions, 0 to disable. Use DBG_TOUCH to determine which
-  //   remapping modes should be enabled for your display
-  // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  // - NOTE: Both settings, GLSC_TOUCH_ROTATE and SWAP / FLIP are applied, 
-  //         try to set _SWAP_XY and _FLIP_X/Y to 0 and only use GLSC_TOUCH_ROTATE
-  #define ADATOUCH_SWAP_XY  0
-  #define ADATOUCH_FLIP_X   0
-  #define ADATOUCH_FLIP_Y   0
-
   // Define the maximum number of touch events that are handled
   // per gslc_Update() call. Normally this can be set to 1 but certain
   // displays may require a greater value (eg. 30) in order to increase
@@ -239,7 +205,7 @@ extern "C" {
   #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 0
+  #define GSLC_USE_PROGMEM 1
 
   #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements

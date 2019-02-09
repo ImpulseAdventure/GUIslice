@@ -162,6 +162,26 @@ bool gslc_DrvInit(gslc_tsGui* pGui);
 void gslc_DrvDestruct(gslc_tsGui* pGui);
 
 
+///
+/// Get the display driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_DrvGetNameDisp();
+
+
+///
+/// Get the touch driver name
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return String containing driver name
+///
+const char* gslc_DrvGetNameTouch();
+
+
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
 // -----------------------------------------------------------------------
@@ -431,6 +451,21 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 /// \todo Doc
 ///
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
+
+
+// -----------------------------------------------------------------------
+// Dynamic Screen rotation and Touch axes swap/flip functions
+// -----------------------------------------------------------------------
+
+///
+/// Change rotation, automatically adapt touchscreen axes swap/flip
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRotation:   Screen Rotation value (0, 1, 2 or 3)
+///
+/// \return true if successful
+///
+bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation);
 
 
 // =======================================================================

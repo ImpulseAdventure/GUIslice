@@ -89,7 +89,8 @@ extern "C" {
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
   //  #define DRV_TOUCH_M5STACK         // M5stack integrated button driver
-  //  #define DRV_TOUCH_XPT2046         // Arduino build in XPT2046 touch driver (<XPT2046_touch.h>)
+  //  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
+  //  #define DRV_TOUCH_XPT2046_STM     // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
   //  #define DRV_TOUCH_INPUT           // No touchscreen support, but input only (GPIO / keyboard)
   //  #define DRV_TOUCH_HANDLER         // touch handler class
 
@@ -109,6 +110,7 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_ILI9341_8BIT  // Adafruit ILI9341 (8-bit interface)
   //#define DRV_DISP_ADAGFX_ST7735        // Adafruit ST7735
   //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
+  //#define DRV_DISP_ADAGFX_HX8347        // prenticedavid/HX8347D_kbv
   //#define DRV_DISP_ADAGFX_HX8357        // Adafruit HX8357
   //#define DRV_DISP_ADAGFX_PCD8544       // Adafruit PCD8544
 
@@ -336,8 +338,30 @@ extern "C" {
 
 
 // -----------------------------------------------------------------------------
-#elif defined(DRV_TOUCH_XPT2046)
-  // Arduino built in XPT2046 touch driver (<XPT2046_touch.h>)
+#elif defined(DRV_TOUCH_XPT2046_PS)
+  // PaulStoffregen/XPT2046_Touchscreen
+
+  // Chip select pin for touch
+  #define XPT2046_CS 3
+
+  // Calibration values for touch display
+  // - These values may need to be updated to match your display
+  // - empirically found for XPT2046
+  #define ADATOUCH_X_MIN    246
+  #define ADATOUCH_Y_MIN    3925
+  #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MAX    370
+
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN 10
+  #define ADATOUCH_PRESS_MAX 1000
+
+// -----------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046_STM)
+  // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
+  // NOTE: This touch library is included in the Arduino_STM32 library
+  //       While it still works on many non-STM32 targets, it is recommended
+  //       that users use DRV_TOUCH_XPT2046_PS instead.
 
   // SPI2 is used. Due to some known issues of the TFT SPI driver working on SPI1
   // it was not possible to share the touch with SPI1.
@@ -359,7 +383,8 @@ extern "C" {
   #define ADATOUCH_Y_MAX 3805
 
   // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN 0
+  #define ADATOUCH_PRESS_MIN 10
+  #define ADATOUCH_PRESS_MAX 1000
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_INPUT)
