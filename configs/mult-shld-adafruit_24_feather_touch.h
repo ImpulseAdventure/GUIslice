@@ -3,17 +3,18 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Various
+//   - CPU:     Multiple
 //   - Display: ILI9341
 //   - Touch:   STMPE610 (Resistive)
-//   - Wiring:  2.4" FeatherWing TFT shield
+//   - Wiring:  Shield
 //
-//   - Display shield:
-//     - 2.4" FeatherWing TFT shield
+//   - Example display:
+//     - Adafruit TFT FeatherWing - 2.4" 320x240 Touchscreen for All Feathers
 //   - Example CPUs:
 //     - Adafruit HUZZAH      (ESP8266)
 //     - Adafruit HUZZAH32    (ESP-32)
 //     - Adafruit Feather M0  (Cortex-M0)
+
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -68,7 +69,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -78,10 +79,11 @@ extern "C" {
 
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For shields, the following pinouts are typically hardcoded
+  // - Decode based on platform
 #ifdef ESP8266
   #define ADAGFX_PIN_CS       0     // Display chip select
   #define ADAGFX_PIN_DC       15    // Display SPI data/command
@@ -95,18 +97,7 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
 #endif
-  #define ADAGFX_PIN_RST      0     // Display Reset //xxx UNUSED?
-
-  // SD Card
-#ifdef ESP8266
-  #define ADAGFX_PIN_SDCS     2     // SD card chip select (if GSLC_SD_EN=1)
-#elif ESP32
-  #define ADAGFX_PIN_SDCS     14    // SD card chip select (if GSLC_SD_EN=1)
-#elif ARDUINO_SAMD_FEATHER_M0
-  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
-#else
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-#endif
+  #define ADAGFX_PIN_RST      0     // Display Reset (unused?)
 
   // Display interface type
   #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
@@ -118,8 +109,24 @@ extern "C" {
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
 
+
+  // SD Card
+  // - Decode based on platform
+#ifdef ESP8266
+  #define ADAGFX_PIN_SDCS     2     // SD card chip select (if GSLC_SD_EN=1)
+#elif ESP32
+  #define ADAGFX_PIN_SDCS     14    // SD card chip select (if GSLC_SD_EN=1)
+#elif ARDUINO_SAMD_FEATHER_M0
+  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
+#else
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+#endif
+
+
+
+
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
@@ -127,10 +134,15 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
   // - Documentation for configuring touch support can be found at:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4A: Update your pin connections here
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Select touch device wiring method by setting one of the following to 1, others to 0
   #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
@@ -139,6 +151,8 @@ extern "C" {
 
   // Touch bus & pinout
   #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
+
+  // - Decode based on platform
 #ifdef ESP8266
   #define ADATOUCH_PIN_CS     16
 #elif ESP32
@@ -149,20 +163,29 @@ extern "C" {
   #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
 #endif
 
-  // Calibration for resistive displays
-  // - These values may need to be updated to match your display
-  // - Typically used in resistive displays
-  // - These values can be determined from the Adafruit touchtest example sketch
-  //   (check for min and max values reported from program as you touch display
-  //   corners)
-  // - Note that X & Y directions reference the display's natural orientation
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Calibration settings from diag_ard_touch_calib:
   #define ADATOUCH_X_MIN    3824
   #define ADATOUCH_Y_MIN    191
   #define ADATOUCH_X_MAX    235
   #define ADATOUCH_Y_MAX    3725
 
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -181,7 +204,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -203,7 +226,7 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -233,7 +256,7 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
 
@@ -244,8 +267,8 @@ extern "C" {
     #define GSLC_USE_PROGMEM 0
   #endif
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

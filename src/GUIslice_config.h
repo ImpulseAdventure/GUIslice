@@ -90,13 +90,12 @@ extern "C" {
   //#include "../configs/esp-shld-ttgo_btc_ticker.h"
   //#include "../configs/esp-tftespi-default-ft6206.h"
   //#include "../configs/esp-tftespi-default-notouch.h"
-  //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
 
   // Multi-device shields:
   // ------------------------------------------------------
-  //#include "../configs/misc-adagfx-shld-featherwing24.h"
+  //#include "../configs/mult-shld-adafruit_24_feather_touch.h"
 
   // Raspberry Pi / LINUX:
   // ------------------------------------------------------
