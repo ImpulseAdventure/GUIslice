@@ -62,6 +62,8 @@ extern "C" {
 
   // Arduino, ARM SAMD, Cortex M0/M4, nRF52:
   // ------------------------------------------------------
+  //#include "../configs/ard-shld-adafruit_18_joy.h"
+  //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
   //#include "../configs/ard-shld-mcufriend.h"
   //#include "../configs/ard-shld-mcufriend_4wire.h"
@@ -78,10 +80,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ili9341-simple.h"
   //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
   //#include "../configs/ard-adagfx-ili9341-xpt2046.h"
-  //#include "../configs/ard-adagfx-mcufriend-notouch.h"
-  //#include "../configs/ard-adagfx-mcufriend-simple.h"
   //#include "../configs/ard-adagfx-pcd8544-notouch.h"
-  //#include "../configs/ard-adagfx-shld-tft18v2.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
 
@@ -94,9 +93,6 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
-  //#include "../configs/m5-m5-default-btn3.h"
-  //#include "../configs/m5-m5-default-notouch.h"
-  //#include "../configs/ttgo-adagfx-ili9341-notouch.h"
 
   // Multi-device shields:
   // ------------------------------------------------------

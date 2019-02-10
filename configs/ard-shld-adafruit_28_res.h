@@ -3,8 +3,7 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: ILI9341
 //   - Touch:   STMPE610 (Resistive)
 //   - Wiring:  Shield
@@ -78,16 +77,13 @@ extern "C" {
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
@@ -95,6 +91,11 @@ extern "C" {
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
+
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -146,6 +147,10 @@ extern "C" {
   #define ADATOUCH_Y_MAX    3717
 
 
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 
   // -----------------------------------------------------------------------------

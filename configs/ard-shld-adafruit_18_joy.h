@@ -3,21 +3,20 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
-//   - Display: mcufriend (various)
-//   - Touch:   Simple Analog (Resistive)
-//   - Wiring:  Uno/MEGA shield
-//              - Display pinout defined by mcufriend_kbv library
+//   - CPU:     Arduino UNO / MEGA / etc
+//   - Display: ST7735
+//   - Touch:   None (Joystick and physical buttons only)
+//   - Wiring:  Shield
 //
 //   - Example display:
-//     - 
+//     - Adafruit 1.8" Color TFT Shield w/ microSD and Joystick - v2
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - The pinout configuration may need to be modified to match your wiring
+// - As this config file is designed for a shield, no additional
+//   wiring is required to support the GUI operation
 //
 // =============================================================================
 // - Calvin Hass
@@ -70,16 +69,34 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_MCUFRIEND // MCUFRIEND_kbv display driver
-  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit_TouchScreen touch driver
+  #define DRV_DISP_ADAGFX_ST7735    // Adafruit ST7735
+  #define DRV_DISP_ADAGFX_ST7735_INIT  INITR_BLACKTAB
+  #define DRV_TOUCH_NONE            // No touch enabled
 
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
+  // For shields, the following pinouts are typically hardcoded
+  #define ADAGFX_PIN_CS       10    // Display chip select
+  #define ADAGFX_PIN_DC       8     // Display SPI data/command
+  #define ADAGFX_PIN_RST      -1    // Display Reset
+
+  // Display interface type
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
+
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
+  #define ADAGFX_PIN_MOSI     11
+  #define ADAGFX_PIN_MISO     12
+  #define ADAGFX_PIN_CLK      13
+
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -89,167 +106,6 @@ extern "C" {
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
 
-  // -----------------------------------------------------------------------------
-  // SECTION 4: Touch Handling
-  // - Documentation for configuring touch support can be found at:
-  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
-  // -----------------------------------------------------------------------------
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4A: Update your pin connections here
-  // - These values should come from the diag_ard_touch_calib sketch output
-  // - Please update the values to the right of ADATOUCH_PIN_* accordingly
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // Set the pinout for the 4-wire resistive touchscreen
-  // - These settings describe the wiring between the MCU and the
-  //   resistive touch overlay.
-  // - MCUFRIEND shields vary widely in the pin connectivity, so
-  //   it is important to ensure that the connections are correct.
-  //
-  // - The diag_ard_touch_detect sketch can be used to detect the
-  //   pin connections (on Arduino devices) for your specific shield.
-  //
-  // - A number of example pin connections for common MCUFRIEND
-  //   shields have been provided in SECTION 4C, each marked with their
-  //   corresponding MCUFRIEND ID.
-  // - Many MCUFRIEND displays support the reading of an internal ID.
-  // - When the diagnostic sketches are run on MCUFRIEND displays,
-  //   the MCUFRIEND ID is reported.
-
-  // - Definition of the pinout configuration options:
-  //     ADATOUCH_PIN_YP      // "Y+": Must be an analog pin
-  //     ADATOUCH_PIN_XM      // "X-": Must be an analog pin
-  //     ADATOUCH_PIN_YM      // "Y-": Can be a digital pin
-  //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
-
-  // Pin connections from diag_ard_touch_detect:
-  #define ADATOUCH_PIN_YP   A1
-  #define ADATOUCH_PIN_XM   A2
-  #define ADATOUCH_PIN_YM   7
-  #define ADATOUCH_PIN_XP   6
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4B: Update your calibration settings here
-  // - These values should come from the diag_ard_touch_calib sketch output
-  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // - A number of example calibration settings for common MCUFRIEND
-  //   shields have been provided in SECTION 4C, each marked with their
-  //   corresponding MCUFRIEND ID. However, note that these example
-  //   calibration values may not provide accurate touch tracking, therefore
-  //   using the diag_ard_touch_calib utility is strongly recommended.
-
-  // Calibration settings from diag_ard_touch_calib:
-  #define ADATOUCH_X_MIN    905
-  #define ADATOUCH_Y_MIN    950
-  #define ADATOUCH_X_MAX    187
-  #define ADATOUCH_Y_MAX    202
-
-  // Touch overlay resistance value
-  // - In most cases, this value can be left as-is
-  #define ADATOUCH_RX       300   // "rxplate"
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4C: Example pin configurations
-  // - This section lists a number of configurations detected from
-  //   various displays, along with the MCUFRIEND ID reported by the
-  //   display itself. If your particular display reports an ID that
-  //   matches one of the configurations below, you may be able to
-  //   copy the corresponding values to SECTION 4A/4B.
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // MCUFRIEND_ID == 0x1520:
-  //#define ADATOUCH_PIN_YP   A1
-  //#define ADATOUCH_PIN_XM   A2
-  //#define ADATOUCH_PIN_YM   7
-  //#define ADATOUCH_PIN_XP   6
-  //#define ADATOUCH_X_MIN    893
-  //#define ADATOUCH_Y_MIN    99
-  //#define ADATOUCH_X_MAX    104
-  //#define ADATOUCH_Y_MAX    892
-
-  // MCUFRIEND_ID == 0x2053:
-  //#define ADATOUCH_PIN_YP   A2
-  //#define ADATOUCH_PIN_XM   A1
-  //#define ADATOUCH_PIN_YM   6
-  //#define ADATOUCH_PIN_XP   7
-  //#define ADATOUCH_X_MIN    138
-  //#define ADATOUCH_Y_MIN    132
-  //#define ADATOUCH_X_MAX    891
-  //#define ADATOUCH_Y_MAX    909
-
-  // MCUFRIEND_ID == 0x7783:
-  // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x7783) (XP=7,XM=A1,YP=A2,YM=6) [TESTED]
-  //#define ADATOUCH_PIN_YP   A2
-  //#define ADATOUCH_PIN_XM   A1
-  //#define ADATOUCH_PIN_YM   6
-  //#define ADATOUCH_PIN_XP   7
-  //#define ADATOUCH_X_MIN    181
-  //#define ADATOUCH_Y_MIN    934
-  //#define ADATOUCH_X_MAX    937
-  //#define ADATOUCH_Y_MAX    219
-
-  // MCUFRIEND_ID == 0x7789:
-  //#define ADATOUCH_PIN_YP   A2
-  //#define ADATOUCH_PIN_XM   A1
-  //#define ADATOUCH_PIN_YM   7
-  //#define ADATOUCH_PIN_XP   6
-  //#define ADATOUCH_X_MIN    885
-  //#define ADATOUCH_Y_MIN    111
-  //#define ADATOUCH_X_MAX    148
-  //#define ADATOUCH_Y_MAX    902
-
-  // MCUFRIEND_ID == 0x8031:
-  //#define ADATOUCH_PIN_YP   A1
-  //#define ADATOUCH_PIN_XM   A2
-  //#define ADATOUCH_PIN_YM   7
-  //#define ADATOUCH_PIN_XP   6
-  //#define ADATOUCH_X_MIN    889
-  //#define ADATOUCH_Y_MIN    121
-  //#define ADATOUCH_X_MAX    151
-  //#define ADATOUCH_Y_MAX    886
-
-  // MCUFRIEND_ID == 0x9320:
-  //#define ADATOUCH_PIN_YP   A3
-  //#define ADATOUCH_PIN_XM   A2
-  //#define ADATOUCH_PIN_YM   9
-  //#define ADATOUCH_PIN_XP   8
-  //#define ADATOUCH_X_MIN    897
-  //#define ADATOUCH_Y_MIN    944
-  //#define ADATOUCH_X_MAX    122
-  //#define ADATOUCH_Y_MAX    141
-
-  // MCUFRIEND_ID == 0x9327:
-  //#define ADATOUCH_PIN_YP   A2
-  //#define ADATOUCH_PIN_XM   A1
-  //#define ADATOUCH_PIN_YM   6
-  //#define ADATOUCH_PIN_XP   7
-  //#define ADATOUCH_X_MIN    126
-  //#define ADATOUCH_Y_MIN    106
-  //#define ADATOUCH_X_MAX    905
-  //#define ADATOUCH_Y_MAX    966
-
-  // MCUFRIEND_ID == 0x9341:
-  // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9341) (XP=6,XM=A2,YP=A1,YM=7)  [TESTED]
-  //#define ADATOUCH_PIN_YP   A1
-  //#define ADATOUCH_PIN_XM   A2
-  //#define ADATOUCH_PIN_YM   7
-  //#define ADATOUCH_PIN_XP   6
-  //#define ADATOUCH_X_MIN    905
-  //#define ADATOUCH_Y_MIN    950
-  //#define ADATOUCH_X_MAX    187
-  //#define ADATOUCH_Y_MAX    202
-
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4C: Additional touch configuration
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN  10
-  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -323,13 +179,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 1
+  #define GSLC_USE_PROGMEM      1
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

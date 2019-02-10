@@ -156,10 +156,10 @@ extern "C" {
   //   (check for min and max values reported from program as you touch display
   //   corners)
   // - Note that X & Y directions reference the display's natural orientation
-  #define ADATOUCH_X_MIN 3800
-  #define ADATOUCH_Y_MIN 100
-  #define ADATOUCH_X_MAX 100
-  #define ADATOUCH_Y_MAX 3750
+  #define ADATOUCH_X_MIN    3824
+  #define ADATOUCH_Y_MIN    191
+  #define ADATOUCH_X_MAX    235
+  #define ADATOUCH_Y_MAX    3725
 
   // -----------------------------------------------------------------------------
   // Diagnostics
