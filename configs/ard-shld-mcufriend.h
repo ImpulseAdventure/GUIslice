@@ -3,8 +3,7 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: MCUFRIEND
 //   - Touch:   None
 //   - Wiring:  Shield (pinout defined by mcufriend_kbv library)
@@ -78,8 +77,11 @@ extern "C" {
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
+
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation

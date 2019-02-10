@@ -4,13 +4,13 @@
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     ESP8266 / ESP32
-//   - Display: Default (defined by TFT_eSPI config)
+//   - Display: TFT_eSPI (defined by TFT_eSPI config)
 //   - Touch:   XPT2046 (Resistive)
-//   - Wiring:  Custom breakout:
+//   - Wiring:  Custom breakout
 //              - Pinout defined by TFT_eSPI's User_Setup.h
 //
 //   - Example display:
-//     - 
+//     -
 //
 // TFT_eSPI Notes:
 //   - When using the TFT_eSPI library, there are additional
@@ -31,8 +31,8 @@
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a shield, no additional
-//   wiring is required to support the GUI operation
+// - As this config file is designed for a breakout board, customization
+//   of the Pinout in SECTION 2 will be required to match your display.
 //
 // =============================================================================
 // - Calvin Hass
@@ -80,25 +80,24 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
+  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
   #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
-  #define DRV_TOUCH_IN_DISP         // Use the display driver (TFT_eSPI) for touch events
+  #define DRV_TOUCH_IN_DISP         // Use display driver (TFT_eSPI) for touch events
+
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
@@ -106,21 +105,32 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
   // - Documentation for configuring touch support can be found at:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // TFT_eSPI: Calibration for DRV_TOUCH_TFT_ESPI (resistive XPT2046)
-  // - The following are some example defaults, but they should be updated
-  //   to match your specific touch device.
-  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
   // TFT_eSPI: Chip Select for Touch Device
   // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)
 
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the TFT_eSPI/Touch_calibrate utility
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Calibration data from TFT_eSPI for integrated XPT2046
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -139,7 +149,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -161,9 +171,13 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
+
+  // -----------------------------------------------------------------------------
+  // Touch Handling
+  // -----------------------------------------------------------------------------
 
   // Define the maximum number of touch events that are handled
   // per gslc_Update() call. Normally this can be set to 1 but certain
@@ -187,13 +201,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 0
+  #define GSLC_USE_PROGMEM      0
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

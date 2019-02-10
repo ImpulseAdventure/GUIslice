@@ -3,11 +3,11 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: ST7735
 //   - Touch:   None
-//   - Wiring:  Manual
+//   - Wiring:  Custom breakout
+//              - Pinout:
 //
 //   - Example display:
 //     - Adafruit 1.8" Color TFT LCD display with MicroSD Card Breakout
@@ -18,7 +18,8 @@
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - The pinout configuration may need to be modified to match your wiring
+// - As this config file is designed for a breakout board, customization
+//   of the Pinout in SECTION 2 will be required to match your display.
 //
 // =============================================================================
 // - Calvin Hass
@@ -66,7 +67,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -87,19 +88,16 @@ extern "C" {
   //#define DRV_DISP_ADAGFX_ST7735_INIT   INITR_HALLOWING     // Hallowing
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
@@ -108,17 +106,22 @@ extern "C" {
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
 
+
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -137,7 +140,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -159,7 +162,7 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -189,13 +192,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 1
+  #define GSLC_USE_PROGMEM      1
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

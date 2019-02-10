@@ -4,13 +4,13 @@
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     ESP8266 / ESP32
-//   - Display: Default (defined by TFT_eSPI config)
+//   - Display: TFT_eSPI (defined by TFT_eSPI config)
 //   - Touch:   FT6206 (Capacitive)
-//   - Wiring:  Custom breakout:
+//   - Wiring:  Custom breakout
 //              - Pinout defined by TFT_eSPI's User_Setup.h
 //
 //   - Example display:
-//     - 
+//     -
 //
 // TFT_eSPI Notes:
 //   - When using the TFT_eSPI library, there are additional
@@ -31,8 +31,8 @@
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a shield, no additional
-//   wiring is required to support the GUI operation
+// - As this config file is designed for a breakout board, customization
+//   of the Pinout in SECTION 2 will be required to match your display.
 //
 // =============================================================================
 // - Calvin Hass
@@ -80,25 +80,23 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI library
+  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
   #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
 
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
@@ -106,19 +104,22 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
   // - Documentation for configuring touch support can be found at:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // TFT_eSPI: Chip Select for Touch Device
-  // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Touch sensitivity for DRV_TOUCH_FT6206 (capacitive touch)
-  #define ADATOUCH_SENSITIVITY  40
+  #define ADATOUCH_SENSITIVITY 40
 
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -137,7 +138,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -159,7 +160,7 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -189,13 +190,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 0
+  #define GSLC_USE_PROGMEM      0
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

@@ -3,33 +3,21 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: HX8357
 //   - Touch:   Simple Analog (Resistive)
-//   - Wiring:  Uno/MEGA shield (?)
+//   - Wiring:  Custom breakout
 //              - Pinout:
-//                  CPU     TFT      Touch    SD
-//                  ----    -------  -------  -----
-//                  10      TFT_CS
-//                  9       TFT_DC   XP / X+
-//                  n/c     TFT_RST
-//                  13      SCLK              SCLK
-//                  12      MISO              MISO
-//                  11      MOSI              MOSI
-//                  4                         SD_CS
-//                  A2               YP / Y+
-//                  A3               XM / X-
-//                  8                YM / Y-
 //
 //   - Example display:
-//     - 
+//     -
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - The pinout configuration may need to be modified to match your wiring
+// - As this config file is designed for a breakout board, customization
+//   of the Pinout in SECTION 2 will be required to match your display.
 //
 // =============================================================================
 // - Calvin Hass
@@ -77,7 +65,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -87,19 +75,16 @@ extern "C" {
 
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
-
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
@@ -108,8 +93,13 @@ extern "C" {
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
+
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
@@ -117,34 +107,65 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
   // - Documentation for configuring touch support can be found at:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
-  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen
-  #define ADATOUCH_PIN_YP   A2    // "Y+": Must be an analog pin, use "An" notation
-  #define ADATOUCH_PIN_XM   A3    // "X-": Must be an analog pin, use "An" notation
-  #define ADATOUCH_PIN_YM   44    // "Y-": Can be a digital pin
-  #define ADATOUCH_PIN_XP   45    // "X+": Can be a digital pin
-  #define ADATOUCH_RX       300   // "rxplate"
 
-  // Calibration for resistive touch displays
-  // - These values may need to be updated to match your display
-  // - Run /examples/diag_ard_touch_calib.ino to determine these values
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4A: Update your pin connections here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_PIN_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Set the pinout for the 4-wire resistive touchscreen
+  // - These settings describe the wiring between the MCU and the
+  //   resistive touch overlay.
+  //
+  // - The diag_ard_touch_detect sketch can be used to detect the
+  //   pin connections (on Arduino devices) for your specific shield.
+  //
+  // - Definition of the pinout configuration options:
+  //     ADATOUCH_PIN_YP      // "Y+": Must be an analog pin
+  //     ADATOUCH_PIN_XM      // "X-": Must be an analog pin
+  //     ADATOUCH_PIN_YM      // "Y-": Can be a digital pin
+  //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
+
+  // Pin connections from diag_ard_touch_detect:
+  #define ADATOUCH_PIN_YP     A2
+  #define ADATOUCH_PIN_XM     A3
+  #define ADATOUCH_PIN_YM     8 
+  #define ADATOUCH_PIN_XP     9 
 
 
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Calibration settings from diag_ard_touch_calib:
   #define ADATOUCH_X_MIN    100
   #define ADATOUCH_Y_MIN    150
   #define ADATOUCH_X_MAX    900
   #define ADATOUCH_Y_MAX    900
 
+  // Touch overlay resistance value
+  // - In most cases, this value can be left as-is
+  #define ADATOUCH_RX       300   // "rxplate"
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
   // Define pressure threshold for detecting a touch
   #define ADATOUCH_PRESS_MIN  10
-  #define ADATOUCH_PRESS_MAX  1000
+  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -163,7 +184,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -185,7 +206,7 @@ extern "C" {
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -215,13 +236,13 @@ extern "C" {
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
 
-  #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM 1
+  #define GSLC_USE_PROGMEM      1
 
-  #define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
-  #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
   // Debug diagnostic modes

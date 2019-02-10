@@ -3,8 +3,7 @@
 
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino UNO (ATmega328P)
-//              Arduino Mega2560 (ATmega2560)
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: HX8347D
 //   - Touch:   XPT2046 (Resistive)
 //   - Wiring:  Shield
@@ -78,16 +77,13 @@ extern "C" {
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For UNO/MEGA shields, the following pinouts are typically hardcoded
+  // For shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      8     // Display Reset
 
-  // SD Card
-  #define ADAGFX_PIN_SDCS     5    // SD card chip select (if GSLC_SD_EN=1)
-
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses the hardware SPI interface
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
@@ -95,6 +91,11 @@ extern "C" {
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
+
+  // SD Card
+  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -111,7 +112,6 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
 
-
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4A: Update your pin connections here
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -125,12 +125,6 @@ extern "C" {
   // - These values should come from the diag_ard_touch_calib sketch output
   // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // - A number of example calibration settings for common MCUFRIEND
-  //   shields have been provided in SECTION 4C, each marked with their
-  //   corresponding MCUFRIEND ID. However, note that these example
-  //   calibration values may not provide accurate touch tracking, therefore
-  //   using the diag_ard_touch_calib utility is strongly recommended.
 
   // Calibration settings from diag_ard_touch_calib:
   // DRV_TOUCH_XPT2046:
