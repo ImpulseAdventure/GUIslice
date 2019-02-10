@@ -96,6 +96,7 @@ extern "C" {
   // Multi-device shields:
   // ------------------------------------------------------
   //#include "../configs/mult-shld-adafruit_24_feather_touch.h"
+  //#include "../configs/mult-shld-adafruit_35_feather_touch.h"
 
   // Raspberry Pi / LINUX:
   // ------------------------------------------------------
