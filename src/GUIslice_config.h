@@ -87,6 +87,8 @@ extern "C" {
 
   // ESP-8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
+  //#include "../configs/esp-shld-m5stack.h"
+  //#include "../configs/esp-shld-ttgo_btc_ticker.h"
   //#include "../configs/esp-tftespi-default-ft6206.h"
   //#include "../configs/esp-tftespi-default-notouch.h"
   //#include "../configs/esp-tftespi-default-simple.h"
