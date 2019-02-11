@@ -104,9 +104,9 @@ TFT_eSPI m_disp = TFT_eSPI();
   #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_FT6206)
-    const char* m_acDrvTouch = "FT6206(I2C)";
-    // Always use I2C
-    Adafruit_FT6206 m_touch = Adafruit_FT6206();
+  const char* m_acDrvTouch = "FT6206(I2C)";
+  // Always use I2C
+  Adafruit_FT6206 m_touch = Adafruit_FT6206();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   const char* m_acDrvTouch = "SIMPLE(Analog)";
@@ -1141,6 +1141,11 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
   bool bValid = false;  // Indicate a touch event to GUIslice core?
 
+  // Define maximum bounds for display in native orientation
+  int nDispOutMaxX,nDispOutMaxY;
+  nDispOutMaxX = pGui->nDisp0W-1;
+  nDispOutMaxY = pGui->nDisp0H-1;
+
   // ----------------------------------------------------------------
   #if defined(DRV_TOUCH_ADA_STMPE610)
 
@@ -1189,8 +1194,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
   if (m_touch.touched()) {
     TS_Point ptTouch = m_touch.getPoint();
-    m_nLastRawX = ptTouch.x;
-    m_nLastRawY = ptTouch.y;
+    // FT6206 coordinates appear to have flipped both axes vs other controllers
+    m_nLastRawX = nDispOutMaxX-ptTouch.x;
+    m_nLastRawY = nDispOutMaxY-ptTouch.y;
     m_nLastRawPress = 255;  // Select arbitrary non-zero value
     m_bLastTouched = true;
     bValid = true;
@@ -1445,7 +1451,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     int nRawX,nRawY;
     int nInputX,nInputY;
-    int nDispOutMaxX,nDispOutMaxY;
     int nOutputX,nOutputY;
 
     // Input assignment
@@ -1456,9 +1461,6 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     nInputY = nRawY;
 
 
-    // Define maximum bounds for display in native orientation
-    nDispOutMaxX = pGui->nDisp0W-1;
-    nDispOutMaxY = pGui->nDisp0H-1;
 
 
     // For resistive displays, perform constraint and scaling
@@ -1475,7 +1477,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         //
         nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
         nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
-        // Perform constraining to OUTPUT boundaries .kbv
+        // Perform constraining to OUTPUT boundaries
         nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
         nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
       } else {
