@@ -40,6 +40,7 @@
   // Import MCUFRIEND to support ID reporting
   #include <MCUFRIEND_kbv.h>
   extern MCUFRIEND_kbv m_disp;
+  int m_nMcuFriendId = -1;
 #endif
 
 #define MAX_STR             30
@@ -58,6 +59,7 @@ gslc_tsFont                 m_asFont[MAX_FONT];
 char m_acTxt[MAX_STR];
 gslc_tsRect m_rStatus = (gslc_tsRect) { 40, 60, 50, 10 };
 gslc_tsRect m_rReport = (gslc_tsRect) { 40, 80, 140, 10 };
+gslc_tsRect m_rError = (gslc_tsRect) { 40, 120, 140, 10 };
 gslc_tsFont* m_pFont = NULL;
 
 #define MAX_FONT                1
@@ -74,8 +76,16 @@ void DrawBackground()
   gslc_DrawFillRect(&m_gui, rBack, GSLC_COL_BLACK);
 
   // Status
-  gslc_DrvDrawTxt(&m_gui, m_rStatus.x, m_rStatus.y, m_pFont, "Detecing Pins", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
+  gslc_DrvDrawTxt(&m_gui, m_rStatus.x, m_rStatus.y, m_pFont, "Detecting Pins", GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y, m_pFont, "See Serial Monitor output...", GSLC_TXT_DEFAULT, GSLC_COL_GREEN, GSLC_COL_BLACK);
+}
+
+void DetectId()
+{
+  #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
+  // For MCUFRIEND displays, detect the ID
+  m_nMcuFriendId = m_disp.readID();
+  #endif // DRV_DISP_ADAGFX_MCUFRIEND
 }
 
 bool DetectPins()
@@ -86,12 +96,7 @@ bool DetectPins()
   int nPinYm = -1;
 
   int i, j, value, Apins[2], Dpins[2], Values[2], found = 0;
-  int nMcuFriendId = -1;
-
-  #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
-    // For MCUFRIEND displays, detect the ID
-    nMcuFriendId = m_disp.readID();
-  #endif // DRV_DISP_ADAGFX_MCUFRIEND
+  bool bRet = false;
 
   GSLC_DEBUG_PRINT("Making all control and bus pins INPUT_PULLUP\n", "");
   GSLC_DEBUG_PRINT("Typical 30k Analog pullup with corresponding pin\n", "");
@@ -109,18 +114,20 @@ bool DetectPins()
       digitalWrite(j, LOW);
       value = analogRead(i);   // ignore first reading
       value = analogRead(i);
-      if (value < 100) {
+      if (value < 100 && value > 0) {
         GSLC_DEBUG_PRINT(" Detected: (A%u, D%u) = %u\n", (i - A0), j, value);
         if (found < 2) {
           Apins[found] = i;
           Dpins[found] = j;
           Values[found] = value;
-          found++;
         }
+        found++;
       }
       pinMode(j, INPUT_PULLUP);
     }
+    pinMode(i, INPUT_PULLUP);
   }
+
   if (found == 2) {
     if (Values[0] < Values[1]) {
       nPinXm = Apins[0];
@@ -149,7 +156,7 @@ bool DetectPins()
     GSLC_DEBUG_PRINT("  // Pinout for DRV_TOUCH_SIMPLE 4-wire resistive touchscreen\n", "");
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
       // For MCUFRIEND displays, report the ID
-      snprintf(m_acTxt, MAX_STR, "(MCUFRIEND ID=0x%04X)", nMcuFriendId);
+      snprintf(m_acTxt, MAX_STR, "(MCUFRIEND ID=0x%04X)", m_nMcuFriendId);
       GSLC_DEBUG_PRINT("  // %s\n", m_acTxt);
     #endif
     GSLC_DEBUG_PRINT("  #define ADATOUCH_PIN_YP   A%d    // \"Y+\": Must be an analog pin\n", (nPinYp - A0));
@@ -168,28 +175,40 @@ bool DetectPins()
       (nPinYp != ADATOUCH_PIN_YP) || (nPinYm != ADATOUCH_PIN_YM))
     {
       GSLC_DEBUG_PRINT("MISMATCH - Please update config\n", "");
-      return false;
+      bRet = true;
     }
     else {
       GSLC_DEBUG_PRINT("OK - No need to update config\n", "");
-      return true;
+      bRet = true;
     }
-    GSLC_DEBUG_PRINT("-----------------------------------------------\n", "");
-
   }
   else {
-    return false;
+    GSLC_DEBUG_PRINT("\nERROR - Touchscreen is probably broken\n", "");
+    bRet = false;
   }
 
+  GSLC_DEBUG_PRINT("-----------------------------------------------\n\n", "");
+  return bRet;
 }
 
 
 void setup()
 {
+  bool bDetectPinsOk = false;
+
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
+
+  // Detect pins before we initialize the display driver
+  DetectId();
+  bDetectPinsOk = DetectPins();
+
+  // mcufriend displays need re-init after detect
+  #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    m_disp.begin(m_nMcuFriendId);
+  #endif // DRV_DISP_ADAGFX_MCUFRIEND
 
   // Initialize (with no support for GUI elements)
   if (!gslc_Init(&m_gui, &m_drv, NULL, 0, m_asFont, MAX_FONT)) { return; }
@@ -201,7 +220,10 @@ void setup()
 
   DrawBackground();
 
-  bool m_bDetectPinsOk = DetectPins();
+  // Alert the user visually if we failed to detect the pins
+  if (!bDetectPinsOk) {
+    gslc_DrvDrawTxt(&m_gui, m_rError.x, m_rError.y, m_pFont, "*** Broken Touchscreen ***", GSLC_TXT_DEFAULT, GSLC_COL_RED, GSLC_COL_BLACK);
+  }
 }
 
 void loop()
