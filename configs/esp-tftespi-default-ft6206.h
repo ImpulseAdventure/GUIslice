@@ -111,6 +111,12 @@ extern "C" {
 
 
 
+  // TFT_eSPI: Chip Select for Touch Device
+  // - Since we are not using the TFT_eSPI's integrated XPT2046 touch driver,
+  //   it is best to disable it. This can be done by ensuring that the TOUCH_CS line
+  //   in TFT_eSPI's User_Setup.h is commented out.
+
+
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

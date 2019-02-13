@@ -90,15 +90,11 @@ TFT_eSPI m_disp = TFT_eSPI();
     const char* m_acDrvTouch = "STMPE610(I2C-HW)";
     Adafruit_STMPE610 m_touch = Adafruit_STMPE610();
   #elif (ADATOUCH_SPI_HW) // Use hardware SPI
-    // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
-    //       instead of the GUIslice ADATOUCH_PIN_CS.
     const char* m_acDrvTouch = "STMPE610(SPI-HW)";
-    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS);
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS);
   #elif (ADATOUCH_SPI_SW) // Use software SPI
-    // NOTE: In TFT_eSPI mode, we use the TFT_eSPI define "TOUCH_CS"
-    //       instead of the GUIslice ADATOUCH_PIN_CS.
     const char* m_acDrvTouch = "STMPE610(SPI-SW)";
-    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(TOUCH_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
+    Adafruit_STMPE610 m_touch = Adafruit_STMPE610(ADATOUCH_PIN_CS, ADATOUCH_PIN_SDI, ADATOUCH_PIN_SDO, ADATOUCH_PIN_SCK);
   #else // No interface flag set
     #error "DRV_TOUCH_ADA_STMPE610 but no ADATOUCH_I2C_* or ADATOUCH_SPI_* set in config"
   #endif
