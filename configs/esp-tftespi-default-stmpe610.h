@@ -127,7 +127,7 @@ extern "C" {
 
   // Touch bus & pinout
   #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
+  #define ADATOUCH_PIN_CS     13    // Touch device chip select (for ADATOUCH_SPI_HW=1)
 
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

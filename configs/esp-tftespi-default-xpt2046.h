@@ -114,6 +114,12 @@ extern "C" {
   // SECTION 4A: Update your pin connections here
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+
+  // TFT_eSPI: Chip Select for Touch Device
+  // - Since we are not using the TFT_eSPI's integrated XPT2046 touch driver,
+  //   it is best to disable it. This can be done by ensuring that the TOUCH_CS line
+  //   in TFT_eSPI's User_Setup.h is commented out.
+
   // Touch bus & pinout
   #define XPT2046_CS     3
 
