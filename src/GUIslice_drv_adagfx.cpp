@@ -211,7 +211,7 @@ extern "C" {
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #else
     const char* m_acDrvDisp = "ADA_PCD8544(SPI-SW)";
-    Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, DAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+    Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
 
 // ------------------------------------------------------------------------
