@@ -1069,9 +1069,19 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 #endif // DRV_TOUCH_ADA_SIMPLE
 
 
+
 #if defined(DRV_TOUCH_TYPE_EXTERNAL)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+
+  // Capture default calibration settings for resistive displays
+  #if defined(DRV_TOUCH_TYPE_RES)
+    pGui->nTouchCalXMin = ADATOUCH_X_MIN;
+    pGui->nTouchCalXMax = ADATOUCH_X_MAX;
+    pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
+    pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
+  #endif // DRV_TOUCH_TYPE_RES
+
   #if defined(DRV_TOUCH_ADA_STMPE610)
     #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
@@ -1195,6 +1205,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   if (m_touch.touched()) {
     TS_Point ptTouch = m_touch.getPoint();
     // FT6206 coordinates appear to have flipped both axes vs other controllers
+    // - Confirmed by comments in Adafruit_FT6206 library example code:
+    //   "rotate coordinate system. flip it around to match the screen."
     m_nLastRawX = nDispOutMaxX-ptTouch.x;
     m_nLastRawY = nDispOutMaxY-ptTouch.y;
     m_nLastRawPress = 255;  // Select arbitrary non-zero value
