@@ -84,6 +84,9 @@ public class GeneralModel extends WidgetModel {
   /** The Constant GENERAL_MAX_STRING. */
   public static final int GENERAL_MAX_STRING  = 12;
  
+  /** The Constant GENERAL_MAX_STRING. */
+  public static final int GENERAL_RECENT_COLORS = 13;
+ 
   /** The themes. */
   List<String> themes;
   
@@ -119,7 +122,7 @@ public class GeneralModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.GENERAL;
-    data = new Object[13][5];
+    data = new Object[14][5];
 
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
     initProp(GENERAL_THEME, String.class, "GEN-100", Boolean.FALSE,"Theme","");
@@ -138,7 +141,7 @@ public class GeneralModel extends WidgetModel {
     initProp(GENERAL_HSPACING, Integer.class, "GEN-108", Boolean.FALSE,"Horizontal Spacing between widgets",Integer.valueOf(20));
     initProp(GENERAL_VSPACING, Integer.class, "GEN-109", Boolean.FALSE,"Vertical Spacing between widgets",Integer.valueOf(20));
     initProp(GENERAL_MAX_STRING, Integer.class, "GEN-110", Boolean.FALSE,"MAX_STR",Integer.valueOf(100));
-
+    initProp(GENERAL_RECENT_COLORS, String.class, "GEN-111", Boolean.TRUE,"Recent Colors","");
   }
   
   /**
@@ -179,6 +182,19 @@ public class GeneralModel extends WidgetModel {
   }
   
   /**
+   * getRowCount gives back the number of user visible properties
+   * its 1 less than the data[][] table size because we hide 
+   * recent colors from the user and only show them inside
+   * our color chooser.
+   * @return the row count
+   * @see javax.swing.table.TableModel#getRowCount()
+   */
+  @Override
+  public int getRowCount() {
+    return data.length-1;  
+  }
+
+  /**
    * Gets the theme class name.
    *
    * @return the theme class name
@@ -202,8 +218,30 @@ public class GeneralModel extends WidgetModel {
     return (String) data[GENERAL_TARGET][PROP_VAL_VALUE];
   }
 
+  /**
+   * setTarget sets the target platform
+   * @param s
+   */
   public void setTarget(String s) { 
     shortcutValue(s, GENERAL_TARGET);
+  }
+
+  /**
+   * Gets the recent colors.
+   *
+   * @return the recent colors
+   */
+  public String getRecentColors() {
+    return (String) data[GENERAL_RECENT_COLORS][PROP_VAL_VALUE];
+  }
+
+  /**
+   * setRecentColors sets the recent colors
+   * called by our color chooser.
+   * @param s
+   */
+  public void setRecentColors(String s) { 
+    shortcutValue(s, GENERAL_RECENT_COLORS);
   }
 
   /**

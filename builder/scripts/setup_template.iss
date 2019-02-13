@@ -18,6 +18,8 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+; Right now we are not setting 64 bit mode 
+;ArchitecturesInstallIn64BitMode=x64 ia64
 AppId={{D2C2D2DF-35CC-4921-9F51-2F31B8C0E3C5}
 AppName=GUIsliceBuilder
 AppVersion=${applicationVersion}
@@ -33,7 +35,7 @@ DisableWelcomePage=no
 DisableProgramGroupPage=yes
 LicenseFile=..\\..\\docs\\LICENSE.txt
 OutputDir=.
-OutputBaseFilename=builder-win64-${applicationVersion}
+OutputBaseFilename=builder-win-${applicationVersion}
 SetupIconFile=..\\tmp\\windows\\GUIsliceBuilder\\guislicebuilder.ico
 Compression=lzma
 SolidCompression=yes

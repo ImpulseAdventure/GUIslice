@@ -28,14 +28,11 @@ package builder.controller;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +40,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import builder.Builder;
 import builder.common.ColorFactory;
@@ -82,7 +81,6 @@ import builder.widgets.Widget;
  * <li>arduino.t for arduino code templates
  * <li>arduino_min.t for arduino flash code templates
  * <li>linux.t for linux code templates
- * </ul>
  * 
  * Kind of a Quick and Dirty implementation.
  * 
@@ -120,6 +118,24 @@ public class CodeGenerator {
   
   /** The Constant LINUX_FONT_TEMPLATE. */
   public  final static String LINUX_FONT_TEMPLATE    = "linuxfonts.csv";
+  
+  /** The Constant SRC_SD for reading image from SD card. */
+  public  final static String SRC_SD   = "gslc_GetImageFromSD((const char*)";
+  
+  /** The Constant SRC_PROG for reading image from FLASH or PROGMEM. */
+  public  final static String SRC_PROG = "gslc_GetImageFromProg((const unsigned char*)";
+
+  /** The Constant SRC_RAM for reading image from SRAM. */
+  public  final static String SRC_RAM  = "gslc_GetImageFromRam((unsigned char*)";
+  
+  /** The Constant FROM_SD for reading image from SD card. */
+  public  final static String FROM_SD   = "From File";
+  
+  /** The Constant FROM_PROG for reading image from FLASH or PROGMEM. */
+  public  final static String FROM_PROG = "From PROGMEM (FLASH)";
+
+  /** The Constant FROM_RAM for reading image from SRAM. */
+  public  final static String FROM_RAM  = "From SRAM";
   
   /** The Constant ARDUINO_RES. */
   public  final static String ARDUINO_RES            = "arduino_res";
@@ -160,6 +176,9 @@ public class CodeGenerator {
   /** The Constant COLOR_TEMPLATE. */
   private final static String COLOR_TEMPLATE         = "<COLOR>";
   
+  /** The Constant DEFINE_PG_MAX */
+  private final static String DEFINE_PG_MAX_TEMPLATE = "<DEFINE_PG_MAX>";
+  
   /** The Constant DRAWFUNC_TEMPLATE. */
   private final static String DRAWFUNC_TEMPLATE      = "<DRAWFUNC>";
   
@@ -171,6 +190,9 @@ public class CodeGenerator {
   
   /** The Constant GRAPH_TEMPLATE. */
   private final static String GRAPH_TEMPLATE         = "<GRAPH>";
+  
+  /** The Constant GUI_ELEMENT_TEMPLATE. */
+  private final static String GUI_ELEMENT_TEMPLATE   = "<GUI_ELEMENT>";
   
   /** The Constant GROUP_TEMPLATE. */
   private final static String GROUP_TEMPLATE         = "<GROUP>";
@@ -184,14 +206,29 @@ public class CodeGenerator {
   /** The Constant IMAGETRANSPARENT_TEMPLATE. */
   private final static String IMAGETRANSPARENT_TEMPLATE = "<IMAGETRANSPARENT>";
   
+  /** The Constant PAGEADD_TEMPLATE. */
+  private final static String PAGEADD_TEMPLATE       = "<PAGEADD>"; 
+  
   /** The Constant PROGMEM_TEMPLATE. */
   private final static String PROGMEM_TEMPLATE       = "<PROGMEM>"; 
   
   /** The Constant PROGRESSBAR_TEMPLATE. */
   private final static String PROGRESSBAR_TEMPLATE   = "<PROGRESSBAR>";
   
+  /** The Constant PROGRESSBARSTYLE_TEMPLATE. */
+  private final static String PROGRESSBARSTYLE_TEMPLATE = "<PROGRESSBARSTYLE>";
+  
+  /** The Constant PROGRESSBARIND_TEMPLATE. */
+  private final static String PROGRESSBARIND_TEMPLATE   = "<PROGRESSBARIND>";
+  
+  /** The Constant PROGRESSBARTICKS_TEMPLATE. */
+  private final static String PROGRESSBARTICKS_TEMPLATE = "<PROGRESSBARTICKS>";
+  
   /** The Constant RADIOBUTTON_TEMPLATE. */
   private final static String RADIOBUTTON_TEMPLATE   = "<RADIOBUTTON>";
+  
+  /** The Constant ROTATE_TEMPLATE. */
+  private final static String ROTATE_TEMPLATE        = "<ROTATE>";
   
   /** The Constant SLIDER_TEMPLATE. */
   private final static String SLIDER_TEMPLATE        = "<SLIDER>";
@@ -201,6 +238,9 @@ public class CodeGenerator {
   
   /** The Constant SLIDER_LOOP_TEMPLATE. */
   private final static String SLIDER_LOOP_TEMPLATE   = "<SLIDER_CB_LOOP>";
+  
+  /** The Constant STARTUP_TEMPLATE. */
+  private final static String STARTUP_TEMPLATE       = "<STARTUP>";
   
   /** The Constant TEXT_TEMPLATE. */
   private final static String TEXT_TEMPLATE          = "<TEXT>";
@@ -337,14 +377,17 @@ public class CodeGenerator {
   /** The Constant SLIDER_ENUMS_END. */
   private final static String SLIDER_ENUMS_END       = "//<Slider Enums !End!>";
   
+  /** The Constant STARTUP_SECTION. */
+  private final static String STARTUP_SECTION         = "//<Startup !Start!>";
+  
+  /** The Constant STARTUP_END. */
+  private final static String STARTUP_END             = "//<Startup !End!>";
+  
   /** The Constant TICK_CB_SECTION. */
   private final static String TICK_CB_SECTION        = "//<Tick Callback !Start!>";
   
   /** The Constant TICK_CB_END. */
   private final static String TICK_CB_END            = "//<Tick Callback !End!>";
-  
-  /** The Constant PAGE_ENUM_MACRO. */
-  private final static String PAGE_ENUM_MACRO        = "PAGE_ENUM";
   
   /** The Constant BACKGROUND_COLOR_MACRO. */
   private final static String BACKGROUND_COLOR_MACRO = "BACKGROUND_COLOR";
@@ -369,6 +412,9 @@ public class CodeGenerator {
   
   /** The Constant DRAWFUNC_MACRO. */
   private final static String DRAWFUNC_MACRO         = "DRAWFUNC";
+  
+  /** The Constant FLASH_MACRO. */
+  private final static String FLASH_MACRO            = "FLASH";
   
   /** The Constant FILL_COLOR_MACRO. */
   private final static String FILL_COLOR_MACRO       = "FILL_COLOR";
@@ -409,8 +455,17 @@ public class CodeGenerator {
   /** The Constant IMAGE_MACRO. */
   private final static String IMAGE_MACRO            = "IMAGE_DEFINE";
   
+  /** The Constant IMAGE_FROM_MACRO. */
+  private final static String IMAGE_FROM_MACRO       = "IMAGE_FROM_SRC";
+  
   /** The Constant IMAGE_SEL_MACRO. */
   private final static String IMAGE_SEL_MACRO        = "IMAGE_SEL_DEFINE";
+  
+  /** The Constant IMAGE_SOURCE_MACRO. */
+  private final static String IMAGE_SOURCE_MACRO     = "IMAGE_SOURCE";
+  
+  /** The Constant IMAGE_SOURCE_MACRO. */
+  private final static String IMAGE_SEL_SOURCE_MACRO = "IMAGE_SEL_SOURCE";
   
   /** The Constant IMAGE_FORMAT_MACRO. */
   private final static String IMAGE_FORMAT_MACRO     = "IMAGE_FORMAT";
@@ -424,11 +479,20 @@ public class CodeGenerator {
   /** The Constant MAX_MACRO. */
   private final static String MAX_MACRO              = "MAX";
   
+  /** The Constant PAGE_ENUM_MACRO. */
+  private final static String PAGE_ENUM_MACRO        = "PAGE_ENUM";
+  
+  /** The Constant ROTATION_MACRO. */
+  private final static String ROTATION_MACRO         = "ROTATION";
+  
   /** The Constant ROWS_MACRO. */
   private final static String ROWS_MACRO             = "ROWS";
   
   /** The Constant SIZE_MACRO. */
   private final static String SIZE_MACRO             = "SIZE";
+  
+  /** The Constant STRIP_ENUM_MACRO. */
+  private final static String STRIP_ENUM_MACRO        = "STRIP_ENUM";
   
   /** The Constant STYLE_MACRO. */
   private final static String STYLE_MACRO            = "STYLE";
@@ -451,6 +515,9 @@ public class CodeGenerator {
   /** The Constant TICKSZ_MACRO. */
   private final static String TICKSZ_MACRO           = "TICKSZ";
   
+  /** The Constant TIPSZ_MACRO. */
+  private final static String TIPSZ_MACRO            = "TIPSZ";
+  
   /** The Constant TRIM_COLOR_MACRO. */
   private final static String TRIM_COLOR_MACRO       = "TRIM_COLOR";
   
@@ -466,6 +533,9 @@ public class CodeGenerator {
   /** The Constant Y_MACRO. */
   private final static String Y_MACRO                = "Y";
   
+  /** The Constant MACRO_PATTERN is our regex search pattern '$<xxx>'. */
+  private static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\<(.+?)\\>");
+
   /** The Constant BEGIN_LINE. */
   // finite state machine for printing enums
   private final static int BEGIN_LINE    = 0;
@@ -521,8 +591,8 @@ public class CodeGenerator {
   /** The template file name. */
   String templateFileName = null;
   
-  /** The font list. */
-  List<FontItem> fontList = new ArrayList<FontItem>();
+  /** The font list of enums. */
+  List<Pair> fontEnums = new ArrayList<Pair>();
   
   /** The template map. */
   HashMap<String, Integer> templateMap;
@@ -554,6 +624,18 @@ public class CodeGenerator {
   
   /** The background color */
   private Color background;
+  
+  /** The Screen Width 
+   * Set here for JUnit testing 
+   * Otherwise set by GeneralModel values
+   */
+  private int screenWidth = 320;
+  
+  /** The Screen Height 
+   * Set here for JUnit testing 
+   * Otherwise set by GeneralModel values
+   */
+  private int screenHeight = 240;
   
   /**
    * Gets the single instance of CodeGenerator.
@@ -599,6 +681,8 @@ public class CodeGenerator {
   public String generateCode(String folder, String fileName, List<PagePane> pages) {
     this.pages = pages;
     GeneralModel generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
+    screenWidth = generalModel.getWidth();
+    screenHeight = generalModel.getHeight();
     cf = ColorFactory.getInstance();
     ff = FontFactory.getInstance();
     target = generalModel.getTarget();
@@ -609,7 +693,7 @@ public class CodeGenerator {
     target = generalModel.getTarget();
     maxstr_len = generalModel.getMaxStr();
     background = generalModel.getFillColor();
-    listOfTemplates = new ArrayList[32];
+    listOfTemplates = new ArrayList[64];
     switch(target) {
       case "linux":
         defaultFileName = LINUX_FILE;
@@ -637,13 +721,13 @@ public class CodeGenerator {
     String tmp = fileName.substring(0,n);
     String skeletonName = new String(folder + System.getProperty("file.separator") + tmp + fileExtension);
     projectFile = new File(skeletonName);
+    backupName = null;
+    backupFile = null;
     if(projectFile.exists()) {
-      // Make a backup copy of projectFile and overwrite backup file if it exists.
+      // Make a backup copy of projectFile
       backupName = new String(skeletonName + ".bak");
-      backupFile = new File(backupName);
-      copyFile(projectFile, backupFile);
+      CommonUtil.getInstance().backupFile(projectFile);
     }
-    
     try {
       // Here we are either going to use a previously generated file as input
       // or we are generating a brand new file from one of our templates.
@@ -729,13 +813,16 @@ public class CodeGenerator {
    * doCodeGen is the main code generation loop.
    */
   public void doCodeGen() { 
-    fontList.clear();
+    fontEnums.clear();
     refList.clear();
     try {
 			fw = new FileWriter(projectFile);
 			pw = new PrintWriter(fw);
       while ((line = br.readLine()) != null) {
         if (!line.startsWith(PREFIX)) {
+          // we need to remove old artifacts
+          if (line.startsWith("gslc_tsElem") && line.contains("m_asMainElem"))
+            continue;
           pw.printf("%s%n",line);
         } else {
           if (line.equals(FONT_SECTION)) {
@@ -756,6 +843,8 @@ public class CodeGenerator {
             drawCbSection();
           } else if (line.equals(SLIDER_CB_SECTION)) {
             sliderCbSection();
+          } else if (line.equals(STARTUP_SECTION)) {
+            startupSection();
           } else if (line.equals(TICK_CB_SECTION)) {
             tickCbSection();
           } else if (line.equals(INITGUI_SECTION)) {
@@ -828,7 +917,7 @@ public class CodeGenerator {
     for (WidgetModel m : modelList) {
       strKey = m.getKey();
       int n = strKey.indexOf("$");
-      strCount = strKey.substring(n+1, strKey.length());
+      strCount = strKey.substring(n+1);
       if (m.getType().equals(EnumFactory.IMAGE)) {
         pw.printf("char m_strImgPath%s[MAX_PATH];%n", strCount);
       } else { // must be EnumFactory.IMAGEBUTTON
@@ -852,26 +941,68 @@ public class CodeGenerator {
     // Find our Text, TextButton, and TextBox models
     // and pull out from the models the font keys that we can map 
     // to something GUIslice API can understand.
-    List<String> fontNames = new ArrayList<String>();
     for (PagePane p : pages) {
       for (Widget w : p.getWidgets()) {
         if (w.getType().equals(EnumFactory.TEXT)) {
-          fontNames.add(((TextModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TextModel)w.getModel()).getFontDisplayName(),
+                                 ((TextModel)w.getModel()).getFontEnum()));
         } else if (w.getType().equals(EnumFactory.TEXTBUTTON)) {
-          fontNames.add(((TxtButtonModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TxtButtonModel)w.getModel()).getFontDisplayName(),
+                                 ((TxtButtonModel)w.getModel()).getFontEnum()));
         } else if (w.getType().equals(EnumFactory.TEXTBOX)) {
-          fontNames.add(((TextBoxModel)w.getModel()).getFontDisplayName());
+          fontEnums.add(new Pair(((TextBoxModel)w.getModel()).getFontDisplayName(),
+                                 ((TextBoxModel)w.getModel()).getFontEnum()));
         }
       }
     }
-    // Now we have a full list of font names but we also may have duplicates
-    // so we sort the list in order and remove duplicates.
-    sortListandRemoveDups(fontNames);
-    // Now make pass using our now compact set of font names to 
-    // grab all of our font data (FontItem) for each font in use.
-    for (String fName : fontNames) {
-      FontItem item = ff.getFontItem(fName);
+    if (fontEnums.size() > 1) {
+      // Now we have a full list of font enums but we also may have duplicates
+      // so we sort the list in order and remove duplicates.
+      Collections.sort(fontEnums, new Comparator<Pair>() {
+          public int compare(Pair one, Pair other) {
+              return one.getValue().compareTo(other.getValue());
+          }
+      }); 
+      Pair pairCur = null;
+      Pair pairPrev = new Pair("","");
+      ListIterator<Pair> pairIter = fontEnums.listIterator();
+      while(pairIter.hasNext()) {
+        pairCur = pairIter.next();
+        if (pairCur.getValue().equals(pairPrev.getValue())) {
+          if (!pairCur.getKey().equals(pairPrev.getKey())) {
+            pw.printf("// Warning: Found Duplicate Font Enum with different Fonts <%s -> %s> mapping ignored%n", 
+                      pairCur.getValue(), pairCur.getKey());
+          }
+          pairIter.remove();
+        } else {
+          pairPrev = pairCur;
+        }
+      }
+    }
+    // Now make pass using our now compact set of font enums to 
+    // create a compact list of font names and since many enums 
+    // may point to a single font name we will sort and remove dups.
+    List<FontItem> fontList = new ArrayList<FontItem>();
+    for (Pair pair : fontEnums) {
+      FontItem item = ff.getFontItem(pair.getKey());
       fontList.add(item);
+    }
+    if (fontList.size() > 1) {
+      Collections.sort(fontList, new Comparator<FontItem>() {
+          public int compare(FontItem one, FontItem other) {
+              return one.getDisplayName().compareTo(other.getDisplayName());
+          }
+      }); 
+      FontItem itemCur = null;
+      FontItem itemPrev = null;
+      ListIterator<FontItem> itemIter = fontList.listIterator();
+      while(itemIter.hasNext()) {
+        itemCur = itemIter.next();
+        if (itemPrev != null && itemCur.getDisplayName().equals(itemPrev.getDisplayName()))
+          itemIter.remove();
+        else 
+          itemPrev = itemCur;
+      }
     }
     // finish off by outputting font includes or defines, if any
     List<String> dups = new ArrayList<String>();
@@ -917,18 +1048,66 @@ public class CodeGenerator {
       getModelsByType(p.getWidgets(), widgetTypes, modelList);
     }
     // now pull out from the models the resources as strings that GUIslice can understand
+    String snorm = null;
+    String sel = null;
+    String sMemory = null;
+    String sCType = null;
     for (WidgetModel m : modelList) {
       if (m.getType().equals(EnumFactory.IMAGE)) {
-        String s = String.format("#define %-25s    \"%s\"", ((ImageModel) m).getDefine(),
-            ((ImageModel) m).getImageName());
-        resources.add(s);
+        if (!((ImageModel)m).getDefine().isEmpty()) {
+          snorm = String.format("#define %-25s    \"%s\"", 
+              ((ImageModel) m).getDefine(),
+              ((ImageModel) m).getImageName());
+          resources.add(snorm);
+        } else if (!((ImageModel)m).getExternName().isEmpty()) {
+          if (((ImageModel)m).getMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          snorm = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImageModel) m).getExternName(), sMemory);
+          resources.add(snorm);
+        }
       } else { // must be EnumFactory.IMAGEBUTTON
-        String s = String.format("#define %-25s    \"%s\"", ((ImgButtonModel) m).getDefine(),
-            ((ImgButtonModel) m).getImageName());
-        String sel = String.format("#define %-25s    \"%s\"", ((ImgButtonModel) m).getSelDefine(),
-            ((ImgButtonModel) m).getSelectImageName());
-        resources.add(s);
-        resources.add(sel);
+        if (!((ImgButtonModel)m).getDefine().isEmpty()) {
+          snorm = String.format("#define %-25s    \"%s\"", 
+              ((ImgButtonModel) m).getDefine(),
+              ((ImgButtonModel) m).getImageName());
+          resources.add(snorm);
+        }
+        if (!((ImgButtonModel)m).getSelDefine().isEmpty()) {
+          sel = String.format("#define %-25s    \"%s\"", 
+              ((ImgButtonModel) m).getSelDefine(),
+              ((ImgButtonModel) m).getSelectImageName());
+          resources.add(sel);
+        }
+        if (!((ImgButtonModel)m).getExternName().isEmpty()) {
+          if (((ImgButtonModel)m).getMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          snorm = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImgButtonModel) m).getExternName(), sMemory);
+          resources.add(snorm);
+        }
+        if (!((ImgButtonModel)m).getSelExternName().isEmpty()) {
+          if (((ImgButtonModel)m).getSelMemory().equals("PROGMEM")) {
+            sMemory = "PROGMEM";
+            sCType = "const unsigned short";
+          } else {
+            sMemory = "";
+            sCType = "unsigned char";
+          }
+          sel = String.format("extern \"C\" %s %s[] %s;", 
+              sCType, ((ImgButtonModel) m).getSelExternName(), sMemory);
+          resources.add(sel);
+        }
       }
     }
     // Sort the list in order then make another pass to remove dups.
@@ -974,7 +1153,7 @@ public class CodeGenerator {
           ref = "E_SCROLLBAR";
           strKey = w.getModel().getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = ref + strCount;
           enumList.add(ref);
         }
@@ -986,10 +1165,10 @@ public class CodeGenerator {
       // Now output the list
       printEnums(enumList);
     }
-    enumList.clear();
     // Final pass output any font enums
-    for (FontItem f : fontList) {
-        enumList.add(f.getFontId());
+    enumList.clear();
+    for (Pair pair : fontEnums) {
+        enumList.add(pair.getValue());
     }
     if (enumList.size() > 0) 
       printEnums(enumList);
@@ -1005,16 +1184,19 @@ public class CodeGenerator {
    */
   private void definesSection() throws IOException {
     pw.printf("%s%n",line);
+    List<String> templateLines = null;
+    List<String> outputLines = null;
+    int i;
     // output number of pages
     String elemTitle = "MAX_PAGE";
     pw.printf("#define %-24s%d%n", elemTitle, pages.size());
     // output number of fonts
     elemTitle = "MAX_FONT";
-    pw.printf("#define %-24s%d%n", elemTitle, fontList.size());
+    pw.printf("#define %-24s%d%n", elemTitle, fontEnums.size());
     // build up a list of counts for out various UI widgets
     // build up a list of counts for out various UI widgets
     // first are we doing arduino minimum? if so, count _P functions stored in flash
-    int i = 0;
+    i = 0;
     if (targetPlatform == ARDUINO_MIN_PLATFORM) {
       int[] elem_cnt = new int[pages.size()];
       int[] flash_cnt = new int[pages.size()];
@@ -1026,59 +1208,31 @@ public class CodeGenerator {
       widgetTypes.add(EnumFactory.SLIDER);
       widgetTypes.add(EnumFactory.TEXT);
       widgetTypes.add(EnumFactory.TEXTBUTTON);
+      i=0;
       for (PagePane p : pages) {
         flash_cnt[i] = countByType(p.getWidgets(), widgetTypes);
         elem_cnt[i] = p.getWidgets().size();
         i++;
       }
       // we also need to output some comments
-      List<String> templateLines = loadTemplate(PROGMEM_TEMPLATE);
+      templateLines = loadTemplate(PROGMEM_TEMPLATE);
       writeTemplate(templateLines);
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN";
+      templateLines = loadTemplate(DEFINE_PG_MAX_TEMPLATE);
+      i=0;
       for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, elem_cnt[i]);
-        }
+        macro[0] = STRIP_ENUM_MACRO;
+        replacement[0] = convertEnum(p.getEnum());
+        macro[1] = COUNT_MACRO;
+        replacement[1] = String.valueOf(elem_cnt[i]);
+        macro[2] = FLASH_MACRO;
+        replacement[2] = String.valueOf(flash_cnt[i]);
+        macro[3] = null;
+        outputLines = expandMacros(templateLines, macro, replacement);
+        writeTemplate(outputLines);
         i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
-      }
-      pw.printf("#if (GSLC_USE_PROGMEM)%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_PROG";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, flash_cnt[i]);
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_PROG", i);
-      }
-      pw.printf("#else%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_PROG";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, 0);
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_PROG", i);
-      }
-      pw.printf("#endif%n");
-      i = 0;
-      elemTitle = "MAX_ELEM_PG_MAIN_RAM";
-      for (PagePane p : pages) {
-        if (p.getWidgets().size() > 0) {
-          if (i==0) {
-            pw.printf("#define %-24sMAX_ELEM_PG_MAIN - MAX_ELEM_PG_MAIN_PROG%n", elemTitle);
-          } else {
-            pw.printf("#define %-24sMAX_ELEM_PG_EXTRA%d - MAX_ELEM_PG_EXTRA_PROG%d%n", elemTitle,i,i);
-          }
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA_RAM", i);
       }
     } else {
-      elemTitle = "MAX_ELEM_PG_MAIN";
+      templateLines = loadTemplate(DEFINE_PG_MAX_TEMPLATE);
       for (PagePane p : pages) {
         int count = 0;
         for (Widget w : p.getWidgets()) {
@@ -1088,40 +1242,39 @@ public class CodeGenerator {
             count++;
           }
         }
-        if (count > 0) {
-          pw.printf("#define %-24s%d%n", elemTitle, count);
-          if (i==0) {
-            pw.printf("#define %s %s%n", "MAX_ELEM_PG_MAIN_RAM",elemTitle);
-          } else {
-            pw.printf("#define %s%d %s%n", "MAX_ELEM_PG_EXTRA_RAM",i,elemTitle);
-          }
-        }
-        i++;
-        elemTitle = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
+        macro[0] = STRIP_ENUM_MACRO;
+        replacement[0] = convertEnum(p.getEnum());
+        macro[1] = COUNT_MACRO;
+        replacement[1] = String.valueOf(count);
+        macro[2] = null;
+        outputLines = expandMacros(templateLines, macro, replacement);
+        writeTemplate(outputLines);
       }
     }
     readPassString(DEFINES_END);
   }
   
   /**
-   * Gui section.
+   * Gui Elements section.
    *
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
   private void guiSection() throws IOException {
     pw.printf("%s%n",line);
-    // output GUI extra elements,if we have more than one page
+    // output GUI elements
     String strElement = "";
-    if (pages.size() > 1) {
-      for (int i=1; i<pages.size(); i++) {
-        if (pages.get(i).getWidgets().size() > 0) {
-          strElement = "gslc_tsElem";
-          pw.printf("%-25sm_asExtraElem[MAX_ELEM_PG_EXTRA_RAM%d];%n", strElement, i);
-          strElement = "gslc_tsElemRef";
-          pw.printf("%-25sm_asExtraElemRef[MAX_ELEM_PG_EXTRA%d];%n", strElement, i);
-        }
-      }
+    List<String> templateLines = loadTemplate(GUI_ELEMENT_TEMPLATE);
+    List<String> outputLines = null;
+    int i=0;
+    for (PagePane p : pages) {
+      macro[0] = STRIP_ENUM_MACRO;
+      replacement[0] = convertEnum(p.getEnum());
+      macro[1] = COUNT_MACRO;
+      replacement[1] = String.valueOf(++i);
+      macro[2] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
     }
     // extension widgets have separate storage
     // Except, for reasons unknown to me extra storage isn't used by arduino min
@@ -1144,7 +1297,7 @@ public class CodeGenerator {
           nCols = ((TextBoxModel)w.getModel()).getNumTextColumns();
           strKey = w.getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = "m_sTextbox" + strCount;
           strElement = "gslc_tsXTextbox";
           pw.printf("%-32s%s;%n", strElement, ref);
@@ -1162,7 +1315,7 @@ public class CodeGenerator {
           nRows = ((GraphModel)w.getModel()).getNumRows();
           strKey = w.getKey();
           n = strKey.indexOf("$");
-          strCount = strKey.substring(n+1, strKey.length());
+          strCount = strKey.substring(n+1);
           ref = "m_sGraph" + strCount;
           strElement = "gslc_tsXGraph";
           pw.printf("%-32s%s;%n", strElement, ref);
@@ -1231,19 +1384,51 @@ public class CodeGenerator {
     // save page enum for our quick access code generation section
     
     // quick access may be needed for progressbars, sliders, and text that is changed dynamically at runtime.
+    String ref = null;
     for (PagePane p : pages) {
       for (Widget w : p.getWidgets()) {
         if (w.getType().equals(EnumFactory.TEXT)) {
-          if (((TextModel)w.getModel()).getTextStorage() > 0) {
+          ref = ((TextModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
             refList.add(w.getModel());
             w.getModel().setPageEnum(p.getEnum());
           }
-        } else if (w.getType().equals(EnumFactory.PROGRESSBAR) || 
-                   w.getType().equals(EnumFactory.TEXTBOX)      ||
-                   w.getType().equals(EnumFactory.GRAPH)      ||
-                   w.getType().equals(EnumFactory.SLIDER)) {
-          refList.add(w.getModel());
-          w.getModel().setPageEnum(p.getEnum());
+        } else if (w.getType().equals(EnumFactory.PROGRESSBAR)) {
+          ref = ((ProgressBarModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.TEXTBOX)) {
+          ref = ((GraphModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.GRAPH)) {
+          ref = ((TextModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
+        } else if (w.getType().equals(EnumFactory.SLIDER)) {
+          ref = ((SliderModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
         }
       }
     }
@@ -1254,7 +1439,6 @@ public class CodeGenerator {
               return one.getKey().compareTo(other.getKey());
           }
       }); 
-      String ref = "";
       for (WidgetModel m : refList) {
         if (m.getType().equals(EnumFactory.TEXT)) {
             ref = ((TextModel) m).getElementRef();
@@ -1262,6 +1446,10 @@ public class CodeGenerator {
             ref = ((ProgressBarModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.GRAPH)) {
           ref = ((GraphModel) m).getElementRef();
         } else { // must be EnumFactory.SLIDER
@@ -1321,6 +1509,35 @@ public class CodeGenerator {
       pw.printf("%s%n", SLIDER_CB_SECTION);
       readPassString(SLIDER_CB_END);
     }
+  }
+  
+  /**
+   * Startup section.
+   *
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  private void startupSection() throws IOException {
+    pw.printf("%s%n",line);
+    // set gslc_SetPageCur() to our first page's ENUM
+    List<String> templateLines = loadTemplate(STARTUP_TEMPLATE);
+    List<String> outputLines;
+    macro[0] = PAGE_ENUM_MACRO;
+    replacement[0] = pages.get(0).getEnum();
+    macro[1] = null;
+    outputLines = expandMacros(templateLines, macro, replacement);
+    writeTemplate(outputLines);
+    // do we need to rotate display?
+    if (screenHeight > screenWidth) {
+      templateLines = loadTemplate(ROTATE_TEMPLATE);
+      // need to store the value inside general model someday
+      macro[0] = ROTATION_MACRO;
+      replacement[0] = "0";
+      macro[1] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
+    }
+    readPassString(STARTUP_END);
   }
   
   /**
@@ -1405,25 +1622,27 @@ public class CodeGenerator {
    */
   private void initGUISection() throws IOException {
     pw.printf("%s%n",line);
-    String strMaxElem = "MAX_ELEM_PG_MAIN";
-    String strMaxRam = "MAX_ELEM_PG_MAIN_RAM";
-    pw.printf("  gslc_PageAdd(&m_gui,%s,m_asMainElem,%s,m_asMainElemRef,%s);%n", 
-        pages.get(0).getEnum(), strMaxRam, strMaxElem);
-    if (pages.size() > 1) {
-      for (int i=1; i<pages.size(); i++) {
-        strMaxElem = String.format("%s%d", "MAX_ELEM_PG_EXTRA", i);
-        strMaxRam = String.format("%s%d", "MAX_ELEM_PG_EXTRA_RAM", i);
-        pw.printf("  gslc_PageAdd(&m_gui,%s,m_asExtraElem,%s,m_asExtraElemRef,%s);%n", 
-          pages.get(i).getEnum(), strMaxRam, strMaxElem);
-      }
+    List<String> templateLines = loadTemplate(PAGEADD_TEMPLATE);
+    List<String> outputLines = null;
+    int i=0;
+    for (PagePane p : pages) {
+      macro[0] = PAGE_ENUM_MACRO;
+      replacement[0] = p.getEnum();
+      macro[1] = STRIP_ENUM_MACRO;
+      replacement[1] = convertEnum(p.getEnum());
+      macro[2] = COUNT_MACRO;
+      replacement[2] = String.valueOf(++i);
+      macro[3] = null;
+      outputLines = expandMacros(templateLines, macro, replacement);
+      writeTemplate(outputLines);
     }
     // deal with background
     String color = cf.colorAsString(background);
     macro[0] = BACKGROUND_COLOR_MACRO;
     macro[1] = null;
     replacement[0] = color;
-    List<String> templateLines = loadTemplate(BACKGROUND_TEMPLATE);
-    List<String> outputLines = expandMacros(templateLines, macro, replacement);
+    templateLines = loadTemplate(BACKGROUND_TEMPLATE);
+    outputLines = expandMacros(templateLines, macro, replacement);
     writeTemplate(outputLines);
     for (PagePane p : pages) {
       pw.printf("%n  // -----------------------------------%n");
@@ -1453,6 +1672,10 @@ public class CodeGenerator {
           ref = ((ProgressBarModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.GRAPH)) {
           ref = ((GraphModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGE)) {
+          ref = ((ImageModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.IMAGEBUTTON)) {
+          ref = ((ImgButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
         } else { // must be EnumFactory.SLIDER
@@ -1480,11 +1703,12 @@ public class CodeGenerator {
     macro[2] = FONT_REF_MACRO;
     macro[3] = FONT_SZ_MACRO;
     macro[4] = null;
-    for (FontItem f : fontList) {
-      replacement[0] = f.getFontId();
-      replacement[1] = f.getFontRefType();
-      replacement[2] = f.getFontRef();
-      replacement[3] = f.getFontSz();
+    for (Pair pair : fontEnums) {
+      FontItem item = ff.getFontItem(pair.getKey());
+      replacement[0] = pair.getValue();
+      replacement[1] = item.getFontRefType();
+      replacement[2] = item.getFontRef();
+      replacement[3] = item.getFontSz();
       outputLines = expandMacros(templateLines, macro, replacement);
       writeTemplate(outputLines);
     }
@@ -1878,7 +2102,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     int n = commonAPI(pageEnum, m);
     strKey = m.getKey();
     int ts = strKey.indexOf("$");
-    strCount = strKey.substring(ts+1, strKey.length());
+    strCount = strKey.substring(ts+1);
     macro[n] = ID_MACRO;
     replacement[n++] = strCount;
     macro[n] = FONT_ID_MACRO;
@@ -1933,12 +2157,40 @@ private void outputAPI(String pageEnum, WidgetModel m) {
   private void outputAPI_ImgButton(String pageEnum, ImgButtonModel m) {
     List<String> template = null;
     List<String> outputLines = null;
-
     int n = commonAPI(pageEnum, m);
-    macro[n] = IMAGE_MACRO;
-    replacement[n++] = ((ImgButtonModel)m).getDefine();
-    macro[n] = IMAGE_SEL_MACRO;
-    replacement[n++] = ((ImgButtonModel)m).getSelDefine();
+    
+    // NOTE: at some point we need to check for SRAM
+    if (m.getDefine() != null && !m.getDefine().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getDefine();
+      macro[n] = IMAGE_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getExternName() != null && !m.getExternName().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getExternName();
+      macro[n] = IMAGE_SOURCE_MACRO;
+      if (m.getMemory().equals("PROGMEM")) 
+        replacement[n++] = SRC_PROG;
+      else 
+        replacement[n++] = SRC_RAM;
+    }
+    // NOTE: at some point we need to check for SRAM
+    if (m.getSelDefine() != null && !m.getSelDefine().isEmpty()) {
+      macro[n] = IMAGE_SEL_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getSelDefine();
+      macro[n] = IMAGE_SEL_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getSelExternName() != null && !m.getSelExternName().isEmpty()) {
+      macro[n] = IMAGE_SEL_MACRO;
+      replacement[n++] = ((ImgButtonModel)m).getSelExternName();
+      macro[n] = IMAGE_SEL_SOURCE_MACRO;
+      if (m.getSelMemory().equals("PROGMEM")) 
+        replacement[n++] = SRC_PROG;
+      else 
+        replacement[n++] = SRC_RAM;
+    }
     macro[n] = IMAGE_FORMAT_MACRO;
     replacement[n++] = ((ImgButtonModel)m).getImageFormat();
     macro[n] = null;
@@ -1956,6 +2208,23 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(IMAGETRANSPARENT_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
+    if (!m.useDefaultColors()) {
+      if (!cf.getDefFillCol().equals(m.getFillColor())    || 
+          !cf.getDefFrameCol().equals(m.getFrameColor())  ||
+          !cf.getDefGlowCol().equals(m.getSelectedColor())) {
+        n = 0;
+        macro[n] = FILL_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFillColor());
+        macro[n] = FRAME_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFrameColor());
+        macro[n] = GLOW_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getSelectedColor());
+        macro[n] = null;
+        template = loadTemplate(COLOR_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      }
+    }
   }
   
   /**
@@ -1971,11 +2240,32 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     List<String> outputLines = null;
 
     int n = commonAPI(pageEnum, m);
-    macro[n] = IMAGE_MACRO;
-    replacement[n++] = m.getDefine();
+    // NOTE: at some point we need to check for SRAM
+    if (m.getDefine() != null && !m.getDefine().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = m.getDefine();
+      macro[n] = IMAGE_FROM_MACRO;
+      replacement[n++] = FROM_SD;
+      macro[n] = IMAGE_SOURCE_MACRO;
+      replacement[n++] = SRC_SD;
+    } 
+    if (m.getExternName() != null && !m.getExternName().isEmpty()) {
+      macro[n] = IMAGE_MACRO;
+      replacement[n++] = m.getExternName();
+      macro[n] = IMAGE_FROM_MACRO;
+      if (m.getMemory().equals("PROGMEM")) {
+        replacement[n++] = FROM_PROG;
+        macro[n] = IMAGE_SOURCE_MACRO;
+        replacement[n++] = SRC_PROG;
+      } else {
+        replacement[n++] = FROM_RAM;
+        macro[n] = IMAGE_SOURCE_MACRO;
+        replacement[n++] = SRC_RAM;
+      }
+    }
     macro[n] = IMAGE_FORMAT_MACRO;
     replacement[n++] = m.getImageFormat();
-    macro[8] = null;
+    macro[n] = null;
     template = loadTemplate(IMAGE_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
@@ -1990,6 +2280,23 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(IMAGETRANSPARENT_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
+    if (!m.useDefaultColors()) {
+      if (!cf.getDefFillCol().equals(m.getFillColor())    || 
+          !cf.getDefFrameCol().equals(m.getFrameColor())  ||
+          !cf.getDefGlowCol().equals(m.getSelectedColor())) {
+        n = 0;
+        macro[n] = FILL_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFillColor());
+        macro[n] = FRAME_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getFrameColor());
+        macro[n] = GLOW_COLOR_MACRO;
+        replacement[n++] = cf.colorAsString(m.getSelectedColor());
+        macro[n] = null;
+        template = loadTemplate(COLOR_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      }
+    }
   }
   
   /**
@@ -2006,25 +2313,22 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = MARK_COLOR_MACRO;
-    replacement[n++] = cf.colorAsString(((ProgressBarModel)m).getIndicatorColor());
+    replacement[n++] = cf.colorAsString(m.getIndicatorColor());
     macro[n] = CHECKED_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).isVertical());
+    replacement[n++] = String.valueOf(m.isVertical());
     macro[n] = COUNT_MACRO; 
     replacement[n++] = String.valueOf(countGauges);
     countGauges++;
     macro[n] = MIN_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMin());
+    replacement[n++] = String.valueOf(m.getMin());
     macro[n] = MAX_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMax());
+    replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = null;
     template = loadTemplate(PROGRESSBAR_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
-    if (m.isRampStyle()) {
-      pw.printf("  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RAMP);%n");
-    }
     if (!m.useDefaultColors()) {
       n = 0;
       macro[n] = FILL_COLOR_MACRO;
@@ -2037,6 +2341,53 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       template = loadTemplate(COLOR_TEMPLATE);
       outputLines = expandMacros(template, macro, replacement);
       writeTemplate(outputLines);
+    }
+    if (!m.getGaugeStyle().equals("Bar")) {
+      n=0;
+      macro[n] = STYLE_MACRO;
+      if (m.getGaugeStyle().equals("Ramp")) {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RAMP";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      } else {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RADIAL";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+        // now to check for indicator and ticks, only works with Radial
+        // only output if different from default values
+        if (m.getIndicatorSize() != 10 && m.getIndicatorTipSize() != 3) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getIndicatorColor());
+          macro[n] = SIZE_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorSize());
+          macro[n] = TIPSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorTipSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARIND_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+        if (!m.getTickColor().equals(Color.GRAY) &&
+             m.getDivisions() != 8 && 
+             m.getTickSize() != 5) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getTickColor());
+          macro[n] = DIVISIONS_MACRO;
+          replacement[n++] = String.valueOf(m.getDivisions());
+          macro[n] = TICKSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getTickSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARTICKS_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+      }
     }
   }   
   
@@ -2054,18 +2405,18 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = MARK_COLOR_MACRO;
-    replacement[n++] = cf.colorAsString(((ProgressBarModel)m).getIndicatorColor());
+    replacement[n++] = cf.colorAsString(m.getIndicatorColor());
     macro[n] = CHECKED_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).isVertical());
+    replacement[n++] = String.valueOf(m.isVertical());
     macro[n] = COUNT_MACRO; 
     replacement[n++] = String.valueOf(countGauges);
     countGauges++;
     macro[n] = MIN_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMin());
+    replacement[n++] = String.valueOf(m.getMin());
     macro[n] = MAX_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getMax());
+    replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(((ProgressBarModel)m).getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = FILL_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getFillColor());
     macro[n] = FRAME_COLOR_MACRO;
@@ -2074,8 +2425,52 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(PROGRESSBAR_TEMPLATE);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
-    if (m.isRampStyle()) {
-      pw.printf("  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RAMP);%n");
+    if (!m.getGaugeStyle().equals("Bar")) {
+      n=0;
+      macro[n] = STYLE_MACRO;
+      if (m.getGaugeStyle().equals("Ramp")) {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RAMP";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+      } else {
+        replacement[n++] = "GSLCX_GAUGE_STYLE_RADIAL";
+        macro[n] = null;
+        template = loadTemplate(PROGRESSBARSTYLE_TEMPLATE);
+        outputLines = expandMacros(template, macro, replacement);
+        writeTemplate(outputLines);
+        // now to check for indicator and ticks, only works with Radial
+        // only output if different from default values
+        if (m.getIndicatorSize() != 10 && m.getIndicatorTipSize() != 3) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getIndicatorColor());
+          macro[n] = SIZE_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorSize());
+          macro[n] = TIPSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getIndicatorTipSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARIND_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+        if (!m.getTickColor().equals(Color.GRAY) &&
+             m.getDivisions() != 8 && 
+             m.getTickSize() != 5) {
+          n=0;
+          macro[n] = MARK_COLOR_MACRO;
+          replacement[n++] = cf.colorAsString(m.getTickColor());
+          macro[n] = DIVISIONS_MACRO;
+          replacement[n++] = String.valueOf(m.getDivisions());
+          macro[n] = TICKSZ_MACRO;
+          replacement[n++] = String.valueOf(m.getTickSize());
+          macro[n] = null;
+          template = loadTemplate(PROGRESSBARTICKS_TEMPLATE);
+          outputLines = expandMacros(template, macro, replacement);
+          writeTemplate(outputLines);
+        }
+      }
     }
   }   
   
@@ -2197,7 +2592,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = MAX_MACRO;
     replacement[n++] = String.valueOf(m.getMax());
     macro[n] = VALUE_MACRO;
-    replacement[n++] = String.valueOf(m.getValue());
+    replacement[n++] = String.valueOf(m.getCurValue());
     macro[n] = STYLE_MACRO;
     replacement[n++] = String.valueOf(m.isTrimStyle());
     macro[n] = TRIM_COLOR_MACRO;
@@ -2251,7 +2646,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = HEIGHT_MACRO;
     replacement[n++] = String.valueOf(m.getTargetHeight());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2266,7 +2661,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       replacement[n++] = strText;
       strKey = m.getKey();
       ts = strKey.indexOf("$");
-      strCount = strKey.substring(ts+1, strKey.length());
+      strCount = strKey.substring(ts+1);
       macro[n] = ID_MACRO;
       replacement[n++] = strCount;
       templateFile = TEXT_UPDATE_TEMPLATE;
@@ -2353,7 +2748,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = HEIGHT_MACRO;
     replacement[n++] = String.valueOf(m.getTargetHeight());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2377,7 +2772,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
       replacement[n++] = strText;
       strKey = m.getKey();
       ts = strKey.indexOf("$");
-      strCount = strKey.substring(ts+1, strKey.length());
+      strCount = strKey.substring(ts+1);
       macro[n] = ID_MACRO;
       replacement[n++] = strCount;
       templateFile = TEXT_UPDATE_TEMPLATE;
@@ -2418,7 +2813,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = String.valueOf(((TextBoxModel)m).wrapText());
     strKey = m.getKey();
     int tb = strKey.indexOf("$");
-    strCount = strKey.substring(tb+1, strKey.length());
+    strCount = strKey.substring(tb+1);
     macro[n] = ID_MACRO; 
     replacement[n++] = strCount;
     macro[n] = COUNT_MACRO; 
@@ -2429,7 +2824,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     macro[n] = COLS_MACRO;
     replacement[n++] = String.valueOf(((TextBoxModel)m).getNumTextColumns());
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(((TextBoxModel)m).getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FILL_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getFillColor());
@@ -2458,7 +2853,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2513,7 +2908,7 @@ private void outputAPI(String pageEnum, WidgetModel m) {
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
-    fontId = ff.getFontItem(m.getFontDisplayName()).getFontId();
+    fontId = m.getFontEnum();
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
@@ -2664,7 +3059,7 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
        ref = "E_SCROLLBAR";
        strKey = m.getKey();
        n = strKey.indexOf("$");
-       strCount = strKey.substring(n+1, strKey.length());
+       strCount = strKey.substring(n+1);
        ref = ref + strCount;
        eList.add(ref);
      } else {
@@ -2695,35 +3090,6 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    return false;
  }
  
-  /**
-   * Copy file.
-   *
-   * @param inFile
-   *          the in file
-   * @param outFile
-   *          the out file
-   */
-  public void copyFile(File inFile, File outFile)
-  {	
-    InputStream inStream = null;
-    OutputStream outStream = null;
-    try{
-      inStream = new FileInputStream(inFile);
-      outStream = new FileOutputStream(outFile);
-      byte[] buffer = new byte[1024];
-      int length;
-      //copy the file content in bytes 
-      while ((length = inStream.read(buffer)) > 0){
-        outStream.write(buffer, 0, length);
-      }
-      inStream.close();
-      outStream.close();
-//      System.out.println("File is copied successfully!");
-    }catch(IOException e){
-      e.printStackTrace();
-    }
-  }
-  
   /**
    * Read pass string.
    *
@@ -2809,26 +3175,20 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    */
   private List<String> expandMacros(List<String> lines, String[] search, String[] replace) {
     List<String> outputList = new ArrayList<String>();
-    String l = "";
-    String r = "";
-    boolean bFoundMatch = false;
-    for (int i=0; i<lines.size(); i++) {
-      l = lines.get(i);
-      r = new String();
-      String tokens[] = l.split("[$]");
-      for (String t : tokens) {
-        bFoundMatch = false;
+    for (String l : lines) {
+      Matcher m = MACRO_PATTERN.matcher(l);
+      StringBuffer sb = new StringBuffer();
+      while (m.find()) {
+        String value = m.group(1);
         for (int j=0; search[j]!=null; j++) {
-          if(t.equals(search[j])) {
-            r = r + replace[j];
-            bFoundMatch = true;
+          if(value.equals(search[j])) {
+            m.appendReplacement(sb, replace[j]);
             break;
           } 
         }
-        if (!bFoundMatch) 
-          r = r + t;
-      }      
-      outputList.add(r);
+      }
+      m.appendTail(sb);
+      outputList.add(sb.toString());
     }
     return outputList;
   }
@@ -2945,8 +3305,8 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
    */
   private int getFontIndex(String fontId) {
     int i = 0;
-    for (FontItem f : fontList) {
-      if (f.getFontId().equals(fontId)) {
+    for (Pair f : fontEnums) {
+      if (f.getValue().equals(fontId)) {
         break;
       }
       i++;
@@ -2954,6 +3314,21 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
     return i;
   }
 
+  /**
+   * Convert enum 
+   * strips leading "E_" off of ENUM.
+   *
+   * @param enum
+   *          the enum
+   * @return the <code>String</code> without 'E_' at beginning
+   */
+  private String convertEnum(String strEnum) {
+    if (strEnum.startsWith("E_")) {
+      return strEnum.substring(2);
+    }
+    return strEnum;
+  }
+  
   /**
    * Convert alignment.
    *
@@ -2974,5 +3349,59 @@ private List<String> getListOfEnums(List<String> widgetTypes) {
         return "UNKOWN_ALIGNMENT";
     }
   }
-  
+ 
+  /**
+   * The Private Class Pair used to store Font Enum (ID) and Font Display Name relationship.
+   * It allows the Code Generator to create the gslc_FontAdd() mapping.
+   */
+  private class Pair {
+    
+    /** The key. */
+    String key;
+    
+    /** The value. */
+    String value;
+
+    /**
+     * Instantiates a new pair.
+     *
+     * @param key
+     *          the key
+     * @param value
+     *          the value
+     */
+    Pair(String key, String value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    /**
+     * Gets the key.
+     *
+     * @return the key
+     */
+    private String getKey() {
+      return key;
+    }
+    
+    /**
+     * Gets the value.
+     *
+     * @return the value
+     */
+    private String getValue() {
+      return value;
+    }
+
+    /**
+     * toString
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return String.format("%s->%s",getKey(),getValue());
+    }
+  }
+ 
 }

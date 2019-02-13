@@ -56,38 +56,41 @@ public class TextModel extends WidgetModel {
   /** The Constant PROP_FONT. */
   static private final int PROP_FONT              = 6;
   
+  /** The Constant PROP_FONT_ENUM. */
+  static private final int PROP_FONT_ENUM         = 7;
+  
   /** The Constant PROP_TEXT. */
-  static private final int PROP_TEXT              = 7;
+  static private final int PROP_TEXT              = 8;
   
   /** The Constant PROP_UTF8. */
-  static private final int PROP_UTF8              = 8;
+  static private final int PROP_UTF8              = 9;
   
   /** The Constant PROP_FILL_EN. */
-  static private final int PROP_FILL_EN           = 9;
+  static private final int PROP_FILL_EN           = 10;
   
   /** The Constant PROP_TEXT_SZ. */
-  static private final int PROP_TEXT_SZ = 10;
+  static private final int PROP_TEXT_SZ           = 11;
 
   /** The Constant PROP_ELEMENTREF. */
-  static private final int PROP_ELEMENTREF   = 11;
+  static private final int PROP_ELEMENTREF        = 12;
   
   /** The Constant PROP_TEXT_ALIGN. */
-  static private final int PROP_TEXT_ALIGN        = 12;
+  static private final int PROP_TEXT_ALIGN        = 13;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    = 13;
+  static private final int PROP_DEFAULT_COLORS    = 14;
   
   /** The Constant PROP_TEXT_COLOR. */
-  static private final int PROP_TEXT_COLOR        = 14;
+  static private final int PROP_TEXT_COLOR        = 15;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 15;
+  static private final int PROP_FRAME_COLOR       = 16;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 16;
+  static private final int PROP_FILL_COLOR        = 17;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    = 17;
+  static private final int PROP_SELECTED_COLOR    = 18;
 
   /** The ff. */
   private FontFactory ff = null;
@@ -136,7 +139,7 @@ public class TextModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.TEXT;
-    data = new Object[18][5];
+    data = new Object[19][5];
 
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
@@ -147,13 +150,14 @@ public class TextModel extends WidgetModel {
     initProp(PROP_HEIGHT, Integer.class, "COM-006", Boolean.FALSE,"Height",Integer.valueOf(DEF_HEIGHT));
 
     initProp(PROP_FONT, JTextField.class, "TXT-200", Boolean.FALSE,"Font",ff.getDefFontName());
+    initProp(PROP_FONT_ENUM, String.class, "TXT-211", Boolean.FALSE,"Font Enum",ff.getDefFontEnum());
     initProp(PROP_TEXT, String.class, "TXT-201", Boolean.FALSE,"Text","Text Field");
     initProp(PROP_UTF8, Boolean.class, "TXT-203", Boolean.FALSE,"UTF-8?",Boolean.FALSE);
 
     initProp(PROP_FILL_EN, Boolean.class, "TXT-204", Boolean.FALSE,"Fill Enabled?",Boolean.TRUE);
     initProp(PROP_TEXT_SZ, Integer.class, "TXT-205", Boolean.FALSE,"External Storage Size",Integer.valueOf(0));
-    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.TRUE,"ElementRef","");
-    initProp(PROP_TEXT_ALIGN, String.class, "TXT-207", Boolean.TRUE,"Text Alignment","Left");
+    initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
+    initProp(PROP_TEXT_ALIGN, String.class, "TXT-207", Boolean.FALSE,"Text Alignment","Left");
 
     initProp(PROP_DEFAULT_COLORS, Boolean.class, "COL-300", Boolean.FALSE,"Use Default Colors?",Boolean.TRUE);
     initProp(PROP_TEXT_COLOR, Color.class, "COL-301", Boolean.TRUE,"Text Color",cf.getDefTextCol());
@@ -182,49 +186,47 @@ public class TextModel extends WidgetModel {
    */
   @Override
   public void changeValueAt(Object value, int row) {
+    boolean bChangeFontEnum = false;
     // The test for Integer supports copy and paste from clipboard.
     // Otherwise we get a can't cast class String to Integer fault
     if ( (getClassAt(row) == Integer.class) && (value instanceof String)) {
         data[row][PROP_VAL_VALUE] = Integer.valueOf(Integer.parseInt((String)value));
     } else {
+      if (row == PROP_FONT) {
+        // check to see if user defined this font enum, if so we won't change it
+        if (!ff.getFontEnum((String)value).equals(getFontEnum())) bChangeFontEnum=true;
+      }
       data[row][PROP_VAL_VALUE] = value;
     }
     fireTableCellUpdated(row, COLUMN_VALUE);
+    if (row == PROP_FONT_ENUM) {
+      String strName = ff.getFontDisplayName(getFontEnum());
+      if (strName != null && !strName.equals(getFontDisplayName())) {
+        data[PROP_FONT][PROP_VAL_VALUE]=strName;
+        fireTableCellUpdated(PROP_FONT, COLUMN_VALUE);
+      }
+    }
     if (row == PROP_TEXT || row == PROP_FONT) {
+      if (bChangeFontEnum) {
+        setFontEnum(ff.getFontEnum(getFontDisplayName()));
+        fireTableCellUpdated(PROP_FONT_ENUM, COLUMN_VALUE);
+      }
       calcSizes(true);
     } 
     if (row == PROP_TEXT_SZ) {
       if (getTextStorage() > 0) {
         String strKey = getKey();
         int n = strKey.indexOf("$");
-        String strCount = strKey.substring(n+1, strKey.length());
+        String strCount = strKey.substring(n + 1, strKey.length());
         if (getElementRef().length() == 0) {
           setElementRef(new String("m_pElemTxt" + strCount));
+          fireTableCellUpdated(PROP_ELEMENTREF, COLUMN_VALUE);
         }
         if (getEnum().equals("GSLC_ID_AUTO")) {
           setEnum(new String("E_TXT" + strCount));
-          fireTableCellUpdated(row, PROP_ENUM);
+          fireTableCellUpdated(PROP_ENUM, COLUMN_VALUE);
         }
-        data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.FALSE; 
-        data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.FALSE; 
-        data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.FALSE;
-        data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.FALSE; 
-      } else {  
-        if (!getEnum().equals("GSLC_ID_AUTO")) {
-          setEnum("GSLC_ID_AUTO");
-          fireTableCellUpdated(row, PROP_ENUM);
-        }
-        setElementRef(new String(""));
-        setEnum("GSLC_ID_AUTO");
-        data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.TRUE; 
-        data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.TRUE; 
-        data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.TRUE;
-        data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.TRUE; 
       }
-      fireTableCellUpdated(row, PROP_WIDTH);
-      fireTableCellUpdated(row, PROP_HEIGHT);
-      fireTableCellUpdated(row, PROP_ELEMENTREF);
-      fireTableCellUpdated(row, PROP_TEXT_ALIGN);
     }
     if (row == PROP_DEFAULT_COLORS) {
       // check for switching back and forth
@@ -248,8 +250,7 @@ public class TextModel extends WidgetModel {
       fireTableCellUpdated(PROP_FILL_COLOR, COLUMN_VALUE);
       fireTableCellUpdated(PROP_SELECTED_COLOR, COLUMN_VALUE);
     }     
-    
-    if (bSendEvents) {
+  if (bSendEvents) {
       event = new MsgEvent();
       event.code = MsgEvent.WIDGET_REPAINT;
       event.message = getKey();
@@ -264,11 +265,9 @@ public class TextModel extends WidgetModel {
    */
   public int getWidth() {
     // this is complicated by users needing to change size
-    if (getTextStorage() > 0) {
-      // return the larger value, either the scaled value or user defined
-      if (getTargetWidth() > scaledWidth)
-        return getTargetWidth();
-    } 
+    // return the larger value, either the scaled value or user defined
+    if (getTargetWidth() > scaledWidth)
+      return getTargetWidth();
     return scaledWidth;
   }
   
@@ -279,11 +278,9 @@ public class TextModel extends WidgetModel {
    */
   public int getHeight() {
     // this is complicated by users needing to change size
-    if (getTextStorage() > 0) {
-      // return the larger value, either the scaled value or user defined
-      if (getTargetHeight() > scaledHeight)
-        return getTargetHeight();
-    } 
+    // return the larger value, either the scaled value or user defined
+    if (getTargetHeight() > scaledHeight)
+      return getTargetHeight();
     return scaledHeight;
   }
 
@@ -369,6 +366,25 @@ public class TextModel extends WidgetModel {
    return (String) ((String)data[PROP_FONT][PROP_VAL_VALUE]);
  }
  
+  /**
+   * Gets the font enum.
+   *
+   * @return the font enum
+   */
+  public String getFontEnum() {
+    return (String) ((String)data[PROP_FONT_ENUM][PROP_VAL_VALUE]);
+  }
+  
+  /**
+   * Sets the font enum.
+   *
+   * @param s
+   *          the new font enum.
+   */
+  public void setFontEnum(String s) { 
+    shortcutValue(s, PROP_FONT_ENUM);
+  }
+  
  /**
   * Gets the text.
   *
@@ -441,17 +457,6 @@ public class TextModel extends WidgetModel {
  public void readModel(ObjectInputStream in, String widgetType) 
      throws IOException, ClassNotFoundException {
    super.readModel(in,  widgetType);
-   if (getTextStorage() > 0) {
-     data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.FALSE; 
-     data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.FALSE; 
-     data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.FALSE;
-     data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.FALSE; 
-   } else {  
-     data[PROP_WIDTH][PROP_VAL_READONLY]=Boolean.TRUE; 
-     data[PROP_HEIGHT][PROP_VAL_READONLY]=Boolean.TRUE; 
-     data[PROP_ELEMENTREF][PROP_VAL_READONLY]=Boolean.TRUE;
-     data[PROP_TEXT_ALIGN][PROP_VAL_READONLY]=Boolean.TRUE; 
-   }
    if (useDefaultColors()) {
      data[PROP_TEXT_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
      data[PROP_FRAME_COLOR][PROP_VAL_READONLY]=Boolean.TRUE; 
@@ -476,39 +481,42 @@ public class TextModel extends WidgetModel {
   * 
   * @param fireUpdates indicates that we should notify JTable of changes
   */
- public void calcSizes(boolean fireUpdates) {
-   // first does the current font exist? 
-   // if we changed target plaform we might need to change font to default
-   String name = getFontDisplayName();
-   FontItem item = ff.getFontItem(name);
-   if (!item.getDisplayName().equals(name)) {
-    data[PROP_FONT][PROP_VAL_VALUE] = item.getDisplayName();
-    if (fireUpdates) 
-      fireTableCellUpdated(PROP_FONT, COLUMN_VALUE);
-   }
-   Font font = ff.getFont(item.getDisplayName());
-   // calculate the real sizes of our display font
-   Dimension d = ff.measureText(getText(), font);
-   scaledWidth  = d.width;
-   scaledHeight = d.height;
-   // do not do these calculations when reloading our model from a file
-   if (fireUpdates) {
-     // now figure out the rect size needed on the target platform
-     // that we show to our user and also push out during code generation.
-     if (getFontDisplayName().startsWith("BuiltIn")) {
-       Dimension nChSz = ff.measureAdafruitText(getText(),getFontDisplayName());
-       setWidth(nChSz.width);
-       setHeight(nChSz.height);
-     } else {
-       // if font is not one of the built-in fonts than actual size is correct even though font is scaled.
-       setWidth(d.width);
-       setHeight(d.height);
-     }
-     if (fireUpdates) {
-       fireTableCellUpdated(PROP_WIDTH, COLUMN_VALUE);
-       fireTableCellUpdated(PROP_HEIGHT, COLUMN_VALUE);
-     }
-   }
- }
+  public void calcSizes(boolean fireUpdates) {
+    // first does the current font exist? 
+    // if we changed target plaform we might need to change font to default
+    String name = getFontDisplayName();
+    FontItem item = ff.getFontItem(name);
+    if (!item.getDisplayName().equals(name)) {
+      data[PROP_FONT][PROP_VAL_VALUE] = item.getDisplayName();
+      data[PROP_FONT_ENUM][PROP_VAL_VALUE] = item.getFontId();
+      if (fireUpdates) {
+        fireTableCellUpdated(PROP_FONT, COLUMN_VALUE);
+        fireTableCellUpdated(PROP_FONT_ENUM, COLUMN_VALUE);
+      }
+    }
+    Font font = ff.getFont(item.getDisplayName());
+    // calculate the real sizes of our display font
+    Dimension d = ff.measureText(getText(), font);
+    scaledWidth  = d.width;
+    scaledHeight = d.height;
+    // do not do these calculations when reloading our model from a file
+    if (fireUpdates) {
+      // now figure out the rect size needed on the target platform
+      // that we show to our user and also push out during code generation.
+      if (getFontDisplayName().startsWith("BuiltIn")) {
+        Dimension nChSz = ff.measureAdafruitText(getText(),getFontDisplayName());
+        if (nChSz.width > getWidth()) setWidth(nChSz.width);
+        if (nChSz.height > getHeight()) setHeight(nChSz.height);
+      } else {
+        // if font is not one of the built-in fonts than actual size is correct even though font is scaled.
+        if (d.width > getWidth()) setWidth(d.width);
+        if (d.height > getHeight()) setHeight(d.height);
+      }
+      if (fireUpdates) {
+        fireTableCellUpdated(PROP_WIDTH, COLUMN_VALUE);
+        fireTableCellUpdated(PROP_HEIGHT, COLUMN_VALUE);
+      }
+    }
+  }
 
 }

@@ -31,7 +31,12 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.imageio.ImageIO;
 
@@ -51,6 +56,9 @@ public class CommonUtil {
   
   /** The instance. */
   private static CommonUtil instance = null;
+  
+  /** Backup Folder Name */
+  private static final String BACKUP_FOLDER = "gui_backup";
   
   /** The offset x. */
   private static int offset_x; // Window offset of coordinate system along x axis
@@ -281,4 +289,71 @@ public class CommonUtil {
     workingDir = strUserDir + System.getProperty("file.separator"); 
     return workingDir;
   }
+  
+  public void backupFile(File file)
+  {
+    String newTemplate = null;
+    String backupName = null;
+    File backupFile = null;
+    File newFile = null;
+    if(file.exists()) {
+      // first check to see if we have a backup folder
+      String strBackupDir = file.getParent() + System.getProperty("file.separator") 
+          + BACKUP_FOLDER;
+      File backupDir = new File(strBackupDir);
+      if (!backupDir.exists()) {
+        backupDir.mkdir();
+      }
+      // Make a backup copy of file and overwrite backup file if it exists.
+      backupName = new String(file.getAbsolutePath() + ".bak");
+      backupFile = new File(backupName);
+      if (backupFile.exists()) {
+        // rename previous backup files so we don't lose them
+        newTemplate = new String(strBackupDir +
+            System.getProperty("file.separator") +
+            file.getName() +
+            ".##");
+        int idx = 0;
+        String newName = newTemplate + String.valueOf(++idx);
+        newFile = new File(newName);
+        while (newFile.exists()) {
+          newName = newTemplate + String.valueOf(++idx);
+          newFile = new File(newName);
+        }
+        backupFile.renameTo(newFile);
+      }
+      copyFile(file, backupFile);
+    }
+    
+  }
+
+  /**
+   * Copy file.
+   *
+   * @param inFile
+   *          the in file
+   * @param outFile
+   *          the out file
+   */
+  public void copyFile(File inFile, File outFile)
+  { 
+    InputStream inStream = null;
+    OutputStream outStream = null;
+    try{
+      inStream = new FileInputStream(inFile);
+      outStream = new FileOutputStream(outFile);
+      byte[] buffer = new byte[1024];
+      int length;
+      //copy the file content in bytes 
+      while ((length = inStream.read(buffer)) > 0){
+        outStream.write(buffer, 0, length);
+      }
+      inStream.close();
+      outStream.close();
+//      System.out.println("File is copied successfully!");
+    }catch(IOException e){
+      e.printStackTrace();
+    }
+  }
+  
 }

@@ -31,6 +31,8 @@ import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
 import builder.common.CommonUtil;
 import builder.common.TestException;
@@ -104,6 +107,12 @@ public class Builder  extends JDesktopPane {
   
   /** The Constant NEW_PROJECT. */
   public static final String NEW_PROJECT = " - unnamed project";
+  
+  /** The canvas width */
+  public static int CANVAS_WIDTH;
+  
+  /** The canvas height */
+  public static int CANVAS_HEIGHT;
   
   /** The frame. */
   private JFrame frame;
@@ -208,6 +217,17 @@ public class Builder  extends JDesktopPane {
             SwingUtilities.updateComponentTreeUI(frame);
           } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
           }
+          frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+              String title = "Confirm Dialog";
+              String message = "You're about to quit the application -- are you sure?";
+              int answer = JOptionPane.showConfirmDialog(null,message,title, JOptionPane.YES_NO_OPTION); 
+              if(answer == JOptionPane.YES_OPTION) {
+                System.exit(0);
+              } else
+                frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            }
+          });
           frame.setVisible(true);
         }
     });
@@ -301,7 +321,14 @@ public class Builder  extends JDesktopPane {
     int height = Math.max(GeneralEditor.getInstance().getHeight()+40, 700);
     frame.setPreferredSize(new Dimension(width, height));
     frame.pack();
-    CommonUtil.getInstance().setWinOffsets(controller.getPanel().getSize(),
+    
+    // setup our canvas offsets
+    // NOTE: we can't use controller.getPanel().getSize()
+    // since its a scrollpane thats much larger than actual screen size
+    CANVAS_WIDTH = GeneralEditor.getInstance().getWidth()+205;
+    CANVAS_HEIGHT = GeneralEditor.getInstance().getHeight()+235;
+    Dimension canvasSz = new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT);
+    CommonUtil.getInstance().setWinOffsets(canvasSz,
         GeneralEditor.getInstance().getWidth(),
         GeneralEditor.getInstance().getHeight());
     frame.setLocationRelativeTo(null);

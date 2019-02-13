@@ -6,7 +6,7 @@
         User Guide
     </H2>
     <H3>
-        Ver: 0.10.4 BETA 7 Preliminary
+        Ver: 0.11.5-rc1
     </H3>
 </center>
 
@@ -27,7 +27,7 @@
 
 **Publication date and software version**
 
-Published January, 2019. Based on GUIslice API Library 0.10.4
+Published february, 2019. Based on GUIslice API Library 0.11.5
 
 **Copyright**
 
@@ -174,9 +174,13 @@ The save current project button.
 
 The save current project under a different name button.
 
+![](images/toolbar_import.png)
+
+The import an existing GUIslice pre-builder .ino or .c file. See Section 5 for more details.
+
 ![](images/toolbar_gen.png)
 
-The generate code skeletion for the current project button.
+The export the generate code skeleton for the current project button.
 
 ![](images/toolbar_exit.png)
 
@@ -431,22 +435,42 @@ Most also have the Default colors option along with a set new colors you can set
 | Graph Style    | Style of Graph: Dot, or Fill. Line not supported. |
 | Color of Graph | Set color of graph dots or fill.                  |
 
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
+
 ## 4.5 Progress Bar
 
 | NAME                  | VALUE                                          |
 |-----------------------|------------------------------------------------|
 | Vertical?             | Checked is vertical bar,  horizontal otherwise |
-| Ramp Style?           | Checked is ramp style, normal otherwise        |
+| Guage Style           | Bar, Radial or Ramp style                      |
 | Minimum Value         | Integer value from 0 to N                      |
 | Maximum Value         | Integer value from 0 to N                      |
 | Starting Value        | Integer value from 0 to N                      |
 | Gauge Indicator Color | Sets color of gauge indicator                  |
 
-NOTE: GSLCX_GAUGE_STYLE_RADIAL is not supported.
-While you must have the following set inside your GUIslice_config_<ard,linux>.h file if you use Ramp style.
+The following only applies to Radial Style.
+
+| NAME                  | VALUE                                          |
+|-----------------------|------------------------------------------------|
+| Tick Divisions	      | Default 8                                      |
+| Tick Size	            | Default 5                                      |
+| Tick Color	          | Default GRAY                                   |
+| Indicator Length	    | Default 10                                     |
+| Indicator Tipe Size   | Default 3                                      |
+| Indicator File?	      | Default false                                  |
+
+
+You must have the following set inside your GUIslice_config_<ard,linux>.h file:
+if you use Ramp Style:
 ```
 #define GSLC_FEATURE_XGAUGE_RAMP    1
 ```
+if you use Radial Style:
+```
+#define GSLC_FEATURE_XGAUGE_RADIAL    1
+```
+
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
 
@@ -487,9 +511,6 @@ While you must have the following set inside your GUIslice_config_<ard,linux>.h 
 NOTE: Text Alignment can only be used if you have set external storage size greater then 0.  Text Literals are set to exact size so no alignment would be detectable.
 You should also realize that any text used with external storage is ignored at runtime since the whole point is that its text you set at runtime for display of any sensor data or whatever feedback you are giving users.
 
------------------------------------------------
-<div style="page-break-after: always;"></div>
-
 ## 4.9 Text Box
 | NAME         | VALUE                                        |
 |--------------|----------------------------------------------|
@@ -499,6 +520,14 @@ You should also realize that any text used with external storage is ignored at r
 | Text Columns | Integer number of text characters on a line. |
 
 NOTE: Text rows and columns are only an approximation.  Embedding colors will require extra space. See the GUIslice API for further details.
+
+You must have the following set inside your GUIslice_config_<ard,linux>.h file:
+```
+#define GSLC_FEATURE_XTEXTBOX_EMBED    1
+```
+
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
 
 ## 4.10 Text Button
 | NAME               | VALUE                                           |
@@ -537,12 +566,150 @@ This is the container for widgets.  You create one page per display screen.
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
 
-# 5.0 Customizing
+# 5.0 Import 
+
+![](images/toolbar_import.png)
+
+Pressing the Import button from the Toolbar or File menu allows you to convert a .ino or .c GUIslice project file you may have created before the GUIsliceBuilder existed.
+
+Before doing so you should make sure the Builder is configured for the correct target platform, Arduino or Linux.  Otherwise your Fonts are not going to come out as expected.
+
+We can't import everything, of course. Only GUIslice UI Widgets are imported.  Callbacks, defined globals, drawing code, etc are ignored. Still quite a bit is imported.  
+
+The following lists GUIsliceBuilder UI Widgets that are supported along with the corresponding GUIslice api calls. Note that the order of the api calls after the creation call is unimportant.
+
+## 5.1 BOX
+
+- gslc_ElemCreateBox
+- gslc_ElemCreateBox_P
+- gslc_ElemSetCol
+
+## 5.2 CHECKBOX
+
+- gslc_ElemXCheckboxCreate
+- gslc_ElemXCheckboxCreate_P
+- gslc_ElemSetCol
+- gslc_ElemSetGroup
+
+## 5.3 GRAPH
+
+- gslc_ElemXGraphCreate
+- gslc_ElemXGraphSetStyle
+- gslc_ElemSetCol
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
+
+## 5.4 PROGRESS BAR
+
+- gslc_ElemXGaugeCreate
+- gslc_ElemXGaugeCreate_P
+- gslc_ElemSetCol
+- gslc_ElemXGaugeSetIndicator
+- gslc_ElemXGaugeSetTicks
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
+
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
+
+## 5.5 SLIDER
+
+- gslc_ElemXSliderCreate
+- gslc_ElemXSliderCreate_P
+- gslc_ElemSetCol
+- gslc_ElemXSliderSetStyle
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
+
+## 5.6 TEXT
+
+- gslc_ElemCreateTxt
+- gslc_ElemCreateTxt_P
+- gslc_ElemCreateTxt_P_R
+- gslc_ElemSetCol
+- gslc_ElemSetTxtCol
+- gslc_ElemSetTxtAlign
+- gslc_ElemSetFillEn
+- gslc_FontAdd
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
+
+## 5.7 TEXT BUTTON
+
+- gslc_ElemCreateBtnTxt
+- gslc_ElemCreateBtnTxt_P
+- gslc_ElemSetCol
+- gslc_ElemSetTxtCol
+- gslc_FontAdd
+
+## 5.8 TEXT BOX
+
+- gslc_ElemXTextboxCreate
+- gslc_ElemSetCol
+- gslc_ElemXTextboxWrapSet
+- gslc_FontAdd
+- gslc_PageFindElemById
+- m_pElemXXX = pElemRef; // Save for quick access
+
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
+
+## 5.9 Not supported by import
+
+### 5.9.1 IMAGES
+
+- IMAGE
+- IMAGE BUTTON
+
+### 5.9.2 C Language Issues
+
+Since the Builder has a simple parser not a full C Language preprocessor certain constructs will cause import issues.
+The most common causes are things like:
+
+Usuage of #ifdef and #endif pairs
+
+```
+  #ifdef USE_EXTRA_FONTS
+    // Demonstrate the use of additional fonts (must have #include)
+    if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,&FreeSansBold12pt7b,1)) 
+      { return; }
+  #else
+    // Use default font
+    if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) 
+      { return; }
+  #endif
+```
+
+Likewise using Variable Names instead of constants like:
+
+```
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck[1],
+    (gslc_tsRect){60,nPosY,20,20},
+    false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
+```
+
+Will cause a parsing error on nPosY.
+
+Doing arithmetic with constants like:
+
+```
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,
+    (gslc_tsRect){9,57,177,80-57}, "Now Playing",0,E_FONT_HEAD);
+```
+
+Causes an parsing error on '-57'.
+
+All of these can easily be corrected by hand editing the file and re-doing the import.
+
+-----------------------------------------------
+<div style="page-break-after: always;"></div>
+
+# 6.0 Customizing
 
 There are a few ways of customizing your experience with the builder.   
 You can modify your UI preferences  by the edit->options menu item. Most of the UI Widgets also have a tab in the Options dialog allowing you to set size, color, font, and some other options depending upon the widget in question.
 
-## 5.1 General Preferences
+## 6.1 General Preferences
 | NAME                               | VALUE                                                     |
 |------------------------------------|-----------------------------------------------------------|
 | Theme                              | Windows,Metal,Nimbus,Classic Windows                      |
@@ -561,7 +728,7 @@ You can modify your UI preferences  by the edit->options menu item. Most of the 
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
 
-## 5.2 Grid Preferences
+## 6.2 Grid Preferences
 | NAME              | VALUE  |
 |-------------------|--------|
 | Grid              | On/Off |
@@ -573,12 +740,12 @@ You can modify your UI preferences  by the edit->options menu item. Most of the 
 | Grid Minor Color  | Black  |
 | Grid Major Color  | Black  |
 
-## 5.3 Widget Customizing
+## 6.3 Widget Customizing
 
 A few widgets allow you to change their default properties on a global basis.  Going into the Options tabbed dialog there are tabs for Box, Text, TextButton, Checkbox, and RadioButton.
 If you modify any properties on these tabs when you drop the modified widgets onto the design canvas the values will be set according to your new settings.  The property values will also be set on any further projects you create or edit.  They will not modify any widgets previously used in your projects.
 
-## 5.4 Program skeleton
+## 6.4 Program skeleton
 
 One of the directories created and populated by the builder is called templates.
 
@@ -594,7 +761,7 @@ The files ino.t, mon.t, and c.t are the skeleton programs for the supported plat
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
 
-## 5.5 default_colors.cvs
+## 6.5 default_colors.cvs
 
 This file lists the mapping of colors in RGB format to the GUIslice API names.  For example, rgb (0,0,0) is GSLC_COL_BLACK.  The top 7 rows are the default values the library uses, although these are spread about in the code base.  If you don't like the default color scheme you can use the builder to override them on an individual widget basis.  Inside the Properties View will be checkbox "Use Default Colors" simply uncheck the box and you can then edit the Frame, Fill, and Select colors.
 
@@ -603,7 +770,7 @@ The problem is that each time you override default colors (by unchecking the "us
 -----------------------------------------------
 <div style="page-break-after: always;"></div>
 
-## 5.6 Images
+## 6.6 Images
 
 Many UI's, if not most, will require images and icons.  You can place them inside the directories GUIsliceBuilder/arduino_res or linux_res depending upon your target platform.    
 
@@ -622,7 +789,7 @@ edit->options->General->Target's Image Directory
 
 Do not place a full path.  The code generator will not handle that correctly.
 
-## 5.6 Fonts
+## 6.6 Fonts
 
 The font implementation is somewhat challenging.  The builder can't actually run the target platform fonts at the actual size since the DPI's won't match.  So the builder has to scale them for use.  The scaling can't be perfect since the scaling might require decimal sizes like, 6.24dp which must be converted to an integer, either 6 or 7.  Stll the builder will give a pretty good approximation as long as users give a little space between text and widgets.  If the text appears way off Appendix A gives a sample project that will allow discovery of a better DPI using trail and error.
 
@@ -686,9 +853,7 @@ Now create a BOX the size of your display, change the colors to White for Frame,
 
 ![](images/font_textb.png)
 
-Generate the code and open your Arduino IDE selecting the new AlignText.ino file.  You should get this message box:
-
-![](images/font_textc.png)
+Generate the code and open your Arduino IDE selecting the new AlignText.ino file.  
 
 Select OK and then add this line inside CbDrawScanner function under the 'add your drawing' comment.
 ```

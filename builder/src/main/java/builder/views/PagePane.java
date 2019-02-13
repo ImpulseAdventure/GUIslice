@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
+import builder.Builder;
 import builder.commands.Command;
 import builder.commands.DragWidgetCommand;
 import builder.commands.History;
@@ -153,6 +154,12 @@ public class PagePane extends JPanel implements iSubscriber {
   /** The inverse AffineTransform at. */
   private AffineTransform inv_at;
   
+  /** The canvas width */
+  int canvasWidth;
+  
+  /** The canvas height */
+  int canvasHeight;
+  
   /**
    * Instantiates a new page pane.
    */
@@ -165,6 +172,8 @@ public class PagePane extends JPanel implements iSubscriber {
     gridModel = (GridModel) GridEditor.getInstance().getModel();
     model = new PageModel();
     mousePt = new Point(generalModel.getWidth() / 2, generalModel.getHeight() / 2);
+    canvasWidth = Builder.CANVAS_WIDTH;
+    canvasHeight = Builder.CANVAS_HEIGHT;
     this.addMouseListener(new MouseHandler());
     this.addMouseMotionListener(new MouseMotionHandler());
     this.addKeyListener(new DeleteKeyListener());
@@ -208,13 +217,14 @@ public class PagePane extends JPanel implements iSubscriber {
     Graphics2D g2d = (Graphics2D) g.create();
     if (bZoom) {
       at = new AffineTransform();
-      Dimension d = this.getSize();
+      Dimension d = new Dimension(canvasWidth, canvasHeight);
       double xRel = ((double)d.getWidth() - (double)gridModel.getWidth()) / 2.0;
       double yRel = ((double)d.getHeight() - (double)gridModel.getHeight()) / 2.0;;
 
       double zoomDiv = zoomFactor / prevZoomFactor;
 
       xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
+      
       yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
       at.translate(xOffset, yOffset);
       at.scale(zoomFactor, zoomFactor);
@@ -260,6 +270,13 @@ public class PagePane extends JPanel implements iSubscriber {
     zoomFactor *= 1.1;
     bZoom = true;
     ToolBar.getInstance().btn_zoom_out.setEnabled(true);
+    canvasWidth = (int)(Builder.CANVAS_WIDTH * zoomFactor);
+    canvasHeight = (int)(Builder.CANVAS_HEIGHT * zoomFactor);
+    System.out.println("in: " + zoomFactor + " zw: " + canvasWidth + " zh: " + canvasHeight);
+    Dimension canvasSz = new Dimension((int)canvasWidth, (int)canvasHeight);
+    CommonUtil.getInstance().setWinOffsets(canvasSz,
+        GeneralEditor.getInstance().getWidth(),
+        GeneralEditor.getInstance().getHeight());
     repaint();
   }
   
@@ -271,6 +288,13 @@ public class PagePane extends JPanel implements iSubscriber {
     if (zoomFactor < 1.1)
       ToolBar.getInstance().btn_zoom_out.setEnabled(false);
     bZoom = true;
+    canvasWidth = (int)(Builder.CANVAS_WIDTH * zoomFactor);
+    canvasHeight = (int)(Builder.CANVAS_HEIGHT * zoomFactor);
+    System.out.println("out: " + zoomFactor + " zw: " + canvasWidth + " zh: " + canvasHeight);
+    Dimension canvasSz = new Dimension((int)canvasWidth, (int)canvasHeight);
+    CommonUtil.getInstance().setWinOffsets(canvasSz,
+        GeneralEditor.getInstance().getWidth(),
+        GeneralEditor.getInstance().getHeight());
     repaint();
   }
 
@@ -401,13 +425,6 @@ public class PagePane extends JPanel implements iSubscriber {
     w.unSelect();
     doSelectedCount(w);
     toolBar.setEditButtons(selectedCnt, selectedGroupCnt);
-    if (selectedCnt == 0) {
-      MsgEvent ev = new MsgEvent();
-      ev.message ="";
-      ev.parent = getKey();
-      ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
-      MsgBoard.getInstance().publish(ev);
-    }
   }
   
   /**
@@ -428,6 +445,13 @@ public class PagePane extends JPanel implements iSubscriber {
             if (selectedGroupCnt > 0) selectedGroupCnt--;
       }
       if (selectedCnt > 0) selectedCnt--;
+    }
+    if (selectedCnt == 0) {
+      MsgEvent ev = new MsgEvent();
+      ev.message ="";
+      ev.parent = getKey();
+      ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
+      MsgBoard.getInstance().publish(ev);
     }
   }
 
@@ -485,16 +509,18 @@ public class PagePane extends JPanel implements iSubscriber {
     while (itr.hasNext())
     {
         Widget x = (Widget)itr.next();
-        if (x.getEnum().equals(w.getEnum()))
+        if (x.getEnum().equals(w.getEnum())) {
             itr.remove();
+            break;
+        }
     }
     TreeView.getInstance().delWidget(getKey(), w.getKey());
+    repaint();
     MsgEvent ev = new MsgEvent();
     ev.message =  w.getKey();
     ev.parent = getKey();
     ev.code = MsgEvent.WIDGET_DELETE;
     MsgBoard.getInstance().publish(ev);
-    repaint();
   }
 
   /**
@@ -673,6 +699,12 @@ public class PagePane extends JPanel implements iSubscriber {
         selectNone();
         if (w == null) {
           bMultiSelectionBox = true;
+          toolBar.setEditButtons(selectedCnt, selectedGroupCnt);
+          MsgEvent ev = new MsgEvent();
+          ev.message ="";
+          ev.parent = getKey();
+          ev.code = MsgEvent.OBJECT_UNSELECT_PAGEPANE;
+          MsgBoard.getInstance().publish(ev);
         } else {
           selectWidget(w);
           MsgEvent ev = new MsgEvent();
@@ -769,29 +801,8 @@ public class PagePane extends JPanel implements iSubscriber {
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(gridModel.getWidth(), gridModel.getHeight());
-  }
-
-  /**
-   * getMaximumSize.
-   *
-   * @return the maximum size
-   * @see javax.swing.JComponent#getMaximumSize()
-   */
-  @Override
-  public Dimension getMaximumSize() {
-    return new Dimension(gridModel.getWidth(), gridModel.getHeight());
-  }
-
-  /**
-   * getMinimumSize.
-   *
-   * @return the minimum size
-   * @see javax.swing.JComponent#getMinimumSize()
-   */
-  @Override
-  public Dimension  getMinimumSize() {
-    return new Dimension(gridModel.getWidth(), gridModel.getHeight());
+//    return new Dimension(gridModel.getWidth(), gridModel.getHeight());
+    return new Dimension(1200, 1200);
   }
 
   /**
@@ -841,7 +852,9 @@ public class PagePane extends JPanel implements iSubscriber {
       selectNone();
       repaint();
     } else if (e.code == MsgEvent.CANVAS_MODEL_CHANGE) {
-      CommonUtil.getInstance().setWinOffsets(this.getSize(), 
+      canvasWidth = (int)(Builder.CANVAS_WIDTH * zoomFactor);
+      canvasHeight = (int)(Builder.CANVAS_HEIGHT * zoomFactor);
+      CommonUtil.getInstance().setWinOffsets(new Dimension(canvasWidth, canvasHeight), 
           generalModel.getWidth(),
           generalModel.getHeight());
       repaint();

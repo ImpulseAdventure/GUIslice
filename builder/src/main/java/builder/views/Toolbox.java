@@ -150,23 +150,35 @@ public class Toolbox extends JInternalFrame implements ActionListener {
    * @return the <code>file</code> object
    */
   public File showImageDialog(String title) {
+    String target = generalModel.getTarget();
     File file = null;
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogTitle(title);
     fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.addChoosableFileFilter(new FileFilter() {
       public String getDescription() {
-        return "BMP Images (*.bmp)";
+        if (!target.equals("linux"))
+          return "BMP Images (*.bmp), C File with extern image (*.c)";
+        else
+          return "BMP Images (*.bmp)";
       }
 
       public boolean accept(File f) {
         if (f.isDirectory()) {
           return true;
         } else {
-          return f.getName().toLowerCase().endsWith(".bmp");
+          if ((f.getName().toLowerCase().endsWith(".bmp")) ||
+              (f.getName().toLowerCase().endsWith(".c") && 
+               !target.equals("linux")) )
+            return true;
+          return false;
         }
       }
     });
+    ImagePreviewPanel preview = new ImagePreviewPanel();
+    fileChooser.setAccessory(preview);
+    fileChooser.addPropertyChangeListener(preview);
+
     String resDir = CodeGenerator.ARDUINO_RES;
     if (generalModel.getTarget().equals("linux")) 
       resDir = CodeGenerator.LINUX_RES;

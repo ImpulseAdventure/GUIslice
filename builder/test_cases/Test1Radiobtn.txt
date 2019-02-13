@@ -39,7 +39,8 @@ enum {E_RADIO1,E_RADIO2};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 #define MAX_FONT                0
-#define MAX_ELEM_PG_MAIN        2
+#define MAX_ELEM_PG_MAIN 2
+#define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
 //<ElementDefines !End!>
 
 // GUI Elements
@@ -47,9 +48,10 @@ gslc_tsGui                      m_gui;
 gslc_tsDriver                   m_drv;
 gslc_tsFont                     m_asFont[MAX_FONT];
 gslc_tsPage                     m_asPage[MAX_PAGE];
-gslc_tsElem                     m_asMainElem[MAX_ELEM_PG_MAIN];
-gslc_tsElemRef                  m_asMainElemRef[MAX_ELEM_PG_MAIN];
+
 //<GUI_Extra_Elements !Start!>
+gslc_tsElem                 m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
+gslc_tsElemRef              m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsXCheckbox                m_asXCheck[2];
 
 #define MAX_STR                 100
@@ -89,10 +91,10 @@ bool InitGUI()
   gslc_tsElemRef* pElemRef = NULL;
 
 //<InitGUI !Start!>
-  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asMainElem,MAX_ELEM_PG_MAIN,m_asMainElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPage1Elem,MAX_ELEM_PG_MAIN_RAM,m_asPage1ElemRef,MAX_ELEM_PG_MAIN);
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -142,10 +144,12 @@ void setup()
 //<Quick_Access !Start!>
 //<Quick_Access !End!>
 
+//<Startup !Start!>
   // ------------------------------------------------
-  // Start up display on main page
+  // Start up display on first page
   // ------------------------------------------------
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
+//<Startup !End!>
 
 }
 

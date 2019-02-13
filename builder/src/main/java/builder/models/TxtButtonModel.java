@@ -51,32 +51,35 @@ public class TxtButtonModel extends WidgetModel {
   /** The Constant PROP_FONT. */
   static private final int PROP_FONT              = 6;
   
+  /** The Constant PROP_FONT_ENUM. */
+  static private final int PROP_FONT_ENUM         = 7;
+  
   /** The Constant PROP_TEXT. */
-  static private final int PROP_TEXT              = 7;
+  static private final int PROP_TEXT              = 8;
   
   /** The Constant PROP_UTF8. */
-  static private final int PROP_UTF8              = 8;
+  static private final int PROP_UTF8              = 9;
   
   /** The Constant PROP_CHANGE_PAGE. */
-  static private final int PROP_CHANGE_PAGE       = 9;
+  static private final int PROP_CHANGE_PAGE       = 10;
   
   /** The Constant PROP_PAGE. */
-  static private final int PROP_PAGE              = 10;
+  static private final int PROP_PAGE              = 11;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    = 11;
+  static private final int PROP_DEFAULT_COLORS    = 12;
   
   /** The Constant PROP_TEXT_COLOR. */
-  static private final int PROP_TEXT_COLOR        = 12;
+  static private final int PROP_TEXT_COLOR        = 13;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 13;
+  static private final int PROP_FRAME_COLOR       = 14;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 14;
+  static private final int PROP_FILL_COLOR        = 15;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    = 15;
+  static private final int PROP_SELECTED_COLOR    = 16;
   
   static private final int DEF_WIDTH = 80;
   static private final int DEF_HEIGHT= 40;
@@ -100,11 +103,12 @@ public class TxtButtonModel extends WidgetModel {
   {
     widgetType = EnumFactory.TEXTBUTTON;
     
-    data = new Object[16][5];
+    data = new Object[17][5];
     
     initCommonProps(DEF_WIDTH, DEF_HEIGHT);
     
     initProp(PROP_FONT, JTextField.class, "TXT-200", Boolean.FALSE,"Font",ff.getDefFontName());
+    initProp(PROP_FONT_ENUM, String.class, "TXT-211", Boolean.FALSE,"Font Enum",ff.getDefFontEnum());
     initProp(PROP_TEXT, String.class, "TXT-202", Boolean.FALSE,"Label","Button");
     initProp(PROP_UTF8, Boolean.class, "TXT-203", Boolean.FALSE,"UTF-8?",Boolean.FALSE);
     
@@ -126,14 +130,30 @@ public class TxtButtonModel extends WidgetModel {
    */
   @Override
   public void changeValueAt(Object value, int row) {
+    boolean bChangeFontEnum = false;
     // The test for Integer supports copy and paste from clipboard.
     // Otherwise we get a can't cast class String to Integer fault
     if ( (getClassAt(row) == Integer.class) && (value instanceof String)) {
         data[row][PROP_VAL_VALUE] = Integer.valueOf(Integer.parseInt((String)value));
     } else {
+      if (row == PROP_FONT) {
+        // check to see if user defined this font enum, if so we won't change it
+        if (!ff.getFontEnum((String)value).equals(getFontEnum())) bChangeFontEnum=true;
+      }
       data[row][PROP_VAL_VALUE] = value;
     }
     fireTableCellUpdated(row, COLUMN_VALUE);
+    if (row == PROP_FONT_ENUM) {
+      String strName = ff.getFontDisplayName(getFontEnum());
+      if (strName != null && !strName.equals(getFontDisplayName())) {
+        data[PROP_FONT][PROP_VAL_VALUE]=strName;
+        fireTableCellUpdated(PROP_FONT, COLUMN_VALUE);
+      }
+    }
+    if (row == PROP_FONT && bChangeFontEnum) {
+      setFontEnum(ff.getFontEnum(getFontDisplayName()));
+      fireTableCellUpdated(PROP_FONT_ENUM, COLUMN_VALUE);
+    }
     if (row == PROP_DEFAULT_COLORS) {
       // check for switching back and forth
       if (useDefaultColors()) {
@@ -207,6 +227,25 @@ public class TxtButtonModel extends WidgetModel {
    */
   public String getFontDisplayName() {
     return (String) ((String)data[PROP_FONT][PROP_VAL_VALUE]);
+  }
+  
+  /**
+   * Gets the font enum.
+   *
+   * @return the font enum
+   */
+  public String getFontEnum() {
+    return (String) ((String)data[PROP_FONT_ENUM][PROP_VAL_VALUE]);
+  }
+  
+  /**
+   * Sets the font enum.
+   *
+   * @param s
+   *          the new font enum.
+   */
+  public void setFontEnum(String s) { 
+    shortcutValue(s, PROP_FONT_ENUM);
   }
   
   /**

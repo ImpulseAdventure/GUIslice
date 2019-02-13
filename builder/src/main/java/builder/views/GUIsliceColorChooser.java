@@ -25,11 +25,17 @@
  */
 package builder.views;
 
-import java.awt.BorderLayout;
+import java.awt.AWTException;
+//import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -40,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import builder.Builder;
 import builder.common.ColorFactory;
 import builder.common.ColorIcon;
 import builder.common.ColorItem;
@@ -51,6 +58,7 @@ import java.awt.Dimension;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JList;
@@ -110,7 +118,7 @@ public class GUIsliceColorChooser extends JDialog {
   private JTabbedPane tabbedPane;
   
   /** The rgb panel. */
-  private JPanel rgbPanel;
+  private JPanel rgbTab;
   
   /** The color panel. */
   private JPanel colorPanel;
@@ -127,6 +135,9 @@ public class GUIsliceColorChooser extends JDialog {
   /** The current color. */
   private Color currentColor;
   
+  /** recent color panel */
+  private SwatchPanel recentColorsPanel;
+
   /** The red value. */
   private int redValue;
   
@@ -154,11 +165,16 @@ public class GUIsliceColorChooser extends JDialog {
   /** The spinner B. */
   private JSpinner spinnerB;
   
-  /** The is spinner. */
+  /** The data from spinner. */
   private boolean isSpinner = false;
   
-  /** The is list. */
+  /** The data from list. */
   private boolean isList = false;
+  
+  /** The data from eye dropper. */
+  private boolean isEyeDropper = false;
+  
+  Robot robot;
   
   /** The cf. */
   ColorFactory cf;
@@ -166,11 +182,14 @@ public class GUIsliceColorChooser extends JDialog {
   /** The b save dialog. */
   boolean bSaveDialog;
   
-  /** The b init UI. */
+  /** The flag to indicate UI initialized. */
   boolean bInitUI = false;
+  
+  /** our cross hair cursor */
+  Cursor crossHairCursor;
 
   /**
-   * Instantiates a new GU islice color chooser.
+   * Instantiates a new GUIslice color chooser.
    *
    * @param owner
    *          the owner
@@ -178,6 +197,11 @@ public class GUIsliceColorChooser extends JDialog {
   public GUIsliceColorChooser(JFrame owner) {
     super(owner, "GUIslice Color Chooser", true);
     cf = ColorFactory.getInstance();
+    try {
+      this.robot = new Robot();
+    } catch (AWTException e) {
+      e.printStackTrace();
+    }
   }
   
   /**
@@ -210,46 +234,47 @@ public class GUIsliceColorChooser extends JDialog {
    */
   private void initUI() {
     setBounds(100, 100, 550, 450);
+    crossHairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
     redValue = currentColor.getRed();
     greenValue = currentColor.getGreen();
     blueValue = currentColor.getBlue();
 
     contentPane = (JPanel) getContentPane();
+
     contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-    contentPane.setLayout(new BorderLayout(2, 0));
+//    contentPane.setLayout(new BorderLayout(2, 0));
     setContentPane(contentPane);
     
     tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-    contentPane.add(tabbedPane, BorderLayout.CENTER);
-    
-    JScrollPane scrollPane = new JScrollPane();
-    tabbedPane.addTab("GUIslice Colors", null, scrollPane, null);
-    scrollPane.setPreferredSize(new Dimension(250, 300));
-    //create the model and add elements
+
+    JScrollPane guisliceTab = new JScrollPane();
+    tabbedPane.addTab("GUIslice Colors", null, guisliceTab, null);
+    guisliceTab.setPreferredSize(new Dimension(250, 300));
+    // create the model and add elements
     listModel = new DefaultListModel<>();
     itemList = cf.getColorList();
-    for (int i=0; i<itemList.size(); i++) {
+    for (int i = 0; i < itemList.size(); i++) {
       listModel.addElement(itemList.get(i));
     }
     colorList = new JList<ColorItem>(listModel);
     listSelectionModel = colorList.getSelectionModel();
     colorList.setCellRenderer(new GUIsliceColorRenderer());
-    
-    scrollPane.setViewportView(colorList);
-    
-    rgbPanel = new JPanel();
-    tabbedPane.addTab("RGB Colors", null, rgbPanel, null);
-    
+
+    guisliceTab.setViewportView(colorList);
+
+    rgbTab = new JPanel();
+    tabbedPane.addTab("RGB Colors", null, rgbTab, null);
+
     JLabel lblRed = new JLabel("Red:");
     lblRed.setFont(new Font("Tahoma", Font.PLAIN, 14));
-    
+
     JLabel lblGreen = new JLabel("Green:");
     lblGreen.setFont(new Font("Tahoma", Font.PLAIN, 14));
-    
+
     JLabel lblBlue = new JLabel("Blue:");
     lblBlue.setFont(new Font("Tahoma", Font.PLAIN, 14));
-    
+
     sliderR = new JSlider(JSlider.HORIZONTAL, 0, 255, redValue);
     sliderR.setUI(new ColoredThumbSliderUI(sliderR, Color.RED));
     sliderR.setPaintTicks(true);
@@ -257,7 +282,7 @@ public class GUIsliceColorChooser extends JDialog {
     sliderR.setMinorTickSpacing(5);
     sliderR.setPaintLabels(true);
     sliderR.addChangeListener(new SliderListener());
-    
+
     sliderG = new JSlider(JSlider.HORIZONTAL, 0, 255, greenValue);
     sliderG.setUI(new ColoredThumbSliderUI(sliderG, Color.GREEN));
     sliderG.setPaintTicks(true);
@@ -273,60 +298,48 @@ public class GUIsliceColorChooser extends JDialog {
     sliderB.setMinorTickSpacing(5);
     sliderB.setPaintLabels(true);
     sliderB.addChangeListener(new SliderListener());
-    
-    GroupLayout gl_rgbPanel = new GroupLayout(rgbPanel);
-    gl_rgbPanel.setHorizontalGroup(
-      gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_rgbPanel.createSequentialGroup()
-          .addGap(57)
-          .addGroup(gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-            .addComponent(lblRed)
-            .addComponent(lblGreen)
-            .addComponent(lblBlue))
-          .addGap(30)
-          .addGroup(gl_rgbPanel.createParallelGroup(Alignment.TRAILING)
+
+    GroupLayout gl_rgbTab = new GroupLayout(rgbTab);
+    gl_rgbTab.setHorizontalGroup(gl_rgbTab.createParallelGroup(Alignment.LEADING).addGroup(gl_rgbTab
+        .createSequentialGroup().addGap(57)
+        .addGroup(gl_rgbTab
+            .createParallelGroup(Alignment.LEADING).addComponent(lblRed).addComponent(lblGreen).addComponent(lblBlue))
+        .addGap(30)
+        .addGroup(gl_rgbTab.createParallelGroup(Alignment.TRAILING)
             .addComponent(sliderG, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
             .addComponent(sliderB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
             .addComponent(sliderR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(54, Short.MAX_VALUE))
-    );
-    gl_rgbPanel.setVerticalGroup(
-      gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_rgbPanel.createSequentialGroup()
-          .addGap(57)
-          .addGroup(gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-            .addComponent(lblRed)
+        .addContainerGap(54, Short.MAX_VALUE)));
+    gl_rgbTab.setVerticalGroup(gl_rgbTab.createParallelGroup(Alignment.LEADING).addGroup(gl_rgbTab
+        .createSequentialGroup().addGap(57)
+        .addGroup(gl_rgbTab.createParallelGroup(Alignment.LEADING).addComponent(lblRed)
             .addComponent(sliderR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addGap(53)
-          .addGroup(gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-            .addComponent(lblGreen)
+        .addGap(53)
+        .addGroup(gl_rgbTab.createParallelGroup(Alignment.LEADING).addComponent(lblGreen)
             .addComponent(sliderG, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addGap(61)
-          .addGroup(gl_rgbPanel.createParallelGroup(Alignment.LEADING)
-            .addComponent(lblBlue)
-            .addComponent(sliderB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(74, Short.MAX_VALUE))
-    );
-    rgbPanel.setLayout(gl_rgbPanel);
-    
+        .addGap(61)
+        .addGroup(gl_rgbTab.createParallelGroup(Alignment.LEADING).addComponent(lblBlue).addComponent(sliderB,
+            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+        .addContainerGap(74, Short.MAX_VALUE)));
+    rgbTab.setLayout(gl_rgbTab);
+
     colorPanel = new JPanel();
     colorPanel.setPreferredSize(new Dimension(125, 350));
-    contentPane.add(colorPanel, BorderLayout.EAST);
-    
+
     JLabel lblspinnerR = new JLabel("Red:");
     spinnerR = new JSpinner();
     spinnerR.setModel(new SpinnerNumberModel(redValue, 0, 255, 5));
-		spinnerR.addChangeListener(new SpinnerListener());
+    spinnerR.addChangeListener(new SpinnerListener());
 
     JLabel lblspinnerG = new JLabel("Green:");
     spinnerG = new JSpinner();
     spinnerG.setModel(new SpinnerNumberModel(greenValue, 0, 255, 5));
-		spinnerG.addChangeListener(new SpinnerListener());
-    
+    spinnerG.addChangeListener(new SpinnerListener());
+
     JLabel lblspinnerB = new JLabel("Blue:");
     spinnerB = new JSpinner();
     spinnerB.setModel(new SpinnerNumberModel(blueValue, 0, 255, 5));
-		spinnerB.addChangeListener(new SpinnerListener());
+    spinnerB.addChangeListener(new SpinnerListener());
 
     previewIcon = new ColorIcon(currentColor, 40, 40);
     lblPreview = new JLabel();
@@ -334,17 +347,23 @@ public class GUIsliceColorChooser extends JDialog {
     lblPreview.setMaximumSize(new Dimension(40, 40));
     lblPreview.setSize(new Dimension(40, 40));
     lblPreview.setIcon(previewIcon);
-    
+
     JLabel lblTxtPreview = new JLabel("Preview");
     lblTxtPreview.setFont(new Font("Tahoma", Font.BOLD, 12));
-    
+
+    JLabel lblRecentColors = new JLabel("Recent Colors");
+
+    recentColorsPanel = new SwatchPanel();
+    RecentSwatchListener recentSwatchListener = new RecentSwatchListener();
+    recentColorsPanel.addMouseListener(recentSwatchListener);
+
     GroupLayout gl_colorPanel = new GroupLayout(colorPanel);
     gl_colorPanel.setHorizontalGroup(
       gl_colorPanel.createParallelGroup(Alignment.LEADING)
         .addGroup(gl_colorPanel.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_colorPanel.createParallelGroup(Alignment.TRAILING)
+          .addGroup(gl_colorPanel.createParallelGroup(Alignment.LEADING)
             .addGroup(gl_colorPanel.createSequentialGroup()
+              .addContainerGap()
               .addGroup(gl_colorPanel.createParallelGroup(Alignment.LEADING, false)
                 .addGroup(gl_colorPanel.createSequentialGroup()
                   .addComponent(lblspinnerB)
@@ -357,23 +376,35 @@ public class GUIsliceColorChooser extends JDialog {
                   .addPreferredGap(ComponentPlacement.RELATED)
                   .addGroup(gl_colorPanel.createParallelGroup(Alignment.LEADING)
                     .addComponent(spinnerG, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(spinnerR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-              .addContainerGap(28, Short.MAX_VALUE))
+                    .addComponent(spinnerR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                  .addGap(1))))
             .addGroup(gl_colorPanel.createSequentialGroup()
-              .addGap(12)
-              .addGroup(gl_colorPanel.createParallelGroup(Alignment.TRAILING)
-                .addComponent(lblTxtPreview)
-                .addComponent(lblPreview, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-              .addGap(39))))
+              .addGap(38)
+              .addComponent(lblPreview, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+          .addGap(30))
+        .addGroup(gl_colorPanel.createSequentialGroup()
+          .addGap(21)
+          .addComponent(lblRecentColors)
+          .addGap(37))
+        .addGroup(gl_colorPanel.createSequentialGroup()
+          .addGap(30)
+          .addGroup(gl_colorPanel.createParallelGroup(Alignment.LEADING)
+            .addComponent(recentColorsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .addComponent(lblTxtPreview, GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
+          .addContainerGap())
     );
     gl_colorPanel.setVerticalGroup(
       gl_colorPanel.createParallelGroup(Alignment.TRAILING)
         .addGroup(gl_colorPanel.createSequentialGroup()
-          .addContainerGap(103, Short.MAX_VALUE)
+          .addContainerGap()
+          .addComponent(lblRecentColors)
+          .addGap(18)
+          .addComponent(recentColorsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+          .addPreferredGap(ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
           .addComponent(lblTxtPreview)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addPreferredGap(ComponentPlacement.RELATED)
           .addComponent(lblPreview, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-          .addGap(38)
+          .addGap(13)
           .addGroup(gl_colorPanel.createParallelGroup(Alignment.BASELINE)
             .addComponent(lblspinnerR)
             .addComponent(spinnerR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -388,21 +419,21 @@ public class GUIsliceColorChooser extends JDialog {
           .addGap(62))
     );
     colorPanel.setLayout(gl_colorPanel);
-    
+
     JPanel commandPanel = new JPanel();
     commandPanel.setPreferredSize(new Dimension(450, 50));
-    contentPane.add(commandPanel, BorderLayout.SOUTH);
-    
+
     btnOK = new JButton("OK");
     ActionListener actionListener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
+        recentColorsPanel.setMostRecentColor(currentColor);
         bSaveDialog = true;
         Closed_Option = JOptionPane.OK_OPTION;
         dispose();
       }
     };
     btnOK.addActionListener(actionListener);
-    
+
     btnCANCEL = new JButton("CANCEL");
     btnCANCEL.setToolTipText("Exit without save");
     actionListener = new ActionListener() {
@@ -414,48 +445,111 @@ public class GUIsliceColorChooser extends JDialog {
     btnCANCEL.addActionListener(actionListener);
     
     GroupLayout gl_commandPanel = new GroupLayout(commandPanel);
-    gl_commandPanel.setHorizontalGroup(
-      gl_commandPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(Alignment.TRAILING, gl_commandPanel.createSequentialGroup()
-          .addContainerGap(230, Short.MAX_VALUE)
-          .addComponent(btnCANCEL)
-          .addPreferredGap(ComponentPlacement.RELATED)
-          .addComponent(btnOK)
-          .addContainerGap())
-    );
-    gl_commandPanel.setVerticalGroup(
-      gl_commandPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(Alignment.TRAILING, gl_commandPanel.createSequentialGroup()
-          .addContainerGap(16, Short.MAX_VALUE)
-          .addGroup(gl_commandPanel.createParallelGroup(Alignment.BASELINE)
-            .addComponent(btnOK)
-            .addComponent(btnCANCEL))
-          .addContainerGap())
-    );
+    gl_commandPanel
+        .setHorizontalGroup(gl_commandPanel.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING,
+            gl_commandPanel.createSequentialGroup().addContainerGap(230, Short.MAX_VALUE).addComponent(btnCANCEL)
+                .addPreferredGap(ComponentPlacement.RELATED).addComponent(btnOK).addContainerGap()));
+    gl_commandPanel.setVerticalGroup(gl_commandPanel.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING,
+        gl_commandPanel.createSequentialGroup().addContainerGap(16, Short.MAX_VALUE)
+            .addGroup(
+                gl_commandPanel.createParallelGroup(Alignment.BASELINE).addComponent(btnOK).addComponent(btnCANCEL))
+            .addContainerGap()));
     commandPanel.setLayout(gl_commandPanel);
-    
-    //create the model and add elements
+    GroupLayout gl_contentPane = new GroupLayout(contentPane);
+    gl_contentPane.setHorizontalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_contentPane.createSequentialGroup()
+            .addComponent(tabbedPane, GroupLayout.PREFERRED_SIZE, 397, GroupLayout.PREFERRED_SIZE).addGap(2)
+            .addComponent(colorPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+        .addComponent(commandPanel, GroupLayout.PREFERRED_SIZE, 524, GroupLayout.PREFERRED_SIZE));
+    gl_contentPane.setVerticalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_contentPane.createSequentialGroup()
+            .addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+                .addComponent(tabbedPane, GroupLayout.PREFERRED_SIZE, 351, GroupLayout.PREFERRED_SIZE)
+                .addComponent(colorPanel, GroupLayout.PREFERRED_SIZE, 351, GroupLayout.PREFERRED_SIZE))
+            .addComponent(commandPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+                GroupLayout.PREFERRED_SIZE)));
+
+    JPanel wheelTab = new JPanel();
+    tabbedPane.addTab("Color Wheel", null, wheelTab, null);
+
+    JButton btnEyeDropper = new JButton("");
+    btnEyeDropper.setIcon(new ImageIcon(Builder.class.getResource("/resources/icons/eyedropper.png")));
+    btnEyeDropper.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+          isEyeDropper = true;
+          setCursor(crossHairCursor);
+        }
+    });
+
+    JPanel wheelPanel = new ColorWheel();
+    wheelPanel.addMouseListener(new MouseHandler());
+
+    JLabel lblUseEyeDropper = new JLabel("Use Eye Dropper to Choose your Color");
+    GroupLayout gl_wheelTab = new GroupLayout(wheelTab);
+    gl_wheelTab.setHorizontalGroup(gl_wheelTab.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_wheelTab.createSequentialGroup().addContainerGap()
+            .addComponent(wheelPanel, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+            .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(btnEyeDropper).addGap(18))
+        .addGroup(gl_wheelTab.createSequentialGroup().addGap(67)
+            .addComponent(lblUseEyeDropper, GroupLayout.PREFERRED_SIZE, 218, GroupLayout.PREFERRED_SIZE)
+            .addContainerGap(107, Short.MAX_VALUE)));
+    gl_wheelTab.setVerticalGroup(gl_wheelTab.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_wheelTab.createSequentialGroup().addGap(4).addComponent(lblUseEyeDropper)
+            .addPreferredGap(ComponentPlacement.UNRELATED)
+            .addGroup(gl_wheelTab.createParallelGroup(Alignment.LEADING)
+                .addComponent(wheelPanel, GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE).addComponent(btnEyeDropper))
+            .addContainerGap()));
+    wheelTab.setLayout(gl_wheelTab);
+    contentPane.setLayout(gl_contentPane);
+
+    // create the model and add elements
     listModel = new DefaultListModel<>();
     itemList = cf.getColorList();
-    for (int i=0; i<itemList.size(); i++) {
+    for (int i = 0; i < itemList.size(); i++) {
       listModel.addElement(itemList.get(i));
     }
     listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     listSelectionModel.addListSelectionListener(new ColorSelectionHandler());
-
-    pack();
-    setResizable(false);
   }
 
-  /**
-   * Gets the option.
-   *
-   * @return the option
-   */
-  public int getOption() {
-    return Closed_Option;
+  public void setSelectedColor(Color c) {
+    currentColor = c;
+    isList = true;
+    if (redValue != currentColor.getRed()) {
+      redValue = currentColor.getRed();
+      spinnerR.setValue(Integer.valueOf(redValue));
+      sliderR.setValue(Integer.valueOf(redValue));
+    }
+    if (greenValue != currentColor.getGreen()) {
+      greenValue = currentColor.getGreen();
+      spinnerG.setValue(Integer.valueOf(greenValue));
+      sliderG.setValue(Integer.valueOf(greenValue));
+    }
+    if (blueValue != currentColor.getBlue()) {
+      blueValue = currentColor.getBlue();
+      spinnerB.setValue(Integer.valueOf(blueValue));
+      sliderB.setValue(Integer.valueOf(blueValue));
+    }
+    previewIcon.setColor(currentColor);
+    ColorItem item = cf.findColorItem(currentColor);
+    colorIndex = item.getIndex();
+    colorList.setSelectedIndex(colorIndex);
+    colorList.ensureIndexIsVisible(colorIndex);
+    colorPanel.repaint();
   }
-  
+
+  class RecentSwatchListener extends MouseAdapter {
+    public void mousePressed(MouseEvent e) {
+      if (isEnabled()) {
+        Color color = recentColorsPanel.getColorForLocation(e.getX(), e.getY());
+        recentColorsPanel.setSelectedColorFromLocation(e.getX(), e.getY());
+        // ignore if setting to default color
+        if (color.getRGB() != -1118482)
+          setSelectedColor(color);
+      }
+    }
+  }
+
   /**
    * Sets the RGB.
    *
@@ -489,100 +583,61 @@ public class GUIsliceColorChooser extends JDialog {
     repaint();
   }
 
-    /**
-     * The listener interface for receiving spinner events. The class that is
-     * interested in processing a spinner event implements this interface, and the
-     * object created with that class is registered with a component using the
-     * component's <code>addSpinnerListener<code> method. When the spinner event
-     * occurs, that object's appropriate method is invoked.
-     *
-     * @see SpinnerEvent
-     */
-    class SpinnerListener  implements ChangeListener {
-      
-      /**
-       * stateChanged
-       *
-       * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
-       */
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        JSpinner spinner = (JSpinner) e.getSource();
-        if (isList == false) {
-          isSpinner = true;
-          if (spinner == spinnerR) {
-            redValue = ((Integer)spinner.getValue()).intValue();
-            sliderR.setValue(Integer.valueOf(redValue));
-          } else if (spinner == spinnerG) {
-            greenValue = ((Integer)spinner.getValue()).intValue();
-            sliderG.setValue(Integer.valueOf(greenValue));
-          } else if (spinner == spinnerB) {
-            blueValue = ((Integer)spinner.getValue()).intValue();
-            sliderB.setValue(Integer.valueOf(blueValue));
-          }
-          currentColor = new Color(redValue, greenValue, blueValue);
-          previewIcon.setColor(currentColor);
-          ColorItem item = cf.findColorItem(currentColor);
-          colorIndex = item.getIndex();
-          colorList.setSelectedIndex(colorIndex);
-          colorList.ensureIndexIsVisible(colorIndex);
-          isSpinner = false;
-          repaint();
+  class SpinnerListener implements ChangeListener {
+    @Override
+    public void stateChanged(ChangeEvent e) {
+      JSpinner spinner = (JSpinner) e.getSource();
+      if (isList == false) {
+        isSpinner = true;
+        if (spinner == spinnerR) {
+          redValue = ((Integer) spinner.getValue()).intValue();
+          sliderR.setValue(Integer.valueOf(redValue));
+        } else if (spinner == spinnerG) {
+          greenValue = ((Integer) spinner.getValue()).intValue();
+          sliderG.setValue(Integer.valueOf(greenValue));
+        } else if (spinner == spinnerB) {
+          blueValue = ((Integer) spinner.getValue()).intValue();
+          sliderB.setValue(Integer.valueOf(blueValue));
         }
-      }
-    };
-     
-    /**
-     * The listener interface for receiving slider events. The class that is
-     * interested in processing a slider event implements this interface, and the
-     * object created with that class is registered with a component using the
-     * component's <code>addSliderListener<code> method. When the slider event
-     * occurs, that object's appropriate method is invoked.
-     *
-     * @see SliderEvent
-     */
-    class SliderListener implements ChangeListener {
-      
-      /**
-       * stateChanged
-       *
-       * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
-       */
-      public void stateChanged(ChangeEvent e) {
-        JSlider slider = (JSlider) e.getSource();
-        if (isList == false && isSpinner == false) {
-          if (slider == sliderR) {
-            redValue = slider.getValue();
-            spinnerR.setValue(Integer.valueOf(redValue));
-          } else if (slider == sliderG) {
-            greenValue = slider.getValue();
-            spinnerG.setValue(Integer.valueOf(greenValue));
-          } else if (slider == sliderB) {
-            blueValue = slider.getValue();
-            spinnerB.setValue(Integer.valueOf(blueValue));
-          }
-  
-          currentColor = new Color(redValue, greenValue, blueValue);
-          previewIcon.setColor(currentColor);
-          ColorItem item = cf.findColorItem(currentColor);
-          colorIndex = item.getIndex();
-          colorList.setSelectedIndex(colorIndex);
-          colorList.ensureIndexIsVisible(colorIndex);
-          colorPanel.repaint();
-        }
+        currentColor = new Color(redValue, greenValue, blueValue);
+        previewIcon.setColor(currentColor);
+        ColorItem item = cf.findColorItem(currentColor);
+        colorIndex = item.getIndex();
+        colorList.setSelectedIndex(colorIndex);
+        colorList.ensureIndexIsVisible(colorIndex);
+        isSpinner = false;
+        colorPanel.repaint();
       }
     }
+  }
 
-    /**
-     * The Class ColorSelectionHandler.
-     */
-    class ColorSelectionHandler implements ListSelectionListener {
-    
-    /**
-     * valueChanged
-     *
-     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-     */
+  class SliderListener implements ChangeListener {
+    public void stateChanged(ChangeEvent e) {
+      JSlider slider = (JSlider) e.getSource();
+      if (isList == false && isSpinner == false) {
+        if (slider == sliderR) {
+          redValue = slider.getValue();
+          spinnerR.setValue(Integer.valueOf(redValue));
+        } else if (slider == sliderG) {
+          greenValue = slider.getValue();
+          spinnerG.setValue(Integer.valueOf(greenValue));
+        } else if (slider == sliderB) {
+          blueValue = slider.getValue();
+          spinnerB.setValue(Integer.valueOf(blueValue));
+        }
+
+        currentColor = new Color(redValue, greenValue, blueValue);
+        previewIcon.setColor(currentColor);
+        ColorItem item = cf.findColorItem(currentColor);
+        colorIndex = item.getIndex();
+        colorList.setSelectedIndex(colorIndex);
+        colorList.ensureIndexIsVisible(colorIndex);
+        colorPanel.repaint();
+      }
+    }
+  }
+
+  class ColorSelectionHandler implements ListSelectionListener {
     public void valueChanged(ListSelectionEvent e) {
       ColorItem item;
       int idx = colorList.getSelectedIndex();
@@ -614,5 +669,51 @@ public class GUIsliceColorChooser extends JDialog {
       }
     }
   }
+  /**
+   * The Class MouseHandler.
+   */
+  private class MouseHandler extends MouseAdapter {
+
+    /**
+     * mouseClicked.
+     *
+     * @param e
+     *          the e
+     * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      if (isEyeDropper) {
+        Point p = e.getLocationOnScreen();
+        Color c = robot.getPixelColor(p.x, p.y);
+        setSelectedColor(c);
+        setCursor(Cursor.getDefaultCursor());
+        isEyeDropper = false;
+      }
+    }  // end mouseClicked
+
+    /**
+     * mouseReleased.
+     *
+     * @param e
+     *          the e
+     * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }  // end mouseReleased
+
+    /**
+     * mousePressed.
+     *
+     * @param e
+     *          the e
+     * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mousePressed(MouseEvent e) {
+    } // end mousePressed
+  } // end MouseHandler
+
 
 }

@@ -64,36 +64,51 @@ public class ProgressBarWidget extends Widget {
    */
   public void draw(Graphics2D g2d) {
     Rectangle b = getWinBounded();
-    if (((ProgressBarModel) model).isVertical()) {
-      int ind_height = b.height/3;  
-      g2d.setColor(((ProgressBarModel) model).getIndicatorColor());
-      g2d.fillRect(b.x, b.y+( b.height-ind_height), b.width, ind_height);
+    if (((ProgressBarModel) model).getGaugeStyle().equals("Radial")) {
+      int nElemRad = (b.width>=b.height)? b.height/2 : b.width/2;
+      int nElemMidX = b.x + (nElemRad/2);
+      int nElemMidY = b.y + (nElemRad/2);
       g2d.setColor(((ProgressBarModel) model).getFillColor());
-      g2d.fillRect(b.x, b.y, b.width, b.height-ind_height);
-      if (((ProgressBarModel) model).isRampStyle()) {
-        int y, dy;
-        dy = b.height / 10;
-        y = b.y + b.height-dy;
-        for (y=(b.y+b.height-dy); y>(b.y+(b.height-ind_height)); y-=dy) {
-          g2d.drawLine(b.x, y, b.x+b.width, y);
-        }
-      }
+      g2d.fillOval(nElemMidX,nElemMidY,nElemRad,nElemRad);
+      g2d.setColor(((ProgressBarModel) model).getFrameColor());
+      g2d.drawOval(nElemMidX,nElemMidY,nElemRad,nElemRad);
+      g2d.setColor(((ProgressBarModel) model).getIndicatorColor());
+      int ind_len = ((ProgressBarModel) model).getIndicatorSize();
+      int dx = b.x + (b.width/2);
+      int dy = b.y + (b.height/2);
+      g2d.drawLine(dx, dy, dx-ind_len, dy-ind_len);
     } else {
-      int ind_width = b.width/3;
-      g2d.setColor(((ProgressBarModel) model).getIndicatorColor());
-      g2d.fillRect(b.x, b.y, ind_width, b.height);
-      g2d.setColor(((ProgressBarModel) model).getFillColor());
-      g2d.fillRect(b.x+ind_width, b.y, b.width-ind_width, b.height);
-      if (((ProgressBarModel) model).isRampStyle()) {
-        int x, dx;
-        dx = b.width / 10;
-        for (x=b.x+dx; x<(b.x+ind_width); x+=dx) {
-          g2d.drawLine(x, b.y, x, b.y+b.height);
+      if (((ProgressBarModel) model).isVertical()) {
+        int ind_height = b.height/3;  
+        g2d.setColor(((ProgressBarModel) model).getIndicatorColor());
+        g2d.fillRect(b.x, b.y+( b.height-ind_height), b.width, ind_height);
+        g2d.setColor(((ProgressBarModel) model).getFillColor());
+        g2d.fillRect(b.x, b.y, b.width, b.height-ind_height);
+        if (((ProgressBarModel) model).getGaugeStyle().equals("Ramp")) {
+          int y, dy;
+          dy = b.height / 10;
+          y = b.y + b.height-dy;
+          for (y=(b.y+b.height-dy); y>(b.y+(b.height-ind_height)); y-=dy) {
+            g2d.drawLine(b.x, y, b.x+b.width, y);
+          }
+        }
+      } else {
+        int ind_width = b.width/3;
+        g2d.setColor(((ProgressBarModel) model).getIndicatorColor());
+        g2d.fillRect(b.x, b.y, ind_width, b.height);
+        g2d.setColor(((ProgressBarModel) model).getFillColor());
+        g2d.fillRect(b.x+ind_width, b.y, b.width-ind_width, b.height);
+        if (((ProgressBarModel) model).getGaugeStyle().equals("Ramp")) {
+          int x, dx;
+          dx = b.width / 10;
+          for (x=b.x+dx; x<(b.x+ind_width); x+=dx) {
+            g2d.drawLine(x, b.y, x, b.y+b.height);
+          }
         }
       }
+      g2d.setColor(((ProgressBarModel) model).getFrameColor());
+      g2d.drawRect(b.x, b.y, b.width, b.height);
     }
-    g2d.setColor(((ProgressBarModel) model).getFrameColor());
-    g2d.drawRect(b.x, b.y, b.width, b.height);
     super.drawSelRect(g2d, b);
   }
 

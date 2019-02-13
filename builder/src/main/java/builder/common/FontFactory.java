@@ -182,15 +182,36 @@ public class FontFactory {
    * @return the font name
    */
   public String getDefFontName() {
+    FontItem item = null;
     String target = Builder.testPlatform;
     if (target == null) {
       target = generalModel.getTarget();
     }
     if (target.equals("linux")) {
-      return linuxFonts.get(0).getDisplayName();
+      item = linuxFonts.get(0);
     } else {
-      return arduinoFonts.get(0).getDisplayName();
+      item = arduinoFonts.get(0);
     }
+    return item.getDisplayName();
+  }
+  
+  /**
+   * Gets the name of the default font enum for the target platform.
+   *
+   * @return the font enum
+   */
+  public String getDefFontEnum() {
+    FontItem item = null;
+    String target = Builder.testPlatform;
+    if (target == null) {
+      target = generalModel.getTarget();
+    }
+    if (target.equals("linux")) {
+      item = linuxFonts.get(0);
+    } else {
+      item = arduinoFonts.get(0);
+    }
+    return item.getFontId();
   }
   
   /**
@@ -208,6 +229,54 @@ public class FontFactory {
     } else {
       return arduinoFonts;
     }
+  }
+  
+  /**
+   * Gets the font enum.
+   *
+   * @param key
+   *          the key (display name)
+   * @return the font enum
+   */
+  public String getFontEnum(String key) {
+    FontItem item = null;
+    Integer idx = Integer.valueOf(0);  // always return something...
+    String target = Builder.testPlatform;
+    if (target == null) {
+      target = generalModel.getTarget();
+    }
+    if (target.equals("linux")) {
+      if (linuxMap.containsKey(key)) {
+        idx = linuxMap.get(key);
+      }
+      item = linuxFonts.get(idx.intValue());
+    } else {
+      if (arduinoMap.containsKey(key)) {
+        idx = arduinoMap.get(key);
+      }
+      item = arduinoFonts.get(idx.intValue());
+    }
+    return item.getFontId();
+  }
+  
+  /**
+   * Gets the font display name.
+   *
+   * @param key
+   *          the key (font enum)
+   * @return the font display name or null on failure
+   */
+  public String getFontDisplayName(String key) {
+    String name = null;
+    List<FontItem> list = getFontList();
+    // this isn't called often enough to warrant anything but brute force search
+    for (FontItem item : list) {
+      if (item.getFontId().equals(key)) {
+        name = item.getDisplayName();
+        break;
+      }
+    }
+    return name;
   }
   
   /**

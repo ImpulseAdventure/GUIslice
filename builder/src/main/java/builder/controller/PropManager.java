@@ -191,7 +191,7 @@ public class PropManager extends JInternalFrame implements ActionListener, iSubs
     } else if (e.code == MsgEvent.OBJECT_UNSELECT_PAGEPANE) {
       showPropEditor(e.parent);
     } else if (e.code == MsgEvent.WIDGET_DELETE) {
-      showPropEditor("Page$1");
+      showPropEditor(e.parent);
     } else if (e.code == MsgEvent.OBJECT_UNSELECT_TREEVIEW) {
       showPropEditor(e.parent);
     }

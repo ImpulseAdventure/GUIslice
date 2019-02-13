@@ -1,15 +1,15 @@
 <ALIGN>
-  gslc_ElemSetTxtAlign(&m_gui,pElemRef,$TEXT_ALIGN$);
+  gslc_ElemSetTxtAlign(&m_gui,pElemRef,$<TEXT_ALIGN>);
 <STOP>
 <BACKGROUND>
   
   // Background flat color
-  gslc_SetBkgndColor(&m_gui,$BACKGROUND_COLOR$);
+  gslc_SetBkgndColor(&m_gui,$<BACKGROUND_COLOR>);
 <STOP>
 <BOX>
    
-  // Create $WIDGET_ENUM$ box
-  pElemRef = gslc_ElemCreateBox(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$});
+  // Create $<WIDGET_ENUM> box
+  pElemRef = gslc_ElemCreateBox(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>});
 <STOP>
 <BUTTON_CB>
 // Common Button callback
@@ -31,31 +31,31 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 }
 <STOP>
 <BUTTON_CB_LOOP>
-      case $WIDGET_ENUM$:
+      case $<WIDGET_ENUM>:
         //TODO- Replace with button handling code
         break;
 <STOP>
 <BUTTON_CB_CHGPAGE>
-      case $WIDGET_ENUM$:
-        gslc_SetPageCur(&m_gui,$PAGE_ENUM$);
+      case $<WIDGET_ENUM>:
+        gslc_SetPageCur(&m_gui,$<PAGE_ENUM>);
         break;
 <STOP>
 <CHECKBOX>
    
-  // create checkbox $WIDGET_ENUM$
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,&m_asXCheck[$COUNT$],
-    (gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},false,GSLCX_CHECKBOX_STYLE_X,$MARK_COLOR$,$CHECKED$);
+  // create checkbox $<WIDGET_ENUM>
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_asXCheck[$<COUNT>],
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},false,GSLCX_CHECKBOX_STYLE_X,$<MARK_COLOR>,$<CHECKED>);
 <STOP>
 <COLOR>
-  gslc_ElemSetCol(&m_gui,pElemRef,$FRAME_COLOR$,$FILL_COLOR$,$GLOW_COLOR$);
+  gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
 <STOP>
 <DRAWFUNC>
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(&m_gui,pElemRef,&CbDrawScanner);
 <STOP>
-<TICKFUNC>
-  // Set the callback function to update content automatically
-  gslc_ElemSetTickFunc(&m_gui,pElemRef,&CbTickScanner);
+<DEFINE_PG_MAX>
+#define MAX_ELEM_$<STRIP_ENUM> $<COUNT>
+#define MAX_ELEM_$<STRIP_ENUM>_RAM MAX_ELEM_$<STRIP_ENUM>
 <STOP>
 <DRAWBOX_CB>
  
@@ -97,65 +97,84 @@ bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 }
 <STOP>
 <FONT_LOAD>
-  bOk = gslc_FontAdd(&m_gui,$FONT_ID$,$FONT_REFTYPE$,$FONT_REF$,$FONT_SZ$);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed: %s\n",$FONT_REF$); exit(1); }
+  bOk = gslc_FontAdd(&m_gui,$<FONT_ID>,$<FONT_REFTYPE>,$<FONT_REF>,$<FONT_SZ>);
+  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed: %s\n",$<FONT_REF>); exit(1); }
+<STOP>
+<GUI_ELEMENT>
+gslc_tsElem                 m_asPage$<COUNT>Elem[MAX_ELEM_$<STRIP_ENUM>_RAM];
+gslc_tsElemRef              m_asPage$<COUNT>ElemRef[MAX_ELEM_$<STRIP_ENUM>];
 <STOP>
 <GRAPH>
 
-  // Create graph $WIDGET_ENUM$
-  pElemRef = gslc_ElemXGraphCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,
-    &m_sGraph$ID$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},$FONT_ID$,(int16_t*)&m_anGraphBuf$ID$,
-        $ROWS$,$GRAPH_COLOR$);
-  gslc_ElemXGraphSetStyle(&m_gui,pElemRef, $STYLE$, 5);
+  // Create graph $<WIDGET_ENUM>
+  pElemRef = gslc_ElemXGraphCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
+    &m_sGraph$<ID>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},$<FONT_ID>,(int16_t*)&m_anGraphBuf$<ID>,
+        $<ROWS>,$<GRAPH_COLOR>);
+  gslc_ElemXGraphSetStyle(&m_gui,pElemRef, $<STYLE>, 5);
 <STOP>
 <GROUP>
-  gslc_ElemSetGroup(&m_gui,pElemRef,$GROUP_ID$);
+  gslc_ElemSetGroup(&m_gui,pElemRef,$<GROUP_ID>);
 <STOP>
 <IMAGE>
  
-  // Initialize $WIDGET_ENUM$ image 
+  // Initialize $<WIDGET_ENUM> image 
   // - Extra code to for path generation based on location of executable
-  strncpy(m_strImgPath$ID$,strPath,MAX_PATH);
-  strncat(m_strImgPath$ID$,$IMAGE_DEFINE$,MAX_PATH);
-  pElemRef = gslc_ElemCreateImg(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},
-    gslc_GetImageFromFile(m_strImgPath$ID$,$IMAGE_FORMAT$));
+  strncpy(m_strImgPath$<ID>,strPath,MAX_PATH);
+  strncat(m_strImgPath$<ID>,$<IMAGE_DEFINE>,MAX_PATH);
+  pElemRef = gslc_ElemCreateImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+    gslc_GetImageFromFile(m_strImgPath$<ID>,$<IMAGE_FORMAT>));
 
 <STOP>
 <IMGBUTTON>
   
-  // Initialize $WIDGET_ENUM$ button with image label
+  // Initialize $<WIDGET_ENUM> button with image label
   // - Extra code to for path generation based on location of executable
-  strncpy(m_strImgBtnPath$ID$,strPath,MAX_PATH);
-  strncat(m_strImgBtnPath$ID$,$IMAGE_DEFINE$,MAX_PATH);
-  strncpy(m_strImgBtnSelPath$ID$,strPath,MAX_PATH);
-  strncat(m_strImgBtnSelPath$ID$,$IMAGE_SEL_DEFINE$,MAX_PATH);
-  pElemRef = gslc_ElemCreateBtnImg(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},
-          gslc_GetImageFromFile(m_strImgBtnPath$ID$,$IMAGE_FORMAT$),
-          gslc_GetImageFromFile(m_strImgBtnSelPath$ID$,$IMAGE_FORMAT$),
+  strncpy(m_strImgBtnPath$<ID>,strPath,MAX_PATH);
+  strncat(m_strImgBtnPath$<ID>,$<IMAGE_DEFINE>,MAX_PATH);
+  strncpy(m_strImgBtnSelPath$<ID>,strPath,MAX_PATH);
+  strncat(m_strImgBtnSelPath$<ID>,$<IMAGE_SEL_DEFINE>,MAX_PATH);
+  pElemRef = gslc_ElemCreateBtnImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+          gslc_GetImageFromFile(m_strImgBtnPath$<ID>,$<IMAGE_FORMAT>),
+          gslc_GetImageFromFile(m_strImgBtnSelPath$<ID>,$<IMAGE_FORMAT>),
           &CbBtnCommon);
 
 <STOP>
 <IMAGETRANSPARENT>
-  gslc_ElemSetFillEn(&m_gui,pElemRef,$BOOL$);
+          gslc_ElemSetFillEn(&m_gui,pElemRef,$<BOOL>);
+<STOP>
+<PAGEADD>
+  gslc_PageAdd(&m_gui,$<PAGE_ENUM>,m_asPage$<COUNT>Elem,MAX_ELEM_$<STRIP_ENUM>_RAM,m_asPage$<COUNT>ElemRef,MAX_ELEM_$<STRIP_ENUM>);
+<STOP>
+<PAGECUR>
+  gslc_SetPageCur(&m_gui,$<PAGE_ENUM>);
 <STOP>
 <PROGRESSBAR>
 
-  // Create progress bar $WIDGET_ENUM$ 
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,&m_sXGauge[$COUNT$],
-    (gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},$MIN$,$MAX$,$VALUE$,$MARK_COLOR$,$CHECKED$);
+  // Create progress bar $<WIDGET_ENUM> 
+  pElemRef = gslc_ElemXGaugeCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sXGauge[$<COUNT>],
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},$<MIN>,$<MAX>,$<VALUE>,$<MARK_COLOR>,$<CHECKED>);
+<STOP>
+<PROGRESSBARSTYLE>
+  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef, $<STYLE>);
+<STOP>
+<PROGRESSBARIND>
+  gslc_ElemXGaugeSetIndicator(&m_gui,pElemRef,$<MARK_COLOR>,$<SIZE>,$<TIPSZ>,$<CHECKED>));
 <STOP>
 <RADIOBUTTON>
   
-  // Create radio button $WIDGET_ENUM$
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,&m_asXCheck[$COUNT$],
-    (gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},true,GSLCX_CHECKBOX_STYLE_ROUND,$MARK_COLOR$,$CHECKED$);
+  // Create radio button $<WIDGET_ENUM>
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_asXCheck[$<COUNT>],
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},true,GSLCX_CHECKBOX_STYLE_ROUND,$<MARK_COLOR>,$<CHECKED>);
+<STOP>
+<ROTATE>
+  gslc_GuiRotate(&m_gui, $<ROTATION>);
 <STOP>
 <SLIDER>
 
-  // Create slider $WIDGET_ENUM$ 
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,&m_sXSlider[$COUNT$],
-          (gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},$MIN$,$MAX$,$VALUE$,$THUMBSZ$,$CHECKED$);
-  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,$STYLE$,$TRIM_COLOR$,$DIVISIONS$,$TICKSZ$,$MARK_COLOR$);
+  // Create slider $<WIDGET_ENUM> 
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sXSlider[$<COUNT>],
+          (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},$<MIN>,$<MAX>,$<VALUE>,$<THUMBSZ>,$<CHECKED>);
+  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,$<STYLE>,$<TRIM_COLOR>,$<DIVISIONS>,$<TICKSZ>,$<MARK_COLOR>);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 <STOP>
 <SLIDER_CB>
@@ -180,45 +199,51 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 }
 <STOP>
 <SLIDER_CB_LOOP>
-    case $WIDGET_ENUM$:
+    case $<WIDGET_ENUM>:
       // Fetch the slider position
       nVal = gslc_ElemXSliderGetPos(pGui,pElemRef);
       //TODO- Replace with slider handling code
       break;
 <STOP>
+<STARTUP>
+  // ------------------------------------------------
+  // Start up display on first page
+  // ------------------------------------------------
+  gslc_SetPageCur(&m_gui,$<PAGE_ENUM>);
+<STOP>
 <TEXT>
   
-  // Create $WIDGET_ENUM$ text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},
-    (char*)"$TEXT$",0,$FONT_ID$);
+  // Create $<WIDGET_ENUM> text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+    (char*)"$<TEXT>",0,$<FONT_ID>);
 <STOP>
 <TEXTBOX>
    
-  // Create wrapping box for textbox $WIDGET_ENUM$ and scrollbar
-  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$});
-  gslc_ElemSetCol(&m_gui,pElemRef,$FRAME_COLOR$,$FILL_COLOR$,$GLOW_COLOR$);
+  // Create wrapping box for textbox $<WIDGET_ENUM> and scrollbar
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>});
+  gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
   
   // Create textbox
-  pElemRef = gslc_ElemXTextboxCreate(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,&m_sTextbox$ID$,
-    (gslc_tsRect){$X$+2,$Y$+4,$WIDTH$-23,$HEIGHT$-8},$FONT_ID$,(char*)&m_acTextboxBuf$ID$,$ROWS$,$COLS$);
-  gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,$CHECKED$);
-  gslc_ElemSetCol(&m_gui,pElemRef,$FRAME_COLOR$,$FILL_COLOR$,$GLOW_COLOR$);
+  pElemRef = gslc_ElemXTextboxCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sTextbox$<ID>,
+    (gslc_tsRect){$<X>+2,$<Y>+4,$<WIDTH>-23,$<HEIGHT>-8},$<FONT_ID>,(char*)&m_acTextboxBuf$<ID>,$<ROWS>,$<COLS>);
+  gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,$<CHECKED>);
+  gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
 
   // Create vertical scrollbar for textbox
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$ID$,$PAGE_ENUM$,&m_sXGauge[$COUNT$],
-          (gslc_tsRect){$X$+$WIDTH$-21,$Y$+4,20,$HEIGHT$-8},0,100,0,5,true);
-  gslc_ElemSetCol(&m_gui,pElemRef,$FRAME_COLOR$,$FILL_COLOR$,$GLOW_COLOR$);
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$<ID>,$<PAGE_ENUM>,&m_sXGauge[$<COUNT>],
+          (gslc_tsRect){$<X>+$<WIDTH>-21,$<Y>+4,20,$<HEIGHT>-8},0,100,0,5,true);
+  gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 <STOP>
 <TEXT_COLOR>
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,$TEXT_COLOR$);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,$<TEXT_COLOR>);
 <STOP>
 <TEXT_UPDATE>
   
-  // Create $WIDGET_ENUM$ text label 
-  static char mstr$ID$[$SIZE$] = "$TEXT$";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,(gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},
-    (char*)mstr$ID$,$SIZE$,$FONT_ID$);
+  // Create $<WIDGET_ENUM> text label
+  static char mstr$<ID>[$<SIZE>] = "$<TEXT>";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+    (char*)mstr$<ID>,$<SIZE>,$<FONT_ID>);
 <STOP>
 <TICK_CB>
 
@@ -232,10 +257,14 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   return true;
 }
 <STOP>
+<TICKFUNC>
+  // Set the callback function to update content automatically
+  gslc_ElemSetTickFunc(&m_gui,pElemRef,&CbTickScanner);
+<STOP>
 <TXTBUTTON>
   
-  // create $WIDGET_ENUM$ button with text label
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$WIDGET_ENUM$,$PAGE_ENUM$,
-    (gslc_tsRect){$X$,$Y$,$WIDTH$,$HEIGHT$},(char*)"$TEXT$",0,$FONT_ID$,&CbBtnCommon);
+  // create $<WIDGET_ENUM> button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},(char*)"$<TEXT>",0,$<FONT_ID>,&CbBtnCommon);
 <STOP>
 <END>

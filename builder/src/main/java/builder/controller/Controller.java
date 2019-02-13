@@ -58,9 +58,11 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 
 import builder.Builder;
 import builder.commands.AddPageCommand;
@@ -191,7 +193,9 @@ public class Controller extends JInternalFrame
     MsgBoard.getInstance().subscribe(this);
     layout = new CardLayout();
     cards = new JPanel(layout);
-    this.add(cards);
+    JScrollPane scrollPane = new JScrollPane(cards);
+    
+    this.add(scrollPane);
     this.setTitle(title); 
     createFirstPage();
     this.setVisible(true);
@@ -332,20 +336,20 @@ public class Controller extends JInternalFrame
   public void createFirstPage() {
     currentPage = new PagePane();
     PageModel m = (PageModel) currentPage.getModel();
-    String pageEnum = EnumFactory.getInstance().createEnum(EnumFactory.PAGE);
-    m.setEnum(pageEnum);
     currentPageKey = EnumFactory.getInstance().createKey(EnumFactory.PAGE);
     m.setKey(currentPageKey);
+    String pageEnum = EnumFactory.getInstance().createEnum(EnumFactory.PAGE);
+    m.setEnum(pageEnum);
     addPageToView(currentPage);
     PropManager.getInstance().addPropEditor(currentPage.getModel());
     TreeView.getInstance().addPage(currentPageKey);
   }
   
-  // this function is called directly by toolbox when page button is pressed
   /**
    * Creates the page.
+   * this function is called directly by toolbox when page button is pressed
+   * It builds an AddPageCommand for undo and redo.
    */
-  // It builds an AddPageCommand for undo and redo.
   public void createPage() {
     AddPageCommand c = new AddPageCommand(this);
     PagePane p = new PagePane();
@@ -355,6 +359,31 @@ public class Controller extends JInternalFrame
     m.setEnum(EnumFactory.getInstance().createEnum(EnumFactory.PAGE));
     c.add(p);
     execute(c);
+  }
+  
+  /**
+   * Creates the page that being imported from an existing .ino or .c file
+   * this function is called directly by the importer
+   */
+  public PagePane createPage(String strEnum) {
+    PagePane p = new PagePane();
+    PageModel m = (PageModel) p.getModel();
+    String pageKey = EnumFactory.getInstance().createKey(EnumFactory.PAGE);
+    m.setKey(pageKey);
+    m.setEnum(strEnum);
+    addPage(p);
+    return p;
+  }
+  
+  /**
+   * Creates the page that being imported from an existing .ino or .c file
+   * this function is called directly by the importer
+   */
+  public PagePane getFirstPage(String strEnum) {
+    PagePane p = pages.get(0);
+    PageModel m = (PageModel) p.getModel();
+    m.setEnum(strEnum);
+    return p;
   }
   
   /**
@@ -382,7 +411,7 @@ public class Controller extends JInternalFrame
     if (list.size() < 1) { // could be a widget or page selected in TreeView
       // ask tree view if anyone selected?
       String selected = TreeView.getInstance().getSelectedWidget();
-      if (selected != null) {
+      if (selected != null && !selected.isEmpty()) {
         if (selected.startsWith("Page")) {
           PagePane p = findPage(selected);
           if (p != null) {
@@ -397,6 +426,7 @@ public class Controller extends JInternalFrame
           return;
         }
       }
+
     } else {  // widget removal
         delWidget(list);
         return;
@@ -417,13 +447,15 @@ public class Controller extends JInternalFrame
   // It builds an DelPageCommand for undo and redo.
   private void removePage(PagePane page) {
     String msg = null;
+/*
     if (page.getKey().equals("Page$1")) {
       // error can't remove first page
       JOptionPane.showMessageDialog(topFrame, 
-          "Sorry, You can't remove PAGE_1", "Error",
+          "Sorry, You can't remove Page$1", "Error",
           JOptionPane.ERROR_MESSAGE);
       return;
     } 
+*/
     if (page.getWidgetCount() > 0) {
       msg = String.format("Sorry, you must delete all of %s widgets first.", page.getKey());
       // error can't remove first page
@@ -460,9 +492,9 @@ public class Controller extends JInternalFrame
       p = litr.next();
       if (p.getKey().equals(page.getKey())) {
         layout.removeLayoutComponent(page);
-        changePage("Page$1");
         TreeView.getInstance().delPage(page.getKey());
-        PropManager.getInstance().showPropEditor(EnumFactory.PAGE_MAIN);
+        if (pages.size() > 0)
+          changePage(pages.get(0).getKey());
         litr.remove();
         break;
       }
@@ -514,6 +546,7 @@ public class Controller extends JInternalFrame
       keys = keys + w.getKey();
       first = false;
     }
+    keys = keys + " from " + currentPage.getKey();
      String msg = String.format("You want to delete %s?", keys);
     if (JOptionPane.showConfirmDialog(topFrame, 
         msg, "Really Delete?", 
@@ -524,6 +557,7 @@ public class Controller extends JInternalFrame
     DelWidgetCommand c = new DelWidgetCommand(currentPage);
     if (c.del()) {
       currentPage.execute(c);
+      topFrame.repaint();
     } else {
       selectionWarning();
     }
@@ -533,6 +567,10 @@ public class Controller extends JInternalFrame
    * New project.
    */
   private void newProject() {
+    projectFolder = null;
+    projectFile = null;
+    String frameTitle = Builder.PROGRAM_TITLE + Builder.NEW_PROJECT;
+    topFrame.setTitle(frameTitle);
     closeProject();
     PropManager.getInstance().openProject();
     createFirstPage();
@@ -567,7 +605,7 @@ public class Controller extends JInternalFrame
     // output current version so we can make changes on future updates
     out.writeObject(Builder.VERSION_NO);
     out.writeObject(((GeneralModel) generalEditor.getModel()).getTarget());
-    out.writeObject("Page$1");  // always point to first page.
+    out.writeObject(pages.get(0).getKey());  // always point to first page.
     out.writeInt(pages.size());
     String pageKey = null;
     String pageEnum = null;
@@ -624,14 +662,12 @@ public class Controller extends JInternalFrame
 //    System.out.println("pages: " + cnt);
       for (int i=0; i<cnt; i++) {
         pageKey = (String)in.readObject();
-//      System.out.println("restore page: " + pageKey);
         pageEnum = (String)in.readObject();
 //      System.out.println("restore page: " + pageEnum);
         p = restorePage(pageKey, pageEnum);
         p.restore((String)in.readObject());
       }
       String tree_backup = (String)in.readObject();
-      
       TreeView.getInstance().restore(tree_backup);
       String enum_backup = (String)in.readObject();
       EnumFactory.getInstance().restore(enum_backup);
@@ -646,7 +682,7 @@ public class Controller extends JInternalFrame
       e.printStackTrace();
     }
     in.close();
-    changePage(currentPageKey);
+    changePage(pages.get(0).getKey());
     this.setVisible(true);
   }
 
@@ -820,28 +856,9 @@ public class Controller extends JInternalFrame
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
+    return new Dimension(1200,1200);
   }
 
-  /**
-   * getMaximumSize
-   *
-   * @see javax.swing.JComponent#getMaximumSize()
-   */
-  @Override
-  public Dimension getMaximumSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
-  }
-
-  /**
-   * getMinimumSize
-   *
-   * @see javax.swing.JComponent#getMinimumSize()
-   */
-  @Override
-  public Dimension  getMinimumSize() {
-    return new Dimension(generalEditor.getWidth(), generalEditor.getHeight());
-  }
 
   /**
    * updateEvent
@@ -862,35 +879,87 @@ public class Controller extends JInternalFrame
   }
 
   /**
+   * Checks, whether the child directory is a subdirectory of the base 
+   * directory.
+   *
+   * @param base the base directory.
+   * @param child the suspected child directory.
+   * @return true, if the child is a subdirectory of the base directory.
+   * @throws IOException if an IOError occured during the test.
+   */
+  public boolean isSubDirectory(File base, File child) {
+
+    boolean res = false;
+    try {
+      base = base.getCanonicalFile();
+      if (child != null) {
+        if (child.isDirectory()) {
+          child = child.getCanonicalFile();
+          File parentFile = child;
+          while (!res && parentFile != null) {
+              if (base.equals(parentFile)) {
+                  res = true;
+              }
+              parentFile = parentFile.getParentFile();
+          }
+        }
+      }
+    } catch (IOException e) {
+       e.printStackTrace();
+    }
+    return res;
+  }
+
+  /**
    * Create folder dialog.
    * 
    * @return the <code>file</code> object
    */
   public File createFolderDialog() {
-    String name = (String) JOptionPane.showInputDialog(null,
-        "Enter Name of Project Folder",
-        "Create Project Folder", JOptionPane.PLAIN_MESSAGE);
-    if (name == null) // operation cancelled
-        return null;
     File currentDirectory;
-    String projectDir = ((GeneralModel) generalEditor.getModel()).getProjectDir();
-    projectDir = projectDir + System.getProperty("file.separator") + name;
+    String folderPath = ((GeneralModel) generalEditor.getModel()).getProjectDir();
     // absolute path or relative?
-    Path path = Paths.get(projectDir);
+    Path path = Paths.get(folderPath);
     if (path.isAbsolute()) {
-      currentDirectory = new File(projectDir);
+      currentDirectory = new File(folderPath);
     } else {
       String workingDir = CommonUtil.getInstance().getWorkingDir();
-      projectDir = workingDir + projectDir;
-      currentDirectory = new File(projectDir);
+      folderPath = workingDir + folderPath;
+      currentDirectory = new File(folderPath);
     }
-    if(!currentDirectory.exists()){
-      currentDirectory.mkdir();
+    File directorylock = new File(folderPath);
+    JFileChooser chooser = new JFileChooser(folderPath);
+    // lock the user into only using the project directory or its sub-directories
+    chooser.setFileView(new FileView() {
+        @Override
+        public Boolean isTraversable(File f) {
+             return isSubDirectory(directorylock, f);
+        }
+    });
+    chooser.addChoosableFileFilter(new FileFilter() {
+      public String getDescription() {
+        String descr = new String("GUIslice Builder Project Folder");
+        return descr;
+      }
+      public boolean accept(File f) {
+          return f.isDirectory();
+      }
+    });
+    chooser.setDialogTitle("Choose your Project Folder");
+    chooser.setApproveButtonText("Select Folder");
+    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    chooser.setAcceptAllFileFilterUsed(false);
+    chooser.setAcceptAllFileFilterUsed(false);
+    // Open Dialog  
+    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
+      currentDirectory = chooser.getSelectedFile();
+    } else {
+      return null;
     }
     projectFolder = currentDirectory;
-    File project = new File(new String(projectDir 
+    File project = new File(new String(currentDirectory.toString() 
         + System.getProperty("file.separator")
-        + name + ".prj"));
+        + currentDirectory.getName() + ".prj"));
     return project;
   }
 
@@ -909,7 +978,7 @@ public class Controller extends JInternalFrame
    *          the text to show for the accept button
    * @return the <code>file</code> object
    */
-  public File showFileDialog(String title, String fileExtension, String suggestedFile, 
+  public File showFileDialog(String title, String[] fileExtension, String suggestedFile, 
       boolean bAcceptAll, String btnText) {
     File file = null;
     JFileChooser fileChooser = new JFileChooser();
@@ -920,19 +989,28 @@ public class Controller extends JInternalFrame
       fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.addChoosableFileFilter(new FileFilter() {
       public String getDescription() {
-        String descr = new String("GUIslice Builder file (*" + fileExtension + ")");
+        String descr = new String("GUIslice Builder file (");
+        for (int i=0; i<fileExtension.length; i++) {
+          if (i > 0) 
+            descr = descr + ", ";
+          descr = descr + "*" + fileExtension[i];
+        }
+        descr = descr  + ")"; 
         return descr;
       }
       public boolean accept(File f) {
         if (f.isDirectory()) {
           return true;
         } else {
-          return f.getName().toLowerCase().endsWith(fileExtension);
+          String name = f.getName().toLowerCase();
+          for (int i=0; i<fileExtension.length; i++) 
+            if (name.endsWith(fileExtension[i]))
+              return true;
+          return false;
         }
       }
     });
     File currentDirectory;
-    String parentPath = null;
     String projectDir = ((GeneralModel) generalEditor.getModel()).getProjectDir();
     // absolute path or relative?
     Path path = Paths.get(projectDir);
@@ -946,18 +1024,6 @@ public class Controller extends JInternalFrame
     int option = fileChooser.showDialog(new JFrame(), btnText);
     if (option == JFileChooser.APPROVE_OPTION) {
       file = fileChooser.getSelectedFile();
-      if (!file.getName().toLowerCase().endsWith(fileExtension)) {
-        parentPath = file.getParent().toString();
-        if (parentPath != null) {
-          file = new File(new String(parentPath 
-              + System.getProperty("file.separator")
-              + file.getName() + fileExtension));
-        } else {
-          file = new File(new String(currentDirectory.getPath() 
-              + System.getProperty("file.separator")
-              + file.getName() + fileExtension));
-        }
-      }
       projectFolder = fileChooser.getCurrentDirectory();
     }
     return file;
@@ -980,7 +1046,7 @@ public class Controller extends JInternalFrame
     // System.out.println("command: " + command);
     switch(command) {
     case "about":
-    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.10.4-beta7", "About", JOptionPane.INFORMATION_MESSAGE);
+    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.11.0-rc1", "About", JOptionPane.INFORMATION_MESSAGE);
 //      JOptionPane.showMessageDialog(null, "GUIsliceBuider ver SNAPSHOT", "About", JOptionPane.INFORMATION_MESSAGE);
       break;
     
@@ -1030,15 +1096,23 @@ public class Controller extends JInternalFrame
       break;
       
     case "new":
-      projectFolder = null;
-      projectFile = null;
-      frameTitle = Builder.PROGRAM_TITLE + Builder.NEW_PROJECT;
-      topFrame.setTitle(frameTitle);
       newProject();
       break;
       
+    case "import":
+      String [] fileExt = new String[2];
+      fileExt[0] = ".ino";
+      fileExt[1] = ".c";
+      File file = showFileDialog("Import Project", fileExt, null, false, "Import");
+      if (file == null) break;
+      newProject();
+      Importer.getInstance().doImport(file);
+      break;
+      
     case "open":
-      projectFile = showFileDialog("Open Project", ".prj", null, false, "Open");
+      String [] fileExtPrj = new String[1];
+      fileExtPrj[0] = ".prj";
+      projectFile = showFileDialog("Open Project", fileExtPrj, null, false, "Open");
       if (projectFile == null) break;
       frameTitle = Builder.PROGRAM_TITLE + " - " + projectFile.getName();
       topFrame.setTitle(frameTitle);
@@ -1053,7 +1127,7 @@ public class Controller extends JInternalFrame
     case "save":
       if (projectFolder == null) {
         projectFile = createFolderDialog();
-        if (projectFolder == null) { 
+        if (projectFile == null) { 
           JOptionPane.showMessageDialog(null, "Project Save Failed", "Error", JOptionPane.ERROR_MESSAGE);
           return;
         }
@@ -1061,6 +1135,7 @@ public class Controller extends JInternalFrame
         topFrame.setTitle(frameTitle);
       }
       try {
+        CommonUtil.getInstance().backupFile(projectFile);
         out = new ObjectOutputStream(new FileOutputStream(projectFile));
         saveProject(out);
         JOptionPane.showMessageDialog(null, "Project Saved into " + projectFile.getName(), null, JOptionPane.INFORMATION_MESSAGE);
@@ -1102,28 +1177,8 @@ public class Controller extends JInternalFrame
         else 
           JOptionPane.showMessageDialog(null, "Code Generation Failed " + skeleton, "Error", JOptionPane.ERROR_MESSAGE);
       } else {
-        if (projectFolder == null) {
-          projectFile = createFolderDialog();
-          if (projectFile != null) {
-            frameTitle = Builder.PROGRAM_TITLE + " - " + projectFile.getName();
-            topFrame.setTitle(frameTitle);
-          } else {
-            JOptionPane.showMessageDialog(topFrame, "Sorry, You must Create Project Folder before asking for code generation",
-                "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-        }
-        try {
-          out = new ObjectOutputStream(new FileOutputStream(projectFile));
-          saveProject(out);
-          skeleton = cg.generateCode(projectFolder.toString(), projectFile.getName(), pages);
-          if (skeleton != null)
-            JOptionPane.showMessageDialog(null, "Code Generated into " + skeleton, null, JOptionPane.INFORMATION_MESSAGE);
-          else 
-            JOptionPane.showMessageDialog(null, "Code Generation Failed " + skeleton, "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e1) {
-          e1.printStackTrace();
-        }
+          JOptionPane.showMessageDialog(topFrame, "Sorry, You must Save Project once before asking for code generation",
+              "Error", JOptionPane.ERROR_MESSAGE);
       }
       break;
     
@@ -1142,6 +1197,7 @@ public class Controller extends JInternalFrame
             }
           } 
           try {
+            CommonUtil.getInstance().backupFile(projectFile);
             out = new ObjectOutputStream(new FileOutputStream(projectFile));
             saveProject(out);
             JOptionPane.showMessageDialog(null, "Project Saved into " + projectFile.getName(), null, JOptionPane.INFORMATION_MESSAGE);
@@ -1152,9 +1208,6 @@ public class Controller extends JInternalFrame
           }
         }
       }
-      topFrame.setTitle(Builder.PROGRAM_TITLE);
-      projectFile = null;
-      projectFolder = null;
       newProject();
       break;
       
@@ -1172,6 +1225,7 @@ public class Controller extends JInternalFrame
           } 
         }
         try {
+          CommonUtil.getInstance().backupFile(projectFile);
           out = new ObjectOutputStream(new FileOutputStream(projectFile));
           saveProject(out);
         } catch (IOException e1) {
@@ -1252,15 +1306,26 @@ public class Controller extends JInternalFrame
           generalEditor.getHeight() != displayHeight) {
         displayWidth = generalEditor.getWidth();
         displayHeight = generalEditor.getHeight();
-        getPanel().setPreferredSize(new Dimension(displayWidth, displayHeight));
+//        getPanel().setPreferredSize(new Dimension(displayWidth, displayHeight));
         int width = Math.max(displayWidth + 600, 700);
         int height = Math.max(displayHeight + 40, 700);
         Dimension d = new Dimension(width, height);
         topFrame.setPreferredSize(d);
         topFrame.setMaximumSize(d);
         topFrame.setMinimumSize(d);
+        Builder.CANVAS_WIDTH = GeneralEditor.getInstance().getWidth()+205;
+        Builder.CANVAS_HEIGHT = GeneralEditor.getInstance().getHeight()+235;
+        Dimension canvasSz = new Dimension(Builder.CANVAS_WIDTH, Builder.CANVAS_HEIGHT);
+        CommonUtil.getInstance().setWinOffsets(canvasSz,
+            GeneralEditor.getInstance().getWidth(),
+            GeneralEditor.getInstance().getHeight());
+
         topFrame.revalidate();
-        CommonUtil.getInstance().setWinOffsets(getPanel().getSize(), displayWidth, displayHeight);
+        MsgEvent ev = new MsgEvent();
+        ev.message ="";
+        ev.parent = "";
+        ev.code = MsgEvent.CANVAS_MODEL_CHANGE;
+        MsgBoard.getInstance().publish(ev);
         topFrame.repaint();
       }
       refreshView();  // refresh view no matter what changed.

@@ -89,6 +89,31 @@ public class GeneralEditor extends ModelEditor {
   }
   
   /**
+   * Save preferences.
+   */
+  public void savePreferences() {
+    super.savePreferences();
+  }
+  
+  /**
+   * Gets the recent colors.
+   *
+   * @return the recent colors
+   */
+  public String getRecentColors() {
+    return ((GeneralModel) model).getRecentColors();
+  }
+
+  /**
+   * setRecentColors sets the recent colors
+   * called by our color chooser.
+   * @param s
+   */
+  public void setRecentColors(String s) { 
+    ((GeneralModel) model).setRecentColors(s);
+  }
+
+  /**
    * getTitle
    *
    * @see builder.prefs.ModelEditor#getTitle()

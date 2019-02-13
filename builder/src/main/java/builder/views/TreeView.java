@@ -249,7 +249,11 @@ public class TreeView extends JInternalFrame implements iSubscriber {
       node.removeAllChildren(); //this removes all nodes
       delObject(root, pageID);
     }
-    currentPage = findNode("Page$1");
+    List<DefaultMutableTreeNode> searchNodes = getSearchNodes((DefaultMutableTreeNode) tree.getModel().getRoot());
+    currentPage = searchNodes.get(1);
+    TreePath path = new TreePath(currentPage.getPath());
+    tree.setSelectionPath(path);
+    tree.scrollPathToVisible(path);
   }
   
   /**
@@ -370,6 +374,8 @@ public class TreeView extends JInternalFrame implements iSubscriber {
     int bookmark = -1;
 
     if (currentNode != null) {
+      if (currentNode.toString().equals(searchString))
+        return currentNode;
       for (int index = 0; index < searchNodes.size(); index++) {
         if (searchNodes.get(index) == currentNode) {
           bookmark = index;
@@ -516,11 +522,12 @@ public class TreeView extends JInternalFrame implements iSubscriber {
       // do not allow drop past end of branch
       int childIndex = dropLocation.getChildIndex();
       int parentIndex = parentNode.getChildCount();
-      if (parentIndex == childIndex) return false;
+      
+      if (childIndex+1 >= parentIndex) return false;
 
       DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
       TreePath dropPath = new TreePath(selectedNode.getPath());
-      
+
       // Do not allow MOVE-action drops if a non-leaf node is selected
       // non-leaf node?
       if(!selectedNode.isLeaf()) return false;

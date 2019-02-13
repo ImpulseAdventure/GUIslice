@@ -95,24 +95,24 @@ public class WidgetFactory  {
       widget = new BoxWidget(x, y);
       model = (BoxModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     case "CheckBox":
       widget = new CheckBoxWidget(x, y);
       model = (CheckBoxModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     case "Graph":
       widget = new GraphWidget(x, y);
       model = (GraphModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         ref = GraphModel.ELEMENTREF_NAME;
         strKey = model.getKey();
         n = strKey.indexOf("$");
@@ -125,24 +125,24 @@ public class WidgetFactory  {
       widget = new ImageWidget();
       model = (ImageModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     case "ImageButton":
       widget = new ImgButtonWidget();
       model = (ImgButtonModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     case "ProgressBar":
       widget = new ProgressBarWidget(x, y);
       model = (ProgressBarModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         ref = ProgressBarModel.ELEMENTREF_NAME;
         strKey = model.getKey();
         n = strKey.indexOf("$");
@@ -155,16 +155,16 @@ public class WidgetFactory  {
       widget = new RadioButtonWidget(x, y);
       model = (RadioButtonModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     case "Slider":
       widget = new SliderWidget(x, y);
       model = (SliderModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         ref = SliderModel.ELEMENTREF_NAME;
         strKey = model.getKey();
         n = strKey.indexOf("$");
@@ -185,8 +185,8 @@ public class WidgetFactory  {
       widget = new TextBoxWidget(x, y);
       model = (TextBoxModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         ref = TextBoxModel.ELEMENTREF_NAME;
         strKey = model.getKey();
         n = strKey.indexOf("$");
@@ -199,8 +199,8 @@ public class WidgetFactory  {
       widget = new TxtButtonWidget(x, y);
       model = (TxtButtonModel) widget.getModel();
       if (widget != null) {
-        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
         model.setKey(EnumFactory.getInstance().createKey(widgetType));
+        model.setEnum(EnumFactory.getInstance().createEnum(widgetType));
       }
       break;
     default:
