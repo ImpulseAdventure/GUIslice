@@ -134,8 +134,8 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       pGui->nFlipX = 0;
       pGui->nFlipY = 0;
       pGui->nTouchCalXMin = 100;
-      pGui->nTouchCalXMax = 100;
-      pGui->nTouchCalYMin = 1000;
+      pGui->nTouchCalXMax = 1000;
+      pGui->nTouchCalYMin = 100;
       pGui->nTouchCalYMax = 1000;
     #endif // !DRV_TOUCH_NONE
 
