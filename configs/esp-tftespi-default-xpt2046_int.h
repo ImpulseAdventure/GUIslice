@@ -5,7 +5,7 @@
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     ESP8266 / ESP32
 //   - Display: TFT_eSPI (defined by TFT_eSPI config)
-//   - Touch:   XPT2046 (Resistive)
+//   - Touch:   XPT2046 (Resistive) from TFT_eSPI
 //   - Wiring:  Custom breakout
 //              - Pinout defined by TFT_eSPI's User_Setup.h
 //
@@ -85,7 +85,8 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
-  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
+  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
+  #define DRV_TOUCH_IN_DISP         // Use display driver (TFT_eSPI) for touch events
 
 
   // -----------------------------------------------------------------------------
@@ -110,26 +111,16 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
 
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4A: Update your pin connections here
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // Touch bus & pinout
-  #define XPT2046_CS     3
-
+  // TFT_eSPI: Chip Select for Touch Device
+  // - Defined by TOUCH_CS in TFT_eSPI's User_Setup.h (must not be commented out)
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4B: Update your calibration settings here
-  // - These values should come from the diag_ard_touch_calib sketch output
-  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // - These values should come from the TFT_eSPI/Touch_calibrate utility
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  // Calibration settings from diag_ard_touch_calib:
-  // DRV_TOUCH_XPT2046:
-  #define ADATOUCH_X_MIN    246
-  #define ADATOUCH_Y_MIN    3925
-  #define ADATOUCH_X_MAX    3837
-  #define ADATOUCH_Y_MAX    370
+  // Calibration data from TFT_eSPI for integrated XPT2046
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
 
 
@@ -137,9 +128,6 @@ extern "C" {
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN  10
-  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
