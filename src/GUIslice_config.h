@@ -93,6 +93,7 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-notouch.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
+  //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 
   // Multi-device shields:
   // ------------------------------------------------------
