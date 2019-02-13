@@ -24,8 +24,9 @@
 //   - To avoid potential SPI conflicts, it is recommended
 //     that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
 //
-//   - For touch support, note that TFT_eSPI's User_Setup.h must
-//     define TOUCH_CS (ie. not commented out).
+//   - For touch support from TFT_eSPI's integrated XPT2046 driver,
+//     note that TFT_eSPI's User_Setup.h must define TOUCH_CS
+//     (ie. it should not be commented out).
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
