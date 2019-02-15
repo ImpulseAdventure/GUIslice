@@ -139,8 +139,8 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,200,E_PG_MAIN,10,50,300,180,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create dividers
-  gslc_ElemCreateBox_P(&m_gui,201,E_PG_MAIN,20,100,280,1,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL,NULL);
-  gslc_ElemCreateBox_P(&m_gui,202,E_PG_MAIN,235,60,1,35,GSLC_COL_GRAY_DK3,GSLC_COL_BLACK,true,true,NULL,NULL);
+  gslc_ElemCreateLine_P(&m_gui,201,E_PG_MAIN,20,100,300,100,GSLC_COL_GRAY_DK3);
+  gslc_ElemCreateLine_P(&m_gui,202,E_PG_MAIN,235,60,235,95,GSLC_COL_GRAY_DK3);
 
 
   // Create color box

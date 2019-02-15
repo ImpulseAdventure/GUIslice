@@ -2109,6 +2109,20 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 ///
 
 
+/// \def gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill)
+///
+/// Create a read-only line element
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  nElemId:    Unique element ID to assign
+/// \param[in]  nPage:      Page ID to attach element to
+/// \param[in]  nX0:        X coordinate of line start
+/// \param[in]  nY0:        Y coordinate of line start
+/// \param[in]  nX1:        X coordinate of line end
+/// \param[in]  nX2:        Y coordinate of line end
+/// \param[in]  colFill:    Color for the line
+
+
 /// \def gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData)
 ///
 /// Create a text button element
@@ -2226,6 +2240,35 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       pfuncXDraw,                                                 \
       NULL,                                                       \
       pfuncXTick,                                                 \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+
+#define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_LINE,                                             \
+      (gslc_tsRect){nX0,nY0,nX1-nX0+1,nY1-nY0+1},                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFill,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,              \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      GSLC_TXT_DEFAULT,                                           \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
@@ -2386,6 +2429,35 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       pfuncXDraw,                                                 \
       NULL,                                                       \
       pfuncXTick,                                                 \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+
+#define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_LINE,                                             \
+      (gslc_tsRect){nX0,nY0,nX1-nX0+1,nY1-nY0+1},                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFill,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,              \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      NULL,                                                       \
+      0,                                                          \
+      GSLC_TXT_DEFAULT,                                           \
+      GSLC_COL_WHITE,                                             \
+      GSLC_COL_WHITE,                                             \
+      GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
+      NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
