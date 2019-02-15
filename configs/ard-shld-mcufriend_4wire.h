@@ -236,6 +236,17 @@ extern "C" {
   //#define ADATOUCH_X_MAX    905
   //#define ADATOUCH_Y_MAX    966
 
+  // MCUFRIEND_ID == 0x9340:
+  // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9340) (XP=6,XM=A2,YP=A1,YM=7)  [TESTED]
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7 
+  //#define ADATOUCH_PIN_XP   6 
+  //#define ADATOUCH_X_MIN    145
+  //#define ADATOUCH_Y_MIN    937
+  //#define ADATOUCH_X_MAX    905
+  //#define ADATOUCH_Y_MAX    165
+
   // MCUFRIEND_ID == 0x9341:
   // - DRV_TOUCH_ADA_SIMPLE [240x320]: (MCUFRIEND ID=0x9341) (XP=6,XM=A2,YP=A1,YM=7)  [TESTED]
   //#define ADATOUCH_PIN_YP   A1
