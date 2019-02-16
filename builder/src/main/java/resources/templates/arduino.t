@@ -116,16 +116,16 @@ gslc_tsElemRef              m_asPage$<COUNT>ElemRef[MAX_ELEM_$<STRIP_ENUM>];
 <STOP>
 <IMAGE>
  
-  // Get Image $<IMAGE_DEFINE> from SD Card
+  // Create $<WIDGET_ENUM> using Image $<IMAGE_DEFINE> $<IMAGE_FROM_SRC>
   pElemRef = gslc_ElemCreateImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-    gslc_GetImageFromSD((const char*)$<IMAGE_DEFINE>,$<IMAGE_FORMAT>));
+    $<IMAGE_SOURCE>$<IMAGE_DEFINE>,$<IMAGE_FORMAT>));
 <STOP>
 <IMGBUTTON>
   
   // Create $<WIDGET_ENUM> button with image label
   pElemRef = gslc_ElemCreateBtnImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-          gslc_GetImageFromSD((const char*)$<IMAGE_DEFINE>,$<IMAGE_FORMAT>),
-          gslc_GetImageFromSD((const char*)$<IMAGE_SEL_DEFINE>,$<IMAGE_FORMAT>),
+          $<IMAGE_SOURCE>$<IMAGE_DEFINE>,$<IMAGE_FORMAT>),
+          $<IMAGE_SEL_SOURCE>$<IMAGE_SEL_DEFINE>,$<IMAGE_FORMAT>),
           &CbBtnCommon);
 <STOP>
 <IMAGETRANSPARENT>
@@ -232,10 +232,10 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 <STOP>
 <TEXT_UPDATE>
   
-  // Create $<WIDGET_ENUM> text label
-  static char mstr$<ID>[$<SIZE>] = "$<TEXT>";
+  // Create $<WIDGET_ENUM> modifiable text label
+  static char m_strtxt$<ID>[$<SIZE>] = "$<TEXT>";
   pElemRef = gslc_ElemCreateTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-    (char*)mstr$<ID>,$<SIZE>,$<FONT_ID>);
+    (char*)m_strtxt$<ID>,$<SIZE>,$<FONT_ID>);
 <STOP>
 <TICK_CB>
 
@@ -258,5 +258,13 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   // create $<WIDGET_ENUM> button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
     (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},(char*)"$<TEXT>",0,$<FONT_ID>,&CbBtnCommon);
+<STOP>
+<TXTBUTTON_UPDATE>
+  
+  // Create $<WIDGET_ENUM> button with modifiable text label
+  static char m_strbtn$<ID>[$<SIZE>] = "$<TEXT>";
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+    (char*)m_strbtn$<ID>,$<SIZE>,$<FONT_ID>,&CbBtnCommon);
 <STOP>
 <END>

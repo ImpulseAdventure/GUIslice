@@ -121,16 +121,16 @@ gslc_tsElemRef              m_asPage$<COUNT>ElemRef[MAX_ELEM_$<STRIP_ENUM>];
 <STOP>
 <IMAGE>
  
-  // Get Image $<IMAGE_DEFINE> from SD Card
+  // Create $<WIDGET_ENUM> using Image $<IMAGE_DEFINE> $<IMAGE_FROM_SRC>
   pElemRef = gslc_ElemCreateImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-    gslc_GetImageFromSD((const char*)$<IMAGE_DEFINE>,$<IMAGE_FORMAT>));
+    $<IMAGE_SOURCE>$<IMAGE_DEFINE>,$<IMAGE_FORMAT>));
 <STOP>
 <IMGBUTTON>
   
   // Create $<WIDGET_ENUM> button with image label
   pElemRef = gslc_ElemCreateBtnImg(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-          gslc_GetImageFromSD((const char*)$<IMAGE_DEFINE>,$<IMAGE_FORMAT>),
-          gslc_GetImageFromSD((const char*)$<IMAGE_SEL_DEFINE>,$<IMAGE_FORMAT>),
+          $<IMAGE_SOURCE>$<IMAGE_DEFINE>,$<IMAGE_FORMAT>),
+          $<IMAGE_SEL_SOURCE>$<IMAGE_SEL_DEFINE>,$<IMAGE_FORMAT>),
           &CbBtnCommon);
 <STOP>
 <IMAGETRANSPARENT>
@@ -238,10 +238,11 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 <STOP>
 <TEXT_UPDATE>
   
-  // Create $<WIDGET_ENUM> text label
-  static char mstr$<ID>[$<SIZE>] = "$<TEXT>";
-  gslc_ElemCreateTxt_P_R(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,$<X>,$<Y>,$<WIDTH>,$<HEIGHT>,mstr$<ID>,$<SIZE>,&m_asFont[$<FONT_COUNT>],
-    $<TEXT_COLOR>,$<FILL_COLOR>,$<FILL_COLOR>,$<TEXT_ALIGN>,false,true);
+  // Create $<WIDGET_ENUM> modifiable text label
+  static char m_strtxt$<ID>[$<SIZE>] = "$<TEXT>";
+  gslc_ElemCreateTxt_P_R(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,$<X>,$<Y>,$<WIDTH>,$<HEIGHT>,
+    m_strtxt$<ID>,$<SIZE>,&m_asFont[$<FONT_COUNT>],
+    $<TEXT_COLOR>,$<FRAME_COLOR>,$<FILL_COLOR>,$<TEXT_ALIGN>,$<FRAME_EN>,$<FILL_EN>);
 <STOP>
 <TICK_CB>
 
@@ -262,8 +263,18 @@ bool CbTickScanner(void* pvGui,void* pvScope)
 <TXTBUTTON>
   
   // create $<WIDGET_ENUM> button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,$<X>,$<Y>,$<WIDTH>,$<HEIGHT>,"$<TEXT>",&m_asFont[$<FONT_COUNT>],
+  gslc_ElemCreateBtnTxt_P(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,$<X>,$<Y>,$<WIDTH>,$<HEIGHT>,
+    "$<TEXT>",&m_asFont[$<FONT_COUNT>],
     $<TEXT_COLOR>,$<FRAME_COLOR>,$<FILL_COLOR>,$<FRAME_COLOR>,
-    $<GLOW_COLOR>,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
+    $<GLOW_COLOR>,$<TEXT_ALIGN>,true,true,&CbBtnCommon,NULL);
+<STOP>
+<TXTBUTTON_UPDATE>
+  
+  // Create $<WIDGET_ENUM> button with modifiable text label
+  static char m_strbtn$<ID>[$<SIZE>] = "$<TEXT>";
+  gslc_ElemCreateBtnTxt_P_R(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,$<X>,$<Y>,$<WIDTH>,$<HEIGHT>,
+    m_strbtn$<ID>,$<SIZE>,&m_asFont[$<FONT_COUNT>],
+    $<TEXT_COLOR>,$<FRAME_COLOR>,$<FILL_COLOR>,$<FRAME_COLOR>,
+    $<TEXT_ALIGN>,$<FRAME_EN>,$<FILL_EN>,&CbBtnCommon,NULL);
 <STOP>
 <END>

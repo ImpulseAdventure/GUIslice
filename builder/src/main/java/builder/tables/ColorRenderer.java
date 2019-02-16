@@ -78,30 +78,32 @@ public class ColorRenderer extends JLabel
                           boolean isSelected, boolean hasFocus,
                           int row, int column) {
     Color newColor = (Color)color;
-    if (column == 1 && !table.getModel().isCellEditable(row, column)){
-      setBackground(new Color(255,228,225));  // misty rose
-    } else {
-      setBackground(newColor);
+    if (color != null) {
+      if (column == 1 && !table.getModel().isCellEditable(row, column)){
+        setBackground(new Color(255,228,225));  // misty rose
+      } else {
+        setBackground(newColor);
+      }
+      if (isBordered) {
+          if (isSelected) {
+              if (selectedBorder == null) {
+                  selectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+                                            table.getSelectionBackground());
+              }
+              setBorder(selectedBorder);
+          } else {
+              if (unselectedBorder == null) {
+                  unselectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+                                            table.getBackground());
+              }
+              setBorder(unselectedBorder);
+          }
+      }
+        
+      setToolTipText("RGB value: " + newColor.getRed() + ", "
+                                   + newColor.getGreen() + ", "
+                                   + newColor.getBlue());
     }
-    if (isBordered) {
-        if (isSelected) {
-            if (selectedBorder == null) {
-                selectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
-                                          table.getSelectionBackground());
-            }
-            setBorder(selectedBorder);
-        } else {
-            if (unselectedBorder == null) {
-                unselectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
-                                          table.getBackground());
-            }
-            setBorder(unselectedBorder);
-        }
-    }
-      
-    setToolTipText("RGB value: " + newColor.getRed() + ", "
-                                 + newColor.getGreen() + ", "
-                                 + newColor.getBlue());
     return this;
   }
 }

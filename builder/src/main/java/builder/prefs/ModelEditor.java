@@ -192,29 +192,31 @@ public class ModelEditor extends Observable {
    * Update model.
    */
   public void updateModel() {
+    model.TurnOffEvents();
     int rows = model.getPropertyCount();
     for (int i=0; i<rows; i++) {
       String key = (String) model.getValueAt(i, WidgetModel.COLUMN_NAME);
       Object o = model.getValueAt(i, WidgetModel.COLUMN_VALUE);
       if(o instanceof String) {
-        model.shortcutValue(fPrefs.get(key, (String)o), i);
+        model.changeValueAt(fPrefs.get(key, (String)o), i);
       } else if(o instanceof Integer) {
         int def = ((Integer)o).intValue();
         int value = fPrefs.getInt(key, def);
         if (value != def)
-          model.shortcutValue(Integer.valueOf(value), i);
+          model.changeValueAt(Integer.valueOf(value), i);
       } else if(o instanceof Boolean) {
         boolean def = ((Boolean)o).booleanValue();
         boolean value = fPrefs.getBoolean(key, def);
         if (value != def)
-          model.shortcutValue(Boolean.valueOf(value), i);
+          model.changeValueAt(Boolean.valueOf(value), i);
       } else if (o instanceof Color) {
         int def = ((Color)o).getRGB();
         int value = fPrefs.getInt(key, def);
         if (value != def)
-          model.shortcutValue(new Color(value), i);
+          model.changeValueAt(new Color(value), i);
       }
     }
+    model.TurnOnEvents();
   }
   
 }

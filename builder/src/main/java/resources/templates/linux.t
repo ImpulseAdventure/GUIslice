@@ -117,7 +117,7 @@ gslc_tsElemRef              m_asPage$<COUNT>ElemRef[MAX_ELEM_$<STRIP_ENUM>];
 <STOP>
 <IMAGE>
  
-  // Initialize $<WIDGET_ENUM> image 
+  // Create $<WIDGET_ENUM> using Image $<IMAGE_DEFINE> $<IMAGE_FROM_SRC>
   // - Extra code to for path generation based on location of executable
   strncpy(m_strImgPath$<ID>,strPath,MAX_PATH);
   strncat(m_strImgPath$<ID>,$<IMAGE_DEFINE>,MAX_PATH);
@@ -240,10 +240,10 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 <STOP>
 <TEXT_UPDATE>
   
-  // Create $<WIDGET_ENUM> text label
-  static char mstr$<ID>[$<SIZE>] = "$<TEXT>";
+  // Create $<WIDGET_ENUM> modifiable text label
+  static char m_strtxt$<ID>[$<SIZE>] = "$<TEXT>";
   pElemRef = gslc_ElemCreateTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,(gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
-    (char*)mstr$<ID>,$<SIZE>,$<FONT_ID>);
+    (char*)m_strtxt$<ID>,$<SIZE>,$<FONT_ID>);
 <STOP>
 <TICK_CB>
 
@@ -266,5 +266,13 @@ bool CbTickScanner(void* pvGui,void* pvScope)
   // create $<WIDGET_ENUM> button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
     (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},(char*)"$<TEXT>",0,$<FONT_ID>,&CbBtnCommon);
+<STOP>
+<TXTBUTTON_UPDATE>
+  
+  // Create $<WIDGET_ENUM> button with modifiable text label
+  static char m_strbtn$<ID>[$<SIZE>] = "$<TEXT>";
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,
+    (gslc_tsRect){$<X>,$<Y>,$<WIDTH>,$<HEIGHT>},
+    (char*)m_strbtn$<ID>,$<SIZE>,$<FONT_ID>,&CbBtnCommon);
 <STOP>
 <END>

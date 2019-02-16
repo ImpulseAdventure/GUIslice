@@ -278,11 +278,11 @@ public class CommonUtil {
    * @return workingDir - our working directory
    */
   public String getWorkingDir() {
-    // The code checking for "bin" is to take care of the case 
+    // The code checking for "lib" is to take care of the case 
     // where we are running not inside eclipse IDE
     String workingDir;
     String strUserDir = System.getProperty("user.dir");
-    int n = strUserDir.indexOf("bin");
+    int n = strUserDir.indexOf("lib");
     if (n > 0) {
       strUserDir = strUserDir.substring(0,n-1);  // remove "/bin"
     }

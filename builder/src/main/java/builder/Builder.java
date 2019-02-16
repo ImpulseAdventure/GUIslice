@@ -138,6 +138,9 @@ public class Builder  extends JDesktopPane {
   /** The test platform, if any. */
   public static String testPlatform = null;
   
+  /** The boolean indicating running on a MacOS system */
+  public static boolean isMAC = false;
+  
   /**
    * The main method.
    *
@@ -213,7 +216,14 @@ public class Builder  extends JDesktopPane {
           setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
           initUI();
           try {
-            UIManager.setLookAndFeel(GeneralEditor.getInstance().getThemeClassName());
+            String osName = System.getProperty("os.name").toLowerCase();
+            isMAC = osName.startsWith("mac os x");
+            if (isMAC) 
+            {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } else{
+                UIManager.setLookAndFeel(GeneralEditor.getInstance().getThemeClassName());
+            }            
             SwingUtilities.updateComponentTreeUI(frame);
           } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
           }
