@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.11.0-pre   (2019/01/15)
+// - Version 0.11.0   (2019/02/15)
 // =======================================================================
 //
 // The MIT License
@@ -778,7 +778,7 @@ char* gslc_GetVer(gslc_tsGui* pGui);
 ///
 /// \return String containing driver name
 ///
-const char* gslc_GetNameDisp();
+const char* gslc_GetNameDisp(gslc_tsGui* pGui);
 
 ///
 /// Get the GUIslice touch driver name
@@ -787,7 +787,7 @@ const char* gslc_GetNameDisp();
 ///
 /// \return String containing driver name
 ///
-const char* gslc_GetNameTouch();
+const char* gslc_GetNameTouch(gslc_tsGui* pGui);
 
 ///
 /// Initialize the GUIslice library
@@ -1930,10 +1930,10 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \param[out] pnX:         Ptr to int to contain latest touch X coordinate
 /// \param[out] pnY:         Ptr to int to contain latest touch Y coordinate
 /// \param[out] pnPress:     Ptr to int to contain latest touch pressure value
+/// \param[out] peInputEvent Indication of event type
+/// \param[out] pnInputVal   Additional data for event type
 ///
 /// \return true if touch event, false otherwise
-///
-/// \todo Doc
 ///
 bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
@@ -1948,7 +1948,18 @@ bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPre
 ///
 void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn);
 
-/// \todo doc
+///
+/// Configure touchscreen calibration values
+/// - Only used if calibration remapping has been enabled
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nXMin:       Resistive touchscreen X_MIN calibration value
+/// \param[in]  nXMax:       Resistive touchscreen X_MAX calibration value
+/// \param[in]  nYMin:       Resistive touchscreen Y_MIN calibration value
+/// \param[in]  nYMax:       Resistive touchscreen Y_MAX calibration value
+///
+/// \return none
+///
 void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint16_t nYMin, uint16_t nYMax);
 
 
@@ -2119,7 +2130,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 /// \param[in]  nX0:        X coordinate of line start
 /// \param[in]  nY0:        Y coordinate of line start
 /// \param[in]  nX1:        X coordinate of line end
-/// \param[in]  nX2:        Y coordinate of line end
+/// \param[in]  nY1:        Y coordinate of line end
 /// \param[in]  colFill:    Color for the line
 
 
@@ -2570,10 +2581,27 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,int
 gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem,gslc_teElemRefFlags eFlags);
 
 
-/// \todo DOC
+///
+/// Get the flags associated with an element reference
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Element reference pointer
+/// \param[in]  nFlagMask:   Flags to read
+///
+/// \return Values associated with the element reference flags (subject to the flag mask)
+///
 uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask);
 
-/// \todo DOC
+///
+/// Set the flags associated with an element reference
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Element reference pointer
+/// \param[in]  nFlagMask:   Flags to read
+/// \param[in]  nFlagVal:    Values to assign to masked flags
+///
+/// \return none
+///
 void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal);
 
 
@@ -2921,7 +2949,7 @@ int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
 void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
 
 
-/// \todo Doc
+/// \todo Doc. This API is experimental and subject to change
 bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
 
 
@@ -3021,11 +3049,10 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pPage:       Pointer to current page
-/// \param[in]  nKey:        Keyboard / External pin input value
+/// \param[in]  eInputEvent  Indication of event type
+/// \param[in]  nInputVal    Additional data for event type
 ///
 /// \return none
-///
-/// \todo Doc
 ///
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
 
@@ -3104,7 +3131,8 @@ void gslc_ResetFont(gslc_tsFont* pFont);
 void gslc_ResetElem(gslc_tsElem* pElem);
 
 
-/// @} // END OF INTERNAL
+/// @}
+/// End of Internal Functions
 
 
 #ifdef __cplusplus

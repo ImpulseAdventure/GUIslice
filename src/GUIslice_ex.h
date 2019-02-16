@@ -351,7 +351,7 @@ void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  funcCb:      Function pointer to callback routine (or NULL for none)
+/// \param[in]  pfuncCb:     Function pointer to callback routine (or NULL for none)
 ///
 /// \return none
 ///

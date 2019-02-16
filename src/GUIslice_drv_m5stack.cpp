@@ -109,12 +109,12 @@ void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
 }
 
-const char* gslc_DrvGetNameDisp()
+const char* gslc_DrvGetNameDisp(gslc_tsGui* pGui)
 {
   return m_acDrvDisp;
 }
 
-const char* gslc_DrvGetNameTouch()
+const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui)
 {
   return m_acDrvTouch;
 }

@@ -169,7 +169,7 @@ void gslc_DrvDestruct(gslc_tsGui* pGui);
 ///
 /// \return String containing driver name
 ///
-const char* gslc_DrvGetNameDisp();
+const char* gslc_DrvGetNameDisp(gslc_tsGui* pGui);
 
 
 ///
@@ -179,7 +179,7 @@ const char* gslc_DrvGetNameDisp();
 ///
 /// \return String containing driver name
 ///
-const char* gslc_DrvGetNameTouch();
+const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui);
 
 
 // -----------------------------------------------------------------------
@@ -446,9 +446,10 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui);
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
 /// \param[out] pnY:         Ptr to Y coordinate of last touch event
 /// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, 1 for touch)
+/// \param[out] peInputEvent Indication of event type
+/// \param[out] pnInputVal   Additional data for event type
 ///
 /// \return true if an event was detected or false otherwise
-/// \todo Doc
 ///
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
 
@@ -664,9 +665,10 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
 /// \param[out] pnY:         Ptr to Y coordinate of last touch event
 /// \param[out] pnPress:     Ptr to Pressure level of last touch event (0 for none, >0 for touch)
+/// \param[out] peInputEvent Indication of event type
+/// \param[out] pnInputVal   Additional data for event type
 ///
 /// \return non-zero if an event was detected or 0 otherwise
-/// \todo Doc
 ///
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 

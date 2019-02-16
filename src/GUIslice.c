@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.11.0-pre   (2019/01/15)
+// - Version 0.11.0   (2019/02/15)
 // =======================================================================
 //
 // The MIT License
@@ -59,7 +59,7 @@
 #include <stdarg.h>         // For va_*
 
 // Version definition
-#define GUISLICE_VER "0.11.0-pre"
+#define GUISLICE_VER "0.11.0"
 
 
 // ========================================================================
@@ -90,14 +90,14 @@ char* gslc_GetVer(gslc_tsGui* pGui)
   return (char*)GUISLICE_VER;
 }
 
-const char* gslc_GetNameDisp()
+const char* gslc_GetNameDisp(gslc_tsGui* pGui)
 {
-  return gslc_DrvGetNameDisp();
+  return gslc_DrvGetNameDisp(pGui);
 }
 
-const char* gslc_GetNameTouch()
+const char* gslc_GetNameTouch(gslc_tsGui* pGui)
 {
-  return gslc_DrvGetNameTouch();
+  return gslc_DrvGetNameTouch(pGui);
 }
 
 
@@ -199,10 +199,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
     bOk &= gslc_DrvInit(pGui);
     if (bOk) {
       #if !defined(INIT_MSG_DISABLE)
-      GSLC_DEBUG_PRINT("- Initialized display handler [%s] OK\n", gslc_GetNameDisp());
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] OK\n", gslc_GetNameDisp(pGui));
       #endif
     } else {
-      GSLC_DEBUG_PRINT("- Initialized display handler [%s] FAIL\n", gslc_GetNameDisp());
+      GSLC_DEBUG_PRINT("- Initialized display handler [%s] FAIL\n", gslc_GetNameDisp(pGui));
     }
   }
   #if defined(DRV_TOUCH_NONE)
@@ -217,11 +217,11 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
         #if !defined(INIT_MSG_DISABLE)
-        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch());
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch(pGui));
         #endif
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
-        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] FAIL\n", gslc_GetNameTouch());
+        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] FAIL\n", gslc_GetNameTouch(pGui));
         pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
       }
     }
