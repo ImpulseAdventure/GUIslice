@@ -6,7 +6,7 @@
         User Guide
     </H2>
     <H3>
-        Ver: 0.11.5-rc1
+        Ver: 0.11.0-rc1
     </H3>
 </center>
 
@@ -27,7 +27,7 @@
 
 **Publication date and software version**
 
-Published february, 2019. Based on GUIslice API Library 0.11.5
+Published february, 2019. Based on GUIslice API Library 0.11.0
 
 **Copyright**
 
