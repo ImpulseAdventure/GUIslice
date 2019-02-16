@@ -68,29 +68,32 @@ public class TextModel extends WidgetModel {
   /** The Constant PROP_FILL_EN. */
   static private final int PROP_FILL_EN           = 10;
   
+  /** The Constant PROP_FRAME_EN. */
+  static private final int PROP_FRAME_EN          = 11;
+  
   /** The Constant PROP_TEXT_SZ. */
-  static private final int PROP_TEXT_SZ           = 11;
+  static private final int PROP_TEXT_SZ           = 12;
 
   /** The Constant PROP_ELEMENTREF. */
-  static private final int PROP_ELEMENTREF        = 12;
+  static private final int PROP_ELEMENTREF        = 13;
   
   /** The Constant PROP_TEXT_ALIGN. */
-  static private final int PROP_TEXT_ALIGN        = 13;
+  static private final int PROP_TEXT_ALIGN        = 14;
   
   /** The Constant PROP_DEFAULT_COLORS. */
-  static private final int PROP_DEFAULT_COLORS    = 14;
+  static private final int PROP_DEFAULT_COLORS    = 15;
   
   /** The Constant PROP_TEXT_COLOR. */
-  static private final int PROP_TEXT_COLOR        = 15;
+  static private final int PROP_TEXT_COLOR        = 16;
   
   /** The Constant PROP_FRAME_COLOR. */
-  static private final int PROP_FRAME_COLOR       = 16;
+  static private final int PROP_FRAME_COLOR       = 17;
   
   /** The Constant PROP_FILL_COLOR. */
-  static private final int PROP_FILL_COLOR        = 17;
+  static private final int PROP_FILL_COLOR        = 18;
   
   /** The Constant PROP_SELECTED_COLOR. */
-  static private final int PROP_SELECTED_COLOR    = 18;
+  static private final int PROP_SELECTED_COLOR    = 19;
 
   /** The ff. */
   private FontFactory ff = null;
@@ -139,7 +142,7 @@ public class TextModel extends WidgetModel {
   protected void initProperties()
   {
     widgetType = EnumFactory.TEXT;
-    data = new Object[19][5];
+    data = new Object[20][5];
 
     
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
@@ -155,6 +158,7 @@ public class TextModel extends WidgetModel {
     initProp(PROP_UTF8, Boolean.class, "TXT-203", Boolean.FALSE,"UTF-8?",Boolean.FALSE);
 
     initProp(PROP_FILL_EN, Boolean.class, "TXT-204", Boolean.FALSE,"Fill Enabled?",Boolean.TRUE);
+    initProp(PROP_FRAME_EN, Boolean.class, "COM-010", Boolean.FALSE,"Frame Enabled?",Boolean.FALSE);
     initProp(PROP_TEXT_SZ, Integer.class, "TXT-205", Boolean.FALSE,"External Storage Size",Integer.valueOf(0));
     initProp(PROP_ELEMENTREF, String.class, "TXT-206", Boolean.FALSE,"ElementRef","");
     initProp(PROP_TEXT_ALIGN, String.class, "TXT-207", Boolean.FALSE,"Text Alignment","Left");
@@ -318,6 +322,15 @@ public class TextModel extends WidgetModel {
    */
   public boolean isFillEnabled() {
     return ((Boolean) data[PROP_FILL_EN][PROP_VAL_VALUE]).booleanValue();
+  }
+
+  /**
+   * Checks if is frame enabled.
+   *
+   * @return true, if is frame enabled
+   */
+  public boolean isFrameEnabled() {
+    return ((Boolean) data[PROP_FRAME_EN][PROP_VAL_VALUE]).booleanValue();
   }
 
   /**

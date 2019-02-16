@@ -956,10 +956,17 @@ public class Controller extends JInternalFrame
     } else {
       return null;
     }
-    projectFolder = currentDirectory;
-    File project = new File(new String(currentDirectory.toString() 
+    String strProjectFolder = currentDirectory.getName();
+    if (strProjectFolder.equals("New Folder")) {
+      JOptionPane.showMessageDialog(null, "You can't use the name 'New Folder' for projects", 
+          "Error", JOptionPane.ERROR_MESSAGE);
+      currentDirectory.delete();
+      return null;
+    } 
+    File project = new File(new String(currentDirectory.toString()
         + System.getProperty("file.separator")
-        + currentDirectory.getName() + ".prj"));
+        + strProjectFolder + ".prj"));
+    projectFolder = currentDirectory;
     return project;
   }
 
@@ -1283,6 +1290,7 @@ public class Controller extends JInternalFrame
       if (!generalEditor.getThemeClassName().equals(strTheme)) {
         strTheme = generalEditor.getThemeClassName();
         try { // change look and feel
+          // NOTE: on mac os you can't get here
           UIManager.setLookAndFeel(generalEditor.getThemeClassName());
           // update components in this application
           SwingUtilities.updateComponentTreeUI(topFrame);
@@ -1341,6 +1349,7 @@ public class Controller extends JInternalFrame
       if (!generalEditor.getThemeClassName().equals(strTheme)) {
         strTheme = generalEditor.getThemeClassName();
         try { // change look and feel
+          // NOTE: on mac os you can't get here
           UIManager.setLookAndFeel(generalEditor.getThemeClassName());
           // update components in this application
           SwingUtilities.updateComponentTreeUI(topFrame);

@@ -28,7 +28,7 @@ processResources {
 }
 
 startScripts {
-  def tplUnixName = 'scripts/customUnixStartScript.txt'
+  def tplUnixName = 'scripts/customUnixStartScript.sh'
   def tplWinName = 'scripts/customWindowsStartScript.txt'
   assert project.file(tplUnixName).exists()
   assert project.file(tplWinName).exists()
@@ -75,28 +75,28 @@ task copyLinuxDir(type: Copy) {
     into "${buildDir}/tmp/linux"
 }
 
-task copyInstallScript(type: Copy) {
+task copyInstallScriptToLinux(type: Copy) {
   dependsOn copyLinuxDir
   description = "copy install script to linux temp folder"
     from "${projectDir}/scripts/install.sh"
     into "${buildDir}/tmp/linux/GUIsliceBuilder"
 }
 
-task copyArduinoRes(type: Copy) {
+task copyArduinoResToLinux(type: Copy) {
   dependsOn copyLinuxDir
   description = "copy arduino resources to linux temp folder"
     from "${projectDir}/arduino_res"
     into "${buildDir}/tmp/linux/GUIsliceBuilder/arduino_res"
 }
 
-task copyLinuxRes(type: Copy) {
+task copyLinuxResToLinux(type: Copy) {
   dependsOn copyLinuxDir
   description = "copy linux resources to linux temp folder"
     from "${projectDir}/linux_res"
     into "${buildDir}/tmp/linux/GUIsliceBuilder/linux_res"
 }
 
-task copyTemplates(type: Copy) {
+task copyTemplatesToLinux(type: Copy) {
   dependsOn copyLinuxDir
   description = "copy templates to linux temp folder"
     from "${projectDir}/templates"
@@ -104,7 +104,7 @@ task copyTemplates(type: Copy) {
 }
 
 task copyLinuxScripts(type: Copy) {
-  dependsOn copyInstallScript, copyLinuxDir, copyArduinoRes, copyLinuxRes, copyTemplates
+  dependsOn copyInstallScriptToLinux, copyLinuxDir, copyArduinoResToLinux, copyLinuxResToLinux, copyTemplatesToLinux
   description = "copy start scripts and icons to linux temp folder"
     from "${projectDir}/scripts/desktop.template"
     into "${buildDir}/tmp/linux/GUIsliceBuilder/lib"
@@ -117,6 +117,46 @@ task copyLinuxScripts(type: Copy) {
     mkdir "${buildDir}/tmp/linux/GUIsliceBuilder/projects"
     mkdir "${buildDir}/tmp/linux/GUIsliceBuilder/logs"
   }
+}
+
+task copyMacOSDir(type: Copy) {
+  dependsOn jar, startScripts
+  description = "create temp folder for macos distribution"
+  doFirst {
+    mkdir "${buildDir}/tmp/macApp/GUIsliceBuilder"
+    mkdir "${buildDir}/tmp/macApp/GUIsliceBuilder/projects"
+    mkdir "${buildDir}/tmp/macApp/GUIsliceBuilder/logs"
+  }
+  from fileTree ("${buildDir}/tmp/output/GUIsliceBuilder/lib")
+  into "${buildDir}/tmp/macApp/GUIsliceBuilder"
+}
+
+task copyArduinoResToMacOS(type: Copy) {
+  dependsOn copyMacOSDir
+  description = "copy arduino resources to macApp temp folder"
+    from "${projectDir}/arduino_res"
+    into "${buildDir}/tmp/macApp/GUIsliceBuilder/arduino_res"
+}
+
+task copyLinuxResToMacOS(type: Copy) {
+  dependsOn copyMacOSDir
+  description = "copy linux resources to macApp temp folder"
+    from "${projectDir}/linux_res"
+    into "${buildDir}/tmp/macApp/GUIsliceBuilder/linux_res"
+}
+
+task copyTemplatesToMacOS(type: Copy) {
+  dependsOn copyMacOSDir
+  description = "copy templates to macApp temp folder"
+    from "${projectDir}/templates"
+    into "${buildDir}/tmp/macApp/GUIsliceBuilder/templates"
+}
+
+task buildMacOSInstall(type: Copy) {
+  dependsOn copyMacOSDir, copyArduinoResToMacOS, copyLinuxResToMacOS, copyTemplatesToMacOS
+  description = "copy start scripts and icons to macApp temp folder"
+    from "${buildDir}/scripts/GUIslice.icns"
+    into "${buildDir}/tmp/macApp/GUIsliceBuilder"
 }
 
 task buildWinInstall() { 
@@ -172,32 +212,19 @@ task packageLinuxDistrib(type: Tar) {
   compression = Compression.GZIP  
 }
 
+task packageMacOSDistrib(type: Zip) {
+  dependsOn buildMacOSInstall
+  group = "build"
+  description = "MacOS package distribution"
+  from "${buildDir}/tmp/macApp"
+  archiveName = "builder-" + "osx-" + version + ".zip"
+  destinationDir = file("${buildDir}/disp")
+}
+
 task packageAll() {
-  dependsOn packageWinDistrib, packageLinuxDistrib
+  dependsOn packageWinDistrib, packageLinuxDistrib, packageMacOSDistrib
   group = "assemble"
   description = "package all distributions"
-}
-
-junitPlatform {
-    reportsDir file('build/test-results/junit-platform')
-    enableStandardTestTask true
-    //show results summary even on success.
-    details details.SUMMARY
-}
-
-test {
-    dependsOn compileTestJava
-    testLogging {
-        events 'PASSED', 'FAILED', 'SKIPPED'
-        // Make sure output from
-        // standard out or error is shown
-        // in Gradle output.
-        showStandardStreams = true
-    }
-    /* NOTE: junitPlatform plugin disables the standard 'test' task
-     * to prevent tests from being executed twice
-     */
-    useJUnitPlatform()
 }
 
 dependencies {

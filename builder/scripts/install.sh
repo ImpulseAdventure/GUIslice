@@ -13,6 +13,13 @@
 # (Could be changed to "pwd -P" to resolve symlinks to their target)
 SCRIPT_PATH=$( cd $(dirname $0) ; pwd )
 cd "${SCRIPT_PATH}"
+export PATH=.:$PATH
+
+platform='linux'
+unamestr=`uname`
+if [[ "$unamestr" == 'Darwin' ]]; then
+   platform='darwin'
+fi
 
 # Default mode is to install.
 UNINSTALL=false
@@ -30,10 +37,14 @@ install_files() {
   printf "If you have more then one Java version installed\n"
   printf "you need to identify what directory has Java 8.\n" 
   printf "You can exit this script with ^c and use this command to find it.\n\n"
-  printf "sudo update-alternatives --config java \n\n"
-  printf "If Arduino IDE is installed you can use the Arduino built in Java\n"
-  printf "Example:\n"
-  printf "$HOME/arduino-1.8.7/java\n\n"
+  if [[ $platform == 'linux' ]]; then
+    printf "sudo update-alternatives --config java \n\n"
+    printf "If Arduino IDE is installed you can use the Arduino built in Java\n"
+    printf "Example:\n"
+    printf "$HOME/arduino-1.8.7/java\n\n"
+  else
+    printf "/usr/libexec/java_home -v 1.8 \n\n"
+  fi
   
   # Ask user where we can find Java - loop until a valid answer is given
   JAVA_PATH=""
@@ -45,7 +56,7 @@ install_files() {
     JAVACMD="$JAVA_PATH/bin/java"
     # Test to see if file exists and is executable
     if [ ! -x "$JAVACMD" ] ; then
-        printf "Error: JAVA Location you enterred does not contain executable java:\n"
+        printf "Error: JAVA Location you entered does not contain executable java:\n"
         echo $JAVACMD
         printf "Please try-again or ^c to exit\n"
         JAVA_PATH=""
@@ -59,38 +70,44 @@ install_files() {
   
   chmod +x "${SCRIPT_PATH}/GUIslice.sh"
 
-  # Create a temp folderfor the install
-  mkdir tmp
+  if [[ $platform == 'linux' ]]; then
+    # Create a temp folder for the install
+    mkdir tmp
 
-  # Create *.desktop file using the existing template file
-  sed -e "s,<BINARY_LOCATION>,${SCRIPT_PATH}/GUIslice.sh,g" \
-      -e "s,<WORKING_DIR>,${SCRIPT_PATH},g" \
-      -e "s,<ICON_NAME>,${SCRIPT_PATH}/lib/guislicebuilder.png,g" \
-      "${SCRIPT_PATH}/lib/desktop.template" > "${SCRIPT_PATH}/tmp/guislice.desktop"
+    # Create *.desktop file using the existing template file
+    sed -e "s,<BINARY_LOCATION>,${SCRIPT_PATH}/GUIslice.sh,g" \
+        -e "s,<WORKING_DIR>,${SCRIPT_PATH},g" \
+        -e "s,<ICON_NAME>,${SCRIPT_PATH}/lib/guislicebuilder.png,g" \
+        "${SCRIPT_PATH}/lib/desktop.template" > "${SCRIPT_PATH}/tmp/guislice.desktop"
 
-  cp "${SCRIPT_PATH}/tmp/guislice.desktop" "${HOME}/Desktop"
+    cp "${SCRIPT_PATH}/tmp/guislice.desktop" "${HOME}/Desktop"
 
-  # Need to set execute permissions on guislice.desktop
-  chmod +x "${HOME}/Desktop/guislice.desktop"
+    # Need to set execute permissions on guislice.desktop
+    chmod +x "${HOME}/Desktop/guislice.desktop"
 
-  # Clean up temp dir
-  rm "${SCRIPT_PATH}/tmp/guislice.desktop"
-  rmdir "${SCRIPT_PATH}/tmp"
+    # Clean up temp dir
+    rm "${SCRIPT_PATH}/tmp/guislice.desktop"
+    rmdir "${SCRIPT_PATH}/tmp"
+  fi
 
   printf "Install Completed!\n"
 }
  
 # Uninstall by simply removing desktop files
 uninstall_files() {
-  if [ -f "${SCRIPT_PATH}/GUIslice.sh" ]; then
-    rm "${SCRIPT_PATH}/GUIslice.sh"
+  if [[ $platform == 'linux' ]]; then
+    printf "Removing desktop shortcut for GUIsliceBuilder\n" 
+    if [ -f "${SCRIPT_PATH}/GUIslice.sh" ]; then
+      rm "${SCRIPT_PATH}/GUIslice.sh"
+    fi
+      
+    if [ -f "${HOME}/Desktop/guislice.desktop" ]; then
+      rm "${HOME}/Desktop/guislice.desktop"
+    fi
+    printf "Uninstall Completed!\n"
+  else
+    printf "Can't Uninstall on OS/X you need to move app to trash!\n"
   fi
-    
-  if [ -f "${HOME}/Desktop/guislice.desktop" ]; then
-    rm "${HOME}/Desktop/guislice.desktop"
-  fi
-
-  printf "Uninstall Completed!\n"
 }
 
 # Check for provided arguments
@@ -111,10 +128,8 @@ while [ $# -gt 0 ] ; do
 done
 
 if [ ${UNINSTALL} = true ]; then
-  printf "Removing desktop shortcut for GUIsliceBuilder\n" 
   uninstall_files
 else
-  uninstall_files
   install_files
 fi
 

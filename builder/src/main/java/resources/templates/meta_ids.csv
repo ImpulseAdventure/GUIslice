@@ -6,6 +6,7 @@ COM-004,Y
 COM-005,Width
 COM-006,HEIGHT
 COM-010,Frame Enable
+COM-011,Fill Enabled
 TXT-200,Font
 TXT-201,Text
 TXT-202,Label
@@ -44,6 +45,10 @@ IBTN-104,Image Format
 IBTN-105,Change Page Function
 IBTN-106,Jump To Page ENUM
 IBTN-107,Transparency
+IBTN-108,Image Extern
+IBTN-109,Select Image Extern
+IBTN-110,Image Memory Type
+IBTN-111,Select Image Memory Type
 CBOX-100,Checked?
 CBOX-101,Group ID
 RBTN-100,Checked?
@@ -73,6 +78,8 @@ IMG-100,Image
 IMG-101,Image #defines
 IMG-102,Image Format
 IMG-107,Image Transparency
+IMG-108,Image Extern
+IMG-109,Image Memory Type
 GRPH-100,Maximum Points
 GRPH-101,Graph Style
 GEN-100,Theme

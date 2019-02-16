@@ -80,11 +80,13 @@ public class TxtButtonWidget extends Widget {
       g2d.setColor(m.getFillColor());
       g2d.fillRect(b.x, b.y, b.width, b.height);
     }
-    g2d.setColor(m.getFrameColor());
-    g2d.drawRect(b.x, b.y, b.width, b.height);
+    if (m.isFrameEnabled()) {
+      g2d.setColor(m.getFrameColor());
+      g2d.drawRect(b.x, b.y, b.width, b.height);
+    }
     g2d.setColor(m.getTextColor());
     Font font = ff.getFont(m.getFontDisplayName());
-    ff.centerString(g2d, b, m.getText(), font);
+    ff.alignString(g2d, m.getAlignment(), b, m.getText(), font);
     super.drawSelRect(g2d, b);
   }
   

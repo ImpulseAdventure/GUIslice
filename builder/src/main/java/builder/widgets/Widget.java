@@ -81,11 +81,13 @@ public class Widget {
   public void setUserPrefs(WidgetModel peModel) {
      // merge user preference into our model
      // avoid x,y
+    model.TurnOffEvents();
     int rows = model.getRowCount();
     for (int r=WidgetModel.PROP_Y+1; r<rows; r++) {
       Object o = peModel.getValueAt(r, 1);
-      model.shortcutValue(o, r);
+      model.changeValueAt(o, r);
     }
+    model.TurnOnEvents();
   }
 
   /**

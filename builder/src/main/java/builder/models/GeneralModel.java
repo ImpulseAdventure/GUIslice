@@ -35,6 +35,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.table.TableCellEditor;
 
+import builder.Builder;
 import builder.common.EnumFactory;
 
 /**
@@ -107,13 +108,19 @@ public class GeneralModel extends WidgetModel {
   
   /** The target cell editor. */
   DefaultCellEditor targetCellEditor;
+  
+  /** The default theme name */
+  String defThemeName;
+
+  /** The default theme class */
+  String defThemeClass;
 
   /**
    * Instantiates a new general model.
    */
   public GeneralModel() {
-    initProperties();
     initThemes();
+    initProperties();
   }
   
   /**
@@ -125,7 +132,9 @@ public class GeneralModel extends WidgetModel {
     data = new Object[14][5];
 
     initProp(PROP_KEY, String.class, "COM-001", Boolean.TRUE,"Key",widgetType);
-    initProp(GENERAL_THEME, String.class, "GEN-100", Boolean.FALSE,"Theme","");
+    initProp(GENERAL_THEME, String.class, "GEN-100", Boolean.FALSE,"Theme",defThemeName);
+    if (Builder.isMAC) 
+      data[GENERAL_THEME][PROP_VAL_READONLY]= Boolean.TRUE;
     initProp(GENERAL_TARGET, String.class, "GEN-101", Boolean.FALSE,"Target Platform","arduino");
 
     initProp(DISPLAY_WIDTH, Integer.class, "GEN-102", Boolean.FALSE,"TFT Screen Width",Integer.valueOf(320));
@@ -153,27 +162,29 @@ public class GeneralModel extends WidgetModel {
     themeClassNames = new ArrayList<String>();
     idxTheme = 0;
     int i = 0;
-    String defName = UIManager.getSystemLookAndFeelClassName();
-    if (defName.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel")) {
-      defName = "Windows";
+    defThemeClass = UIManager.getSystemLookAndFeelClassName();
+    if (!Builder.isMAC) {
+      if (defThemeClass.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel")) {
+        defThemeName = "Windows";
+      } else {
+        defThemeName = "Metal";
+      }
+      for (LookAndFeelInfo look_and_feel : UIManager.getInstalledLookAndFeels()) {
+        themes.add(look_and_feel.getName());
+        themeClassNames.add(look_and_feel.getClassName());
+        if (defThemeClass.equals(look_and_feel.getClassName()))
+          idxTheme = i;
+        i++;
+      }
+      cbThemes = new JComboBox<String>();
+      for(String t : themes) {
+        cbThemes.addItem(t);
+      }
+      cbThemes.setSelectedIndex(idxTheme);
+      themeCellEditor =  new DefaultCellEditor(cbThemes);
     } else {
-      defName = "Metal";
+      defThemeName = "Aqua";
     }
-    for (LookAndFeelInfo look_and_feel : UIManager.getInstalledLookAndFeels()) {
-      themes.add(look_and_feel.getName());
-      themeClassNames.add(look_and_feel.getClassName());
-      if (defName.equals(look_and_feel.getClassName()))
-        idxTheme = i;
-      i++;
-    }
-    shortcutValue(defName, GeneralModel.GENERAL_THEME);
-    cbThemes = new JComboBox<String>();
-    for(String t : themes) {
-      cbThemes.addItem(t);
-    }
-    cbThemes.setSelectedIndex(idxTheme);
-    themeCellEditor =  new DefaultCellEditor(cbThemes);
-    
     cbTarget = new JComboBox<String>();
     cbTarget.addItem("arduino");
     cbTarget.addItem("linux");
@@ -201,6 +212,9 @@ public class GeneralModel extends WidgetModel {
    */
   public String getThemeClassName() {
     // look-and-feel user setting
+    if (Builder.isMAC) {
+      return defThemeClass;
+    }
     String currentTheme = (String) data[GENERAL_THEME][PROP_VAL_VALUE];
     for (int j = 0; j < themes.size(); j++) {
       if (currentTheme.equals(themes.get(j)))

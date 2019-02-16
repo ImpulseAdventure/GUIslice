@@ -263,6 +263,9 @@ public class CodeGenerator {
   /** The Constant TXTBUTTON_TEMPLATE. */
   private final static String TXTBUTTON_TEMPLATE     = "<TXTBUTTON>";
   
+  /** The Constant TXTBUTTON_UPDATE_TEMPLATE. */
+  private final static String TXTBUTTON_UPDATE_TEMPLATE = "<TXTBUTTON_UPDATE>";
+  
   /** The Constant STOP_TEMPLATE. */
   private final static String STOP_TEMPLATE          = "<STOP>";
   
@@ -419,6 +422,9 @@ public class CodeGenerator {
   /** The Constant FILL_COLOR_MACRO. */
   private final static String FILL_COLOR_MACRO       = "FILL_COLOR";
   
+  /** The Constant FILL_EN_MACRO. */
+  private final static String FILL_EN_MACRO          = "FILL_EN";
+  
   /** The Constant FONT_COUNT_MACRO. */
   private final static String FONT_COUNT_MACRO       = "FONT_COUNT";
   
@@ -436,6 +442,9 @@ public class CodeGenerator {
   
   /** The Constant FRAME_COLOR_MACRO. */
   private final static String FRAME_COLOR_MACRO      = "FRAME_COLOR";
+  
+  /** The Constant FRAME_EN_MACRO. */
+  private final static String FRAME_EN_MACRO         = "FRAME_EN";
   
   /** The Constant GLOW_COLOR_MACRO. */
   private final static String GLOW_COLOR_MACRO       = "GLOW_COLOR";
@@ -1405,6 +1414,12 @@ public class CodeGenerator {
             refList.add(w.getModel());
             w.getModel().setPageEnum(p.getEnum());
           }
+        } else if (w.getType().equals(EnumFactory.TEXTBUTTON)) {
+          ref = ((TxtButtonModel)w.getModel()).getElementRef();
+          if (ref != null && !ref.isEmpty()) {
+            refList.add(w.getModel());
+            w.getModel().setPageEnum(p.getEnum());
+          }
         } else if (w.getType().equals(EnumFactory.GRAPH)) {
           ref = ((TextModel)w.getModel()).getElementRef();
           if (ref != null && !ref.isEmpty()) {
@@ -1446,6 +1461,8 @@ public class CodeGenerator {
             ref = ((ProgressBarModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.TEXTBUTTON)) {
+          ref = ((TxtButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.IMAGE)) {
           ref = ((ImageModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.IMAGEBUTTON)) {
@@ -1678,6 +1695,8 @@ public class CodeGenerator {
           ref = ((ImgButtonModel) m).getElementRef();
         } else if (m.getType().equals(EnumFactory.TEXTBOX)) {
           ref = ((TextBoxModel) m).getElementRef();
+        } else if (m.getType().equals(EnumFactory.TEXTBUTTON)) {
+          ref = ((TxtButtonModel) m).getElementRef();
         } else { // must be EnumFactory.SLIDER
           ref = ((SliderModel) m).getElementRef();
         }
@@ -2714,6 +2733,9 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     if (!m.isFillEnabled()) {
       pw.printf("  gslc_ElemSetFillEn(&m_gui,pElemRef,false);%n");
     }
+    if (m.isFrameEnabled()) {
+      pw.printf("  gslc_ElemSetFrameEn(&m_gui,pElemRef,true);%n");
+    }
   }
    
   /**
@@ -2760,7 +2782,16 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = cf.colorAsString(m.getFrameColor());
     macro[n] = TEXT_ALIGN_MACRO;
     replacement[n++] = convertAlignment(m.getAlignment());
-    macro[n] = TEXT_MACRO;
+    macro[n] = FRAME_EN_MACRO;
+    if (m.isFrameEnabled()) 
+      replacement[n++] = "true";
+    else
+      replacement[n++] = "false";
+    macro[n] = FILL_EN_MACRO;
+    if (m.isFillEnabled()) 
+      replacement[n++] = "true";
+    else
+      replacement[n++] = "false";
     int ts = m.getTextStorage();
     if (ts > 0) {
       macro[n] = SIZE_MACRO;
@@ -2785,12 +2816,6 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     template = loadTemplate(templateFile);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
-    if (m.isUTF8()) {
-      pw.printf("  gslc_ElemSetTxtEnc(&m_gui,pElemRef,GSLC_TXT_ENC_UTF8);%n");
-    }
-    if (!m.isFillEnabled()) {
-      pw.printf("  gslc_ElemSetFillEn(&m_gui,pElemRef,false);%n");
-    }
   }
    
   /**
@@ -2847,9 +2872,13 @@ private void outputAPI(String pageEnum, WidgetModel m) {
    *          the m
    */
   private void outputAPI_TxtButton(String pageEnum, TxtButtonModel m) {
+    String templateFile = null;
     List<String> template = null;
     List<String> outputLines = null;
     String fontId = "";
+    String strKey = "";
+    String strCount = "";
+    String strText = "";
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
@@ -2857,10 +2886,28 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
-    macro[n] = TEXT_MACRO;
-    replacement[n++] = m.getText();
+    int ts = m.getTextStorage();
+    if (ts > 0) {
+      macro[n] = SIZE_MACRO;
+      replacement[n++] = String.valueOf(ts+1); // leave room for trailing '\0' in C Language
+      macro[n] = TEXT_MACRO;
+      strText = m.getText();
+      if (strText.length() > ts)
+        strText = strText.substring(0,  ts);  
+      replacement[n++] = strText;
+      strKey = m.getKey();
+      ts = strKey.indexOf("$");
+      strCount = strKey.substring(ts+1);
+      macro[n] = ID_MACRO;
+      replacement[n++] = strCount;
+      templateFile = TXTBUTTON_UPDATE_TEMPLATE;
+    } else {
+      macro[n] = TEXT_MACRO;
+      replacement[n++] = m.getText();
+      templateFile = TXTBUTTON_TEMPLATE;
+    }
     macro[n] = null;
-    template = loadTemplate(TXTBUTTON_TEMPLATE);
+    template = loadTemplate(templateFile);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
     if (!m.useDefaultColors()) {
@@ -2888,8 +2935,23 @@ private void outputAPI(String pageEnum, WidgetModel m) {
         writeTemplate(outputLines);
       }
     }
+    String strAlign = m.getAlignment();
+    if (!strAlign.equals("Center")) {
+      macro[0] = TEXT_ALIGN_MACRO;
+      replacement[0] = convertAlignment(strAlign);
+      macro[n] = null;
+      template = loadTemplate(ALIGN_TEMPLATE);
+      outputLines = expandMacros(template, macro, replacement);
+      writeTemplate(outputLines);
+    }
     if (m.isUTF8()) {
       pw.printf("  gslc_ElemSetTxtEnc(&m_gui,pElemRef,GSLC_TXT_ENC_UTF8);%n");
+    }
+    if (!m.isFillEnabled()) {
+      pw.printf("  gslc_ElemSetFillEn(&m_gui,pElemRef,false);%n");
+    }
+    if (m.isFrameEnabled()) {
+      pw.printf("  gslc_ElemSetFrameEn(&m_gui,pElemRef,true);%n");
     }
   }
   
@@ -2902,9 +2964,13 @@ private void outputAPI(String pageEnum, WidgetModel m) {
    *          the m
    */
   private void outputAPI_TxtButton_P(String pageEnum, TxtButtonModel m) {
+    String templateFile = null;
     List<String> template = null;
     List<String> outputLines = null;
     String fontId = "";
+    String strKey = "";
+    String strCount = "";
+    String strText = "";
 
     int n = commonAPI(pageEnum, m);
     macro[n] = FONT_ID_MACRO;
@@ -2912,8 +2978,6 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = fontId; 
     macro[n] = FONT_COUNT_MACRO;
     replacement[n++] = String.valueOf(getFontIndex(fontId));
-    macro[n] = TEXT_MACRO;
-    replacement[n++] = m.getText();
     macro[n] = TEXT_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getTextColor());
     macro[n] = FILL_COLOR_MACRO;
@@ -2922,12 +2986,50 @@ private void outputAPI(String pageEnum, WidgetModel m) {
     replacement[n++] = cf.colorAsString(m.getFrameColor());
     macro[n] = GLOW_COLOR_MACRO;
     replacement[n++] = cf.colorAsString(m.getSelectedColor());
+    macro[n] = TEXT_ALIGN_MACRO;
+    replacement[n++] = convertAlignment(m.getAlignment());
+    macro[n] = FRAME_EN_MACRO;
+    if (m.isFrameEnabled()) 
+      replacement[n++] = "true";
+    else
+      replacement[n++] = "false";
+    macro[n] = FILL_EN_MACRO;
+    if (m.isFillEnabled()) 
+      replacement[n++] = "true";
+    else
+      replacement[n++] = "false";
+    int ts = m.getTextStorage();
+    if (ts > 0) {
+      macro[n] = SIZE_MACRO;
+      replacement[n++] = String.valueOf(ts+1); // leave room for trailing '\0' in C Language
+      macro[n] = TEXT_MACRO;
+      strText = m.getText();
+      if (strText.length() > ts)
+        strText = strText.substring(0,  ts); 
+      replacement[n++] = strText;
+      strKey = m.getKey();
+      ts = strKey.indexOf("$");
+      strCount = strKey.substring(ts+1);
+      macro[n] = ID_MACRO;
+      replacement[n++] = strCount;
+      templateFile = TXTBUTTON_UPDATE_TEMPLATE;
+    } else {
+      macro[n] = TEXT_MACRO;
+      replacement[n++] = m.getText();
+      templateFile = TXTBUTTON_TEMPLATE;
+    }
     macro[n] = null;
-    template = loadTemplate(TXTBUTTON_TEMPLATE);
+    template = loadTemplate(templateFile);
     outputLines = expandMacros(template, macro, replacement);
     writeTemplate(outputLines);
     if (m.isUTF8()) {
       pw.printf("  gslc_ElemSetTxtEnc(&m_gui,pElemRef,GSLC_TXT_ENC_UTF8);%n");
+    }
+    if (!m.isFillEnabled()) {
+      pw.printf("  gslc_ElemSetFillEn(&m_gui,pElemRef,false);%n");
+    }
+    if (m.isFrameEnabled()) {
+      pw.printf("  gslc_ElemSetFillEn(&m_gui,pElemRef,true);%n");
     }
   }
 
