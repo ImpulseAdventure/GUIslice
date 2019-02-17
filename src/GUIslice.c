@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.11.0   (2019/02/15)
+// - Version 0.11.0
 // =======================================================================
 //
 // The MIT License
@@ -58,8 +58,8 @@
 
 #include <stdarg.h>         // For va_*
 
-// Version definition
-#define GUISLICE_VER "0.11.0"
+// Version tracking
+#include "GUIslice_version.h"
 
 
 // ========================================================================
