@@ -4220,14 +4220,18 @@ void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_t
 }
 
 // Find an element index in a collection from a coordinate
+// - Note that the search is in decreasing Z-order (ie. front to back)
+//   so that we effectively find the top-most element that should
+//   receive an event.
 gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY)
 {
-  uint16_t              nInd;
+  int16_t               nInd;
   bool                  bFound = false;
   gslc_tsElemRef*       pElemRef = NULL;
   gslc_tsElemRef*       pFoundElemRef = NULL;
 
-  for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
+  if (pCollect->nElemRefCnt == 0) { return NULL; }
+  for (nInd=pCollect->nElemRefCnt-1;nInd>=0;nInd--) {
     pElemRef  = &(pCollect->asElemRef[nInd]);
 
     bFound = gslc_ElemOwnsCoord(pGui,pElemRef,nX,nY,true);
