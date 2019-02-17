@@ -1792,6 +1792,17 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn);
 
 ///
+/// Update the click enable for an element
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  pElemRef:   Pointer to Element reference
+/// \param[in]  bClickEn:   True if element should support click events
+///
+/// \return none
+///
+void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn);
+
+///
 /// Copy style settings from one element to another
 ///
 /// \param[in]  pGui:          Pointer to GUI

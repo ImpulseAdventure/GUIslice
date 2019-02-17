@@ -2865,6 +2865,22 @@ bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN;
 }
 
+void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetClickEn";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  if (bClickEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_CLICK_EN;
+  }
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest)
 {
   if ((pElemRefSrc == NULL) || (pElemRefDest == NULL)) {
