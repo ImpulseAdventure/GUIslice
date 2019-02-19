@@ -280,10 +280,8 @@ public class TextBoxModel extends WidgetModel {
     int nCols = (getWidth() - 33) / nChSz.width;
     // rows must be greater than actual or the scroll bar will be disabled
     int nRows = ((getHeight() - 18) / nChSz.height) + 1; 
-    if (nCols > getNumTextColumns())
-      data[PROP_ROWS][PROP_VAL_VALUE]= Integer.valueOf(nRows);
-    if (nRows > getNumTextRows())
-      data[PROP_COLS][PROP_VAL_VALUE]=Integer.valueOf(nCols);
+    data[PROP_ROWS][PROP_VAL_VALUE]= Integer.valueOf(nRows);
+    data[PROP_COLS][PROP_VAL_VALUE]=Integer.valueOf(nCols);
   }
 
   /**
