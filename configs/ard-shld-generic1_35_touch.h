@@ -141,14 +141,16 @@ extern "C" {
 
   // Calibration settings from diag_ard_touch_calib:
   #define ADATOUCH_X_MIN    136
-  #define ADATOUCH_Y_MIN    942
   #define ADATOUCH_X_MAX    900
+  #define ADATOUCH_Y_MIN    942
   #define ADATOUCH_Y_MAX    139
 
   // Touch overlay resistance value
   // - In most cases, this value can be left as-is
   #define ADATOUCH_RX       300   // "rxplate"
 
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4C: Example pin configurations
@@ -165,8 +167,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   7
   //#define ADATOUCH_PIN_XP   6
   //#define ADATOUCH_X_MIN    893
-  //#define ADATOUCH_Y_MIN    99
   //#define ADATOUCH_X_MAX    104
+  //#define ADATOUCH_Y_MIN    99
   //#define ADATOUCH_Y_MAX    892
 
   // MCUFRIEND_ID == 0x2053:
@@ -175,8 +177,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   6
   //#define ADATOUCH_PIN_XP   7
   //#define ADATOUCH_X_MIN    138
-  //#define ADATOUCH_Y_MIN    132
   //#define ADATOUCH_X_MAX    891
+  //#define ADATOUCH_Y_MIN    132
   //#define ADATOUCH_Y_MAX    909
 
   // MCUFRIEND_ID == 0x7783:
@@ -186,8 +188,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   6
   //#define ADATOUCH_PIN_XP   7
   //#define ADATOUCH_X_MIN    181
-  //#define ADATOUCH_Y_MIN    934
   //#define ADATOUCH_X_MAX    937
+  //#define ADATOUCH_Y_MIN    934
   //#define ADATOUCH_Y_MAX    219
 
   // MCUFRIEND_ID == 0x7789:
@@ -196,8 +198,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   7
   //#define ADATOUCH_PIN_XP   6
   //#define ADATOUCH_X_MIN    885
-  //#define ADATOUCH_Y_MIN    111
   //#define ADATOUCH_X_MAX    148
+  //#define ADATOUCH_Y_MIN    111
   //#define ADATOUCH_Y_MAX    902
 
   // MCUFRIEND_ID == 0x8031:
@@ -206,8 +208,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   7
   //#define ADATOUCH_PIN_XP   6
   //#define ADATOUCH_X_MIN    889
-  //#define ADATOUCH_Y_MIN    121
   //#define ADATOUCH_X_MAX    151
+  //#define ADATOUCH_Y_MIN    121
   //#define ADATOUCH_Y_MAX    886
 
   // MCUFRIEND_ID == 0x9320:
@@ -216,8 +218,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   9
   //#define ADATOUCH_PIN_XP   8
   //#define ADATOUCH_X_MIN    897
-  //#define ADATOUCH_Y_MIN    944
   //#define ADATOUCH_X_MAX    122
+  //#define ADATOUCH_Y_MIN    944
   //#define ADATOUCH_Y_MAX    141
 
   // MCUFRIEND_ID == 0x9327:
@@ -226,8 +228,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   6
   //#define ADATOUCH_PIN_XP   7
   //#define ADATOUCH_X_MIN    126
-  //#define ADATOUCH_Y_MIN    106
   //#define ADATOUCH_X_MAX    905
+  //#define ADATOUCH_Y_MIN    106
   //#define ADATOUCH_Y_MAX    966
 
   // MCUFRIEND_ID == 0x9340:
@@ -237,8 +239,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   7 
   //#define ADATOUCH_PIN_XP   6 
   //#define ADATOUCH_X_MIN    145
-  //#define ADATOUCH_Y_MIN    937
   //#define ADATOUCH_X_MAX    905
+  //#define ADATOUCH_Y_MIN    937
   //#define ADATOUCH_Y_MAX    165
 
   // MCUFRIEND_ID == 0x9341:
@@ -248,8 +250,8 @@ extern "C" {
   //#define ADATOUCH_PIN_YM   7
   //#define ADATOUCH_PIN_XP   6
   //#define ADATOUCH_X_MIN    905
-  //#define ADATOUCH_Y_MIN    950
   //#define ADATOUCH_X_MAX    187
+  //#define ADATOUCH_Y_MIN    950
   //#define ADATOUCH_Y_MAX    202
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

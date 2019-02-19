@@ -135,11 +135,12 @@ extern "C" {
   // Calibration settings from diag_ard_touch_calib:
   // DRV_TOUCH_XPT2046:
   #define ADATOUCH_X_MIN    246
-  #define ADATOUCH_Y_MIN    3925
   #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MIN    3925
   #define ADATOUCH_Y_MAX    370
 
-
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration

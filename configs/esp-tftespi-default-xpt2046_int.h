@@ -123,7 +123,8 @@ extern "C" {
   // Calibration data from TFT_eSPI for integrated XPT2046
   #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
-
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
