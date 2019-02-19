@@ -85,6 +85,8 @@
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
     #include <Adafruit_PCD8544.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_RA8875)
+    #include <Adafruit_RA8875.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     #include <MCUFRIEND_kbv.h>
     #if (GSLC_SD_EN)
@@ -215,6 +217,11 @@ extern "C" {
   #endif
 
 // ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_RA8875)
+  const char* m_acDrvDisp = "ADA_RA8875(SPI-HW)";
+  Adafruit_RA8875 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
   const char* m_acDrvDisp = "ADA_MCUFRIEND";
   MCUFRIEND_kbv m_disp;
@@ -284,6 +291,8 @@ extern "C" {
 bool gslc_DrvInit(gslc_tsGui* pGui)
 {
 
+  bool bInitOk = true;
+
   // Report any debug info if enabled
   #if defined(DBG_DRIVER)
   // TODO
@@ -333,6 +342,25 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_PCD8544)
       m_disp.begin();
       //m_disp.setContrast(50); Set the contrast level
+
+    #elif defined(DRV_DISP_ADAGFX_RA8875)
+      // RA8875 requires additional initialization depending on
+      // display type. Enable the user to specify the
+      // configuration via DRV_DISP_ADAGFX_RA8875_INIT.
+      #ifndef DRV_DISP_ADAGFX_RA8875_INIT
+        bInitOk = m_disp.begin(RA8875_800x480);  // Default to 800x480
+      #else
+        bInitOk = m_disp.begin(DRV_DISP_ADAGFX_RA8875_INIT);
+      #endif
+      if (!bInitOk) {
+        GSLC_DEBUG_PRINT("ERROR: RA8875 init failed\n", "");
+        return false;
+      }
+      m_disp.displayOn(true);
+      m_disp.GPIOX(true); // Enable TFT - display enable tied to GPIOX
+      m_disp.PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
+      m_disp.PWM1out(255);
+      m_disp.graphicsMode(); // Go back to graphics mode
 
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
       uint16_t identifier = m_disp.readID();
