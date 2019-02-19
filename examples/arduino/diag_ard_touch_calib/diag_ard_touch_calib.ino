@@ -122,6 +122,19 @@ typedef enum {
   POINT__NUM,
 } teCalibPt;
 teCalibPt   m_eCalibPt = POINT_TL;
+
+typedef enum {
+  E_SEG_LL = 0,
+  E_SEG_ML,
+  E_SEG_HL,
+  E_SEG_LM,
+  E_SEG_MM,
+  E_SEG_HM,
+  E_SEG_LH,
+  E_SEG_MH,
+  E_SEG_HH
+} teCalibSeg;
+
 // ------------------------------------------------------------
 
 typedef enum {
@@ -224,7 +237,7 @@ uint16_t  m_nTouchCalXMax;
 uint16_t  m_nTouchCalYMin;
 uint16_t  m_nTouchCalYMax;
 
-
+bool m_bRemapYX = false;
 
 bool m_bTouchCoordValid = false;
 
@@ -344,6 +357,153 @@ void CalcDatapoint(teCalibPt ePoint)
 
 }
 
+#define SEG_MIN_RANGE 200
+bool CalcSegments()
+{
+  // Algorithm:
+  // - 1) Calculate min & max of X & Y coordinates
+  // - 2) Segment X & Y ranges into thirds (Low,Mid,High), making
+  //      a total of 9 segments when using both X & Y together
+  // - 3) Classify each touch press into one of the 9 segments
+  // - 4) Determine if all corner segments (LL, HL, LH, HH) have
+  //      been detected in the 4 points. If not, error.
+  // - 5) Identify the mapping type based on the segment assignments.
+
+  bool bOk = true;
+  int16_t nXMin = 9999;
+  int16_t nXMax = 0;
+  int16_t nYMin = 9999;
+  int16_t nYMax = 0;
+
+  int16_t nXRng = 1;
+  int16_t nYRng = 1;
+  int16_t nXEdgeLM = 0;
+  int16_t nXEdgeMH = 0;
+  int16_t nYEdgeLM = 0;
+  int16_t nYEdgeMH = 0;
+  teCalibSeg aePointSeg[4];
+
+  // Step 1:
+  for (unsigned nInd = POINT_TL; nInd <= POINT_BR; nInd++) {
+    nXMin = (m_anTouchXPeak[nInd] < nXMin) ? m_anTouchXPeak[nInd] : nXMin;
+    nXMax = (m_anTouchXPeak[nInd] > nXMax) ? m_anTouchXPeak[nInd] : nXMax;
+    nYMin = (m_anTouchYPeak[nInd] < nYMin) ? m_anTouchYPeak[nInd] : nYMin;
+    nYMax = (m_anTouchYPeak[nInd] > nYMax) ? m_anTouchYPeak[nInd] : nYMax;
+  }
+
+  // Step 2:
+  nXRng = nXMax - nXMin;
+  nYRng = nYMax - nYMin;
+  nXEdgeLM = 1*(nXRng / 3);
+  nXEdgeMH = 2*(nXRng / 3);
+  nYEdgeLM = 1*(nYRng / 3);
+  nYEdgeMH = 2*(nYRng / 3);
+  // Check for very small ranges
+  if ((nXRng < SEG_MIN_RANGE) || (nYRng < SEG_MIN_RANGE)) {
+    GSLC_DEBUG_PRINT("ERROR: Small range detected (XRng=%d YRng=%d)\n", nXRng, nYRng);
+    return false;
+  }
+
+  // Step 3:
+  int16_t nX, nY, nSeg;
+  for (unsigned nInd = POINT_TL; nInd <= POINT_BR; nInd++) {
+    nX = m_anTouchXPeak[nInd];
+    nY = m_anTouchYPeak[nInd];
+    nSeg = 0;
+    // Shortcut math to identify all 9 segs:
+    if (nY < nYEdgeLM) {
+      nSeg = 0;
+    } else if (nY < nYEdgeMH) {
+      nSeg = 3;
+    } else {
+      nSeg = 6;
+    }
+    if (nX < nXEdgeLM) {
+      nSeg += 0;
+    } else if (nX < nXEdgeMH) {
+      nSeg += 1;
+    } else {
+      nSeg += 2;
+    }
+    aePointSeg[nInd] = static_cast<teCalibSeg>(nSeg);
+  }
+
+  // Step 4:
+  uint8_t nSegsFound = 0;
+  for (unsigned nInd = POINT_TL; nInd <= POINT_BR; nInd++) {
+    if (aePointSeg[nInd] == E_SEG_LL) {
+      nSegsFound |= 1;
+    } else if (aePointSeg[nInd] == E_SEG_HL) {
+      nSegsFound |= 2;
+    } else if (aePointSeg[nInd] == E_SEG_LH) {
+      nSegsFound |= 4;
+    } else if (aePointSeg[nInd] == E_SEG_HH) {
+      nSegsFound |= 8;
+    }
+  }
+  if (nSegsFound != 15) {
+    GSLC_DEBUG_PRINT("ERROR: Missing corner segment (status=%u)\n", nSegsFound);
+    return false;
+  }
+
+  // Step 5:
+  teCalibSeg segTL, segTR, segBL, segBR;
+  m_bRemapYX = false;
+  segTL = aePointSeg[POINT_TL];
+  segTR = aePointSeg[POINT_TR];
+  segBL = aePointSeg[POINT_BL];
+  segBR = aePointSeg[POINT_BR];
+  if ((segTL == E_SEG_LL) && (segTR == E_SEG_HL) && (segBL == E_SEG_LH) && (segBR == E_SEG_HH)) {
+    GSLC_DEBUG_PRINT("SegDetect: Normal display\n", "");
+  } else if ((segTL == E_SEG_HL) && (segTR == E_SEG_LL) && (segBL == E_SEG_HH) && (segBR == E_SEG_LH)) {
+    GSLC_DEBUG_PRINT("SegDetect: Normal display (FlipX)\n", "");
+  } else if ((segTL == E_SEG_LH) && (segTR == E_SEG_HH) && (segBL == E_SEG_LL) && (segBR == E_SEG_HL)) {
+    GSLC_DEBUG_PRINT("SegDetect: Normal display (FlipY)\n", "");
+  } else if ((segTL == E_SEG_HH) && (segTR == E_SEG_LH) && (segBL == E_SEG_HL) && (segBR == E_SEG_LL)) {
+    GSLC_DEBUG_PRINT("SegDetect: Normal display (FlipX,FlipY)\n", "");
+  } else if ((segTL == E_SEG_LL) && (segTR == E_SEG_LH) && (segBL == E_SEG_HL) && (segBR == E_SEG_HH)) {
+    GSLC_DEBUG_PRINT("SegDetect: RemapYX display\n", "");
+    m_bRemapYX = true;
+  } else if ((segTL == E_SEG_LH) && (segTR == E_SEG_LL) && (segBL == E_SEG_HH) && (segBR == E_SEG_HL)) {
+    GSLC_DEBUG_PRINT("SegDetect: RemapYX display (FlipX)\n", "");
+    m_bRemapYX = true;
+  } else if ((segTL == E_SEG_HL) && (segTR == E_SEG_HH) && (segBL == E_SEG_LL) && (segBR == E_SEG_LH)) {
+    GSLC_DEBUG_PRINT("SegDetect: RemapYX display (FlipY)\n", "");
+    m_bRemapYX = true;
+  } else if ((segTL == E_SEG_HH) && (segTR == E_SEG_HL) && (segBL == E_SEG_LH) && (segBR == E_SEG_LL)) {
+    GSLC_DEBUG_PRINT("SegDetect: RemapYX display (FlipX,FlipY)\n", "");
+    m_bRemapYX = true;
+  } else {
+    GSLC_DEBUG_PRINT("SegDetect: Unknown display orientation (%d,%d,%d,%d)\n",
+      segTL, segTR, segBL, segBR);
+    return false;
+  }
+
+  // If m_bRemapYX is set, then we will request the following line be added
+  // to the user configuration. This is displayed in the final report.
+  //   #define ADATOUCH_REMAP_YX 1
+
+  // If we determined that the X & Y were swapped (even in the native orientation)
+  // then we must update the calibration points we have collected so far to adjust
+  // for this so that all further calculations account for this remapping.
+  if (m_bRemapYX) {
+    for (unsigned nInd = POINT_TL; nInd <= POINT_BR; nInd++) {
+      nX = m_anTouchXPeak[nInd];
+      nY = m_anTouchYPeak[nInd];
+      m_anTouchXPeak[nInd] = nY;
+      m_anTouchYPeak[nInd] = nX;
+    }
+  }
+
+  // From this point onwards, we want to use the XY coordinates taking
+  // into account any swapping detected above. This way, when we
+  // capture coordinates from additional calibration points (eg. rotated view),
+  // the coordinates will be remapped as needed.
+  gslc_SetTouchRemapYX(&m_gui, m_bRemapYX);
+
+  return true;
+}
+
 void CalcCalib()
 {
   float   fSx, fSy;
@@ -393,8 +553,8 @@ void CalcCalib()
 
   #if defined(DEBUG_CALIB)
     // Report raw calibration range prior to adjustment
-    GSLC_DEBUG_PRINT("CALIB: Result(raw) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
-      m_nTouchCalXMinRaw, m_nTouchCalYMinRaw, m_nTouchCalXMaxRaw, m_nTouchCalYMaxRaw);
+    GSLC_DEBUG_PRINT("CALIB: Result(raw) XMin=%d XMax=%d Ymin=%d YMax=%d\n",
+      m_nTouchCalXMinRaw, m_nTouchCalXMaxRaw, m_nTouchCalYMinRaw, m_nTouchCalYMaxRaw);
     GSLC_DEBUG_PRINT("CALIB: Range X=%d Y=%d. Expect > %d\n",
       m_nTouchCalXRngRaw, m_nTouchCalYRngRaw, DET_RAW_RANGE_MIN);
     GSLC_DEBUG_PRINT("CALIB: Var XMin=%d XMax=%d YMin=%d YMax=%d. Expect < %d\n",
@@ -424,8 +584,8 @@ void CalcCalib()
   m_nTouchCalXMax = nXMax;
   m_nTouchCalYMax = nYMax;
 
-  GSLC_DEBUG_PRINT("CALIB: Result(adj) nXMin=%d nYmin=%d nXMax=%d nYMax=%d\n",
-    m_nTouchCalXMin, m_nTouchCalYMin, m_nTouchCalXMax, m_nTouchCalYMax);
+  GSLC_DEBUG_PRINT("CALIB: Result(adj) XMin=%d XMax=%d YMin=%d YMax=%d\n",
+    m_nTouchCalXMin, m_nTouchCalXMax, m_nTouchCalYMin, m_nTouchCalYMax);
 
 }
 
@@ -598,9 +758,12 @@ void ReportCalibResult()
   }
 
   GSLC_DEBUG_PRINT("  #define ADATOUCH_X_MIN    %u\n", m_nTouchCalXMin);
-  GSLC_DEBUG_PRINT("  #define ADATOUCH_Y_MIN    %u\n", m_nTouchCalYMin);
   GSLC_DEBUG_PRINT("  #define ADATOUCH_X_MAX    %u\n", m_nTouchCalXMax);
+  GSLC_DEBUG_PRINT("  #define ADATOUCH_Y_MIN    %u\n", m_nTouchCalYMin);
   GSLC_DEBUG_PRINT("  #define ADATOUCH_Y_MAX    %u\n", m_nTouchCalYMax);
+
+  GSLC_DEBUG_PRINT("  #define ADATOUCH_REMAP_YX %u\n", m_bRemapYX);
+
 
   // Check for unexpected rotation behavior
   switch (m_eRotSpecial) {
@@ -828,6 +991,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
   // CALIB:
   // ----------------------------------------------------------------------------
   tsCalibStage sCalibStage;
+  bool bSegsOk = false;
 
   // Determine which calibration point we are handling
   switch (m_eState) {
@@ -881,9 +1045,11 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
       GSLC_DEBUG_PRINT("CALIB: Averaging mode: BASIC\n", "");
       #endif      
       GSLC_DEBUG_PRINT("\n", "");
+
+      // Need to disable any touch remapping during calibration
+      gslc_SetTouchRemapEn(&m_gui, false);
+      gslc_SetTouchRemapYX(&m_gui, false);
     }
-    // Need to disable any touch remapping during calibration
-    gslc_SetTouchRemapEn(&m_gui, false);
     if (bTouchUp) { m_eState = STATE_CAPT_TL_MSG; }
     break;
 
@@ -929,6 +1095,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
 
   case STATE_CAPT_ROT:
     // Calculate calibration
+    bSegsOk = CalcSegments();
     CalcCalib();
 
     GSLC_DEBUG_PRINT("\nCALIB: Rotate\n", "");
@@ -983,6 +1150,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     // Assign the new touch calibration
     gslc_SetTouchRemapCal(&m_gui, m_nTouchCalXMin, m_nTouchCalXMax, m_nTouchCalYMin, m_nTouchCalYMax);
     gslc_SetTouchRemapEn(&m_gui, true);
+    gslc_SetTouchRemapYX(&m_gui, m_bRemapYX);
 
     m_eState = STATE_TEST_MSG;
     break;
@@ -1075,8 +1243,13 @@ void setup()
     m_nTouchCalXMax = ADATOUCH_X_MAX;
     m_nTouchCalYMin = ADATOUCH_Y_MIN;
     m_nTouchCalYMax = ADATOUCH_Y_MAX;
-    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
-      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+    #if defined(ADATOUCH_REMAP_YX)
+      m_bRemapYX = ADATOUCH_REMAP_YX;
+    #else
+      m_bRemapYX = false;
+    #endif
+    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u RemapYX=%u\n",
+      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX,m_bRemapYX);
 
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
       // For MCUFRIEND displays, report the ID
