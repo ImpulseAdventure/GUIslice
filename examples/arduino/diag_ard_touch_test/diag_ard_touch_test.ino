@@ -390,7 +390,12 @@ void setup()
   DrawBackground();
 
   // Initialize settings and report
-  GSLC_DEBUG_PRINT("\n=== Touch Calibration & Testing ===\n\n", "");
+  #if defined(DO_CALIB)
+    GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
+  #else
+    GSLC_DEBUG_PRINT("\n=== Touch Testing ===\n\n", "");
+  #endif
+
   #if defined(DRV_TOUCH_TYPE_RES)
     // Reset to calibration defaults from configuration
     m_nTouchCalXMin = ADATOUCH_X_MIN;

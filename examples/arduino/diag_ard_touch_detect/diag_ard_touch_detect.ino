@@ -183,7 +183,7 @@ bool DetectPins()
     }
   }
   else {
-    GSLC_DEBUG_PRINT("\nERROR - Touchscreen is probably broken\n", "");
+    GSLC_DEBUG_PRINT("\nERROR - Touchscreen is probably broken (or wrong DRV_TOUCH_* touch driver\n", "");
     bRet = false;
   }
 
@@ -200,6 +200,8 @@ void setup()
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
+
+  GSLC_DEBUG_PRINT("\n=== Touch Pin Detection ===\n\n", "");
 
   // Detect pins before we initialize the display driver
   DetectId();
