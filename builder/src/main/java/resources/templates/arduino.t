@@ -222,7 +222,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
   gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
 
   // Create vertical scrollbar for textbox
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$<ID>,$<PAGE_ENUM>,&m_sXGauge[$<COUNT>],
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$<ID>,$<PAGE_ENUM>,&m_sXSlider[$<COUNT>],
           (gslc_tsRect){$<X>+$<WIDTH>-21,$<Y>+4,20,$<HEIGHT>-8},0,100,0,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
