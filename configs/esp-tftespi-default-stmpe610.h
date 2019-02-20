@@ -144,7 +144,6 @@ extern "C" {
   #define ADATOUCH_X_MAX    3858
   #define ADATOUCH_Y_MIN    141
   #define ADATOUCH_Y_MAX    3717
-
   // Certain touch controllers may swap X & Y coords
   #define ADATOUCH_REMAP_YX 0
 

@@ -150,13 +150,12 @@ extern "C" {
   #define ADATOUCH_X_MAX    900
   #define ADATOUCH_Y_MIN    150
   #define ADATOUCH_Y_MAX    900
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
 
   // Touch overlay resistance value
   // - In most cases, this value can be left as-is
   #define ADATOUCH_RX       300   // "rxplate"
-
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
