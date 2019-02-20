@@ -716,6 +716,7 @@ typedef struct {
   int16_t             nTouchLastY;      ///< Last touch event Y coord
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
   bool                bTouchRemapEn;    ///< Enable touch remapping?
+  bool                bTouchRemapYX;    ///< Enable touch controller swapping of X & Y
 
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
@@ -1973,6 +1974,15 @@ void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn);
 ///
 void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint16_t nYMin, uint16_t nYMax);
 
+///
+/// Configure touchscreen XY swap
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bSwap:       Enable touchscreen XY swap
+///
+/// \return none
+///
+void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap);
 
 #endif // !DRV_TOUCH_NONE
 

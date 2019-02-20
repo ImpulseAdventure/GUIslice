@@ -147,14 +147,15 @@ extern "C" {
 
   // Calibration settings from diag_ard_touch_calib:
   #define ADATOUCH_X_MIN    100
-  #define ADATOUCH_Y_MIN    150
   #define ADATOUCH_X_MAX    900
+  #define ADATOUCH_Y_MIN    150
   #define ADATOUCH_Y_MAX    900
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
 
   // Touch overlay resistance value
   // - In most cases, this value can be left as-is
   #define ADATOUCH_RX       300   // "rxplate"
-
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration

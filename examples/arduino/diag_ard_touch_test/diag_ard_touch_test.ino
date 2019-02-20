@@ -94,7 +94,7 @@ uint16_t  m_nTouchCalXMax;
 uint16_t  m_nTouchCalYMin;
 uint16_t  m_nTouchCalYMax;
 
-
+bool m_bRemapYX = false;
 
 bool m_bTouchCoordValid = false;
 
@@ -304,6 +304,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
     // Assign the new touch calibration
     gslc_SetTouchRemapCal(&m_gui, m_nTouchCalXMin, m_nTouchCalXMax, m_nTouchCalYMin, m_nTouchCalYMax);
     gslc_SetTouchRemapEn(&m_gui, true);
+    gslc_SetTouchRemapYX(&m_gui, m_bRemapYX);
 
     m_eState = STATE_TEST_MSG;
     break;
@@ -389,15 +390,25 @@ void setup()
   DrawBackground();
 
   // Initialize settings and report
-  GSLC_DEBUG_PRINT("\n=== Touch Calibration & Testing ===\n\n", "");
+  #if defined(DO_CALIB)
+    GSLC_DEBUG_PRINT("\n=== Touch Calibration ===\n\n", "");
+  #else
+    GSLC_DEBUG_PRINT("\n=== Touch Testing ===\n\n", "");
+  #endif
+
   #if defined(DRV_TOUCH_TYPE_RES)
     // Reset to calibration defaults from configuration
     m_nTouchCalXMin = ADATOUCH_X_MIN;
     m_nTouchCalXMax = ADATOUCH_X_MAX;
     m_nTouchCalYMin = ADATOUCH_Y_MIN;
     m_nTouchCalYMax = ADATOUCH_Y_MAX;
-    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u\n",
-      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX);
+    #if defined(ADATOUCH_REMAP_YX)
+      m_bRemapYX = ADATOUCH_REMAP_YX;
+    #else
+      m_bRemapYX = false;
+    #endif
+    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u RemapYX=%u\n",
+      ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX,m_bRemapYX);
 
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
       // For MCUFRIEND displays, report the ID
