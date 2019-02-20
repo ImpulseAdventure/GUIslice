@@ -336,7 +336,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
       uint16_t identifier = m_disp.readID();
-      m_disp.begin(identifier);
+      // Support override for MCUFRIEND ID auto-detection
+      #if defined(DRV_DISP_ADAGFX_MCUFRIEND_FORCE)
+        m_disp.begin(DRV_DISP_ADAGFX_MCUFRIEND_FORCE);
+      #else
+        m_disp.begin(identifier);
+      #endif
 
     #endif
 
