@@ -83,6 +83,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
   //#include "../configs/ard-adagfx-ili9341-xpt2046.h"
   //#include "../configs/ard-adagfx-pcd8544-notouch.h"
+  //#include "../configs/ard-adagfx-ra8875-notouch.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
 
