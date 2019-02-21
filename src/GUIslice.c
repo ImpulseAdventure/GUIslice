@@ -137,6 +137,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       pGui->nTouchCalXMax = 1000;
       pGui->nTouchCalYMin = 100;
       pGui->nTouchCalYMax = 1000;
+      pGui->bTouchRemapYX = false;
     #endif // !DRV_TOUCH_NONE
 
   #endif
@@ -3492,6 +3493,17 @@ void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint
   pGui->nTouchCalYMin = nYMin;
   pGui->nTouchCalYMax = nYMax;
 }
+
+void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapYX";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->bTouchRemapYX = bSwap;
+}
+
 
 #endif // !DRV_TOUCH_NONE
 

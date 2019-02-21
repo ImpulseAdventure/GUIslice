@@ -364,7 +364,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
       uint16_t identifier = m_disp.readID();
-      m_disp.begin(identifier);
+      // Support override for MCUFRIEND ID auto-detection
+      #if defined(DRV_DISP_ADAGFX_MCUFRIEND_FORCE)
+        m_disp.begin(DRV_DISP_ADAGFX_MCUFRIEND_FORCE);
+      #else
+        m_disp.begin(identifier);
+      #endif
 
     #endif
 
@@ -1183,6 +1188,16 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
   #endif // DRV_TOUCH_TYPE_RES
 
+  // Support touch controllers with swapped X & Y
+  #if defined(ADATOUCH_REMAP_YX)
+    // Capture swap setting from config file
+    pGui->bTouchRemapYX = ADATOUCH_REMAP_YX;
+  #else
+    // For backward compatibility with older config files
+    // that have not defined this config option
+    pGui->bTouchRemapYX = false;
+  #endif
+
   #if defined(DRV_TOUCH_ADA_STMPE610)
     #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
@@ -1569,6 +1584,16 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // Input assignment
     nRawX = m_nLastRawX;
     nRawY = m_nLastRawY;
+
+    // Handle any hardware swapping in native orientation
+    // This is done prior to any flip/swap as a result of
+    // rotation away from the native orientation.
+    // In most cases, the following is not used, but there
+    // may be touch modules that have swapped their X&Y convention.
+    if (pGui->bTouchRemapYX) {
+      nRawX = m_nLastRawY;
+      nRawY = m_nLastRawX;
+    }
 
     nInputX = nRawX;
     nInputY = nRawY;
