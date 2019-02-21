@@ -2838,6 +2838,39 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING);
 }
 
+void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible)
+{
+  if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetVisible";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  bool bVisibleOld = gslc_ElemGetVisible(pGui,pElemRef);
+  gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE,(bVisible)?GSLC_ELEMREF_VISIBLE:0);
+
+  // Mark the element as needing redraw if its visibility status changed
+  if (bVisible != bVisibleOld) {
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  }
+
+  // Request page redraw if element is being hidden
+  // TODO: Determine minimum page redraw required to display
+  //       background that may be revealed behind hidden element
+  if ((!bVisible) && (bVisibleOld)) {
+    gslc_PageRedrawSet(pGui, true);
+  }
+}
+
+bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetVisible";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return false;
+  }
+  return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE);
+}
+
 
 void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
 {
