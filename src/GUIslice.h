@@ -392,6 +392,7 @@ typedef enum {
   GSLC_ELEMREF_REDRAW_INC  = (2<<4),  ///< Incremental redraw of element requested
 
   GSLC_ELEMREF_GLOWING     = (1<<6),  ///< Element state is glowing
+  GSLC_ELEMREF_SHOW        = (1<<7),  ///< Element is currently shown (ie. visible)
 
   // Mask values for bitfield comparisons
   GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags
@@ -400,7 +401,7 @@ typedef enum {
 } gslc_teElemRefFlags;
 
 /// Define the default element reference flags for new elements
-#define GSLC_ELEMREF_DEFAULT  (GSLC_ELEMREF_SRC_RAM)
+#define GSLC_ELEMREF_DEFAULT  (GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_SHOW)
 
 
 /// Image reference flags: Describes characteristics of an image reference
