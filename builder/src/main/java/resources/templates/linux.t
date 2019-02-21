@@ -225,7 +225,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
   
   // Create textbox
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sTextbox$<ID>,
-    (gslc_tsRect){$<X>+2,$<Y>+4,$<WIDTH>-23,$<HEIGHT>-8},$<FONT_ID>,(char*)&m_acTextboxBuf$<ID>,$<ROWS>,$<COLS>);
+    (gslc_tsRect){$<X>+2,$<Y>+4,$<WIDTH>-23,$<HEIGHT>-5},$<FONT_ID>,(char*)&m_acTextboxBuf$<ID>,$<ROWS>,$<COLS>);
   gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,$<CHECKED>);
   gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
 
