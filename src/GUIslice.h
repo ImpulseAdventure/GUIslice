@@ -399,6 +399,9 @@ typedef enum {
 
 } gslc_teElemRefFlags;
 
+/// Define the default element reference flags for new elements
+#define GSLC_ELEMREF_DEFAULT  (GSLC_ELEMREF_SRC_RAM)
+
 
 /// Image reference flags: Describes characteristics of an image reference
 typedef enum {
