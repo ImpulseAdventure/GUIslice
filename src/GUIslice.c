@@ -2343,6 +2343,15 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // --------------------------------------------------------------------------
+  // Handle visibility
+  // --------------------------------------------------------------------------
+  bool bVisible = gslc_ElemGetVisible(pGui, pElemRef);
+  if (!bVisible) {
+    // The element is hidden, so no drawing required
+    return true;
+  }
+
+  // --------------------------------------------------------------------------
   // Custom drawing
   // --------------------------------------------------------------------------
 
@@ -4278,6 +4287,11 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
   if (pCollect->nElemRefCnt == 0) { return NULL; }
   for (nInd=pCollect->nElemRefCnt-1;nInd>=0;nInd--) {
     pElemRef  = &(pCollect->asElemRef[nInd]);
+
+    if (!gslc_ElemGetVisible(pGui, pElemRef)) {
+      // Element is marked as hidden, so don't accept touch
+      continue;
+    }
 
     bFound = gslc_ElemOwnsCoord(pGui,pElemRef,nX,nY,true);
     if (bFound) {
