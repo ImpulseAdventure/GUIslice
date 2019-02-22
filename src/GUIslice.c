@@ -2862,11 +2862,31 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 
-  // Request page redraw if element is being hidden
-  // TODO: Determine minimum page redraw required to display
-  //       background that may be revealed behind hidden element
+  // Request page redraw if element is becoming hidden
+  // - Determine minimum page redraw required to display
+  //   background that may be revealed behind hidden element
   if ((!bVisible) && (bVisibleOld)) {
+    // Current method: Force redraw now with clipping active
+
+    // TODO: Enable deferred PageRedrawGo() by saving clip
+    //       region for later and/or mark which element is
+    //       being hidden.
+
+    // TODO: When deferring PageRedrawGo(), we can also support
+    //       more intelligent redraw calculations that will
+    //       only attempt to redraw elements that are not
+    //       either a) fully outside of the clipping rect or
+    //       b) elements that are fully obscured by elements
+    //       with a higher Z-index. Doing so should speed up
+    //       redraw during the element-hide operation and
+    //       avoid the overdrawing behavior.
+
+    gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
+    gslc_tsRect rRect = pElem->rElem;
+    gslc_SetClipRect(pGui, &rRect);
     gslc_PageRedrawSet(pGui, true);
+    gslc_PageRedrawGo(pGui);
+    gslc_SetClipRect(pGui, NULL);
   }
 }
 
