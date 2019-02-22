@@ -518,12 +518,12 @@ public class TextModel extends WidgetModel {
       // that we show to our user and also push out during code generation.
       if (getFontDisplayName().startsWith("BuiltIn")) {
         Dimension nChSz = ff.measureAdafruitText(getText(),getFontDisplayName());
-        if (nChSz.width > getWidth()) setWidth(nChSz.width);
-        if (nChSz.height > getHeight()) setHeight(nChSz.height);
+        if (nChSz.width > getTargetWidth()) setWidth(nChSz.width);
+        if (nChSz.height > getTargetHeight()) setHeight(nChSz.height);
       } else {
         // if font is not one of the built-in fonts than actual size is correct even though font is scaled.
-        if (d.width > getWidth()) setWidth(d.width);
-        if (d.height > getHeight()) setHeight(d.height);
+        if (d.width > getTargetWidth()) setWidth(d.width);
+        if (d.height > getTargetHeight()) setHeight(d.height);
       }
       if (fireUpdates) {
         fireTableCellUpdated(PROP_WIDTH, COLUMN_VALUE);

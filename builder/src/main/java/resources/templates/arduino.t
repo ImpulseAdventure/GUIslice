@@ -217,12 +217,12 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
   
   // Create textbox
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,$<WIDGET_ENUM>,$<PAGE_ENUM>,&m_sTextbox$<ID>,
-    (gslc_tsRect){$<X>+2,$<Y>+4,$<WIDTH>-23,$<HEIGHT>-8},$<FONT_ID>,(char*)&m_acTextboxBuf$<ID>,$<ROWS>,$<COLS>);
+    (gslc_tsRect){$<X>+2,$<Y>+4,$<WIDTH>-23,$<HEIGHT>-5},$<FONT_ID>,(char*)&m_acTextboxBuf$<ID>,$<ROWS>,$<COLS>);
   gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,$<CHECKED>);
   gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
 
   // Create vertical scrollbar for textbox
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$<ID>,$<PAGE_ENUM>,&m_sXGauge[$<COUNT>],
+  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR$<ID>,$<PAGE_ENUM>,&m_sXSlider[$<COUNT>],
           (gslc_tsRect){$<X>+$<WIDTH>-21,$<Y>+4,20,$<HEIGHT>-8},0,100,0,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,$<FRAME_COLOR>,$<FILL_COLOR>,$<GLOW_COLOR>);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);

@@ -1053,7 +1053,7 @@ public class Controller extends JInternalFrame
     // System.out.println("command: " + command);
     switch(command) {
     case "about":
-    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.11.0-rc1", "About", JOptionPane.INFORMATION_MESSAGE);
+    JOptionPane.showMessageDialog(null, "GUIsliceBuider ver 0.11.0-rc2", "About", JOptionPane.INFORMATION_MESSAGE);
 //      JOptionPane.showMessageDialog(null, "GUIsliceBuider ver SNAPSHOT", "About", JOptionPane.INFORMATION_MESSAGE);
       break;
     
