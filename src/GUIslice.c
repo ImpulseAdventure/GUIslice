@@ -2029,14 +2029,14 @@ gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.eTxtAlign         = GSLC_ALIGN_MID_LEFT;
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2068,14 +2068,14 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.pfuncXTouch       = cbTouch;
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2101,14 +2101,14 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   gslc_DrvSetElemImageNorm(pGui,&sElem,sImgRef);
   gslc_DrvSetElemImageGlow(pGui,&sElem,sImgRefSel);
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2128,14 +2128,14 @@ gslc_tsElemRef* gslc_ElemCreateBox(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2158,14 +2158,14 @@ gslc_tsElemRef* gslc_ElemCreateLine(gslc_tsGui* pGui,int16_t nElemId,int16_t nPa
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FILL_EN;   // Disable boundary box fill
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;  // Disable boundary box frame
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2186,14 +2186,14 @@ gslc_tsElemRef* gslc_ElemCreateImg(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   gslc_DrvSetElemImageGlow(pGui,&sElem,sImgRef);
 
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2341,6 +2341,15 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   }
 
   gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+
+  // --------------------------------------------------------------------------
+  // Handle visibility
+  // --------------------------------------------------------------------------
+  bool bVisible = gslc_ElemGetVisible(pGui, pElemRef);
+  if (!bVisible) {
+    // The element is hidden, so no drawing required
+    return true;
+  }
 
   // --------------------------------------------------------------------------
   // Custom drawing
@@ -2836,6 +2845,59 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING);
+}
+
+void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible)
+{
+  if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetVisible";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  bool bVisibleOld = gslc_ElemGetVisible(pGui,pElemRef);
+  gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE,(bVisible)?GSLC_ELEMREF_VISIBLE:0);
+
+  // Mark the element as needing redraw if its visibility status changed
+  if (bVisible != bVisibleOld) {
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  }
+
+  // Request page redraw if element is becoming hidden
+  // - Determine minimum page redraw required to display
+  //   background that may be revealed behind hidden element
+  if ((!bVisible) && (bVisibleOld)) {
+    // Current method: Force redraw now with clipping active
+
+    // TODO: Enable deferred PageRedrawGo() by saving clip
+    //       region for later and/or mark which element is
+    //       being hidden.
+
+    // TODO: When deferring PageRedrawGo(), we can also support
+    //       more intelligent redraw calculations that will
+    //       only attempt to redraw elements that are not
+    //       either a) fully outside of the clipping rect or
+    //       b) elements that are fully obscured by elements
+    //       with a higher Z-index. Doing so should speed up
+    //       redraw during the element-hide operation and
+    //       avoid the overdrawing behavior.
+
+    gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
+    gslc_tsRect rRect = pElem->rElem;
+    gslc_SetClipRect(pGui, &rRect);
+    gslc_PageRedrawSet(pGui, true);
+    gslc_PageRedrawGo(pGui);
+    gslc_SetClipRect(pGui, NULL);
+  }
+}
+
+bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetVisible";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return false;
+  }
+  return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE);
 }
 
 
@@ -4245,6 +4307,11 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
   if (pCollect->nElemRefCnt == 0) { return NULL; }
   for (nInd=pCollect->nElemRefCnt-1;nInd>=0;nInd--) {
     pElemRef  = &(pCollect->asElemRef[nInd]);
+
+    if (!gslc_ElemGetVisible(pGui, pElemRef)) {
+      // Element is marked as hidden, so don't accept touch
+      continue;
+    }
 
     bFound = gslc_ElemOwnsCoord(pGui,pElemRef,nX,nY,true);
     if (bFound) {

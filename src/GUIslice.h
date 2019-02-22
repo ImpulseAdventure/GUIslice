@@ -392,12 +392,16 @@ typedef enum {
   GSLC_ELEMREF_REDRAW_INC  = (2<<4),  ///< Incremental redraw of element requested
 
   GSLC_ELEMREF_GLOWING     = (1<<6),  ///< Element state is glowing
+  GSLC_ELEMREF_VISIBLE     = (1<<7),  ///< Element is currently shown (ie. visible)
 
   // Mask values for bitfield comparisons
   GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags
   GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags
 
 } gslc_teElemRefFlags;
+
+/// Define the default element reference flags for new elements
+#define GSLC_ELEMREF_DEFAULT  (GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_VISIBLE)
 
 
 /// Image reference flags: Describes characteristics of an image reference
@@ -1845,6 +1849,27 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing);
 /// \return True if element is glowing
 ///
 bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Update the visibility status for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bVisible:    True if element is shown, false if hidden
+///
+/// \return none
+///
+void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible);
+
+///
+/// Get the visibility status for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element is shown, false if hidden
+///
+bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Assign the event callback function for a element
