@@ -1409,7 +1409,7 @@ public class CodeGenerator {
             w.getModel().setPageEnum(p.getEnum());
           }
         } else if (w.getType().equals(EnumFactory.TEXTBOX)) {
-          ref = ((GraphModel)w.getModel()).getElementRef();
+          ref = ((TextBoxModel)w.getModel()).getElementRef();
           if (ref != null && !ref.isEmpty()) {
             refList.add(w.getModel());
             w.getModel().setPageEnum(p.getEnum());
