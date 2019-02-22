@@ -85,7 +85,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // Driver-specific members
 // =======================================================================
 typedef struct {
-  uint16_t      nColRawBkgnd;   ///< Background color (if not image-based)
+  gslc_tsColor  nColBkgnd;      ///< Background color (if not image-based)
 
   gslc_tsRect   rClipRect;      ///< Clipping rectangle
 
@@ -166,7 +166,6 @@ const char* gslc_DrvGetNameDisp(gslc_tsGui* pGui);
 ///
 const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui);
 
-
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
 // -----------------------------------------------------------------------
@@ -246,7 +245,7 @@ void gslc_DrvImageDestruct(void* pvImg);
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pRect:         Rectangular region to constrain edits
 ///
-/// \return none
+/// \return true if success, false if error
 ///
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
@@ -265,7 +264,6 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 /// \return Void ptr to driver-specific font if load was successful, NULL otherwise
 ///
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz);
-
 
 ///
 /// Release all fonts defined in the GUI
@@ -521,7 +519,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 ///
 /// \return none
 ///
-void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char *pBitmap,bool bProgMem);
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem);
 
 ///
 /// Copy the background image to destination screen
@@ -583,6 +581,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 /// \return true if successful
 ///
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation);
+
 
 // =======================================================================
 // Private Functions

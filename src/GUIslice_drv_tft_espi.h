@@ -105,7 +105,7 @@ extern "C" {
 // Driver-specific members
 // =======================================================================
 typedef struct {
-  uint16_t      nColRawBkgnd;   ///< Background color (if not image-based)
+  gslc_tsColor  nColBkgnd;      ///< Background color (if not image-based)
 
   gslc_tsRect   rClipRect;      ///< Clipping rectangle
 
@@ -186,7 +186,6 @@ const char* gslc_DrvGetNameDisp(gslc_tsGui* pGui);
 ///
 const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui);
 
-
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
 // -----------------------------------------------------------------------
@@ -266,7 +265,7 @@ void gslc_DrvImageDestruct(void* pvImg);
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pRect:         Rectangular region to constrain edits
 ///
-/// \return none
+/// \return true if success, false if error
 ///
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
@@ -287,7 +286,6 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 /// \return Void ptr to driver-specific font if load was successful, NULL otherwise
 ///
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz);
-
 
 ///
 /// Release all fonts defined in the GUI
@@ -331,7 +329,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 ///
 /// \return true if success, false if failure
 ///
-bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg);
+bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt,gslc_tsColor colBg);
 
 ///
 /// Draw a text string in a bounding box using the specified alignment
@@ -351,7 +349,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 /// \return true if success, false if failure
 ///
 bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
-        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg);
+        gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt,gslc_tsColor colBg);
 
 // -----------------------------------------------------------------------
 // Screen Management Functions
@@ -543,7 +541,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 ///
 /// \return none
 ///
-void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char *pBitmap,bool bProgMem);
+void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem);
 
 ///
 /// Copy the background image to destination screen

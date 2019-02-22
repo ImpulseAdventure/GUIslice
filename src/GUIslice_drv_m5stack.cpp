@@ -82,13 +82,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 
-    pDriver->nColRawBkgnd = gslc_DrvAdaptColorToRaw(GSLC_COL_BLACK);
+    pDriver->nColBkgnd = GSLC_COL_BLACK;
 
     // These displays can accept partial redraw as they retain the last
     // image in the controller graphics RAM
     pGui->bRedrawPartialEn = true;
 
     m_disp.init();
+	
+	// TODO: Replace the following with DrvRotate()
     m_disp.setRotation( pGui->nRotation );
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
@@ -169,7 +171,7 @@ bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 {
   if (pGui->pvDriver) {
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-    pDriver->nColRawBkgnd = gslc_DrvAdaptColorToRaw(nCol);
+    pDriver->nColBkgnd = nCol;
   }
   return true;
 }
@@ -211,7 +213,7 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
   }
 
   // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
-  return false;
+  return true;
 }
 
 
@@ -269,6 +271,7 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 {
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nTxtScale = pFont->nSize;
+  // TODO: Support SMOOTH_FONT?
   m_disp.setTextColor(nColRaw);
   // TFT_eSPI font API differs from Adafruit-GFX's setFont() API
   if (pFont->pvFont == NULL) {
@@ -321,6 +324,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  // TODO: Support SMOOTH_FONT?
   m_disp.setTextColor(nColRaw);
   // m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
@@ -392,14 +396,39 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
+  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
 #if (GSLC_CLIP_EN)
   // Perform clipping
+  // - TODO: Optimize the following, perhaps with new ClipLineHV()
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
-  if (!gslc_ClipRect(&pDriver->rClipRect,&rRect)) { return true; }
-#endif
-
-  uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
+  int16_t nX0, nY0, nX1, nY1;
+  // Top
+  nX0 = rRect.x;
+  nY0 = rRect.y;
+  nX1 = rRect.x + rRect.w - 1;
+  nY1 = nY0;
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  // Bottom
+  nX0 = rRect.x;
+  nY0 = rRect.y + rRect.h - 1;
+  nX1 = rRect.x + rRect.w - 1;
+  nY1 = nY0;
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  // Left
+  nX0 = rRect.x;
+  nY0 = rRect.y;
+  nX1 = nX0;
+  nY1 = rRect.y + rRect.h - 1;
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  // Right
+  nX0 = rRect.x + rRect.w - 1;
+  nY0 = rRect.y;
+  nX1 = nX0;
+  nY1 = rRect.y + rRect.h - 1;
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+#else
   m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+#endif
   return true;
 }
 
@@ -698,6 +727,13 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
+  #if defined(DBG_DRIVER)
+  char addr[6];
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
+  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  GSLC_DEBUG_PRINT("%s\n",addr);
+  #endif
+
   // GUIslice adapter library for Adafruit-GFX does not pre-load
   // image data into memory before calling DrvDrawImage(), so
   // we to handle the loading now (when rendering).
@@ -726,11 +762,12 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     //       but check (GSLC_USE_PROGMEM) first
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from program memory
-      // - Dimensions and output color are defined in arrray header
+      // - Dimensions and output color are defined in array header
       gslc_DrvDrawMonoFromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,true);
       return true;
     } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
       // 24-bit Bitmap in flash
+	  // FIXME: Should we be passing "true" as last param?
       gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
     } else {
@@ -755,6 +792,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 
   } else {
     // Unsupported source
+    GSLC_DEBUG_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
     return false;
   }
 }
@@ -771,8 +809,14 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
       // TODO: Create a new eImgFlags enum to signal that the
       //       background should be a flat color instead of
       //       an image.
-      uint16_t nColRaw = pDriver->nColRawBkgnd;
-      m_disp.fillScreen(nColRaw);
+
+      // NOTE: We don't call m_disp.fillScreen() here as
+      //       that API doesn't support clipping. Since
+      //       we may be redrawing the page with a clipping
+      //       region enabled, it is important that we don't
+      //       redraw the entire screen.
+      gslc_tsRect rRect = (gslc_tsRect) { 0, 0, pGui->nDispW, pGui->nDispH };
+      gslc_DrvDrawFillRect(pGui, rRect, pDriver->nColBkgnd);
     } else {
       // An image should be loaded
       // TODO: For now, re-use the DrvDrawImage(). Later, consider
@@ -783,6 +827,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
     }
   }
 }
+
 
 // -----------------------------------------------------------------------
 // Touch Functions (via display driver)
