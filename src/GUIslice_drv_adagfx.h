@@ -264,7 +264,7 @@ void gslc_DrvImageDestruct(void* pvImg);
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pRect:         Rectangular region to constrain edits
 ///
-/// \return none
+/// \return true if success, false if error
 ///
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect);
 
@@ -549,7 +549,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 
 
 ///
-/// Get the last touch event from the SDL_Event handler
+/// Get the last touch event from the internal touch handler
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[out] pnX:         Ptr to X coordinate of last touch event
@@ -560,7 +560,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 ///
 /// \return true if an event was detected or false otherwise
 ///
-bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
+bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal);
 
 
 // -----------------------------------------------------------------------
