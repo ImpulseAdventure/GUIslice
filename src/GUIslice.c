@@ -511,6 +511,9 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
+  // Ensure that at least the "current" page has been defined
+  // FIXME: Not sure that this check is required; perhaps it
+  // was used to prevent early calls to PageRedrawGo()?
   if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
@@ -601,24 +604,24 @@ void gslc_Update(gslc_tsGui* pGui)
       // - Handle the events on the current page
       switch (eInputEvent) {
         case GSLC_INPUT_KEY_DOWN:
-          gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
+          gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
         case GSLC_INPUT_KEY_UP:
           // NOTE: For now, only handling key-down events
-          // TODO: gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
+          // TODO: gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
 
         case GSLC_INPUT_PIN_ASSERT:
-          gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
+          gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
         case GSLC_INPUT_PIN_DEASSERT:
-          // TODO: gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          // TODO: gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
 
         case GSLC_INPUT_TOUCH:
           // Track and handle the touch events
           // - Handle the events on the current page
-          gslc_TrackTouch(pGui,pGui->pPageStack[GSLC_STACK_CUR],nTouchX,nTouchY,nTouchPress);
+          gslc_TrackTouch(pGui,NULL,nTouchX,nTouchY,nTouchPress);
 
           #ifdef DBG_TOUCH
           // Highlight current touch for coordinate debug
@@ -647,6 +650,7 @@ void gslc_Update(gslc_tsGui* pGui)
   // ---------------------------------------------
 
   // Issue a timer tick to all pages
+  // - This is independent of the pages in the stack
   uint8_t nPageInd;
   gslc_tsPage* pPage = NULL;
   for (nPageInd=0;nPageInd<pGui->nPageCnt;nPageInd++) {
@@ -3386,13 +3390,14 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
 }
 
+// FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
 {
 #if !(GSLC_FEATURE_INPUT)
-  GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in `GUIslice_config_*.h`%s\n", "");
+  GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
   return;
 #else
-  if ((pGui == NULL) || (pPage == NULL)) {
+  if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackInput";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
@@ -3402,11 +3407,23 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   void*             pvData = (void*)(&sEventTouch);
   gslc_tsEvent      sEvent;
   int16_t           nFocusInd = GSLC_IND_NONE;
+  gslc_tsPage*      pFocusPage = NULL;
   gslc_tsCollect*   pCollect = NULL;
 
   gslc_teAction     eAction = GSLC_ACTION_NONE;
   int16_t           nActionVal;
 
+  // Determine the page to accept focus
+  // - For now, use the top enabled page in the stack
+  for (int nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
+    if (pGui->pPageStack[nStack]) {
+      pFocusPage = pGui->pPageStack[nStack];
+    }
+  }
+  if (!pFocusPage) {
+    // No pages enabled in the stack, so exit
+    return;
+  }
 
   gslc_InputMapLookup(pGui,eInputEvent,nInputVal,&eAction,&nActionVal);
   switch(eAction) {
@@ -3418,12 +3435,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
       sEventTouch.nX = GSLC_IND_NONE;
       sEventTouch.nY = 0; // Unused
 
-      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
       gslc_PageEvent(pGui,sEvent);
 
       // Focus on new element
       bool bStepNext = (eAction == GSLC_ACTION_FOCUS_NEXT);
-      nFocusInd = gslc_PageFocusStep(pGui,pPage,bStepNext);
+      nFocusInd = gslc_PageFocusStep(pGui,pFocusPage,bStepNext);
       if (nFocusInd == GSLC_IND_NONE) {
         break;
       }
@@ -3431,14 +3448,14 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
       sEventTouch.nX = nFocusInd;
       sEventTouch.nY = 0; // Unused
 
-      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
       gslc_PageEvent(pGui,sEvent);
 
       break;
 
     case GSLC_ACTION_SELECT:
 
-      pCollect = &pPage->sCollect;
+      pCollect = &pFocusPage->sCollect;
       nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
 
       // Ensure an element is in focus!
@@ -3449,12 +3466,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
         sEventTouch.nX = nFocusInd;
         sEventTouch.nY = 0; // Unused
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
         // Reapply focus to current element
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
       }
 
@@ -3463,7 +3480,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
     case GSLC_ACTION_SET_REL:
     case GSLC_ACTION_SET_ABS:
 
-      pCollect = &pPage->sCollect;
+      pCollect = &pFocusPage->sCollect;
       nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
 
       // Ensure an element is in focus!
@@ -3481,7 +3498,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           sEventTouch.nY = nActionVal;
         }
 
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
       }
       break;
@@ -3499,9 +3516,10 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
 // This routine is responsible for the GUI-level touch event state machine
 // and dispatching to the touch event handler for the page
+// FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
-  if ((pGui == NULL) || (pPage == NULL)) {
+  if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
@@ -3563,14 +3581,13 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   void* pvData = (void*)(&sEventTouch);
   gslc_tsEvent sEvent;
 
-  // Perform two passes:
-  // - Handle touch events on the current page
-  // - If a global page has been set, handle any touch events on the global page
-  sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
-  gslc_PageEvent(pGui,sEvent);
-  if (pGui->pPageStack[GSLC_STACK_GLB]) {
-    sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)(pGui->pPageStack[GSLC_STACK_GLB]),pvData);
-    gslc_PageEvent(pGui,sEvent);
+  // Generate touch page event for any enabled pages in the stack
+  for (unsigned nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
+    gslc_tsPage* pStackPage = pGui->pPageStack[nStack];
+    if (pStackPage) {
+      sEvent = gslc_EventCreate(pGui, GSLC_EVT_TOUCH, 0, (void*)pStackPage, pvData);
+      gslc_PageEvent(pGui, sEvent);
+    }
   }
 
 
