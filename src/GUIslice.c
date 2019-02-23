@@ -150,7 +150,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nPageCnt        = 0;
   pGui->asPage          = asPage;
 
+  pGui->pGlbPage        = NULL;
   pGui->pCurPage        = NULL;
+  pGui->pGlbPageCollect = NULL;
   pGui->pCurPageCollect = NULL;
 
   // Initialize collection of fonts with user-supplied pointer
@@ -1633,7 +1635,31 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   // Increment the page count
   pGui->nPageCnt++;
 
-  // Default the page pointer to the first page we create
+  // Update the current/default page to the first page that
+  // gets added via PageAdd().
+
+  // However, it should be noted that "global pages" 
+  // represent an overlay that is always displayed along
+  // with the real page. Thus, "global pages" shouldn't be
+  // marked as the "current page".
+  //
+  // TODO: Check for a global page and don't add it
+  // TODO: When adding a global page, consider recording
+  //       a pointer to it so that we can work with it later.
+  //
+  //  if (nPageId == GSLC_PAGE_GLOBAL) {
+  //    // Save the pointer in the global GUI
+  //    pGui->pGlbPage = pPage;
+  //    pGui->pGlbPageCollect = &pPage->sCollect;
+  //    // Don't set the current page if it was the global page
+  //  } else {
+  //    // Normal page was added
+  //    // Save this as the current page if we haven't already assigned one
+  //    if (gslc_GetPageCur(pGui) == GSLC_PAGE_NONE) {
+  //      gslc_SetPageCur(pGui,nPageId);
+  //    }
+  //  }
+
   if (gslc_GetPageCur(pGui) == GSLC_PAGE_NONE) {
     gslc_SetPageCur(pGui,nPageId);
   }
@@ -1659,6 +1685,12 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
     nPageSaved = pGui->pCurPage->nPageId;
   }
 
+  //  TODO: Don't allow us to set the global page as current
+  //  if (nPageId == GSLC_PAGE_GLOBAL) {
+  //    GSLC_DEBUG_PRINT("ERROR: SetPageCur(%s) cannot set global page to current\n","");
+  //    return;
+  //  }
+
   // Find the page
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
@@ -1673,12 +1705,57 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   pGui->pCurPageCollect = &pPage->sCollect;
 
   #if defined(DEBUG_LOG)
-  GSLC_DEBUG_PRINT("INFO: Changed to page %u\n",nPageId);
+  GSLC_DEBUG_PRINT("INFO: Changed current to page %u\n",nPageId);
   #endif
 
   // A change of page should always force a future redraw
   if (nPageSaved != nPageId) {
     gslc_PageRedrawSet(pGui,true);
+  }
+}
+
+
+void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
+{
+  int16_t nPageSaved = GSLC_PAGE_NONE;
+  if (pGui->pGlbPage != NULL) {
+    nPageSaved = pGui->pGlbPage->nPageId;
+  }
+
+  if (nPageId == GSLC_PAGE_NONE) {
+    // Disable the global page
+    pGui->pGlbPage = NULL;
+    pGui->pGlbPageCollect = NULL;
+
+#if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("INFO: Disabled global page%s\n", "");
+#endif
+
+  }
+  else {
+
+    // Find the page
+    gslc_tsPage* pPage = gslc_PageFindById(pGui, nPageId);
+    if (pPage == NULL) {
+      GSLC_DEBUG_PRINT("ERROR: SetPageGlobal() can't find page (ID=%d)\n", nPageId);
+      return;
+    }
+
+    // Save a reference to the selected page
+    pGui->pGlbPage = pPage;
+
+    // Save a reference to the selected page's element collection
+    pGui->pGlbPageCollect = &pPage->sCollect;
+
+#if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("INFO: Changed global to page %u\n", nPageId);
+#endif
+
+  } // Disable?
+
+    // A change of page should always force a future redraw
+  if (nPageSaved != nPageId) {
+    gslc_PageRedrawSet(pGui, true);
   }
 }
 
@@ -1715,6 +1792,7 @@ bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
   int               nInd;
+  int               nPageMode;
   gslc_tsElem*      pElem = NULL;
   gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
@@ -1723,41 +1801,62 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
     return; // No page added yet
   }
 
+  bool  bRedrawFullPage = false;  // Does entire page require redraw?
+
   // Only work on current page
-  pCollect = pGui->pCurPageCollect;
+  // But do this in two passes:
+  // Pass 1: Check global page elements
+  // Pass 2: Check current page elements
+  for (nPageMode=0;nPageMode<2;nPageMode++) {
+    // Select the page collection to process
+    if (nPageMode == 0) {
+      // If no global page exists, proceed to next pass
+      if (!pGui->pGlbPage) {
+        continue;
+      }
+      else {
+        pCollect = pGui->pGlbPageCollect;
+      }
+    } else {
+      pCollect = pGui->pCurPageCollect;
+    }
 
-  for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
-    pElemRef = &pCollect->asElemRef[nInd];
-    gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
-    pElem = gslc_GetElemFromRef(pGui,pElemRef);
-    //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
-    //        (eFlags & GSLC_ELEMREF_REDRAW_MASK),eFlags,pElem->nFeatures);
-    if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) != GSLC_ELEMREF_REDRAW_NONE) {
+    for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
+      pElemRef = &pCollect->asElemRef[nInd];
+      gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+      //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
+      //        (eFlags & GSLC_ELEMREF_REDRAW_MASK),eFlags,pElem->nFeatures);
+      if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) != GSLC_ELEMREF_REDRAW_NONE) {
 
-      // Determine if entire page requires redraw
-      bool  bRedrawFullPage = false;
-
-      // If partial redraw is supported, then we
-      // look out for transparent elements which may
-      // still warrant full page redraw.
-      if (pGui->bRedrawPartialEn) {
-        // Is the element transparent?
-        if (!(pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN)) {
+        // If partial redraw is supported, then we
+        // look out for transparent elements which may
+        // still warrant full page redraw.
+        if (pGui->bRedrawPartialEn) {
+          // Is the element transparent?
+          if (!(pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN)) {
+            bRedrawFullPage = true;
+          }
+        } else {
           bRedrawFullPage = true;
         }
-      } else {
-        bRedrawFullPage = true;
-      }
 
-      if (bRedrawFullPage) {
-        // Mark the entire page as requiring redraw
-        gslc_PageRedrawSet(pGui,true);
-        // No need to check any more elements
-        break;
-      }
+        if (bRedrawFullPage) {
+          // Determined that full page needs redraw
+          // so no need to check any more elements
+          break;
+        }
 
+      }
     }
+
+  } // nPageMode
+
+  if (bRedrawFullPage) {
+    // Mark the entire page as requiring redraw
+    gslc_PageRedrawSet(pGui,true);
   }
+
 }
 
 // Redraw the active page
@@ -1800,7 +1899,17 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   // Draw other elements (as needed, unless forced page redraw)
   // TODO: Handle GSLC_EVTSUB_DRAW_NEEDED
   uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
-  void* pvData = (void*)(pGui->pCurPage);
+  void*    pvData = NULL;
+
+  // Might require two passes:
+  // - If a global page has been set, perform redraw on those elements first
+  // - Then proceed to current page
+  if (pGui->pGlbPage) {
+    pvData = (void*)(pGui->pGlbPage);
+    gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
+    gslc_PageEvent(pGui,sEvent);
+  }
+  pvData = (void*)(pGui->pCurPage);
   gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
   gslc_PageEvent(pGui,sEvent);
 
@@ -1874,7 +1983,7 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId)
   // as it shows a serious config error and continued operation
   // is not viable.
   if (pFoundPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageGet() can't find page (ID=%d)\n",nPageId);
+    GSLC_DEBUG_PRINT("ERROR: PageFindById() can't find page (ID=%d)\n",nPageId);
     return NULL;
   }
 
@@ -3461,8 +3570,17 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   }
 
   void* pvData = (void*)(&sEventTouch);
-  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
+  gslc_tsEvent sEvent;
+
+  // Perform two passes:
+  // - Handle touch events on the current page
+  // - If a global page has been set, handle any touch events on the global page
+  sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
   gslc_PageEvent(pGui,sEvent);
+  if (pGui->pGlbPage) {
+    sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)(pGui->pGlbPage),pvData);
+    gslc_PageEvent(pGui,sEvent);
+  }
 
 
   // Save raw touch status so that we can detect transitions

@@ -118,6 +118,7 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_PAGE_USER_BASE     = 0,      ///< Starting Page ID for user assignments
     // Internal usage
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
+    GSLC_PAGE_GLOBAL        = -2998,  ///< The global page (always visible)
   } gslc_tePageId;
 
 
@@ -743,7 +744,9 @@ typedef struct {
   uint8_t             nPageMax;         ///< Maximum number of pages
   uint8_t             nPageCnt;         ///< Current page index
 
+  gslc_tsPage*        pGlbPage;         ///< Global page (optional)
   gslc_tsPage*        pCurPage;         ///< Currently active page
+  gslc_tsCollect*     pGlbPageCollect;  ///< Ptr to global page collection (optional)
   gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
 
   // Callback functions
@@ -1390,6 +1393,17 @@ int gslc_GetPageCur(gslc_tsGui* pGui);
 /// \return none
 ///
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId);
+
+
+///
+/// Assigns a page to be globally visible
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to select as global or GSLC_PAGE_NONE to disable
+///
+/// \return none
+///
+void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId);
 
 
 ///
