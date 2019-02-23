@@ -121,6 +121,14 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_PAGE_GLOBAL        = -2998,  ///< The global page (always visible)
   } gslc_tePageId;
 
+  /// Define page stack
+  typedef enum {
+    GSLC_STACK_GLB = 0,                ///< Global page
+    GSLC_STACK_CUR,                    ///< Current page
+    GSLC_STACK_OVR,                    ///< Overlay page (eg. popups)
+
+    GSLC_STACK__MAX                    ///< Defines maximum number of pages in stack
+  } gslc_teStackPage;
 
   /// Group ID enumerations
   typedef enum {
@@ -744,8 +752,7 @@ typedef struct {
   uint8_t             nPageMax;         ///< Maximum number of pages
   uint8_t             nPageCnt;         ///< Current page index
 
-  gslc_tsPage*        pGlbPage;         ///< Global page (optional)
-  gslc_tsPage*        pCurPage;         ///< Currently active page
+  gslc_tsPage*        pPageStack[GSLC_STACK__MAX]; ///< Stack of pages
 
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events

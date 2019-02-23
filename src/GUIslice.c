@@ -150,8 +150,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nPageCnt        = 0;
   pGui->asPage          = asPage;
 
-  pGui->pGlbPage        = NULL;
-  pGui->pCurPage        = NULL;
+  for (nInd = 0; nInd < GSLC_STACK__MAX; nInd++) {
+    pGui->pPageStack[nInd] = NULL;
+  }
 
   // Initialize collection of fonts with user-supplied pointer
   pGui->asFont      = asFont;
@@ -510,7 +511,7 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
@@ -600,15 +601,15 @@ void gslc_Update(gslc_tsGui* pGui)
       // - Handle the events on the current page
       switch (eInputEvent) {
         case GSLC_INPUT_KEY_DOWN:
-          gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
           break;
         case GSLC_INPUT_KEY_UP:
           // NOTE: For now, only handling key-down events
-          // TODO: gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          // TODO: gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
           break;
 
         case GSLC_INPUT_PIN_ASSERT:
-          gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
+          gslc_TrackInput(pGui,pGui->pPageStack[GSLC_STACK_CUR],eInputEvent,nInputVal);
           break;
         case GSLC_INPUT_PIN_DEASSERT:
           // TODO: gslc_TrackInput(pGui,pGui->pCurPage,eInputEvent,nInputVal);
@@ -617,7 +618,7 @@ void gslc_Update(gslc_tsGui* pGui)
         case GSLC_INPUT_TOUCH:
           // Track and handle the touch events
           // - Handle the events on the current page
-          gslc_TrackTouch(pGui,pGui->pCurPage,nTouchX,nTouchY,nTouchPress);
+          gslc_TrackTouch(pGui,pGui->pPageStack[GSLC_STACK_CUR],nTouchX,nTouchY,nTouchPress);
 
           #ifdef DBG_TOUCH
           // Highlight current touch for coordinate debug
@@ -1647,8 +1648,7 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   //
   //  if (nPageId == GSLC_PAGE_GLOBAL) {
   //    // Save the pointer in the global GUI
-  //    pGui->pGlbPage = pPage;
-  //    pGui->pGlbPageCollect = &pPage->sCollect;
+  //    pGui->pPageStack[GSLC_STACK_GLB] = pPage;
   //    // Don't set the current page if it was the global page
   //  } else {
   //    // Normal page was added
@@ -1669,18 +1669,18 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
 
 int gslc_GetPageCur(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return GSLC_PAGE_NONE;
   }
-  return pGui->pCurPage->nPageId;
+  return pGui->pPageStack[GSLC_STACK_CUR]->nPageId;
 }
 
 
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 {
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  if (pGui->pCurPage != NULL) {
-    nPageSaved = pGui->pCurPage->nPageId;
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+    nPageSaved = pGui->pPageStack[GSLC_STACK_CUR]->nPageId;
   }
 
   //  TODO: Don't allow us to set the global page as current
@@ -1697,7 +1697,7 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   }
 
   // Save a reference to the selected page
-  pGui->pCurPage = pPage;
+  pGui->pPageStack[GSLC_STACK_CUR] = pPage;
 
   #if defined(DEBUG_LOG)
   GSLC_DEBUG_PRINT("INFO: Changed current to page %u\n",nPageId);
@@ -1713,14 +1713,13 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 {
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  if (pGui->pGlbPage != NULL) {
-    nPageSaved = pGui->pGlbPage->nPageId;
+  if (pGui->pPageStack[GSLC_STACK_GLB] != NULL) {
+    nPageSaved = pGui->pPageStack[GSLC_STACK_GLB]->nPageId;
   }
 
   if (nPageId == GSLC_PAGE_NONE) {
     // Disable the global page
-    pGui->pGlbPage = NULL;
-    //xxx pGui->pGlbPageCollect = NULL;
+    pGui->pPageStack[GSLC_STACK_GLB] = NULL;
 
 #if defined(DEBUG_LOG)
     GSLC_DEBUG_PRINT("INFO: Disabled global page%s\n", "");
@@ -1737,10 +1736,7 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
     }
 
     // Save a reference to the selected page
-    pGui->pGlbPage = pPage;
-
-    // Save a reference to the selected page's element collection
-    //xxx pGui->pGlbPageCollect = &pPage->sCollect;
+    pGui->pPageStack[GSLC_STACK_GLB] = pPage;
 
 #if defined(DEBUG_LOG)
     GSLC_DEBUG_PRINT("INFO: Changed global to page %u\n", nPageId);
@@ -1759,20 +1755,20 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 // requires a redraw.
 void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
-  pGui->pCurPage->bPageNeedRedraw = bRedraw;
+  pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedRedraw = bRedraw;
 }
 
 bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return false; // No page added yet
   }
 
-  return pGui->pCurPage->bPageNeedRedraw;
+  return pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedRedraw;
 }
 
 // Check the redraw flag on all elements on the current page and update
@@ -1792,7 +1788,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
 
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
@@ -1807,12 +1803,12 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
     // Select the page collection to process
     if (nPageMode == 0) {
       // If no global page exists, proceed to next pass
-      pPage = pGui->pGlbPage;
+      pPage = pGui->pPageStack[GSLC_STACK_GLB];
       if (!pPage) {
         continue;
       }
     } else {
-      pPage = pGui->pCurPage;
+      pPage = pGui->pPageStack[GSLC_STACK_CUR];
     }
     pCollect = &pPage->sCollect;
 
@@ -1862,7 +1858,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 //   are rendered.
 void gslc_PageRedrawGo(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
@@ -1899,12 +1895,12 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   // Might require two passes:
   // - If a global page has been set, perform redraw on those elements first
   // - Then proceed to current page
-  if (pGui->pGlbPage) {
-    pvData = (void*)(pGui->pGlbPage);
+  if (pGui->pPageStack[GSLC_STACK_GLB]) {
+    pvData = (void*)(pGui->pPageStack[GSLC_STACK_GLB]);
     gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
     gslc_PageEvent(pGui,sEvent);
   }
-  pvData = (void*)(pGui->pCurPage);
+  pvData = (void*)(pGui->pPageStack[GSLC_STACK_CUR]);
   gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
   gslc_PageEvent(pGui,sEvent);
 
@@ -1922,11 +1918,11 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
 void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
-  pGui->pCurPage->bPageNeedFlip = bNeeded;
+  pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip = bNeeded;
 
   // To assist in debug of drawing primitives, support immediate
   // rendering of the current display. Note that this only works
@@ -1938,20 +1934,20 @@ void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 
 bool gslc_PageFlipGet(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return false; // No page added yet
   }
 
-  return pGui->pCurPage->bPageNeedFlip;
+  return pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip;
 }
 
 void gslc_PageFlipGo(gslc_tsGui* pGui)
 {
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
-  if (pGui->pCurPage->bPageNeedFlip) {
+  if (pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip) {
     gslc_DrvPageFlipNow(pGui);
 
     // Indicate that page flip is no longer required
@@ -3572,8 +3568,8 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   // - If a global page has been set, handle any touch events on the global page
   sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pPage,pvData);
   gslc_PageEvent(pGui,sEvent);
-  if (pGui->pGlbPage) {
-    sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)(pGui->pGlbPage),pvData);
+  if (pGui->pPageStack[GSLC_STACK_GLB]) {
+    sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)(pGui->pPageStack[GSLC_STACK_GLB]),pvData);
     gslc_PageEvent(pGui,sEvent);
   }
 

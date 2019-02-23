@@ -776,7 +776,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   bool                bCurChecked;
   gslc_tsElemRef*     pFoundElemRef = NULL;
 
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return NULL; // No page added yet
   }
 
@@ -788,7 +788,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 
   // Operate on current page
   // TODO: Support other page layers
-  gslc_tsPage* pPage = pGui->pCurPage;
+  gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
   for (nCurInd=0;nCurInd<pCollect->nElemCnt;nCurInd++) {
@@ -906,7 +906,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  if (pGui->pCurPage == NULL) {
+  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
     return; // No page added yet
   }
 
@@ -944,7 +944,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     //       on a checkbox on the current page.
     // Operate on current page
     // TODO: Support other page layers
-    gslc_tsPage* pPage = pGui->pCurPage;
+    gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
 
     gslc_tsCollect* pCollect = &pPage->sCollect;
     for (nCurInd=0;nCurInd<pCollect->nElemRefCnt;nCurInd++) {
