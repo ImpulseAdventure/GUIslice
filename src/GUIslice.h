@@ -662,10 +662,6 @@ typedef struct {
 
   int16_t             nPageId;              ///< Page identifier
 
-  // Redraw
-  bool                bPageNeedRedraw;      ///< Page require a redraw
-  bool                bPageNeedFlip;        ///< Screen requires a page flip
-
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events
 
@@ -753,6 +749,10 @@ typedef struct {
   uint8_t             nPageCnt;         ///< Current page index
 
   gslc_tsPage*        pPageStack[GSLC_STACK__MAX]; ///< Stack of pages
+
+  // Redraw of screen (ie. across page stack)
+  bool                bScreenNeedRedraw; ///< Screen requires a redraw
+  bool                bScreenNeedFlip;   ///< Screen requires a page flip
 
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events

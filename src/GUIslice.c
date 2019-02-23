@@ -153,6 +153,8 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   for (nInd = 0; nInd < GSLC_STACK__MAX; nInd++) {
     pGui->pPageStack[nInd] = NULL;
   }
+  pGui->bScreenNeedRedraw  = true;
+  pGui->bScreenNeedFlip    = false;
 
   // Initialize collection of fonts with user-supplied pointer
   pGui->asFont      = asFont;
@@ -1625,8 +1627,6 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
 
   // TODO: Create proper PageReset()
-  pPage->bPageNeedRedraw  = true;
-  pPage->bPageNeedFlip    = false;
   pPage->pfuncXEvent      = NULL;
 
   // Initialize pPage->sCollect
@@ -1764,24 +1764,20 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 // requires a redraw.
 void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)
 {
-  // FIXME: Support other pages in stack
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage == NULL) {
-    return; // No page added yet
+  if (pGui == NULL) {
+    return;
   }
 
-  pStackPage->bPageNeedRedraw = bRedraw;
+  pGui->bScreenNeedRedraw = bRedraw;
 }
 
 bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 {
-  // FIXME: Support other pages in stack
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage == NULL) {
-    return false; // No page added yet
+  if (pGui == NULL) {
+    return false;
   }
 
-  return pStackPage->bPageNeedRedraw;
+  return pGui->bScreenNeedRedraw;
 }
 
 // Check the redraw flag on all elements on the current page and update
@@ -1927,12 +1923,11 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
 void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 {
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage == NULL) {
-    return; // No page added yet
+  if (pGui == NULL) {
+    return;
   }
 
-  pStackPage->bPageNeedFlip = bNeeded;
+  pGui->bScreenNeedFlip = bNeeded;
 
   // To assist in debug of drawing primitives, support immediate
   // rendering of the current display. Note that this only works
@@ -1944,22 +1939,20 @@ void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 
 bool gslc_PageFlipGet(gslc_tsGui* pGui)
 {
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage == NULL) {
-    return false; // No page added yet
+  if (pGui == NULL) {
+    return false;
   }
 
-  return pStackPage->bPageNeedFlip;
+  return pGui->bScreenNeedFlip;
 }
 
 void gslc_PageFlipGo(gslc_tsGui* pGui)
 {
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage == NULL) {
-    return; // No page added yet
+  if (pGui == NULL) {
+    return;
   }
 
-  if (pStackPage->bPageNeedFlip) {
+  if (pGui->bScreenNeedFlip) {
     gslc_DrvPageFlipNow(pGui);
 
     // Indicate that page flip is no longer required
