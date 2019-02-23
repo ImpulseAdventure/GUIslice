@@ -1673,18 +1673,21 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
 
 int gslc_GetPageCur(gslc_tsGui* pGui)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return GSLC_PAGE_NONE;
   }
-  return pGui->pPageStack[GSLC_STACK_CUR]->nPageId;
+  return pStackPage->nPageId;
 }
 
 
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 {
+  // TODO: Replace with call to SetPageInStack(GSLC_STACK_CUR,nPageId)
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
-    nPageSaved = pGui->pPageStack[GSLC_STACK_CUR]->nPageId;
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
+    nPageSaved = pStackPage->nPageId;
   }
 
   //  TODO: Don't allow us to set the global page as current
@@ -1716,9 +1719,11 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 
 void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 {
+  // TODO: Replace with call to SetPageInStack(GSLC_STACK_GLB,nPageId)
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  if (pGui->pPageStack[GSLC_STACK_GLB] != NULL) {
-    nPageSaved = pGui->pPageStack[GSLC_STACK_GLB]->nPageId;
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage != NULL) {
+    nPageSaved = pStackPage->nPageId;
   }
 
   if (nPageId == GSLC_PAGE_NONE) {
@@ -1759,20 +1764,24 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 // requires a redraw.
 void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  // FIXME: Support other pages in stack
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return; // No page added yet
   }
 
-  pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedRedraw = bRedraw;
+  pStackPage->bPageNeedRedraw = bRedraw;
 }
 
 bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  // FIXME: Support other pages in stack
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return false; // No page added yet
   }
 
-  return pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedRedraw;
+  return pStackPage->bPageNeedRedraw;
 }
 
 // Check the redraw flag on all elements on the current page and update
@@ -1787,7 +1796,7 @@ bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
   int               nInd;
-  int               nPageMode;
+  int               nStackPage;
   gslc_tsElem*      pElem = NULL;
   gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
@@ -1799,20 +1808,13 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   bool  bRedrawFullPage = false;  // Does entire page require redraw?
   gslc_tsPage*  pPage = NULL;
 
-  // Only work on current page
-  // But do this in two passes:
-  // Pass 1: Check global page elements
-  // Pass 2: Check current page elements
-  for (nPageMode=0;nPageMode<2;nPageMode++) {
+  // Work on each enabled page in the stack
+  for (nStackPage=0;nStackPage<GSLC_STACK__MAX;nStackPage++) {
     // Select the page collection to process
-    if (nPageMode == 0) {
-      // If no global page exists, proceed to next pass
-      pPage = pGui->pPageStack[GSLC_STACK_GLB];
-      if (!pPage) {
-        continue;
-      }
-    } else {
-      pPage = pGui->pPageStack[GSLC_STACK_CUR];
+    pPage = pGui->pPageStack[nStackPage];
+    if (!pPage) {
+      // If this stack page is not enabled, skip to next stack page
+      continue;
     }
     pCollect = &pPage->sCollect;
 
@@ -1845,10 +1847,12 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
       }
     }
 
-  } // nPageMode
+  } // nStackPage
 
   if (bRedrawFullPage) {
     // Mark the entire page as requiring redraw
+    // FIXME: Note that this only currrently updates GSLC_STACK_CUR
+    // on behalf of updates in any page in the stack
     gslc_PageRedrawSet(pGui,true);
   }
 
@@ -1860,6 +1864,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 // - If the page has not been marked as needing redraw then only
 //   the elements that have been marked as needing redraw
 //   are rendered.
+// FIXME: Handle pages in stack
 void gslc_PageRedrawGo(gslc_tsGui* pGui)
 {
   if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
@@ -1896,17 +1901,17 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
   void*    pvData = NULL;
 
-  // Might require two passes:
-  // - If a global page has been set, perform redraw on those elements first
-  // - Then proceed to current page
-  if (pGui->pPageStack[GSLC_STACK_GLB]) {
-    pvData = (void*)(pGui->pPageStack[GSLC_STACK_GLB]);
+  // Issue page redraw events to all pages in stack
+  // - Start from bottom page in stack first
+  for (int nStackPage = 0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
+    gslc_tsPage* pStackPage = pGui->pPageStack[nStackPage];
+    if (!pStackPage) {
+      continue;
+    }
+    pvData = (void*)(pStackPage);
     gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
     gslc_PageEvent(pGui,sEvent);
   }
-  pvData = (void*)(pGui->pPageStack[GSLC_STACK_CUR]);
-  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,nSubType,pvData,NULL);
-  gslc_PageEvent(pGui,sEvent);
 
 
   // Clear the page redraw flag
@@ -1922,11 +1927,12 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
 void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return; // No page added yet
   }
 
-  pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip = bNeeded;
+  pStackPage->bPageNeedFlip = bNeeded;
 
   // To assist in debug of drawing primitives, support immediate
   // rendering of the current display. Note that this only works
@@ -1938,20 +1944,22 @@ void gslc_PageFlipSet(gslc_tsGui* pGui,bool bNeeded)
 
 bool gslc_PageFlipGet(gslc_tsGui* pGui)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return false; // No page added yet
   }
 
-  return pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip;
+  return pStackPage->bPageNeedFlip;
 }
 
 void gslc_PageFlipGo(gslc_tsGui* pGui)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pStackPage == NULL) {
     return; // No page added yet
   }
 
-  if (pGui->pPageStack[GSLC_STACK_CUR]->bPageNeedFlip) {
+  if (pStackPage->bPageNeedFlip) {
     gslc_DrvPageFlipNow(pGui);
 
     // Indicate that page flip is no longer required
