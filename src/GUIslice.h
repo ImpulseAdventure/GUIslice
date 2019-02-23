@@ -746,8 +746,6 @@ typedef struct {
 
   gslc_tsPage*        pGlbPage;         ///< Global page (optional)
   gslc_tsPage*        pCurPage;         ///< Currently active page
-  gslc_tsCollect*     pGlbPageCollect;  ///< Ptr to global page collection (optional)
-  gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
 
   // Callback functions
   GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events

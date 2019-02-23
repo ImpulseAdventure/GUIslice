@@ -152,8 +152,6 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   pGui->pGlbPage        = NULL;
   pGui->pCurPage        = NULL;
-  pGui->pGlbPageCollect = NULL;
-  pGui->pCurPageCollect = NULL;
 
   // Initialize collection of fonts with user-supplied pointer
   pGui->asFont      = asFont;
@@ -1701,9 +1699,6 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
   // Save a reference to the selected page
   pGui->pCurPage = pPage;
 
-  // Save a reference to the selected page's element collection
-  pGui->pCurPageCollect = &pPage->sCollect;
-
   #if defined(DEBUG_LOG)
   GSLC_DEBUG_PRINT("INFO: Changed current to page %u\n",nPageId);
   #endif
@@ -1725,7 +1720,7 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
   if (nPageId == GSLC_PAGE_NONE) {
     // Disable the global page
     pGui->pGlbPage = NULL;
-    pGui->pGlbPageCollect = NULL;
+    //xxx pGui->pGlbPageCollect = NULL;
 
 #if defined(DEBUG_LOG)
     GSLC_DEBUG_PRINT("INFO: Disabled global page%s\n", "");
@@ -1745,7 +1740,7 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
     pGui->pGlbPage = pPage;
 
     // Save a reference to the selected page's element collection
-    pGui->pGlbPageCollect = &pPage->sCollect;
+    //xxx pGui->pGlbPageCollect = &pPage->sCollect;
 
 #if defined(DEBUG_LOG)
     GSLC_DEBUG_PRINT("INFO: Changed global to page %u\n", nPageId);
@@ -1802,6 +1797,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   }
 
   bool  bRedrawFullPage = false;  // Does entire page require redraw?
+  gslc_tsPage*  pPage = NULL;
 
   // Only work on current page
   // But do this in two passes:
@@ -1811,15 +1807,14 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
     // Select the page collection to process
     if (nPageMode == 0) {
       // If no global page exists, proceed to next pass
-      if (!pGui->pGlbPage) {
+      pPage = pGui->pGlbPage;
+      if (!pPage) {
         continue;
       }
-      else {
-        pCollect = pGui->pGlbPageCollect;
-      }
     } else {
-      pCollect = pGui->pCurPageCollect;
+      pPage = pGui->pCurPage;
     }
+    pCollect = &pPage->sCollect;
 
     for (nInd=0;nInd<pCollect->nElemRefCnt;nInd++) {
       pElemRef = &pCollect->asElemRef[nInd];

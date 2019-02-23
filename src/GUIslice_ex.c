@@ -785,9 +785,15 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
-  for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemCnt;nCurInd++) {
+
+  // Operate on current page
+  // TODO: Support other page layers
+  gslc_tsPage* pPage = pGui->pCurPage;
+
+  gslc_tsCollect* pCollect = &pPage->sCollect;
+  for (nCurInd=0;nCurInd<pCollect->nElemCnt;nCurInd++) {
     // Fetch extended data
-    pCurElemRef   = &(pGui->pCurPageCollect->asElemRef[nCurInd]);
+    pCurElemRef   = &(pCollect->asElemRef[nCurInd]);
     pCurElem      = gslc_GetElemFromRef(pGui,pCurElemRef);
     nCurType      = pCurElem->nType;
     // Only want to proceed if it is a checkbox
@@ -936,9 +942,14 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     // We use the GUI pointer for access to other elements
     // NOTE: There is an assumption that we are calling ElemXCheckboxSetState
     //       on a checkbox on the current page.
-    for (nCurInd=0;nCurInd<pGui->pCurPageCollect->nElemRefCnt;nCurInd++) {
+    // Operate on current page
+    // TODO: Support other page layers
+    gslc_tsPage* pPage = pGui->pCurPage;
+
+    gslc_tsCollect* pCollect = &pPage->sCollect;
+    for (nCurInd=0;nCurInd<pCollect->nElemRefCnt;nCurInd++) {
       // Fetch extended data
-      pCurElemRef   = &pGui->pCurPageCollect->asElemRef[nCurInd];
+      pCurElemRef   = &pCollect->asElemRef[nCurInd];
       pCurElem      = gslc_GetElemFromRef(pGui,pCurElemRef);
 
       // FIXME: Handle pCurElemRef->eElemFlags
