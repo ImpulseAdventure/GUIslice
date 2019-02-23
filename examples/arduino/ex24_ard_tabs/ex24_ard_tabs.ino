@@ -162,7 +162,7 @@ bool InitOverlays()
   SetTabHighlight(E_ELEM_TAB_MAIN);
 
   // Create tab box
-  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, (gslc_tsRect) { 20, 70, 280, 150 });
+  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, (gslc_tsRect) { 20, 70, 200, 150 });
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
 
   // -----------------------------------
