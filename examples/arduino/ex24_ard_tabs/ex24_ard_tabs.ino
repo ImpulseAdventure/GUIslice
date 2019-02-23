@@ -179,7 +179,7 @@ bool InitOverlays()
   // Checkbox element
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_CHECK1, E_PG_MAIN, &m_asXCheck[0],
     (gslc_tsRect) {
-    200, 120, 30, 30
+    100, 160, 30, 30
   }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_BLUE_LT2, false);
 
   // -----------------------------------
