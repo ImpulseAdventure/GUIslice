@@ -1959,6 +1959,18 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
 }
 
 
+// TODO: Create a PageStackFocusStep()
+// - The functionality would track which page is currently focused
+//   and instead of looping around on the page, the next enabled
+//   page in the stack would be traversed.
+// - Wrapping at the bottom of the stack would create the GSLC_IND_NONE
+//   state.
+// - Without this enhancement, GPIO / keyboard controls will only
+//   operate on the top-most page in the stack, which prevents the
+//   ability to navigate tab select controls if they are provided
+//   by a lower layer in the stack.
+
+
 int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
 {
 #if !(GSLC_FEATURE_INPUT)
@@ -3364,9 +3376,10 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   // - For now, use the top enabled page in the stack
   for (int nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
     if (pGui->pPageStack[nStack]) {
-      // TODO: Check for "bActive" flag, in case we have
-      // disabled touch events for this page in the stack
-      pFocusPage = pGui->pPageStack[nStack];
+      // Ensure the page layer is active (receiving touch events)
+      if (pGui->abPageStackActive[nStack]) {
+        pFocusPage = pGui->pPageStack[nStack];
+      }
     }
   }
   if (!pFocusPage) {
