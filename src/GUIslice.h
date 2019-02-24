@@ -743,11 +743,11 @@ typedef struct {
 
 
   // Pages
-  gslc_tsPage*        asPage;           ///< Array of pages
-  uint8_t             nPageMax;         ///< Maximum number of pages
-  uint8_t             nPageCnt;         ///< Current page index
+  gslc_tsPage*        asPage;           ///< Array of all pages defined in system
+  uint8_t             nPageMax;         ///< Maximum number of pages that can be defined
+  uint8_t             nPageCnt;         ///< Current number of pages defined
 
-  gslc_tsPage*        pPageStack[GSLC_STACK__MAX]; ///< Stack of pages
+  gslc_tsPage*        apPageStack[GSLC_STACK__MAX];       ///< Stack of pages
   bool                abPageStackActive[GSLC_STACK__MAX]; ///< Whether page in stack can receive touch events
 
   // Redraw of screen (ie. across page stack)

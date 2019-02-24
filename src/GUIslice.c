@@ -151,7 +151,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->asPage          = asPage;
 
   for (nInd = 0; nInd < GSLC_STACK__MAX; nInd++) {
-    pGui->pPageStack[nInd] = NULL;
+    pGui->apPageStack[nInd] = NULL;
     pGui->abPageStackActive[nInd] = true;
   }
   pGui->bScreenNeedRedraw  = true;
@@ -1648,7 +1648,7 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
 
 int gslc_GetPageCur(gslc_tsGui* pGui)
 {
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  gslc_tsPage* pStackPage = pGui->apPageStack[GSLC_STACK_CUR];
   if (pStackPage == NULL) {
     return GSLC_PAGE_NONE;
   }
@@ -1658,7 +1658,7 @@ int gslc_GetPageCur(gslc_tsGui* pGui)
 void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 {
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
+  gslc_tsPage* pStackPage = pGui->apPageStack[nStackPos];
   if (pStackPage != NULL) {
     nPageSaved = pStackPage->nPageId;
   }
@@ -1681,7 +1681,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   }
 
   // Save a reference to the selected page
-  pGui->pPageStack[nStackPos] = pPage;
+  pGui->apPageStack[nStackPos] = pPage;
 
   #if defined(DEBUG_LOG)
   GSLC_DEBUG_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
@@ -1696,7 +1696,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 
 void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive)
 {
-  gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
+  gslc_tsPage* pStackPage = pGui->apPageStack[nStackPos];
   if (pStackPage == NULL) {
     // TODO: Error
     return;
@@ -1778,7 +1778,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   // Work on each enabled page in the stack
   for (nStackPage=0;nStackPage<GSLC_STACK__MAX;nStackPage++) {
     // Select the page collection to process
-    pPage = pGui->pPageStack[nStackPage];
+    pPage = pGui->apPageStack[nStackPage];
     if (!pPage) {
       // If this stack page is not enabled, skip to next stack page
       continue;
@@ -1866,7 +1866,7 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   // Issue page redraw events to all pages in stack
   // - Start from bottom page in stack first
   for (int nStackPage = 0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
-    gslc_tsPage* pStackPage = pGui->pPageStack[nStackPage];
+    gslc_tsPage* pStackPage = pGui->apPageStack[nStackPage];
     if (!pStackPage) {
       continue;
     }
@@ -3395,10 +3395,10 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   // Determine the page to accept focus
   // - For now, use the top enabled page in the stack
   for (int nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
-    if (pGui->pPageStack[nStack]) {
+    if (pGui->apPageStack[nStack]) {
       // Ensure the page layer is active (receiving touch events)
       if (pGui->abPageStackActive[nStack]) {
-        pFocusPage = pGui->pPageStack[nStack];
+        pFocusPage = pGui->apPageStack[nStack];
       }
     }
   }
@@ -3565,7 +3565,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 
   // Generate touch page event for any enabled pages in the stack
   for (unsigned nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
-    gslc_tsPage* pStackPage = pGui->pPageStack[nStack];
+    gslc_tsPage* pStackPage = pGui->apPageStack[nStack];
     if (pStackPage) {
       // Ensure the page layer is active (receiving touch events)
       if (pGui->abPageStackActive[nStack]) {
