@@ -1638,35 +1638,16 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   // Increment the page count
   pGui->nPageCnt++;
 
-  // Update the current/default page to the first page that
-  // gets added via PageAdd().
-
-  // However, it should be noted that "global pages" 
-  // represent an overlay that is always displayed along
-  // with the real page. Thus, "global pages" shouldn't be
-  // marked as the "current page".
-  //
-  // TODO: Check for a global page and don't add it
-  // TODO: When adding a global page, consider recording
-  //       a pointer to it so that we can work with it later.
-  //
-  //  if (nPageId == GSLC_PAGE_GLOBAL) {
-  //    // Save the pointer in the global GUI
-  //    pGui->pPageStack[GSLC_STACK_GLB] = pPage;
-  //    // Don't set the current page if it was the global page
-  //  } else {
-  //    // Normal page was added
-  //    // Save this as the current page if we haven't already assigned one
-  //    if (gslc_GetPageCur(pGui) == GSLC_PAGE_NONE) {
-  //      gslc_SetPageCur(pGui,nPageId);
-  //    }
-  //  }
-
+  // Assign the first page added to be the current layer
+  // in the page stack. This can be overridden later
+  // with SetPageCur()
   if (gslc_GetPageCur(pGui) == GSLC_PAGE_NONE) {
     gslc_SetPageCur(pGui,nPageId);
   }
+  // ------------------------------------------------------
 
   // Force the page to redraw
+  // TODO: Should this mark the page or the screen?
   gslc_PageRedrawSet(pGui,true);
 
 }
@@ -1680,34 +1661,36 @@ int gslc_GetPageCur(gslc_tsGui* pGui)
   return pStackPage->nPageId;
 }
 
-
-void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
+void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 {
-  // TODO: Replace with call to SetPageInStack(GSLC_STACK_CUR,nPageId)
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
+  gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
   if (pStackPage == NULL) {
     nPageSaved = pStackPage->nPageId;
   }
 
-  //  TODO: Don't allow us to set the global page as current
-  //  if (nPageId == GSLC_PAGE_GLOBAL) {
-  //    GSLC_DEBUG_PRINT("ERROR: SetPageCur(%s) cannot set global page to current\n","");
-  //    return;
-  //  }
+  gslc_tsPage* pPage = NULL;
+  if (nPageId == GSLC_PAGE_NONE) {
+    // Disable the page
+    #if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("INFO: Disabled PageStack[%u]\n",nStackPos);
+    #endif
+    pPage = NULL;
+  } else {
 
-  // Find the page
-  gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
-  if (pPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: SetPageCur() can't find page (ID=%d)\n",nPageId);
-    return;
+    // Find the page
+    pPage = gslc_PageFindById(pGui, nPageId);
+    if (pPage == NULL) {
+      GSLC_DEBUG_PRINT("ERROR: SetPageInStack() can't find page (ID=%d)\n", nPageId);
+      return;
+    }
   }
 
   // Save a reference to the selected page
-  pGui->pPageStack[GSLC_STACK_CUR] = pPage;
+  pGui->pPageStack[nStackPos] = pPage;
 
   #if defined(DEBUG_LOG)
-  GSLC_DEBUG_PRINT("INFO: Changed current to page %u\n",nPageId);
+  GSLC_DEBUG_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
   #endif
 
   // A change of page should always force a future redraw
@@ -1717,46 +1700,24 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 }
 
 
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bVisible, bool bActive)
+{
+  gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
+  if (pStackPage == NULL) {
+    // TODO: Error
+    return;
+  }
+  // TODO
+}
+
+void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
+{
+  gslc_SetStackPage(pGui, GSLC_STACK_CUR, nPageId);
+}
+
 void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 {
-  // TODO: Replace with call to SetPageInStack(GSLC_STACK_GLB,nPageId)
-  int16_t nPageSaved = GSLC_PAGE_NONE;
-  gslc_tsPage* pStackPage = pGui->pPageStack[GSLC_STACK_CUR];
-  if (pStackPage != NULL) {
-    nPageSaved = pStackPage->nPageId;
-  }
-
-  if (nPageId == GSLC_PAGE_NONE) {
-    // Disable the global page
-    pGui->pPageStack[GSLC_STACK_GLB] = NULL;
-
-#if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("INFO: Disabled global page%s\n", "");
-#endif
-
-  }
-  else {
-
-    // Find the page
-    gslc_tsPage* pPage = gslc_PageFindById(pGui, nPageId);
-    if (pPage == NULL) {
-      GSLC_DEBUG_PRINT("ERROR: SetPageGlobal() can't find page (ID=%d)\n", nPageId);
-      return;
-    }
-
-    // Save a reference to the selected page
-    pGui->pPageStack[GSLC_STACK_GLB] = pPage;
-
-#if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("INFO: Changed global to page %u\n", nPageId);
-#endif
-
-  } // Disable?
-
-    // A change of page should always force a future redraw
-  if (nPageSaved != nPageId) {
-    gslc_PageRedrawSet(pGui, true);
-  }
+  gslc_SetStackPage(pGui, GSLC_STACK_GLB, nPageId);
 }
 
 
@@ -1846,9 +1807,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   } // nStackPage
 
   if (bRedrawFullPage) {
-    // Mark the entire page as requiring redraw
-    // FIXME: Note that this only currrently updates GSLC_STACK_CUR
-    // on behalf of updates in any page in the stack
+    // Mark the entire screen as requiring redraw
     gslc_PageRedrawSet(pGui,true);
   }
 
@@ -1860,7 +1819,6 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 // - If the page has not been marked as needing redraw then only
 //   the elements that have been marked as needing redraw
 //   are rendered.
-// FIXME: Handle pages in stack
 void gslc_PageRedrawGo(gslc_tsGui* pGui)
 {
   if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {

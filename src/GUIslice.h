@@ -118,7 +118,6 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_PAGE_USER_BASE     = 0,      ///< Starting Page ID for user assignments
     // Internal usage
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
-    GSLC_PAGE_GLOBAL        = -2998,  ///< The global page (always visible)
   } gslc_tePageId;
 
   /// Define page stack
@@ -1387,6 +1386,31 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 ///
 
 int gslc_GetPageCur(gslc_tsGui* pGui);
+
+
+///
+/// Assign a page to the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
+/// \param[in]  nPageId:     Page ID to select as current
+///
+/// \return none
+///
+void gslc_SetStackPage(gslc_tsGui* pGui,uint8_t nStackPos,int16_t nPageId);
+
+
+///
+/// Change the status of a page in a page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
+/// \param[in]  bVisible:    Indicate if page should be shown
+/// \param[in]  bActive:     Indicate if page should receive touch events
+///
+/// \return none
+///
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bVisible, bool bActive);
 
 
 ///
