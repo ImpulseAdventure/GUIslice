@@ -152,6 +152,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   for (nInd = 0; nInd < GSLC_STACK__MAX; nInd++) {
     pGui->pPageStack[nInd] = NULL;
+    pGui->abPageStackActive[nInd] = true;
   }
   pGui->bScreenNeedRedraw  = true;
   pGui->bScreenNeedFlip    = false;
@@ -1658,7 +1659,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 {
   int16_t nPageSaved = GSLC_PAGE_NONE;
   gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
-  if (pStackPage == NULL) {
+  if (pStackPage != NULL) {
     nPageSaved = pStackPage->nPageId;
   }
 
@@ -1693,14 +1694,14 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 }
 
 
-void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bVisible, bool bActive)
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive)
 {
   gslc_tsPage* pStackPage = pGui->pPageStack[nStackPos];
   if (pStackPage == NULL) {
     // TODO: Error
     return;
   }
-  // TODO
+  pGui->abPageStackActive[nStackPos] = bActive;
 }
 
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
@@ -3533,8 +3534,11 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   for (unsigned nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
     gslc_tsPage* pStackPage = pGui->pPageStack[nStack];
     if (pStackPage) {
-      sEvent = gslc_EventCreate(pGui, GSLC_EVT_TOUCH, 0, (void*)pStackPage, pvData);
-      gslc_PageEvent(pGui, sEvent);
+      // Ensure the page layer is active (receiving touch events)
+      if (pGui->abPageStackActive[nStack]) {
+        sEvent = gslc_EventCreate(pGui, GSLC_EVT_TOUCH, 0, (void*)pStackPage, pvData);
+        gslc_PageEvent(pGui, sEvent);
+      }
     }
   }
 

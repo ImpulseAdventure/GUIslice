@@ -748,6 +748,7 @@ typedef struct {
   uint8_t             nPageCnt;         ///< Current page index
 
   gslc_tsPage*        pPageStack[GSLC_STACK__MAX]; ///< Stack of pages
+  bool                abPageStackActive[GSLC_STACK__MAX]; ///< Whether page in stack can receive touch events
 
   // Redraw of screen (ie. across page stack)
   bool                bScreenNeedRedraw; ///< Screen requires a redraw
@@ -1405,12 +1406,11 @@ void gslc_SetStackPage(gslc_tsGui* pGui,uint8_t nStackPos,int16_t nPageId);
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
-/// \param[in]  bVisible:    Indicate if page should be shown
 /// \param[in]  bActive:     Indicate if page should receive touch events
 ///
 /// \return none
 ///
-void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bVisible, bool bActive);
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive);
 
 
 ///
