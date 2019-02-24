@@ -176,7 +176,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nTouchLastY           = 0;
   pGui->nTouchLastPress       = 0;
 
-  pGui->pfuncXEvent           = NULL;
+  //pGui->pfuncXEvent           = NULL; // UNUSED
   pGui->pfuncPinPoll          = NULL;
 
   pGui->asInputMap            = NULL;
@@ -1620,8 +1620,7 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
 
   gslc_tsPage*  pPage = &pGui->asPage[pGui->nPageCnt];
 
-  // TODO: Create proper PageReset()
-  pPage->pfuncXEvent      = NULL;
+  //pPage->pfuncXEvent      = NULL; // UNUSED
 
   // Initialize pPage->sCollect
   gslc_CollectReset(&pPage->sCollect,psElem,nMaxElem,psElemRef,nMaxElemRef);
@@ -1968,6 +1967,7 @@ gslc_tsElemRef* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t n
   return pElemRef;
 }
 
+/* UNUSED
 void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb)
 {
   if ((pPage == NULL) || (funcCb == NULL)) {
@@ -1977,6 +1977,7 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
   }
   pPage->pfuncXEvent       = funcCb;
 }
+*/
 
 
 // TODO: Create a PageStackFocusStep()
@@ -3071,7 +3072,7 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 
   // pXData
 
-  pElemDest->pfuncXEvent      = pElemSrc->pfuncXEvent;
+  //pElemDest->pfuncXEvent      = pElemSrc->pfuncXEvent; // UNUSED
   pElemDest->pfuncXDraw       = pElemSrc->pfuncXDraw;
   pElemDest->pfuncXTouch      = pElemSrc->pfuncXTouch;
   pElemDest->pfuncXTick       = pElemSrc->pfuncXTick;
@@ -3079,6 +3080,7 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   gslc_ElemSetRedraw(pGui,pElemRefDest,GSLC_REDRAW_FULL);
 }
 
+/* UNUSED
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb)
 {
   if ((pElemRef == NULL) || (funcCb == NULL)) {;
@@ -3089,6 +3091,7 @@ void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVE
   gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pElem->pfuncXEvent       = funcCb;
 }
+*/
 
 
 void gslc_ElemSetDrawFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_DRAW funcCb)
@@ -4119,7 +4122,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pTxtFont         = NULL;
 
   pElem->pXData           = NULL;
-  pElem->pfuncXEvent      = NULL;
+  pElem->pfuncXEvent      = NULL; // UNUSED
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
@@ -4258,7 +4261,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 
   pCollect->nElemAutoIdNext   = GSLC_ID_AUTO_BASE;
 
-  pCollect->pfuncXEvent       = NULL;
+  //pCollect->pfuncXEvent       = NULL; // UNUSED
 
   // Save the pointer to the element array
   pCollect->asElem = asElem;
@@ -4469,6 +4472,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 }
 #endif
 
+/* UNUSED
 void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb)
 {
   if ((pCollect == NULL) || (funcCb == NULL)) {
@@ -4478,6 +4482,7 @@ void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_
   }
   pCollect->pfuncXEvent       = funcCb;
 }
+*/
 
 // ============================================================================
 

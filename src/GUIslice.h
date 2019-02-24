@@ -613,7 +613,7 @@ typedef struct gslc_tsElem {
   void*               pXData;           ///< Ptr to extended data structure
 
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for event tree (draw,touch,tick)
+  GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for event tree (draw,touch,tick)
 
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for custom drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
@@ -644,7 +644,7 @@ typedef struct {
   int16_t               nElemIndFocused;  ///< Element index currently in focus (eg. by keyboard/pin control), GSLC_IND_NONE for none
 
   // Callback functions
-  GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events
+  //GSLC_CB_EVENT         pfuncXEvent;      ///< UNUSED: Callback func ptr for events
 
 } gslc_tsCollect;
 
@@ -662,7 +662,7 @@ typedef struct {
   int16_t             nPageId;              ///< Page identifier
 
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events
+  //GSLC_CB_EVENT       pfuncXEvent;          ///< UNUSED: Callback func ptr for events
 
 } gslc_tsPage;
 
@@ -755,7 +755,7 @@ typedef struct {
   bool                bScreenNeedFlip;   ///< Screen requires a page flip
 
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
+  //GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for events
   GSLC_CB_PIN_POLL    pfuncPinPoll;     ///< Callback func ptr for pin polling
 
 
@@ -1937,6 +1937,7 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
 ///
 bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
+/* UNUSED
 ///
 /// Assign the event callback function for a element
 ///
@@ -1947,6 +1948,7 @@ bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// \return none
 ///
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb);
+*/
 
 
 ///
@@ -2788,6 +2790,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 ///
 bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 
+/* UNUSED
 ///
 /// Assign the event callback function for a page
 ///
@@ -2797,8 +2800,8 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 /// \return none
 ///
-/// \todo Unused?
 void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb);
+*/
 
 ///
 /// Redraw all elements on the active page. Only the
@@ -3086,6 +3089,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 /// \defgroup _IntCollectEvt_ Internal: Element Collection Event Functions
 /// @{
 
+/* UNUSED
 ///
 /// Assign the event callback function for an element collection
 ///
@@ -3096,6 +3100,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 /// \return none
 ///
 void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
+*/
 
 ///
 /// Common event handler function for an element collection
