@@ -1436,6 +1436,29 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId);
 
 
 ///
+/// Show a popup dialog
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to use as the popup dialog
+/// \param[in]  bModal:      If true, popup is modal (other layers won't accept touch).
+///                          If false, popup is modeless (other layers still accept touch)
+///
+/// \return none
+///
+void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal);
+
+
+///
+/// Hides the currently active popup dialog
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return none
+///
+void gslc_PopupHide(gslc_tsGui* pGui);
+
+
+///
 /// Update the need-redraw status for the current page
 ///
 /// \param[in]  pGui:        Pointer to GUI

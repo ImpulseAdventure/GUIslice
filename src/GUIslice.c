@@ -1715,6 +1715,26 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 }
 
 
+void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
+{
+  gslc_SetStackPage(pGui, GSLC_STACK_OVR, nPageId);
+  if (bModal) {
+    // Deactivate other pages in stack
+    gslc_SetStackState(pGui, GSLC_STACK_CUR, false);
+    gslc_SetStackState(pGui, GSLC_STACK_GLB, false);
+  }
+}
+
+void gslc_PopupHide(gslc_tsGui* pGui)
+{
+  gslc_SetStackPage(pGui, GSLC_STACK_OVR, GSLC_PAGE_NONE);
+  // Ensure other pages in stack are activated
+  // - This is done in case they were deactivated due to a modal popup
+  gslc_SetStackState(pGui, GSLC_STACK_CUR, true);
+  gslc_SetStackState(pGui, GSLC_STACK_GLB, true);
+}
+
+
 // Adjust the flag that indicates whether the entire page
 // requires a redraw.
 void gslc_PageRedrawSet(gslc_tsGui* pGui,bool bRedraw)

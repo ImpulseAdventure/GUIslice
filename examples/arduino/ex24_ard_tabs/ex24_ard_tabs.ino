@@ -114,16 +114,12 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
     else if (nElemId == E_ELEM_BTN_ALERT) {
       // Show alert popup, modal
       gslc_ElemSetTxtStr(&m_gui, m_pElemAlertMsg, "Alert Message!");
-      gslc_SetStackPage(&m_gui, GSLC_STACK_OVR, E_PG_ALERT);
-      gslc_SetStackState(&m_gui, GSLC_STACK_GLB, false);
-      gslc_SetStackState(&m_gui, GSLC_STACK_CUR, false);
+      gslc_PopupShow(&m_gui,E_PG_ALERT,true); // Use false for modeless
     }
     else if (nElemId == E_ELEM_ALERT_OK) {
       GSLC_DEBUG_PRINT("INFO: Alert popup selected OK\n", "");
       // Dispose of alert
-      gslc_SetStackPage(&m_gui, GSLC_STACK_OVR, GSLC_PAGE_NONE);
-      gslc_SetStackState(&m_gui, GSLC_STACK_GLB, true);
-      gslc_SetStackState(&m_gui, GSLC_STACK_CUR, true);
+      gslc_PopupHide(&m_gui);
     }
     else if (nElemId == E_ELEM_ALERT_CANCEL) {
       GSLC_DEBUG_PRINT("INFO: Alert popup selected Cancel\n", "");
