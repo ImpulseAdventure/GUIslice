@@ -776,7 +776,10 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
   bool                bCurChecked;
   gslc_tsElemRef*     pFoundElemRef = NULL;
 
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
+  // Operate on current page
+  // TODO: Support other page layers
+  gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pPage == NULL) {
     return NULL; // No page added yet
   }
 
@@ -785,10 +788,6 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
-
-  // Operate on current page
-  // TODO: Support other page layers
-  gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
   for (nCurInd=0;nCurInd<pCollect->nElemCnt;nCurInd++) {
@@ -901,13 +900,17 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
 // then also update the state of all other buttons in the group.
 void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
 {
+  // Operate on current page
+  // TODO: Support other page layers
+  gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
+  if (pPage == NULL) {
+    return; // No page added yet
+  }
+
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetState";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
-  }
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
-    return; // No page added yet
   }
 
   gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -942,9 +945,6 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     // We use the GUI pointer for access to other elements
     // NOTE: There is an assumption that we are calling ElemXCheckboxSetState
     //       on a checkbox on the current page.
-    // Operate on current page
-    // TODO: Support other page layers
-    gslc_tsPage* pPage = pGui->pPageStack[GSLC_STACK_CUR];
 
     gslc_tsCollect* pCollect = &pPage->sCollect;
     for (nCurInd=0;nCurInd<pCollect->nElemRefCnt;nCurInd++) {

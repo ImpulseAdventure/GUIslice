@@ -513,13 +513,6 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
-  // Ensure that at least the "current" page has been defined
-  // FIXME: Not sure that this check is required; perhaps it
-  // was used to prevent early calls to PageRedrawGo()?
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
-    return; // No page added yet
-  }
-
   // The touch handling logic is used by both the touchscreen
   // handler as well as the GPIO/pin/keyboard input controller
   #if !defined(DRV_TOUCH_NONE)
@@ -1758,10 +1751,6 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
   gslc_tsElemRef*   pElemRef = NULL;
   gslc_tsCollect*   pCollect = NULL;
 
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
-    return; // No page added yet
-  }
-
   bool  bRedrawFullPage = false;  // Does entire page require redraw?
   gslc_tsPage*  pPage = NULL;
 
@@ -1788,6 +1777,8 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
         // still warrant full page redraw.
         if (pGui->bRedrawPartialEn) {
           // Is the element transparent?
+          // FIXME: Instead of forcing full page redraw, consider
+          // using clipping region for partial redraw
           if (!(pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN)) {
             bRedrawFullPage = true;
           }
@@ -1821,10 +1812,6 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 //   are rendered.
 void gslc_PageRedrawGo(gslc_tsGui* pGui)
 {
-  if (pGui->pPageStack[GSLC_STACK_CUR] == NULL) {
-    return; // No page added yet
-  }
-
   // Update any page redraw status that may be required
   // - Note that this routine handles cases where an element
   //   marked as requiring update is semi-transparent which can
@@ -3376,6 +3363,8 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   // - For now, use the top enabled page in the stack
   for (int nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
     if (pGui->pPageStack[nStack]) {
+      // TODO: Check for "bActive" flag, in case we have
+      // disabled touch events for this page in the stack
       pFocusPage = pGui->pPageStack[nStack];
     }
   }
