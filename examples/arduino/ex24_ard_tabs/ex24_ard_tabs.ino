@@ -124,9 +124,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
     else if (nElemId == E_ELEM_ALERT_CANCEL) {
       GSLC_DEBUG_PRINT("INFO: Alert popup selected Cancel\n", "");
       // Dispose of alert
-      gslc_SetStackPage(&m_gui, GSLC_STACK_OVR, GSLC_PAGE_NONE);
-      gslc_SetStackState(&m_gui, GSLC_STACK_GLB, true);
-      gslc_SetStackState(&m_gui, GSLC_STACK_CUR, true);
+      gslc_PopupHide(&m_gui);
     }
   }
   return true;
