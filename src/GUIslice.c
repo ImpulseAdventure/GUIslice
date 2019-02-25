@@ -1674,7 +1674,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
     // Find the page
     pPage = gslc_PageFindById(pGui, nPageId);
     if (pPage == NULL) {
-      GSLC_DEBUG_PRINT("ERROR: SetPageInStack() can't find page (ID=%d)\n", nPageId);
+      GSLC_DEBUG_PRINT("ERROR: SetStackPage() can't find page (ID=%d)\n", nPageId);
       return;
     }
   }
@@ -1717,8 +1717,9 @@ void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
 void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
 {
   gslc_SetStackPage(pGui, GSLC_STACK_OVR, nPageId);
+  // If modal dialog selected, then deactive other pages in stack
+  // If modeless dialog selected, then don't deactive other pages in stack
   if (bModal) {
-    // Deactivate other pages in stack
     gslc_SetStackState(pGui, GSLC_STACK_CUR, false);
     gslc_SetStackState(pGui, GSLC_STACK_GLB, false);
   }
