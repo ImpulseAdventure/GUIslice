@@ -1979,7 +1979,8 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 
   // Define other extended data
   pXData->pBuf            = pBuf;
-  pXData->nMargin         = 5;
+  pXData->nMarginX        = 5;
+  pXData->nMarginY        = 5;
   pXData->bWrapEn         = true;
   pXData->nCurPosX        = 0;
   pXData->nCurPosY        = 0;
@@ -1999,13 +2000,22 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   // - For now, assume we are using a monospaced font and derive
   //   text pixel coords from the size of a worst-case character.
   // - TODO: Update to determine worst-case character (might not be "%")
-  // - TODO: Update to handle offset values fom DrvGetTxtSize()
-  int16_t       nChOffsetX,nChOffsetY;
-  uint16_t      nChSzW,nChSzH;
-  char          acMono[2] = "%";
-  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMono,sElem.eTxtFlags,&nChOffsetX,&nChOffsetY,&nChSzW,&nChSzH);
-  pXData->nWndCols = (rElem.w - (2*pXData->nMargin)) / nChSzW;
-  pXData->nWndRows = (rElem.h - (2*pXData->nMargin)) / nChSzH;
+  int16_t       nChOffsetX, nChOffsetY, nChOffsetTmp;
+  uint16_t      nChSzW,nChSzH,nChSzTmp;
+
+  // Fetch X & Y sizing and offsets independently, based on characters that
+  // are likely to maximize the ascenders / descenders / width attributes
+  char          acMonoW[3] = "p$";
+  char          acMonoH[2] = "%";
+  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMonoW,sElem.eTxtFlags,&nChOffsetX,&nChOffsetTmp,&nChSzW,&nChSzTmp);
+  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMonoH,sElem.eTxtFlags,&nChOffsetTmp,&nChOffsetY,&nChSzTmp,&nChSzH);
+
+  // Adjust margin to correct for character offsets
+  pXData->nMarginX -= nChOffsetX;
+  pXData->nMarginY -= nChOffsetY;
+
+  pXData->nWndCols = (rElem.w - (2*pXData->nMarginX)) / nChSzW;
+  pXData->nWndRows = (rElem.h - (2*pXData->nMarginY)) / nChSzH;
   pXData->nChSizeX = nChSzW;
   pXData->nChSizeY = nChSzH;
 
@@ -2343,8 +2353,8 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
     nBufPos = nRowCur * pBox->nBufCols;
 
-    nTxtPixX = pElem->rElem.x + pBox->nMargin + 0 * pBox->nChSizeX;
-    nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;
+    nTxtPixX = pElem->rElem.x + pBox->nMarginX + 0 * pBox->nChSizeX;
+    nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
     gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt,colBg);
 
     nCurY++;
