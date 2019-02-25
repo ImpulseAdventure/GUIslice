@@ -1667,7 +1667,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
   gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
 
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
@@ -1681,7 +1681,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
   gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
 
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
@@ -1692,12 +1692,12 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
     (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_SRC_RAM);
+  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
 
 
   // Now proceed to add the compound element to the page
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
 
     // Now propagate the parent relationship to enable a cascade
     // of redrawing from low-level elements to the top
@@ -2042,14 +2042,14 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -2528,14 +2528,14 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_SRC_RAM);
+    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
     // Save as temporary element
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
-    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_REDRAW_FULL;
+    pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
     return &(pGui->sElemRefTmp);
 #endif
   }
