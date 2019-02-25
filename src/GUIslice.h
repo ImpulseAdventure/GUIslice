@@ -122,9 +122,9 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
 
   /// Define page stack
   typedef enum {
-    GSLC_STACK_GLB = 0,                ///< Global page
+    GSLC_STACK_BASE = 0,               ///< Base page
     GSLC_STACK_CUR,                    ///< Current page
-    GSLC_STACK_OVR,                    ///< Overlay page (eg. popups)
+    GSLC_STACK_OVERLAY,                ///< Overlay page (eg. popups)
 
     GSLC_STACK__MAX                    ///< Defines maximum number of pages in stack
   } gslc_teStackPage;
@@ -1414,10 +1414,21 @@ void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive);
 
 
 ///
-/// Select a new page for display
+/// Assigns a page for the base layer in the page stack
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nPageId:     Page ID to select as current
+/// \param[in]  nPageId:     Page ID to select (or GSLC_PAGE_NONE to disable)
+///
+/// \return none
+///
+void gslc_SetPageBase(gslc_tsGui* pGui, int16_t nPageId);
+
+
+///
+/// Select a page for the current layer in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to select
 ///
 /// \return none
 ///
@@ -1425,18 +1436,19 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId);
 
 
 ///
-/// Assigns a page to be globally visible
+/// Select a page for the overlay layer in the page stack
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nPageId:     Page ID to select as global or GSLC_PAGE_NONE to disable
+/// \param[in]  nPageId:     Page ID to select (or GSLC_PAGE_NONE to disable)
 ///
 /// \return none
 ///
-void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId);
+void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId);
 
 
 ///
 /// Show a popup dialog
+/// - Popup dialogs use the overlay layer in the page stack
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nPageId:     Page ID to use as the popup dialog

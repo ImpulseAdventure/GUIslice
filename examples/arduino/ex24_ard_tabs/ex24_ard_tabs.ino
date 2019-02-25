@@ -146,9 +146,9 @@ bool InitOverlays()
   // above sequence is E_PG_GLOBAL. Therefore, we should explicitly ensure
   // that the main page is the current page.
   gslc_SetPageCur(&m_gui, E_PG_MAIN);
-  // Now mark the E_PG_GLOBAL as a "global" page which means that it's elements
+  // Now mark the E_PG_GLOBAL as a "base" page which means that it's elements
   // are always visible. This is useful for common page elements.
-  gslc_SetPageGlobal(&m_gui, E_PG_GLOBAL);
+  gslc_SetPageBase(&m_gui, E_PG_GLOBAL);
 
   // -----------------------------------
   // PAGE: GLOBAL

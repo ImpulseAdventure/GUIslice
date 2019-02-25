@@ -1703,35 +1703,39 @@ void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive)
   pGui->abPageStackActive[nStackPos] = bActive;
 }
 
+void gslc_SetPageBase(gslc_tsGui* pGui, int16_t nPageId)
+{
+  gslc_SetStackPage(pGui, GSLC_STACK_BASE, nPageId);
+}
+
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 {
   gslc_SetStackPage(pGui, GSLC_STACK_CUR, nPageId);
 }
 
-void gslc_SetPageGlobal(gslc_tsGui* pGui, int16_t nPageId)
+void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId)
 {
-  gslc_SetStackPage(pGui, GSLC_STACK_GLB, nPageId);
+  gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, nPageId);
 }
-
 
 void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
 {
-  gslc_SetStackPage(pGui, GSLC_STACK_OVR, nPageId);
+  gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, nPageId);
   // If modal dialog selected, then deactive other pages in stack
   // If modeless dialog selected, then don't deactive other pages in stack
   if (bModal) {
     gslc_SetStackState(pGui, GSLC_STACK_CUR, false);
-    gslc_SetStackState(pGui, GSLC_STACK_GLB, false);
+    gslc_SetStackState(pGui, GSLC_STACK_BASE, false);
   }
 }
 
 void gslc_PopupHide(gslc_tsGui* pGui)
 {
-  gslc_SetStackPage(pGui, GSLC_STACK_OVR, GSLC_PAGE_NONE);
+  gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, GSLC_PAGE_NONE);
   // Ensure other pages in stack are activated
   // - This is done in case they were deactivated due to a modal popup
   gslc_SetStackState(pGui, GSLC_STACK_CUR, true);
-  gslc_SetStackState(pGui, GSLC_STACK_GLB, true);
+  gslc_SetStackState(pGui, GSLC_STACK_BASE, true);
 }
 
 
