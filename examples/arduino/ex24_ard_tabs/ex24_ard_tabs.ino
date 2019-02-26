@@ -4,7 +4,8 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 24 (Arduino):
-//   - Multiple page handling, tab dialog, global elements
+//   - Multiple page handling, tab dialog, global (base layer) elements
+//     and popup dialog
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. Therefore, it may not
 //     run on Arduino devices with limited memory. A "minimal"
