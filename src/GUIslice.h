@@ -749,6 +749,7 @@ typedef struct {
 
   gslc_tsPage*        apPageStack[GSLC_STACK__MAX];       ///< Stack of pages
   bool                abPageStackActive[GSLC_STACK__MAX]; ///< Whether page in stack can receive touch events
+  bool                abPageStackDoDraw[GSLC_STACK__MAX]; ///< Whether page in stack is still actively drawn
 
   // Redraw of screen (ie. across page stack)
   bool                bScreenNeedRedraw; ///< Screen requires a redraw
@@ -1407,10 +1408,17 @@ void gslc_SetStackPage(gslc_tsGui* pGui,uint8_t nStackPos,int16_t nPageId);
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
 /// \param[in]  bActive:     Indicate if page should receive touch events
+/// \param[in]  bDoDraw:     Indicate if page should continue to be redrawn. If pages in
+///                          the stack are overlapping and an element in a lower layer
+///                          continues to receive updates, then the element may "show through"
+///                          the layers above it. In such cases where pages in the stack
+///                          are overlapping and lower pages contain dynamically updating
+///                          elements, it may be best to disable redraw while the overlapping
+///                          page is visible (by setting bDoDraw to false).
 ///
 /// \return none
 ///
-void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive);
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive, bool bDoDraw);
 
 
 ///

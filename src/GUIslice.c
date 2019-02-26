@@ -153,6 +153,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   for (nInd = 0; nInd < GSLC_STACK__MAX; nInd++) {
     pGui->apPageStack[nInd] = NULL;
     pGui->abPageStackActive[nInd] = true;
+    pGui->abPageStackDoDraw[nInd] = true;
   }
   pGui->bScreenNeedRedraw  = true;
   pGui->bScreenNeedFlip    = false;
@@ -1693,7 +1694,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 }
 
 
-void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive)
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive, bool bDoDraw)
 {
   gslc_tsPage* pStackPage = pGui->apPageStack[nStackPos];
   if (pStackPage == NULL) {
@@ -1701,6 +1702,7 @@ void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive)
     return;
   }
   pGui->abPageStackActive[nStackPos] = bActive;
+  pGui->abPageStackDoDraw[nStackPos] = bDoDraw;
 }
 
 void gslc_SetPageBase(gslc_tsGui* pGui, int16_t nPageId)
@@ -1721,11 +1723,17 @@ void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId)
 void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
 {
   gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, nPageId);
-  // If modal dialog selected, then deactive other pages in stack
-  // If modeless dialog selected, then don't deactive other pages in stack
+  // If modal dialog selected, then deactivate other pages in stack
+  // If modeless dialog selected, then don't deactivate other pages in stack
   if (bModal) {
-    gslc_SetStackState(pGui, GSLC_STACK_CUR, false);
-    gslc_SetStackState(pGui, GSLC_STACK_BASE, false);
+    // Modal: deactive other pages and disable redraw
+    gslc_SetStackState(pGui, GSLC_STACK_CUR, false, false);
+    gslc_SetStackState(pGui, GSLC_STACK_BASE, false, false);
+  }
+  else {
+    // Modeless: activate other pages but disable redraw
+    gslc_SetStackState(pGui, GSLC_STACK_CUR, true, false);
+    gslc_SetStackState(pGui, GSLC_STACK_BASE, true, false);
   }
 }
 
@@ -1734,8 +1742,8 @@ void gslc_PopupHide(gslc_tsGui* pGui)
   gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, GSLC_PAGE_NONE);
   // Ensure other pages in stack are activated
   // - This is done in case they were deactivated due to a modal popup
-  gslc_SetStackState(pGui, GSLC_STACK_CUR, true);
-  gslc_SetStackState(pGui, GSLC_STACK_BASE, true);
+  gslc_SetStackState(pGui, GSLC_STACK_CUR, true, true);
+  gslc_SetStackState(pGui, GSLC_STACK_BASE, true, true);
 }
 
 
@@ -1785,6 +1793,10 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
     pPage = pGui->apPageStack[nStackPage];
     if (!pPage) {
       // If this stack page is not enabled, skip to next stack page
+      continue;
+    }
+    if (!pGui->abPageStackDoDraw[nStackPage]) {
+      // If this stack page has redraw disabled, skip full-page redraw check
       continue;
     }
     pCollect = &pPage->sCollect;
@@ -1872,6 +1884,19 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   for (int nStackPage = 0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
     gslc_tsPage* pStackPage = pGui->apPageStack[nStackPage];
     if (!pStackPage) {
+      continue;
+    }
+    if (!bPageRedraw && !pGui->abPageStackDoDraw[nStackPage]) {
+      // When doing a full page redraw, proceed as normal
+      // When only doing a parital page redraw, check to see if
+      // the page has been marked as redraw-disabled. If so, skip
+      // updating the elements on the page.
+      //
+      // The redraw-disabled mode is useful to prevent "show-through"
+      // from dynamically-updating elements in lower layers of the
+      // page stack (this may occur with popup dialogs). If the overlay
+      // page does not overlap dynamically-updating elements, then
+      // DoDraw can be set to true, enabling background updates to occur.
       continue;
     }
     pvData = (void*)(pStackPage);
