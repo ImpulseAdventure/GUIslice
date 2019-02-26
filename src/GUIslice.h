@@ -120,6 +120,14 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
   } gslc_tePageId;
 
+  /// Define page stack
+  typedef enum {
+    GSLC_STACK_BASE = 0,               ///< Base page
+    GSLC_STACK_CUR,                    ///< Current page
+    GSLC_STACK_OVERLAY,                ///< Overlay page (eg. popups)
+
+    GSLC_STACK__MAX                    ///< Defines maximum number of pages in stack
+  } gslc_teStackPage;
 
   /// Group ID enumerations
   typedef enum {
@@ -605,7 +613,7 @@ typedef struct gslc_tsElem {
   void*               pXData;           ///< Ptr to extended data structure
 
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for event tree (draw,touch,tick)
+  GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for event tree (draw,touch,tick)
 
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for custom drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
@@ -636,7 +644,7 @@ typedef struct {
   int16_t               nElemIndFocused;  ///< Element index currently in focus (eg. by keyboard/pin control), GSLC_IND_NONE for none
 
   // Callback functions
-  GSLC_CB_EVENT         pfuncXEvent;      ///< Callback func ptr for events
+  //GSLC_CB_EVENT         pfuncXEvent;      ///< UNUSED: Callback func ptr for events
 
 } gslc_tsCollect;
 
@@ -653,12 +661,8 @@ typedef struct {
 
   int16_t             nPageId;              ///< Page identifier
 
-  // Redraw
-  bool                bPageNeedRedraw;      ///< Page require a redraw
-  bool                bPageNeedFlip;        ///< Screen requires a page flip
-
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;          ///< Callback func ptr for events
+  //GSLC_CB_EVENT       pfuncXEvent;          ///< UNUSED: Callback func ptr for events
 
 } gslc_tsPage;
 
@@ -739,15 +743,20 @@ typedef struct {
 
 
   // Pages
-  gslc_tsPage*        asPage;           ///< Array of pages
-  uint8_t             nPageMax;         ///< Maximum number of pages
-  uint8_t             nPageCnt;         ///< Current page index
+  gslc_tsPage*        asPage;           ///< Array of all pages defined in system
+  uint8_t             nPageMax;         ///< Maximum number of pages that can be defined
+  uint8_t             nPageCnt;         ///< Current number of pages defined
 
-  gslc_tsPage*        pCurPage;         ///< Currently active page
-  gslc_tsCollect*     pCurPageCollect;  ///< Ptr to active page collection
+  gslc_tsPage*        apPageStack[GSLC_STACK__MAX];       ///< Stack of pages
+  bool                abPageStackActive[GSLC_STACK__MAX]; ///< Whether page in stack can receive touch events
+  bool                abPageStackDoDraw[GSLC_STACK__MAX]; ///< Whether page in stack is still actively drawn
+
+  // Redraw of screen (ie. across page stack)
+  bool                bScreenNeedRedraw; ///< Screen requires a redraw
+  bool                bScreenNeedFlip;   ///< Screen requires a page flip
 
   // Callback functions
-  GSLC_CB_EVENT       pfuncXEvent;      ///< Callback func ptr for events
+  //GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for events
   GSLC_CB_PIN_POLL    pfuncPinPoll;     ///< Callback func ptr for pin polling
 
 
@@ -1382,14 +1391,91 @@ int gslc_GetPageCur(gslc_tsGui* pGui);
 
 
 ///
-/// Select a new page for display
+/// Assign a page to the page stack
 ///
 /// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
 /// \param[in]  nPageId:     Page ID to select as current
 ///
 /// \return none
 ///
+void gslc_SetStackPage(gslc_tsGui* pGui,uint8_t nStackPos,int16_t nPageId);
+
+
+///
+/// Change the status of a page in a page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nStackPos:   Position to update in the page stack (0..GSLC_STACK__MAX-1)
+/// \param[in]  bActive:     Indicate if page should receive touch events
+/// \param[in]  bDoDraw:     Indicate if page should continue to be redrawn. If pages in
+///                          the stack are overlapping and an element in a lower layer
+///                          continues to receive updates, then the element may "show through"
+///                          the layers above it. In such cases where pages in the stack
+///                          are overlapping and lower pages contain dynamically updating
+///                          elements, it may be best to disable redraw while the overlapping
+///                          page is visible (by setting bDoDraw to false).
+///
+/// \return none
+///
+void gslc_SetStackState(gslc_tsGui* pGui, uint8_t nStackPos, bool bActive, bool bDoDraw);
+
+
+///
+/// Assigns a page for the base layer in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to select (or GSLC_PAGE_NONE to disable)
+///
+/// \return none
+///
+void gslc_SetPageBase(gslc_tsGui* pGui, int16_t nPageId);
+
+
+///
+/// Select a page for the current layer in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to select
+///
+/// \return none
+///
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId);
+
+
+///
+/// Select a page for the overlay layer in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to select (or GSLC_PAGE_NONE to disable)
+///
+/// \return none
+///
+void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId);
+
+
+///
+/// Show a popup dialog
+/// - Popup dialogs use the overlay layer in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageId:     Page ID to use as the popup dialog
+/// \param[in]  bModal:      If true, popup is modal (other layers won't accept touch).
+///                          If false, popup is modeless (other layers still accept touch)
+///
+/// \return none
+///
+void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal);
+
+
+///
+/// Hides the currently active popup dialog
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return none
+///
+void gslc_PopupHide(gslc_tsGui* pGui);
 
 
 ///
@@ -1871,6 +1957,7 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
 ///
 bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
+/* UNUSED
 ///
 /// Assign the event callback function for a element
 ///
@@ -1881,6 +1968,7 @@ bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// \return none
 ///
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb);
+*/
 
 
 ///
@@ -2722,6 +2810,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 ///
 bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 
+/* UNUSED
 ///
 /// Assign the event callback function for a page
 ///
@@ -2731,8 +2820,8 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 /// \return none
 ///
-/// \todo Unused?
 void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT funcCb);
+*/
 
 ///
 /// Redraw all elements on the active page. Only the
@@ -3020,6 +3109,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 /// \defgroup _IntCollectEvt_ Internal: Element Collection Event Functions
 /// @{
 
+/* UNUSED
 ///
 /// Assign the event callback function for an element collection
 ///
@@ -3030,6 +3120,7 @@ void gslc_CollectSetParent(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElem
 /// \return none
 ///
 void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_EVENT funcCb);
+*/
 
 ///
 /// Common event handler function for an element collection
