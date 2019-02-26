@@ -40,10 +40,7 @@
 // ------------------------------------------------
 //<Enum !Start!>
 enum { E_PG_MAIN, E_PG_POPUP };
-enum {
-  E_BOX2, E_BTN_CANCEL, E_BTN_OK, E_BTN_QUIT
-  , E_PROGRESS, E_TXT1, E_TXT2, E_TXT_STATUS
-};
+enum { E_BTN_CANCEL, E_BTN_OK, E_BTN_QUIT, E_PROGRESS, E_TXT_STATUS };
 enum { E_FONT_SANS1, E_FONT_TXT2 };
 //<Enum !End!>
 
@@ -55,9 +52,9 @@ enum { E_FONT_SANS1, E_FONT_TXT2 };
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
 #define MAX_FONT                2
-#define MAX_ELEM_PG_MAIN 3
+#define MAX_ELEM_PG_MAIN        3
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
-#define MAX_ELEM_PG_POPUP 5
+#define MAX_ELEM_PG_POPUP       5
 #define MAX_ELEM_PG_POPUP_RAM MAX_ELEM_PG_POPUP
 //<ElementDefines !End!>
 
@@ -68,10 +65,10 @@ gslc_tsFont                     m_asFont[MAX_FONT];
 gslc_tsPage                     m_asPage[MAX_PAGE];
 
 //<GUI_Extra_Elements !Start!>
-gslc_tsElem                 m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
-gslc_tsElemRef              m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
-gslc_tsElem                 m_asPage2Elem[MAX_ELEM_PG_POPUP_RAM];
-gslc_tsElemRef              m_asPage2ElemRef[MAX_ELEM_PG_POPUP];
+gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
+gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
+gslc_tsElem                     m_asPage2Elem[MAX_ELEM_PG_POPUP_RAM];
+gslc_tsElemRef                  m_asPage2ElemRef[MAX_ELEM_PG_POPUP];
 gslc_tsXGauge                   m_sXGauge[1];
 
 #define MAX_STR                 100
@@ -82,8 +79,8 @@ gslc_tsXGauge                   m_sXGauge[1];
 // Save some element references for update loop access
 // ------------------------------------------------
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemProgress = NULL;
 //<Save_References !End!>
+gslc_tsElemRef*  m_pElemProgress = NULL;
 gslc_tsElemRef*  m_pTxtStatus = NULL;
 
 // ------------------------------------------------
@@ -156,28 +153,30 @@ bool InitGUI()
   // PAGE: E_PG_MAIN
 
   // create E_BTN_QUIT button with text label
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_BTN_QUIT, E_PG_MAIN, (gslc_tsRect) { 80, 130, 80, 40 }, (char*)"QUIT", 0, E_FONT_SANS1, &CbBtnCommon);
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_BTN_QUIT, E_PG_MAIN,
+    (gslc_tsRect) { 80, 130, 80, 40 }, (char*)"QUIT", 0, E_FONT_SANS1, &CbBtnCommon);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_RED, GSLC_COL_BLUE_LT2, GSLC_COL_BLUE_LT4);
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
 
   // Create E_TXT_STATUS modifiable text label
   static char m_strtxt1[18] = "Program Running";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_STATUS, E_PG_MAIN, (gslc_tsRect) { 27, 21, 182, 20 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_STATUS, E_PG_MAIN,
+    (gslc_tsRect) { 27, 21, 182, 20 },
     (char*)m_strtxt1, 18, E_FONT_TXT2);
   gslc_ElemSetTxtAlign(&m_gui, pElemRef, GSLC_ALIGN_MID_MID);
+  m_pTxtStatus = pElemRef;
 
   // Create progress bar E_PROGRESS 
   pElemRef = gslc_ElemXGaugeCreate(&m_gui, E_PROGRESS, E_PG_MAIN, &m_sXGauge[0],
-    (gslc_tsRect) {
-    70, 68, 100, 20
-  }, 0, 100, 0, GSLC_COL_GREEN, false);
+    (gslc_tsRect) { 70, 68, 100, 20 }, 0, 100, 0, GSLC_COL_GREEN, false);
+  m_pElemProgress = pElemRef;
 
   // -----------------------------------
   // PAGE: E_PG_POPUP
 
   // Create E_BOX2 box
-  pElemRef = gslc_ElemCreateBox(&m_gui, E_BOX2, E_PG_POPUP, (gslc_tsRect) { 20, 80, 200, 150 });
+  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_POPUP, (gslc_tsRect) { 20, 80, 200, 150 });
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_RED, GSLC_COL_GRAY_LT2, GSLC_COL_BLACK);
 
   // create E_BTN_OK button with text label
@@ -193,13 +192,13 @@ bool InitGUI()
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
 
   // Create E_TXT1 text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT1, E_PG_POPUP, (gslc_tsRect) { 43, 100, 153, 23 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_POPUP, (gslc_tsRect) { 43, 100, 153, 23 },
     (char*)"Do you really want", 0, E_FONT_SANS1);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_GRAY_LT2, GSLC_COL_GRAY_LT2, GSLC_COL_GRAY_LT2);
 
   // Create E_TXT2 text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT2, E_PG_POPUP, (gslc_tsRect) { 86, 133, 68, 23 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_POPUP, (gslc_tsRect) { 86, 133, 68, 23 },
     (char*)"to Quit?", 0, E_FONT_SANS1);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_GRAY_LT2, GSLC_COL_GRAY_LT2, GSLC_COL_GRAY_LT2);
@@ -231,23 +230,16 @@ void setup()
   if (!gslc_FontAdd(&m_gui, E_FONT_TXT2, GSLC_FONTREF_PTR, NULL, 2)) { return; }
   //<Load_Fonts !End!>
 
-    // ------------------------------------------------
-    // Create graphic elements
-    // ------------------------------------------------
+  // ------------------------------------------------
+  // Create graphic elements
+  // ------------------------------------------------
   InitGUI();
 
-  // ------------------------------------------------
-  // Save some element references for quick access
-  // ------------------------------------------------
-//<Quick_Access !Start!>
-  m_pElemProgress = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_PROGRESS);
-  //<Quick_Access !End!>
-  m_pTxtStatus = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_TXT_STATUS);
 
   //<Startup !Start!>
-    // ------------------------------------------------
-    // Start up display on first page
-    // ------------------------------------------------
+  // ------------------------------------------------
+  // Start up display on first page
+  // ------------------------------------------------
   gslc_SetPageCur(&m_gui, E_PG_MAIN);
   //<Startup !End!>
 
