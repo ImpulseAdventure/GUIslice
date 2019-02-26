@@ -26,7 +26,7 @@
 // Defines for resources
 
 // Enumerations for pages, elements, fonts, images
-enum { E_PG_GLOBAL, E_PG_MAIN, E_PG_CONFIG, E_PG_ALERT };
+enum { E_PG_BASE, E_PG_MAIN, E_PG_CONFIG, E_PG_ALERT };
 enum {
   E_ELEM_BTN_QUIT, E_ELEM_TAB_MAIN, E_ELEM_TAB_CONFIG, E_ELEM_BTN_ALERT,
   E_ELEM_TXT_COUNT, E_ELEM_PROGRESS,
@@ -46,11 +46,11 @@ unsigned  m_nCount = 0;
 #define MAX_FONT                3
 
 // Define the maximum number of elements per page
-#define MAX_ELEM_PG_GLOBAL      8                  // # Elems total on Global page
+#define MAX_ELEM_PG_BASE      8                  // # Elems total on Global page
 #define MAX_ELEM_PG_MAIN        3                  // # Elems total on Main page
 #define MAX_ELEM_PG_CONFIG      6                  // # Elems total on Extra page
 #define MAX_ELEM_PG_ALERT       4                  // # Elems total on Alert popup page
-#define MAX_ELEM_PG_GLOBAL_RAM  MAX_ELEM_PG_GLOBAL // # Elems in RAM
+#define MAX_ELEM_PG_BASE_RAM  MAX_ELEM_PG_BASE // # Elems in RAM
 #define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN   // # Elems in RAM
 #define MAX_ELEM_PG_CONFIG_RAM  MAX_ELEM_PG_CONFIG // # Elems in RAM
 #define MAX_ELEM_PG_ALERT_RAM   MAX_ELEM_PG_ALERT  // # Elems in RAM
@@ -59,8 +59,8 @@ gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
 gslc_tsFont                 m_asFont[MAX_FONT];
 gslc_tsPage                 m_asPage[MAX_PAGE];
-gslc_tsElem                 m_asGlbElem[MAX_ELEM_PG_GLOBAL_RAM];
-gslc_tsElemRef              m_asGlbElemRef[MAX_ELEM_PG_GLOBAL];
+gslc_tsElem                 m_asGlbElem[MAX_ELEM_PG_BASE_RAM];
+gslc_tsElemRef              m_asGlbElemRef[MAX_ELEM_PG_BASE];
 gslc_tsElem                 m_asMainElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asMainElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                 m_asConfigElem[MAX_ELEM_PG_CONFIG_RAM];
@@ -97,8 +97,9 @@ void SetTabHighlight(int16_t nTabSel)
 // - Show example of common callback function
 bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
 {
-  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   int16_t nElemId = pElem->nId;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     if (nElemId == E_ELEM_BTN_QUIT) {
@@ -138,61 +139,55 @@ bool InitOverlays()
 {
   gslc_tsElemRef*  pElemRef = NULL;
 
-  gslc_PageAdd(&m_gui, E_PG_GLOBAL, m_asGlbElem, MAX_ELEM_PG_GLOBAL_RAM, m_asGlbElemRef, MAX_ELEM_PG_GLOBAL);
+  gslc_PageAdd(&m_gui, E_PG_BASE, m_asGlbElem, MAX_ELEM_PG_BASE_RAM, m_asGlbElemRef, MAX_ELEM_PG_BASE);
   gslc_PageAdd(&m_gui, E_PG_MAIN, m_asMainElem, MAX_ELEM_PG_MAIN_RAM, m_asMainElemRef, MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui, E_PG_CONFIG, m_asConfigElem, MAX_ELEM_PG_CONFIG_RAM, m_asConfigElemRef, MAX_ELEM_PG_CONFIG);
   gslc_PageAdd(&m_gui, E_PG_ALERT, m_asAlertElem, MAX_ELEM_PG_ALERT_RAM, m_asAlertElemRef, MAX_ELEM_PG_ALERT);
 
   // Note that the current page defaults to the first page added, which in the
-  // above sequence is E_PG_GLOBAL. Therefore, we should explicitly ensure
+  // above sequence is E_PG_BASE. Therefore, we should explicitly ensure
   // that the main page is the current page.
   gslc_SetPageCur(&m_gui, E_PG_MAIN);
-  // Now mark the E_PG_GLOBAL as a "base" page which means that it's elements
+  // Now mark the E_PG_BASE as a "base" page which means that it's elements
   // are always visible. This is useful for common page elements.
-  gslc_SetPageBase(&m_gui, E_PG_GLOBAL);
+  gslc_SetPageBase(&m_gui, E_PG_BASE);
 
   // -----------------------------------
-  // PAGE: GLOBAL
+  // PAGE: BASE
   // Create title
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, (gslc_tsRect) { 10, 10, 100, 20 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_BASE, (gslc_tsRect) { 10, 10, 100, 20 },
     (char*)"GUIslice Demo", 0, E_FONT_TITLE);
   gslc_ElemSetTxtAlign(&m_gui, pElemRef, GSLC_ALIGN_MID_LEFT);
   gslc_ElemSetFillEn(&m_gui, pElemRef, false);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
 
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_BTN_QUIT, E_PG_GLOBAL,
-    (gslc_tsRect) {
-    240, 5, 50, 25
-  }, (char*)"Quit", 0, E_FONT_BTN, &CbBtnCommon);
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_BTN_QUIT, E_PG_BASE,
+    (gslc_tsRect) { 240, 5, 50, 25 }, (char*)"Quit", 0, E_FONT_BTN, &CbBtnCommon);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_RED_DK2, GSLC_COL_RED_DK4, GSLC_COL_RED_DK1);
 
-  pElemRef = gslc_ElemCreateLine(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, 0, 35, 320, 35);
+  pElemRef = gslc_ElemCreateLine(&m_gui, GSLC_ID_AUTO, E_PG_BASE, 0, 35, 320, 35);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLACK, GSLC_COL_GRAY, GSLC_COL_GRAY);
 
 
   // Create counter
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, (gslc_tsRect) { 110, 10, 50, 20 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_BASE, (gslc_tsRect) { 110, 10, 50, 20 },
     (char*)"Count:", 0, E_FONT_TXT);
   static char mstr1[8] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_ELEM_TXT_COUNT, E_PG_GLOBAL, (gslc_tsRect) { 170, 10, 50, 20 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, E_ELEM_TXT_COUNT, E_PG_BASE, (gslc_tsRect) { 170, 10, 50, 20 },
     mstr1, sizeof(mstr1), E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_PURPLE);
   m_pElemCnt = pElemRef; // Save for quick access
 
 
   // Create Tab label buttons, start with main with framed highlight
-  m_pElemTabMain = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_TAB_MAIN, E_PG_GLOBAL,
-    (gslc_tsRect) {
-    30, 50, 50, 20
-  }, (char*)"Main", 0, E_FONT_BTN, &CbBtnCommon);
-  m_pElemTabConfig = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_TAB_CONFIG, E_PG_GLOBAL,
-    (gslc_tsRect) {
-    90, 50, 50, 20
-  }, (char*)"Extra", 0, E_FONT_BTN, &CbBtnCommon);
+  m_pElemTabMain = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_TAB_MAIN, E_PG_BASE,
+    (gslc_tsRect) { 30, 50, 50, 20 }, (char*)"Main", 0, E_FONT_BTN, &CbBtnCommon);
+  m_pElemTabConfig = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_TAB_CONFIG, E_PG_BASE,
+    (gslc_tsRect) { 90, 50, 50, 20 }, (char*)"Extra", 0, E_FONT_BTN, &CbBtnCommon);
   SetTabHighlight(E_ELEM_TAB_MAIN);
 
   // Create tab box
-  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_GLOBAL, (gslc_tsRect) { 20, 70, 200, 150 });
+  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_BASE, (gslc_tsRect) { 20, 70, 200, 150 });
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
 
   // -----------------------------------
@@ -208,18 +203,14 @@ bool InitOverlays()
 
   // Checkbox element
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_CHECK1, E_PG_MAIN, &m_asXCheck[0],
-    (gslc_tsRect) {
-    100, 160, 30, 30
-  }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_BLUE_LT2, false);
+    (gslc_tsRect) { 100, 160, 30, 30 }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_BLUE_LT2, false);
 
   // -----------------------------------
   // PAGE: CONFIG
 
   // Create Dummy button
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_BTN_ALERT, E_PG_CONFIG,
-    (gslc_tsRect) {
-    60, 170, 50, 20
-  }, (char*)"Alert", 0, E_FONT_BTN, &CbBtnCommon);
+    (gslc_tsRect) { 60, 170, 50, 20 }, (char*)"Alert", 0, E_FONT_BTN, &CbBtnCommon);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_GREEN_DK2, GSLC_COL_GREEN_DK4, GSLC_COL_GREEN_DK1);
 
   // Create a few labels & checkboxes
@@ -227,17 +218,13 @@ bool InitOverlays()
   int16_t    nSpaceY = 30;
 
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_CHECK2, E_PG_CONFIG, &m_asXCheck[1],
-    (gslc_tsRect) {
-    60, nPosY, 20, 20
-  }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_RED_LT2, false);
+    (gslc_tsRect) { 60, nPosY, 20, 20 }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_RED_LT2, false);
   pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_CONFIG, (gslc_tsRect) { 100, nPosY, 50, 10 },
     (char*)"Data 1", 0, E_FONT_TXT);
   nPosY += nSpaceY;
 
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_CHECK3, E_PG_CONFIG, &m_asXCheck[2],
-    (gslc_tsRect) {
-    60, nPosY, 20, 20
-  }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_RED_LT2, false);
+    (gslc_tsRect) { 60, nPosY, 20, 20 }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_RED_LT2, false);
   pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_CONFIG, (gslc_tsRect) { 100, nPosY, 50, 10 },
     (char*)"Data 2", 0, E_FONT_TXT);
   nPosY += nSpaceY;
@@ -262,16 +249,12 @@ bool InitOverlays()
 
   // Create OK button
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_ALERT_OK, E_PG_ALERT,
-    (gslc_tsRect) {
-    160 - 40 - 30, 120 + 30, 2 * 30, 2 * 10
-  }, (char*)"OK", 0, E_FONT_BTN, &CbBtnCommon);
+    (gslc_tsRect) { 160 - 40 - 30, 120 + 30, 2 * 30, 2 * 10 }, (char*)"OK", 0, E_FONT_BTN, &CbBtnCommon);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK2, GSLC_COL_BLUE_DK4, GSLC_COL_BLUE_DK1);
 
   // Create Cancel button
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_ALERT_CANCEL, E_PG_ALERT,
-    (gslc_tsRect) {
-    160 + 40 - 30, 120 + 30, 2 * 30, 2 * 10
-  }, (char*)"Cancel", 0, E_FONT_BTN, &CbBtnCommon);
+    (gslc_tsRect) { 160 + 40 - 30, 120 + 30, 2 * 30, 2 * 10 }, (char*)"Cancel", 0, E_FONT_BTN, &CbBtnCommon);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK2, GSLC_COL_BLUE_DK4, GSLC_COL_BLUE_DK1);
 
 
@@ -321,7 +304,7 @@ void loop()
   gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress, ((m_nCount / 2) % 100));
 
   // We can change or disable the global page as needed:
-  //   gslc_SetPageGlobal(&m_gui, E_PG_GLOBAL);    // Set to E_PG_GLOBAL
+  //   gslc_SetPageGlobal(&m_gui, E_PG_BASE);    // Set to E_PG_BASE
   //   gslc_SetPageGlobal(&m_gui, GSLC_PAGE_NONE); // Disable
 
   // Periodically call GUIslice update function
