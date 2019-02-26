@@ -637,7 +637,8 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 typedef struct {
   // Config
   char*                       pBuf;         ///< Ptr to the text buffer (circular buffer))
-  uint8_t                     nMargin;      ///< Margin for text area within element rect
+  int8_t                      nMarginX;     ///< Margin for text area within element rect (X)
+  int8_t                      nMarginY;     ///< Margin for text area within element rect (Y)
   bool                        bWrapEn;      ///< Enable for line wrapping
 
   uint16_t                    nBufRows;     ///< Number of rows in buffer
