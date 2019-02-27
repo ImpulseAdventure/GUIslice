@@ -316,7 +316,7 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 //       DrvDrawTxtAlign() is used instead, which will depend on the datum
 //       adjustment code within TFT_eSPI. This mode of operation is
 //       selected by default in GUIslice_drv_tft_espi.h by setting
-//       DRV_OVERRIDE_TXT_ALGIN to 1.
+//       DRV_OVERRIDE_TXT_ALIGN to 1.
 
 // This method is not recommended for use with TFT_eSPI. DrvDrawTxtAlign()
 // should be used instead.
@@ -328,6 +328,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   // m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
+
+  // Default to top-left datum
+  m_disp.setTextDatum(TL_DATUM);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
     // String in SRAM; can access buffer directly
