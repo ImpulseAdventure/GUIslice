@@ -2019,15 +2019,8 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   char          acMonoH[3] = "p$";
   char          acMonoW[2] = "w";
 
-  if (sElem.pTxtFont->pvFont == NULL) {
-    // When using Adafruit-GFX built-in fonts: apparently ascenders/descenders may be incorrect, so stick to standard character
-    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetY, &nChSzW, &nChSzH);
-  }
-  else {
-    // When using custom fonts: rely on values from passing ascender/descender strings
-    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoH, sElem.eTxtFlags, &nChOffsetTmp, &nChOffsetY, &nChSzTmp, &nChSzH);
-    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetTmp, &nChSzW, &nChSzTmp);
-  }
+  gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoH, sElem.eTxtFlags, &nChOffsetTmp, &nChOffsetY, &nChSzTmp, &nChSzH);
+  gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetTmp, &nChSzW, &nChSzTmp);
 
   pXData->nWndCols = (rElem.w - (2*pXData->nMarginX)) / nChSzW;
   pXData->nWndRows = (rElem.h - (2*pXData->nMarginY)) / nChSzH;
