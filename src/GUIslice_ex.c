@@ -2016,17 +2016,26 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 
   // Fetch X & Y sizing and offsets independently, based on characters that
   // are likely to maximize the ascenders / descenders / width attributes
-  char          acMonoW[3] = "p$";
-  char          acMonoH[2] = "%";
-  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMonoW,sElem.eTxtFlags,&nChOffsetX,&nChOffsetTmp,&nChSzW,&nChSzTmp);
-  gslc_DrvGetTxtSize(pGui,sElem.pTxtFont,(char*)&acMonoH,sElem.eTxtFlags,&nChOffsetTmp,&nChOffsetY,&nChSzTmp,&nChSzH);
+  char          acMonoH[3] = "p$";
+  char          acMonoW[2] = "w";
 
+  if (sElem.pTxtFont->pvFont == NULL) {
+    // When using Adafruit-GFX built-in fonts: apparently ascenders/descenders may be incorrect, so stick to standard character
+    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetY, &nChSzW, &nChSzH);
+  }
+  else {
+    // When using custom fonts: rely on values from passing ascender/descender strings
+    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoH, sElem.eTxtFlags, &nChOffsetTmp, &nChOffsetY, &nChSzTmp, &nChSzH);
+    gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetTmp, &nChSzW, &nChSzTmp);
+  }
+
+  pXData->nWndCols = (rElem.w - (2*pXData->nMarginX)) / nChSzW;
+  pXData->nWndRows = (rElem.h - (2*pXData->nMarginY)) / nChSzH;
+  
   // Adjust margin to correct for character offsets
   pXData->nMarginX -= nChOffsetX;
   pXData->nMarginY -= nChOffsetY;
 
-  pXData->nWndCols = (rElem.w - (2*pXData->nMarginX)) / nChSzW;
-  pXData->nWndRows = (rElem.h - (2*pXData->nMarginY)) / nChSzH;
   pXData->nChSizeX = nChSzW;
   pXData->nChSizeY = nChSzH;
 
