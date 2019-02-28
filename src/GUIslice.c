@@ -39,7 +39,6 @@
 #include "GUIslice_config.h"
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
 #include <stdio.h>

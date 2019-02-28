@@ -17,7 +17,6 @@
 //   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
 // Defines for resources

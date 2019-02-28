@@ -17,9 +17,11 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
+// Include any extended elements
+#include "extra/XSlider.h"
+#include "extra/XTextbox.h"
 
 // Defines for resources
 
