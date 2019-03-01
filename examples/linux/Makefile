@@ -49,7 +49,7 @@ INCLUDE = -I/usr/local/include
 CFLAGS = $(DEBUG) -Wall $(INCLUDE) -Winline -pipe -g
 LDFLAGS = -L/usr/local/lib
 
-GSLC_CORE = ../../src/GUIslice.c ../../src/GUIslice_ex.c ../../src/GUIslice_config.h
+GSLC_CORE = ../../src/GUIslice.c ../../src/GUIslice_config.h ../../src/extra/*.c
 
 
 # Define default compiler flags which may be overridden by command line

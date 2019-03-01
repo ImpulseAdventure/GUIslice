@@ -7,8 +7,10 @@
 //     Sliders with dynamic color control and position callback
 //
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "extra/XSlider.h"
 
 
 // Defines for resources

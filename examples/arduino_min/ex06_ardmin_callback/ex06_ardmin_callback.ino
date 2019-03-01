@@ -21,8 +21,11 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "extra/XCheckbox.h"
+#include "extra/XGauge.h"
 
 #include <math.h>
 
