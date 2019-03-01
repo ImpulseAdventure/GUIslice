@@ -19,3 +19,6 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Correct repo primary language
+/builder/src/main/java/builder/parser/* linguist-vendored
