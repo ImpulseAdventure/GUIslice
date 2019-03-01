@@ -19,8 +19,12 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "elem/XCheckbox.h"
+#include "elem/XGauge.h"
+#include "elem/XSlider.h"
 
 // Ensure config settings are correct for the sketch
 #if !defined(DRV_DISP_M5STACK) || !defined(DRV_TOUCH_M5STACK) || !(GSLC_FEATURE_INPUT)

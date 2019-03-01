@@ -7,8 +7,11 @@
 //     Demonstrate textbox control with scrollbar
 //
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "elem/XSlider.h"
+#include "elem/XTextbox.h"
 
 #include "unistd.h"   // For usleep() //xxx
 

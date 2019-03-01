@@ -40,7 +40,6 @@
 
 #include <stdint.h>
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
 // Defines for resources

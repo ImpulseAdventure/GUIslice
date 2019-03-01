@@ -7,8 +7,11 @@
 //     Demonstrate graph control with scrollbar
 //
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "elem/XGraph.h"
+#include "elem/XSlider.h"
 
 #include "unistd.h"   // For usleep() //xxx
 

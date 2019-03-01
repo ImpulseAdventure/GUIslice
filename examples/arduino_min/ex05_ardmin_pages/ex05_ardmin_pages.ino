@@ -18,8 +18,11 @@
 //   use a CPU that provides more than 2KB of SRAM (eg. ATmega2560).
 //
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "elem/XCheckbox.h"
+#include "elem/XGauge.h"
 
 
 // Defines for resources

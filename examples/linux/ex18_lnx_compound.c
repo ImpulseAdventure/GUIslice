@@ -11,8 +11,16 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Ensure optional compound element feature is enabled in the configuration
+#if !(GSLC_FEATURE_COMPOUND)
+  #error "Config: GSLC_FEATURE_COMPOUND required for this example but not enabled. Please update GUIslice_config."
+#endif
+
+// Include any extended elements
+#include "elem/XGauge.h"
+#include "elem/XSelNum.h"
 
 #include <libgen.h>       // For path parsing
 

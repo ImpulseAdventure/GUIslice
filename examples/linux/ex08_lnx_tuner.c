@@ -7,7 +7,6 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
 #include <libgen.h>       // For path parsing
