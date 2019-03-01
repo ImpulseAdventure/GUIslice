@@ -19,8 +19,8 @@
 #endif
 
 // Include any extended elements
-#include "extra/XGauge.h"
-#include "extra/XSelNum.h"
+#include "elem/XGauge.h"
+#include "elem/XSelNum.h"
 
 #include <libgen.h>       // For path parsing
 

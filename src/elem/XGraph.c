@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "extra/XGraph.h"
+#include "elem/XGraph.h"
 
 #include <stdio.h>
 

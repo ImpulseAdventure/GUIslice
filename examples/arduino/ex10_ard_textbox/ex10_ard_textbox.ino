@@ -20,8 +20,8 @@
 #include "GUIslice_drv.h"
 
 // Include any extended elements
-#include "extra/XSlider.h"
-#include "extra/XTextbox.h"
+#include "elem/XSlider.h"
+#include "elem/XTextbox.h"
 
 // Defines for resources
 

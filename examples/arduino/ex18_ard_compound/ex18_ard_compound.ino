@@ -30,8 +30,8 @@
 #endif
 
 // Include any extended elements
-#include "extra/XGauge.h"
-#include "extra/XSelNum.h"
+#include "elem/XGauge.h"
+#include "elem/XSelNum.h"
 
 // Defines for resources
 #define IMG_BKGND       "back1_24.bmp"

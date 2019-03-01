@@ -10,7 +10,7 @@
 #include "GUIslice_drv.h"
 
 // Include any extended elements
-#include "extra/XSlider.h"
+#include "elem/XSlider.h"
 
 
 // Defines for resources

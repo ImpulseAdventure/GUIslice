@@ -37,15 +37,15 @@
 /// \file GUIslice_ex.h
 
 // Provide backwards compatibility until we have removed GUIslice_ex
-#include "extra/XCheckbox.h"
-#include "extra/XGauge.h"
-#include "extra/XGraph.h"
-#include "extra/XSelNum.h"
-#include "extra/XSlider.h"
-#include "extra/XTextbox.h"
+#include "elem/XCheckbox.h"
+#include "elem/XGauge.h"
+#include "elem/XGraph.h"
+#include "elem/XSelNum.h"
+#include "elem/XSlider.h"
+#include "elem/XTextbox.h"
 
-// Warn users that this will change in the next release
-#warning "NOTE: Future releases of GUIslice will replace #include 'GUIslice_ex.h' with individual #include 'extra/XWidget.h'"
+// Warn users that they should update their includes
+#warning "NOTE: Please replace `GUIslice_ex` per https://github.com/ImpulseAdventure/GUIslice/wiki/Note-_-Include-Extended-Elements"
 
 
 #endif // _GUISLICE_EX_H_

@@ -10,8 +10,8 @@
 #include "GUIslice_drv.h"
 
 // Include any extended elements
-#include "extra/XGraph.h"
-#include "extra/XSlider.h"
+#include "elem/XGraph.h"
+#include "elem/XSlider.h"
 
 #include "unistd.h"   // For usleep() //xxx
 

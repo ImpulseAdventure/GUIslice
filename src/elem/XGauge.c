@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "extra/XGauge.h"
+#include "elem/XGauge.h"
 
 #include <stdio.h>
 

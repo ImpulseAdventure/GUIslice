@@ -20,9 +20,9 @@
 #include "GUIslice_drv.h"
 
 // Include any extended elements
-#include "extra/XCheckbox.h"
-#include "extra/XSlider.h"
-#include "extra/XGauge.h"
+#include "elem/XCheckbox.h"
+#include "elem/XSlider.h"
+#include "elem/XGauge.h"
 
 // Defines for resources
 

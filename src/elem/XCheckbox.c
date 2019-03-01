@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "extra/XCheckbox.h"
+#include "elem/XCheckbox.h"
 
 #include <stdio.h>
 

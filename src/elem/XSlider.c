@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "extra/XSlider.h"
+#include "elem/XSlider.h"
 
 #include <stdio.h>
 

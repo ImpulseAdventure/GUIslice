@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "extra/XSelNum.h"
+#include "elem/XSelNum.h"
 
 #include <stdio.h>
 
