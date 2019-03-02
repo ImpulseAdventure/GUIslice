@@ -540,8 +540,8 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
           char  acChToDraw[2] = "";
           acChToDraw[0] = chNext;
           acChToDraw[1] = 0;
-          nTxtPixX = pElem->rElem.x + pBox->nMargin + nCurX * pBox->nChSizeX;
-          nTxtPixY = pElem->rElem.y + pBox->nMargin + nCurY * pBox->nChSizeY;
+          nTxtPixX = pElem->rElem.x + pBox->nMarginX + nCurX * pBox->nChSizeX;
+          nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
           gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&acChToDraw,pElem->eTxtFlags,colTxt,colBg);
 
           nCurX++;

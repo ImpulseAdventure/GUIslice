@@ -90,12 +90,18 @@ typedef struct {
 
 ///
 /// Create a Textbox Element
+/// - The textbox is a scrolling window designed for displaying multi-line
+///   text using a monospaced font. A character buffer is defined by nBufRows*nBufCols
+///   to capture the added text. If the allocation buffer is larger than the
+///   display size (defined by rElem), then a scrollbar will be shown.
+/// - Support for changing color within a row can be enabled with GSLC_FEATURE_XTEXTBOX_EMBED 1
+/// - Note that each color change command will consume 4 of the available "column" bytes.
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
-/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
+/// \param[in]  rElem:       Rectangle coordinates defining textbox size
 /// \param[in]  nFontId:     Font ID to use for text area
 /// \param[in]  pBuf:        Ptr to text buffer (already allocated)
 ///                          with size (nBufRows*nBufCols) chars
