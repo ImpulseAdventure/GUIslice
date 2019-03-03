@@ -245,6 +245,13 @@ void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_
     return;
   }
 
+  // Check for out-of-range values
+  if (nScrollPos > nScrollMax) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxScrollSet() pos [%u] exceeds max [%u]\n", nScrollPos,nScrollMax);
+    // Force the position to the max
+    nScrollPos = nScrollMax;
+  }
+
   // Assign proportional value based on visible window region
   uint16_t nScrollPosOld = pBox->nScrollPos;
   pBox->nScrollPos = nScrollPos * (pBox->nBufRows - pBox->nWndRows) / nScrollMax;
