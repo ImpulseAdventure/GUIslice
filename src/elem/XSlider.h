@@ -254,7 +254,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #else
 
@@ -300,7 +300,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #endif
 

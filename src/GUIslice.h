@@ -2325,7 +2325,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
@@ -2356,7 +2356,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
@@ -2387,7 +2387,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       pfuncXTick,                                                 \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
@@ -2416,7 +2416,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
@@ -2448,7 +2448,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateBtnTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
@@ -2479,7 +2479,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 
@@ -2514,7 +2514,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
@@ -2545,7 +2545,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
@@ -2576,7 +2576,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       pfuncXTick,                                                 \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
@@ -2605,7 +2605,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] = strTxt;                      \
@@ -2637,7 +2637,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
-    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_REDRAW_FULL));
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 
 #endif // GSLC_USE_PROGMEM
