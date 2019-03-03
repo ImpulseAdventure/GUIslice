@@ -107,6 +107,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   pXData->nBufPosY        = 0;
   pXData->nWndRowStart    = 0;
 
+  pXData->nRedrawRow = XTEXTBOX_REDRAW_ALL;
 
   // Clear the buffer
   memset(pBuf,0,nBufRows*nBufCols*sizeof(char));
@@ -197,13 +198,23 @@ void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
   // Set the redraw flag
   // - Only need incremental redraw
+  pBox->nRedrawRow = XTEXTBOX_REDRAW_ALL; // All-row update
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
 // Advance the buffer writer to the next line
 // The window is also shifted if we are eating the first row
-void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsXTextbox* pBox)
+void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxLineWrAdv";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsXTextbox*  pBox;
+  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
   pBox->nBufPosX = 0;
   pBox->nBufPosY++;
 
@@ -215,6 +226,9 @@ void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsXTextbox* pBox)
   if (pBox->nBufPosY == pBox->nWndRowStart) {
     // Advance the window (with wrap if needed)
     pBox->nWndRowStart = (pBox->nWndRowStart + 1) % pBox->nBufRows;
+    // Ensure all rows get redrawn
+    pBox->nRedrawRow = XTEXTBOX_REDRAW_ALL;
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 }
 
@@ -239,6 +253,8 @@ void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_
   // - Only need incremental redraw
   // - Only redraw if changed actual scroll row
   if (pBox->nScrollPos != nScrollPosOld) {
+    // Ensure all rows get redrawn
+    pBox->nRedrawRow = XTEXTBOX_REDRAW_ALL;
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 }
@@ -247,8 +263,12 @@ void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_
 // - Advance the write ptr, wrap if needed
 // - If encroach upon buffer read ptr, then drop the oldest line from the buffer
 // NOTE: This should not be called with newline char!
-void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsXTextbox* pBox,unsigned char chNew,bool bAdvance)
+void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned char chNew,bool bAdvance)
 {
+  gslc_tsXTextbox*  pBox;
+  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+
   // Ensure that we haven't gone past end of line
   // - Note that we have to leave one extra byte for the line terminator (NULL)
   if ((pBox->nBufPosX+1) >= pBox->nBufCols) {
@@ -256,7 +276,7 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsXTextbox* pBox,unsigned cha
       // Perform line wrap
       // - Force a null at the end of the current line first
       pBox->pBuf[pBox->nBufPosY * pBox->nBufCols + (pBox->nBufCols-1)] = 0;
-      gslc_ElemXTextboxLineWrAdv(pGui,pBox);
+      gslc_ElemXTextboxLineWrAdv(pGui,pElemRef);
     } else {
       // Ignore the write
       return;
@@ -267,6 +287,35 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsXTextbox* pBox,unsigned cha
 
   // Add the character
   pBox->pBuf[nBufPos] = chNew;
+
+  // Only trigger redraw if we have output a printable character
+  // to the display buffer. For simplicity, just check for
+  // null for now.
+  // TODO: Consider checking isprint()
+  if (chNew == 0) {
+    // Don't update redraw on non-printing characters
+  } else {
+
+    // Mark this specific row as needing redraw
+    if (pBox->nRedrawRow == XTEXTBOX_REDRAW_NONE) {
+      // No redraw was pending, so mark single row pending
+      pBox->nRedrawRow = pBox->nBufPosY;
+    }
+    else if (pBox->nRedrawRow == XTEXTBOX_REDRAW_ALL) {
+      // All-row redraw was pending, so no change
+    }
+    else {
+      // Single row redraw was pending
+      if (pBox->nRedrawRow != pBox->nBufPosY) {
+        // But the pending row differs from the current row,
+        // so promote redraw to all lines
+        pBox->nRedrawRow = XTEXTBOX_REDRAW_ALL;
+      }
+      else {
+        // Pending row is the same, so no change
+      }
+    }
+  } // chNew
 
   // Optionally advance the pointer
   // - The only time we don't advance is if we added NULL
@@ -296,10 +345,10 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
     return;
   }
 
-  gslc_ElemXTextboxBufAdd(pGui,pBox,GSLC_XTEXTBOX_CODE_COL_SET,true);
-  gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.r,true);
-  gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.g,true);
-  gslc_ElemXTextboxBufAdd(pGui,pBox,nCol.b,true);
+  gslc_ElemXTextboxBufAdd(pGui,pElemRef,GSLC_XTEXTBOX_CODE_COL_SET,true);
+  gslc_ElemXTextboxBufAdd(pGui,pElemRef,nCol.r,true);
+  gslc_ElemXTextboxBufAdd(pGui,pElemRef,nCol.g,true);
+  gslc_ElemXTextboxBufAdd(pGui,pElemRef,nCol.b,true);
 #endif
 }
 
@@ -312,7 +361,7 @@ void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   gslc_tsXTextbox*  pBox = NULL;
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
-  gslc_ElemXTextboxBufAdd(pGui,pBox,GSLC_XTEXTBOX_CODE_COL_RESET,true);
+  gslc_ElemXTextboxBufAdd(pGui,pElemRef,GSLC_XTEXTBOX_CODE_COL_RESET,true);
 #endif
 }
 
@@ -327,9 +376,9 @@ void gslc_ElemXTextboxWrapSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bWr
 
 void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
 {
-  gslc_tsXTextbox*  pBox = NULL;
-  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  //gslc_tsXTextbox*  pBox = NULL;
+  //gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  //pBox = (gslc_tsXTextbox*)(pElem->pXData);
 
   // Warn the user about mode compatibility
 #if (GSLC_FEATURE_XTEXTBOX_EMBED)
@@ -359,7 +408,7 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
       // Reached terminator character
       // Add terminator to buffer but don't advance write pointer
       // since we want next write to overwrite this
-      gslc_ElemXTextboxBufAdd(pGui,pBox,0,false);
+      gslc_ElemXTextboxBufAdd(pGui,pElemRef,0,false);
 
       bDone = true;
       continue;
@@ -369,22 +418,18 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
     // appropriate when using UTF-8 encoding mode.
     if (chNext == '\n') {
       // Terminate the line
-      gslc_ElemXTextboxBufAdd(pGui,pBox,0,false);
+      gslc_ElemXTextboxBufAdd(pGui,pElemRef,0,false);
       // Advance the writer by one line
-      gslc_ElemXTextboxLineWrAdv(pGui,pBox);
+      gslc_ElemXTextboxLineWrAdv(pGui,pElemRef);
     } else {
       // TODO: Check to see if we are in mask/truncate state
       // Note that this routine also handles line wrap
-      gslc_ElemXTextboxBufAdd(pGui,pBox,chNext,true);
+      gslc_ElemXTextboxBufAdd(pGui,pElemRef,chNext,true);
     }
   }
 
   // Set the redraw flag
   // - Only need incremental redraw
-  // - TODO: Detect case of single line-update and limit redraw
-  //         to line instead of redrawing entire control. Whenever
-  //         the line is advanced, the full control content should
-  //         be redrawn.
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
@@ -419,9 +464,12 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   }
 
   // Clear the background (inset from frame)
-  gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  colBg = (bGlow)?pElem->colElemFillGlow:pElem->colElemFill;
-  gslc_DrawFillRect(pGui,rInner,colBg);
+  // - Only do this if we need to redraw all rows
+  if (pBox->nRedrawRow == XTEXTBOX_REDRAW_ALL) {
+    gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem, -1, -1);
+    colBg = (bGlow) ? pElem->colElemFillGlow : pElem->colElemFill;
+    gslc_DrawFillRect(pGui, rInner, colBg);
+  }
 
   uint16_t          nBufPos = 0;
 
@@ -429,6 +477,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   uint16_t          nTxtPixY;
   gslc_tsColor      colTxt;
   //bool            bEncUtf8;
+  bool              bRedrawLine;
 
   // Determine what encoding method is used for text
   // Not used at the moment
@@ -458,10 +507,22 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   nMaxRow = (pBox->nBufRows < pBox->nWndRows)? pBox->nBufRows : pBox->nWndRows;
   for (nOutRow=0;nOutRow<nMaxRow;nOutRow++) {
 
+    bRedrawLine = true; // Default to drawing the row
+
     // Calculate row offset after accounting for buffer wrap
     // and current window starting offset
     uint16_t nRowCur = nWndRowStartScr + nOutRow;
     nRowCur = nRowCur % pBox->nBufRows;
+
+    // If we are doing incremental redraw and only a single
+    // row has been marked as requiring redraw, then skip
+    // all other rows
+    if (eRedraw == GSLC_REDRAW_INC) {
+      if ((pBox->nRedrawRow >= 0) && (pBox->nRedrawRow != nRowCur)) {
+        // Single-row redraw, but we are not on that row, so skip
+        bRedrawLine = false;
+      }
+    }
 
     // NOTE: At the start of buffer fill where we have
     // only written a couple rows, we don't stop reading
@@ -469,11 +530,13 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     // the reset to initialize all rows with NULL terminator
     // so that we don't show garbage.
 
-    nBufPos = nRowCur * pBox->nBufCols;
+    if (bRedrawLine) {
+      nBufPos = nRowCur * pBox->nBufCols;
 
-    nTxtPixX = pElem->rElem.x + pBox->nMarginX + 0 * pBox->nChSizeX;
-    nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
-    gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt,colBg);
+      nTxtPixX = pElem->rElem.x + pBox->nMarginX + 0 * pBox->nChSizeX;
+      nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
+      gslc_DrvDrawTxt(pGui, nTxtPixX, nTxtPixY, pElem->pTxtFont, (char*)&(pBox->pBuf[nBufPos]), pElem->eTxtFlags, colTxt, colBg);
+    }
 
     nCurY++;
   } // nOutRow
@@ -501,14 +564,31 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   nMaxCol = (pBox->nBufCols < pBox->nWndCols)? pBox->nBufCols : pBox->nWndCols;
   nMaxRow = (pBox->nBufRows < pBox->nWndRows)? pBox->nBufRows : pBox->nWndRows;
   for (nOutRow=0;nOutRow<nMaxRow;nOutRow++) {
+
+    bRedrawLine = true; // Default to drawing the row
+
+    // Calculate row offset after accounting for buffer wrap
+    // and current window starting offset
+    uint16_t nRowCur = nWndRowStartScr + nOutRow;
+    nRowCur = nRowCur % pBox->nBufRows;
+
+    // If we are doing incremental redraw and only a single
+    // row has been marked as requiring redraw, then skip
+    // all other rows
+    if (eRedraw == GSLC_REDRAW_INC) {
+      if ((pBox->nRedrawRow >= 0) && (pBox->nRedrawRow != nRowCur)) {
+        // Single-row redraw, but we are not on that row, so skip
+        bRedrawLine = false;
+      }
+    }
+
     bRowDone = false;
     nCurX = 0;
-    for (nOutCol=0;(!bRowDone)&&(nOutCol<nMaxCol);nOutCol++) {
+    for (nOutCol=0;(!bRowDone)&&(bRedrawLine)&&(nOutCol<nMaxCol);nOutCol++) {
 
-      // Calculate row offset after accounting for buffer wrap
-      // and current window starting offset
-      uint16_t nRowCur = nWndRowStartScr + nOutRow;
-      nRowCur = nRowCur % pBox->nBufRows;
+
+
+
 
       // NOTE: At the start of buffer fill where we have
       // only written a couple rows, we don't stop reading
@@ -565,8 +645,9 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 #endif // GSLC_FEATURE_XTEXTBOX_EMBED
 
   // Clear the redraw flag
+  pBox->nRedrawRow = XTEXTBOX_REDRAW_NONE;
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
-
+   
   // Mark page as needing flip
   gslc_PageFlipSet(pGui,true);
 

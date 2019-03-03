@@ -54,6 +54,8 @@ extern "C" {
 #define GSLC_XTEXTBOX_CODE_COL_SET    187
 #define GSLC_XTEXTBOX_CODE_COL_RESET  188
 
+#define XTEXTBOX_REDRAW_NONE   -1
+#define XTEXTBOX_REDRAW_ALL    -2
 
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
@@ -83,6 +85,8 @@ typedef struct {
   uint8_t                     nBufPosX;     ///< Buffer X position
   uint8_t                     nBufPosY;     ///< Buffer Y position
   uint8_t                     nWndRowStart; ///< First row of current window
+  // Redraw
+  int16_t                     nRedrawRow;   ///< Specific row to update in redraw (if not -1)
 
 } gslc_tsXTextbox;
 
