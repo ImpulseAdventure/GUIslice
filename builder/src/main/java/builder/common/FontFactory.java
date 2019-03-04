@@ -78,6 +78,12 @@ public class FontFactory {
   /** The linux CVS. */
   private static String linuxCVS;
   
+  /** Free Mono Font Sizes */
+  private static Dimension[] MonoPlainSizes = new Dimension[4];
+  private static Dimension[] MonoBoldSizes = new Dimension[4];
+  private static Dimension[] MonoItalicSizes = new Dimension[4];
+  private static Dimension[] MonoBoldItalicSizes = new Dimension[4];
+  
   /**
    * Gets the single instance of FontFactory.
    *
@@ -96,7 +102,24 @@ public class FontFactory {
           + CodeGenerator.LINUX_FONT_TEMPLATE;
       linuxMap = new HashMap<String, Integer>(128);
       instance.readFonts(linuxCVS,linuxFonts,linuxMap);
-
+      
+      // setup mono font tables
+      MonoPlainSizes[0] = new Dimension(9,14);
+      MonoPlainSizes[1] = new Dimension(13,19);
+      MonoPlainSizes[2] = new Dimension(19,30);
+      MonoPlainSizes[3] = new Dimension(26,39);
+      MonoBoldSizes[0] = new Dimension(11,16);
+      MonoBoldSizes[1] = new Dimension(14,22);
+      MonoBoldSizes[2] = new Dimension(21,31);
+      MonoBoldSizes[3] = new Dimension(28,41);
+      MonoItalicSizes[0] = new Dimension(10,14);
+      MonoItalicSizes[1] = new Dimension(13,20);
+      MonoItalicSizes[2] = new Dimension(17,30);
+      MonoItalicSizes[3] = new Dimension(25,39);
+      MonoBoldItalicSizes[0] = new Dimension(11,16);
+      MonoBoldItalicSizes[1] = new Dimension(14,22);
+      MonoBoldItalicSizes[2] = new Dimension(21,31);
+      MonoBoldItalicSizes[3] = new Dimension(28,41);
     }
     return instance;
   }
@@ -315,17 +338,55 @@ public class FontFactory {
    */
   public Dimension measureChar(String fontName) {
     FontItem item = getFontItem(fontName);
+    Dimension nChSz = new Dimension();
     if (fontName.startsWith("BuiltIn")) {
-      Dimension nChSz = new Dimension();
       int size = Integer.parseInt(item.getFontSz());
       nChSz.width = (6 * size);
       nChSz.height = 8 * size;
-      return nChSz;
     } else {
-      String acMono = "%";
-      Font tmpFont = createFont("Monospaced", item.getScaledSize(), "PLAIN");
-      return (measureText(acMono, tmpFont));
+      int idx = -1;
+      switch (item.getLogicalSize()) {
+        case "9":
+          idx = 0;
+          break;
+        case "12":
+          idx = 1;
+          break;
+        case "18":
+          idx = 2;
+          break;
+        case "24":
+          idx = 3;
+          break;
+        default:
+          break;
+      }
+      if (idx >= 0) {
+        switch (item.getLogicalStyle()) {
+        case "BOLD":
+          nChSz = MonoBoldSizes[idx];
+          break;
+        case "ITALIC":
+          nChSz = MonoItalicSizes[idx];
+          break;
+        case "BOLD+ITALIC":
+          nChSz = MonoBoldItalicSizes[idx];
+          break;
+        default:
+          nChSz = MonoPlainSizes[idx];
+          break;
+        }
+      } else {
+        String acHeight = "a";
+        String acWidth  = "W";
+        Font tmpFont = createFont("Monospaced", item.getLogicalSize(), item.getLogicalStyle());
+        Dimension txtHeight = measureText(acHeight, tmpFont);
+        Dimension txtWidth = measureText(acWidth, tmpFont);
+        nChSz.width = txtWidth.width-4;
+        nChSz.height = txtHeight.height;
+      }
     }
+    return nChSz;
   }
   
   /**
