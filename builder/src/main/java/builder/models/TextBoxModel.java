@@ -27,7 +27,6 @@ package builder.models;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -286,25 +285,9 @@ public class TextBoxModel extends WidgetModel {
       data[PROP_FONT][PROP_VAL_VALUE] = item.getDisplayName();
       data[PROP_FONT_ENUM][PROP_VAL_VALUE] = item.getFontId();
     }
-    Font font = ff.getFont(item.getDisplayName());
-    // calculate the real sizes of our display font
-    String strText = "AaBbCcDd%$";
-    // now figure out the rect size needed on the target platform
-    // that we show to our user and also push out during code generation.
-    if (getFontDisplayName().startsWith("BuiltIn")) {
-      Dimension nChSz = ff.measureAdafruitText(strText,getFontDisplayName());
-      nCols = (getWidth() - 33) / (nChSz.width / 10);
-      nRows = ((getHeight() - 10) / nChSz.height) + 1; 
-      System.out.println("getWidth(): " + getWidth() + " nChSz.width: " + nChSz.width);
-      System.out.println("getHeight(): " + getHeight() + " nChSz.height: " + nChSz.height);
-    } else {
-      // if font is not one of the built-in fonts than actual size is correct even though font is scaled.
-      Dimension d = ff.measureText(strText, font);
-      nCols = (getWidth() - 33) / (d.width / 10);
-      nRows = (getHeight() / d.height) + 10; 
-      System.out.println("getWidth(): " + getWidth() + " d.width: " + d.width);
-      System.out.println("getHeight(): " + getHeight() + " d.height: " + d.height);
-    }
+    Dimension nChSz = ff.measureChar(getFontDisplayName());
+    nCols = (getWidth() - 33) / nChSz.width;
+    nRows = (getHeight() - 15) / nChSz.height; 
     data[PROP_ROWS][PROP_VAL_VALUE]= Integer.valueOf(nRows);
     data[PROP_COLS][PROP_VAL_VALUE]=Integer.valueOf(nCols);
   }
