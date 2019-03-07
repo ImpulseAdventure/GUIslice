@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-#include <math.h>   // For sin/cos in XRadial
+#include <math.h>   // For sin/cos in XGauge(RADIAL)
 
 #if (GSLC_USE_PROGMEM)
     #include <avr/pgmspace.h>
@@ -462,7 +462,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   return true;
 }
 
-#if (GSLC_FEATURE_XGAUGE_RAMP)
+#if (GSLC_FEATURE_XGAUGE_RADIAL)
 void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nArrowLen,uint16_t nArrowSz,int16_t n64Ang,bool bFill,gslc_tsColor colFrame)
 {
   int16_t   nTipX,nTipY;
@@ -543,12 +543,13 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_te
   }
 
   // Support reversing of direction
+  // TODO: Clean up excess integer typecasting
   if (pGauge->bFlip) {
-    n64Ang      = (nMax - nVal    )* 360*64 /nRng;
-    n64AngLast  = (nMax - nValLast)* 360*64 /nRng;
+    n64Ang      = (int32_t)(nMax - nVal    )* 360*64 /nRng;
+    n64AngLast  = (int32_t)(nMax - nValLast)* 360*64 /nRng;
   } else {
-    n64Ang      = (nVal     - nMin)* 360*64 /nRng;
-    n64AngLast  = (nValLast - nMin)* 360*64 /nRng;
+    n64Ang      = (int32_t)(nVal     - nMin)* 360*64 /nRng;
+    n64AngLast  = (int32_t)(nValLast - nMin)* 360*64 /nRng;
   }
 
   // Clear old
@@ -598,7 +599,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRe
     return false;
   }
 
-  uint16_t  nSclFX;
+  uint32_t  nSclFX;
   uint16_t  nHeight;
   int32_t   nHeightTmp;
   uint16_t  nHeightBot;
@@ -643,7 +644,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRe
   nPosXStart  = (nValStart - nMin)*nElemW/nRng;
   nPosXEnd    = (nValEnd   - nMin)*nElemW/nRng;
 
-  nSclFX = nElemH*32767/(nElemW*nElemW);
+  nSclFX = (uint32_t)nElemH*32767/(nElemW*nElemW);
 
   for (nX=nPosXStart;nX<nPosXEnd;nX++) {
     nInd = nElemW-nX;
@@ -671,7 +672,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRe
 
       if (nSegOffset <= nBlockLen) {
         // Inside block
-        nColInd = nSegStart*1000/nElemW;
+        nColInd = (uint32_t)nSegStart*1000/nElemW;
         nCol = gslc_ColorBlend3(GSLC_COL_GREEN,GSLC_COL_YELLOW,GSLC_COL_RED,500,nColInd);
 
       } else {

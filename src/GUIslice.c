@@ -935,16 +935,18 @@ int16_t gslc_sinFX(int16_t n64Ang)
   return nRetValS;
 
 #else
+  // TODO: Clean up excess integer typecasting
+
   // Use lookup tables
   bool bNegate = false;
 
   // Support multiple waveform periods
   if (n64Ang >= 360*64) {
     // For some reason this modulus is broken!
-    n64Ang = n64Ang % (int16_t)(360*64);
+    n64Ang = (int32_t)n64Ang % (int32_t)(360*64);
     //n64Ang = n64Ang - (360*64);
   } else if (n64Ang <= -360*64) {
-    n64Ang = -(-n64Ang % 360*64);
+    n64Ang = -(-(int32_t)n64Ang % (int32_t)(360*64));
   }
   // Handle negative range
   if (n64Ang < 0) {
@@ -963,7 +965,7 @@ int16_t gslc_sinFX(int16_t n64Ang)
 
   // n64Ang is quarter-phase range [0 .. 90*64]
   // suitable for lookup table indexing
-  uint16_t  nLutInd = (n64Ang * 256)/(90*64);
+  uint16_t  nLutInd = ((uint32_t)n64Ang * 256)/(90*64);
   uint16_t  nLutVal = m_nLUTSinF0X16[nLutInd];
 
   // Leave MSB for the signed bit
@@ -1006,8 +1008,12 @@ int16_t gslc_cosFX(int16_t n64Ang)
 // Convert from polar to cartesian
 void gslc_PolarToXY(uint16_t nRad,int16_t n64Ang,int16_t* nDX,int16_t* nDY)
 {
-  *nDX = (int16_t)nRad *  gslc_sinFX(n64Ang)/(int16_t)32767;
-  *nDY = (int16_t)nRad * -gslc_cosFX(n64Ang)/(int16_t)32767;
+  int32_t nTmp;
+  // TODO: Clean up excess integer typecasting
+  nTmp = (int32_t)nRad *  gslc_sinFX(n64Ang);
+  *nDX = nTmp / 32767;
+  nTmp = (int32_t)nRad * -gslc_cosFX(n64Ang);
+  *nDY = nTmp / 32767;
 }
 
 // Call with nMidAmt=500 to create simple linear blend between two colors
@@ -1028,14 +1034,14 @@ gslc_tsColor gslc_ColorBlend3(gslc_tsColor colStart,gslc_tsColor colMid,gslc_tsC
 
   uint16_t  nRngLow   = nMidAmt;
   uint16_t  nRngHigh  = 1000-nMidAmt;
-  uint16_t  nSubBlendAmt;
+  int32_t   nSubBlendAmt;
   if (nBlendAmt >= nMidAmt) {
-    nSubBlendAmt = (nBlendAmt - nMidAmt)*1000/nRngHigh;
+    nSubBlendAmt = (int32_t)(nBlendAmt - nMidAmt)*1000/nRngHigh;
     colNew.r = nSubBlendAmt*(colEnd.r - colMid.r)/1000 + colMid.r;
     colNew.g = nSubBlendAmt*(colEnd.g - colMid.g)/1000 + colMid.g;
     colNew.b = nSubBlendAmt*(colEnd.b - colMid.b)/1000 + colMid.b;
   } else {
-    nSubBlendAmt = (nBlendAmt - 0)*1000/nRngLow;
+    nSubBlendAmt = (int32_t)(nBlendAmt - 0)*1000/nRngLow;
     colNew.r = nSubBlendAmt*(colMid.r - colStart.r)/1000 + colStart.r;
     colNew.g = nSubBlendAmt*(colMid.g - colStart.g)/1000 + colStart.g;
     colNew.b = nSubBlendAmt*(colMid.b - colStart.b)/1000 + colStart.b;
@@ -1150,10 +1156,10 @@ void gslc_DrawLineV(gslc_tsGui* pGui,int16_t nX, int16_t nY, uint16_t nH,gslc_ts
 void gslc_DrawLinePolar(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nRadStart,uint16_t nRadEnd,int16_t n64Ang,gslc_tsColor nCol)
 {
   // Draw the ray representing the current value
-  int16_t nDxS = nRadStart * gslc_sinFX(n64Ang)/32768;
-  int16_t nDyS = nRadStart * gslc_cosFX(n64Ang)/32768;
-  int16_t nDxE = nRadEnd   * gslc_sinFX(n64Ang)/32768;
-  int16_t nDyE = nRadEnd   * gslc_cosFX(n64Ang)/32768;
+  int16_t nDxS = (int32_t)nRadStart * gslc_sinFX(n64Ang)/32768;
+  int16_t nDyS = (int32_t)nRadStart * gslc_cosFX(n64Ang)/32768;
+  int16_t nDxE = (int32_t)nRadEnd   * gslc_sinFX(n64Ang)/32768;
+  int16_t nDyE = (int32_t)nRadEnd   * gslc_cosFX(n64Ang)/32768;
   gslc_DrawLine(pGui,nX+nDxS,nY-nDyS,nX+nDxE,nY-nDyE,nCol);
 }
 
