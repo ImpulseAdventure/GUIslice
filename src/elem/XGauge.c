@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-#include <math.h>   // For sin/cos in XRadial
+#include <math.h>   // For sin/cos in XGauge(RADIAL)
 
 #if (GSLC_USE_PROGMEM)
     #include <avr/pgmspace.h>
@@ -462,7 +462,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   return true;
 }
 
-#if (GSLC_FEATURE_XGAUGE_RAMP)
+#if (GSLC_FEATURE_XGAUGE_RADIAL)
 void gslc_ElemXGaugeDrawRadialHelp(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nArrowLen,uint16_t nArrowSz,int16_t n64Ang,bool bFill,gslc_tsColor colFrame)
 {
   int16_t   nTipX,nTipY;
