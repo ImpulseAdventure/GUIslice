@@ -28,7 +28,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file GUIslice_ex.c
+/// \file XTextbox.c
 
 
 
@@ -116,14 +116,13 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   // Determine the maximum size of a character
   // - For now, assume we are using a monospaced font and derive
   //   text pixel coords from the size of a worst-case character.
-  // - TODO: Update to determine worst-case character (might not be "%")
   int16_t       nChOffsetX, nChOffsetY, nChOffsetTmp;
   uint16_t      nChSzW,nChSzH,nChSzTmp;
 
   // Fetch X & Y sizing and offsets independently, based on characters that
   // are likely to maximize the ascenders / descenders / width attributes
   char          acMonoH[3] = "p$";
-  char          acMonoW[2] = "w";
+  char          acMonoW[2] = "W";
 
   gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoH, sElem.eTxtFlags, &nChOffsetTmp, &nChOffsetY, &nChSzTmp, &nChSzH);
   gslc_DrvGetTxtSize(pGui, sElem.pTxtFont, (char*)&acMonoW, sElem.eTxtFlags, &nChOffsetX, &nChOffsetTmp, &nChSzW, &nChSzTmp);
