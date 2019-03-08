@@ -6,10 +6,10 @@ Please refer to the wiki page for installation and usage details:
 
 ### Builder Contents
 Note that the Builder executables are attached to the latest [Release Notes](https://github.com/ImpulseAdventure/GUIslice/releases):
-- [Builder_user_guide.pdf](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.11.0/Builder_user_guide.pdf) Builder User Guide (in PDF format)
-- [builder-win-0.11.0-rc1.zip](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.11.0/builder-win-0.11.0-rc1.zip) Builder Executable (in Windows ZIP format)
-- [builder-linux-0.11.0-rc1.tar.gz](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.11.0/builder-linux-0.11.0-rc1.tar.gz) Builder Executable (in LINUX tar gzip format)
-- [builder-osx-0.11.0-rc1.zip](https://github.com/ImpulseAdventure/GUIslice/releases/download/v0.11.0/builder-osx-0.11.0-rc1.zip) Builder Executable (in Mac OS/X zip format)
+- `Builder_user_guide.pdf`: Builder User Guide (in PDF format)
+- `builder-win-x.y.z.zip`: Builder Executable (in Windows ZIP format)
+- `builder-linux-x.y.z.tar.gz`: Builder Executable (in LINUX tar gzip format)
+- `builder-osx-x.y.z.zip` Builder Executable (in Mac OS/X zip format)
 
 ### Builder Source Code
 The Builder source code is located in this directory (`/builder`)
