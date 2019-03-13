@@ -2128,6 +2128,30 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return pElem;
 }
 
+// For extended elements, fetch the extended data structure
+void* gslc_GetXDataFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nType, int16_t nLineNum)
+{
+  if (pElemRef == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElemRef is NULL\n", nType, nLineNum);
+    return NULL;
+  }
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElem is NULL\n", nType, nLineNum);
+    return NULL;
+  }
+  if (pElem->nType != nType) {
+    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) Elem type mismatch\n", nType, nLineNum);
+    return NULL;
+  }
+  void* pXData = pElem->pXData;
+  if (pXData == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pXData is NULL\n", nType, nLineNum);
+    return NULL;
+  }
+  return pXData;
+}
+
 
 // ------------------------------------------------------------------------
 // Element Creation Functions

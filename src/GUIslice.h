@@ -2739,10 +2739,10 @@ uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nF
 void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal);
 
 
-// Returns a pointer to an element from an element reference, copying
-// from FLASH to RAM if element is stored in PROGMEM. This function
-// enables all APIs to work with Elements irrespective of whether they
-// were created in RAM or Flash.
+/// Returns a pointer to an element from an element reference, copying
+/// from FLASH to RAM if element is stored in PROGMEM. This function
+/// enables all APIs to work with Elements irrespective of whether they
+/// were created in RAM or Flash.
 ///
 /// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pElemRef:     Pointer to Element Reference
@@ -2750,6 +2750,19 @@ void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlag
 /// \return Pointer to Element after ensuring that it is accessible from RAM
 ///
 gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+/// Returns a pointer to the data structure associated with an extended element.
+/// - Example usage:
+///   gslc_tsXListbox* pListbox = (gslc_tsXListbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_LISTBOX, __LINE__);
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Pointer to Element Reference
+/// \param[in]  nType:        Expected type indicator (ie. GSLC_TYPEX_*)
+/// \param[in]  nLineNum:     Line number from calling function (ie. __LINE__)
+///
+/// \return Void pointer to extended data (pXData), or NULL if error. Needs to be typecasted accordingly.
+///
+void* gslc_GetXDataFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nType, int16_t nLineNum);
 
 
 ///
