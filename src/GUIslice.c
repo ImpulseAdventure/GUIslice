@@ -2798,6 +2798,7 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
     strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
     pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
+    // TODO: Might want to change to GSLC_REDRAW_INC
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 }
@@ -2814,6 +2815,7 @@ void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor c
       !gslc_ColorEqual(pElem->colElemTextGlow, colVal)) {
     pElem->colElemText      = colVal;
     pElem->colElemTextGlow  = colVal; // Default to same color for glowing state
+    // TODO: Might want to change to GSLC_REDRAW_INC
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 }
@@ -2939,7 +2941,6 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return GSLC_REDRAW_NONE;
 }
 
-
 void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
 {
   if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
@@ -2952,7 +2953,7 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
   gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING,(bGlowing)?GSLC_ELEMREF_GLOWING:0);
 
   if (bGlowing != bGlowingOld) {
-    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 }
 
@@ -3033,7 +3034,7 @@ void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;
   }
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
 bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -3060,7 +3061,7 @@ void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_CLICK_EN;
   }
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  // No need to call ElemSetRedraw() as we aren't changing a visual characteristic
 }
 
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest)
