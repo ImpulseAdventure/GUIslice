@@ -43,6 +43,8 @@ extern "C" {
 
 // ============================================================================
 // Extended Element: Listbox
+// - NOTE: The XListbox element is in beta development.
+//         Therefore, its API is subject to change.
 // ============================================================================
 
 // Define unique identifier for extended element type
@@ -52,6 +54,7 @@ extern "C" {
 // Define constants specific to the control
 #define XLISTBOX_SEL_NONE       -1  // Indicator for "no selection"
 #define XLISTBOX_SIZE_AUTO      -1  // Indicator for "auto-size"
+#define XLISTBOX_BUF_OH_R        2  // Listbox buffer overhead per row
 
 /// Callback function for Listbox feedback
 typedef bool (*GSLC_CB_XLISTBOX_SEL)(void* pvGui,void* pvElem,int16_t nSel);
@@ -85,9 +88,10 @@ typedef struct {
   bool            bItemAutoSizeH; ///< Enable auto-sizing of items (in height)
 
   // State
-  int16_t         nItemSel;       ///< Currently selected item (XLISTBOX_SEL_NONE for none)
-  int16_t         nRedrawSelOld;  ///< Old selected item to redraw (XLISTBOX_SEL_NONE for none)
-  int8_t          nItemTop;       ///< Item to show at top of list after scrolling (0 is default)
+  int16_t         nItemCurSel;      ///< Currently selected item (XLISTBOX_SEL_NONE for none)
+  int16_t         nItemCurSelLast;  ///< Old selected item to redraw (XLISTBOX_SEL_NONE for none)
+  int16_t         nItemSavedSel;    ///< Persistent selected item (ie. saved selection)
+  int16_t         nItemTop;         ///< Item to show at top of list after scrolling (0 is default)
 
   // Callbacks
   GSLC_CB_XLISTBOX_SEL pfuncXSel; ///< Callback func ptr for selection update
@@ -206,13 +210,13 @@ bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const 
 ///
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pElemRef:      Ptr to Element Reference to update
-/// \param[in]  nItemSel:      Item index to fetch
+/// \param[in]  nItemCurSel:      Item index to fetch
 /// \param[out] pStrItem:      Ptr to the string buffer to receive the item
 /// \param[in]  nStrItemLen:   Maximum buffer length of pStrItem
 ///
 /// \return true if success, false if fail (eg. can't locate item)
 ///
-bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemSel, char* pStrItem, uint8_t nStrItemLen);
+bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel, char* pStrItem, uint8_t nStrItemLen);
 
 
 ///
@@ -268,11 +272,11 @@ int16_t gslc_ElemXListboxGetSel(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nItemSel:    Listbox item to select (or -1 for none)
+/// \param[in]  nItemCurSel:    Listbox item to select (or -1 for none)
 ///
 /// \return true if success, false if fail
 ///
-bool gslc_ElemXListboxSetSel(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemSel);
+bool gslc_ElemXListboxSetSel(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel);
 
 ///
 /// Set the Listbox scroll position
