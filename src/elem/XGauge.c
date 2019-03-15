@@ -60,17 +60,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 //
 // - This file extends the core GUIslice functionality with
 //   additional widget types
-// - After adding any widgets to GUIslice_ex, a unique
-//   enumeration (GSLC_TYPEX_*) should be added to "GUIslice.h"
 //
-//   TODO: Consider whether we should remove the need to update
-//         these enumerations in "GUIslice.h"; we could instead
-//         define a single "GSLC_TYPEX" in GUIslice.h but then
-//         allow "GUIslice_ex.h" to create a new set of unique
-//         enumerations. This way extended elements could be created
-//         in GUIslice_ex and no changes at all would be required
-//         in GUIslice.
-
 // ----------------------------------------------------------------------------
 
 
