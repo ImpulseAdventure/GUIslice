@@ -251,7 +251,8 @@ bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const 
     return false;
   }
 
-  pBuf = pListbox->pBufItems + nBufItemsPos;
+  // Treat this section of the buffer as [char]
+  pBuf = (char*)pListbox->pBufItems + nBufItemsPos;
   strncpy(pBuf, pStrItem, nStrItemLen);
   pListbox->nBufItemsPos += nStrItemLen;
 
@@ -583,7 +584,6 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
   switch (eTouch) {
 
   case GSLC_TOUCH_DOWN_IN:
-    GSLC_DEBUG_PRINT("DBG: %d,%d DownIn\n", nRelX,nRelY); //xxx
     // Start glowing as must be over it
     gslc_ElemSetGlow(pGui, pElemRef, true);
     // User pressed inside elem: start selection
@@ -591,20 +591,17 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
     break;
 
   case GSLC_TOUCH_MOVE_IN:
-    GSLC_DEBUG_PRINT("DBG: %d,%d MoveIn\n", nRelX,nRelY); //xxx
     gslc_ElemSetGlow(pGui, pElemRef, true);
     // Track changes in selection
     bSelTrack = true;
     break;
   case GSLC_TOUCH_MOVE_OUT:
-    GSLC_DEBUG_PRINT("DBG: %d,%d MoveOut\n", nRelX,nRelY); //xxx
     gslc_ElemSetGlow(pGui, pElemRef, false);
     // User has dragged to outside elem: deselect
     bSelTrack = true;
     break;
 
   case GSLC_TOUCH_UP_IN:
-    GSLC_DEBUG_PRINT("DBG: %d,%d UpIn\n", nRelX,nRelY); //xxx
     // End glow
     gslc_ElemSetGlow(pGui, pElemRef, false);
     // User released inside elem.
@@ -614,7 +611,6 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
     bSelSave = true;
     break;
   case GSLC_TOUCH_UP_OUT:
-    GSLC_DEBUG_PRINT("DBG: %d,%d UpOut\n", nRelX,nRelY); //xxx
     // End glow
     gslc_ElemSetGlow(pGui, pElemRef, false);
     // User released outside elem: leave selection as-is
