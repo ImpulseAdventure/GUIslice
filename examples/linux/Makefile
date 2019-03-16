@@ -109,7 +109,8 @@ SRC =   ex01_lnx_basic.c \
 	ex11_lnx_graph.c \
 	ex18_lnx_compound.c \
 	ex22_lnx_input_key.c \
-	ex24_lnx_tabs.c
+	ex24_lnx_tabs.c \
+	ex31_lnx_listbox.c
 
 # Add simple example for specific driver modes
 ifeq (SDL1,${GSLC_DRV})
@@ -190,4 +191,9 @@ ex22_lnx_input_key: ex22_lnx_input_key.c $(GSLC_CORE) $(GSLC_SRCS)
 ex24_lnx_tabs: ex24_lnx_tabs.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex24_lnx_tabs.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
+ex31_lnx_listbox: ex31_lnx_listbox.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex31_lnx_listbox.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
 
