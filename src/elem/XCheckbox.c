@@ -125,8 +125,8 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
 
 bool gslc_ElemXCheckboxGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXCheckbox*   pCheckbox  = (gslc_tsXCheckbox*)(pElem->pXData);
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return false;
 
   return pCheckbox->bChecked;
 }
@@ -187,13 +187,9 @@ gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 // Assign the callback function for checkbox/radio state change events
 void gslc_ElemXCheckboxSetStateFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_XCHECKBOX pfuncCb)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetStateFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return;
+
   pCheckbox->pfuncXToggle = pfuncCb;
 }
 
@@ -202,14 +198,10 @@ void gslc_ElemXCheckboxSetStateFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, 
 //   not touch any other controls in the group
 void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetStateHelp";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return;
 
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Update our data element
   bool  bCheckedOld = pCheckbox->bChecked;
@@ -267,6 +259,11 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
 // then also update the state of all other buttons in the group.
 void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
 {
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return;
+
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+
   // Operate on current page
   // TODO: Support other page layers
   gslc_tsPage* pPage = pGui->apPageStack[GSLC_STACK_CUR];
@@ -274,14 +271,6 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     return; // No page added yet
   }
 
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxSetState";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-
-  gslc_tsElem*        pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXCheckbox*   pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
   bool                bRadio    = pCheckbox->bRadio;
   int16_t             nGroup    = pElem->nGroup;
   int16_t             nElemId   = pElem->nId;
@@ -374,25 +363,15 @@ void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 //   simpler callback function definition & scalability.
 bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
   // Typecast the parameters to match the GUI and element types
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
+
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return false;
+
   gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-
-  gslc_tsRect   rInner;
-
-  // Fetch the element's extended data structure
-  gslc_tsXCheckbox* pCheckbox;
-  pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
-  if (pCheckbox == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXCheckboxDraw(%s) pXData is NULL\n","");
-    return false;
-  }
+  gslc_tsRect     rInner;
 
   bool bChecked  = pCheckbox->bChecked;
   gslc_teXCheckboxStyle   nStyle = pCheckbox->nStyle;
@@ -464,21 +443,14 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   return false;
 #else
 
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXCheckboxTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsGui*           pGui = NULL;
-  gslc_tsElemRef*       pElemRef = NULL;
-  gslc_tsElem*          pElem = NULL;
-  gslc_tsXCheckbox*     pCheckbox = NULL;
+  // Typecast the parameters to match the GUI and element types
+  gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
 
-  // Typecast the parameters to match the GUI
-  pGui  = (gslc_tsGui*)(pvGui);
-  pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  pCheckbox = (gslc_tsXCheckbox*)(pElem->pXData);
+  gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
+  if (!pCheckbox) return false;
+
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   bool  bRadio      = pCheckbox->bRadio;
   bool  bCheckedOld = pCheckbox->bChecked;
