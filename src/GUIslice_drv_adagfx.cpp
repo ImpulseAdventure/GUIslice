@@ -620,18 +620,15 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_8BIT) || \
-    defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ST7735) || \
-    defined(DRV_DISP_ADAGFX_HX8347) || defined(DRV_DISP_ADAGFX_HX8357)
-    // Nothing to do as we're not double-buffered
-
-  #elif defined(DRV_DISP_ADAGFX_SSD1306)
+  #if defined(DRV_DISP_ADAGFX_SSD1306)
     // Show the display buffer on the hardware.
     // NOTE: You _must_ call display after making any drawing commands
     // to make them visible on the display hardware!
     m_disp.display();
-
     // TODO: Might need to call m_disp.clearDisplay() now?
+
+  #else
+    // Nothing to do as we're not double-buffered
 
   #endif
 }
