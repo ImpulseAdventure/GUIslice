@@ -573,6 +573,14 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 
+  // Driver-specific overrides
+  #if defined(DRV_DISP_ADAGFX_RA8875)
+  m_disp.textMode();
+  m_disp.textEnlarge(nTxtScale);
+  m_disp.textColor(nColRaw, nColRaw);
+  m_disp.textSetCursor(nTxtX,nTxtY);
+  #endif
+
   // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
   bool bProg = false;
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
@@ -595,21 +603,37 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
 
     // Render the character
+    #if defined(DRV_DISP_ADAGFX_RA8875)
+    char acBuf[2];
+    acBuf[0] = ch;
+    acBuf[1] = 0;
+    m_disp.textWrite(acBuf);
+    #else
     m_disp.print(ch);
+    #endif
 
     // Handle multi-line text:
     // If we just output a newline, Adafruit-GFX will automatically advance
     // the Y cursor but reset the X cursor to 0. Therefore we need to
     // readjust the X cursor to our aligned bounding box.
     if (ch == '\n') {
+      #if defined(DRV_DISP_ADAGFX_RA8875)
+      int16_t nCurPosY = m_disp.getCursorY(); // FIXME: not supported in RA8875?
+      m_disp.textSetCursor(nTxtX,nCurPosY);
+      #else
       int16_t nCurPosY = m_disp.getCursorY();
       m_disp.setCursor(nTxtX,nCurPosY);
+      #endif
     }
 
   } // while(1)
 
   // Restore the font
   m_disp.setFont();
+
+  #if defined(DRV_DISP_ADAGFX_RA8875)
+  m_disp.graphicsMode();
+  #endif
 
   return true;
 }
