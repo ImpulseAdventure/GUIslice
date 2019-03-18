@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.11.1
+// - Version 0.11.2
 // =======================================================================
 //
 // The MIT License
