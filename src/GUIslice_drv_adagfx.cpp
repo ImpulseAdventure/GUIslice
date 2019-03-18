@@ -1800,7 +1800,11 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     }
 
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
+    pGui->nDisp0W = LCDWIDTH;
+    pGui->nDisp0H = LCDHEIGHT;
     // No support for rotation in PCD8544 library
+    pGui->nDispW = LCDWIDTH;
+    pGui->nDispH = LCDHEIGHT;
 
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     m_disp.setRotation(0);
