@@ -565,6 +565,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  uint16_t  nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   char      ch;
 
   // Initialize the font and positioning
@@ -575,10 +576,16 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Driver-specific overrides
   #if defined(DRV_DISP_ADAGFX_RA8875)
-  m_disp.textMode();
-  m_disp.textEnlarge(nTxtScale);
-  m_disp.textColor(nColRaw, nColRaw);
-  m_disp.textSetCursor(nTxtX,nTxtY);
+    // TODO: Handle custom fonts in RA8875 mode
+    // - Need to leverage the setFont() call above
+    // - Might need to use RA8875 graphicsMode() and setXY()?
+    m_disp.textMode();
+    // Ensure we have valid text scale (Adafruit-GFX convention is >=1)
+    nTxtScale = (nTxtScale > 0) : nTxtScale : 0;
+    // Adapt to RA8875 text scaling with 0-based notation
+    m_disp.textEnlarge(nTxtScale-1);
+    m_disp.textColor(nColRaw, nColBgRaw);
+    m_disp.textSetCursor(nTxtX,nTxtY);
   #endif
 
   // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
@@ -604,12 +611,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
     // Render the character
     #if defined(DRV_DISP_ADAGFX_RA8875)
-    char acBuf[2];
-    acBuf[0] = ch;
-    acBuf[1] = 0;
-    m_disp.textWrite(acBuf);
+      m_disp.textWrite((const char *)&ch, 1);
     #else
-    m_disp.print(ch);
+      m_disp.print(ch);
     #endif
 
     // Handle multi-line text:
@@ -617,12 +621,12 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     // the Y cursor but reset the X cursor to 0. Therefore we need to
     // readjust the X cursor to our aligned bounding box.
     if (ch == '\n') {
-      #if defined(DRV_DISP_ADAGFX_RA8875)
-      int16_t nCurPosY = m_disp.getCursorY(); // FIXME: not supported in RA8875?
-      m_disp.textSetCursor(nTxtX,nCurPosY);
-      #else
       int16_t nCurPosY = m_disp.getCursorY();
-      m_disp.setCursor(nTxtX,nCurPosY);
+      #if defined(DRV_DISP_ADAGFX_RA8875)
+        // TODO: Is getCursorY() supported in RA8875 mode?
+        m_disp.textSetCursor(nTxtX,nCurPosY);
+      #else
+        m_disp.setCursor(nTxtX,nCurPosY);
       #endif
     }
 
@@ -632,7 +636,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setFont();
 
   #if defined(DRV_DISP_ADAGFX_RA8875)
-  m_disp.graphicsMode();
+    // TODO: Not entirely sure if this is necessary
+    m_disp.graphicsMode();
   #endif
 
   return true;
