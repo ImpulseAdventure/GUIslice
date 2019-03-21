@@ -1,9 +1,22 @@
 //
 // GUIslice Library Examples
+// - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 31 (Arduino):
-//     Demonstrate listbox control with scrollbar
+// - Example 31 (Arduino): Listbox + Scrollbar
+//   - Demonstrates Listbox control (single-column) with scrollbar
+//   - Shows callback notifications for Listbox
+//   - Provide example of additional Adafruit-GFX fonts
+//     (see USE_EXTRA_FONTS)
+//   - NOTE: This is the simple version of the example without
+//     optimizing for memory consumption. Therefore, it may not
+//     run on Arduino devices with limited memory. A "minimal"
+//     version is located in the "arduino_min" folder which includes
+//     FLASH memory optimization for reduced memory devices.
+//
+// ARDUINO NOTES:
+// - GUIslice_config.h must be edited to match the pinout connections
+//   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
 //
 
 #include "GUIslice.h"
