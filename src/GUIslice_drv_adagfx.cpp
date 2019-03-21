@@ -581,7 +581,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     // - Might need to use RA8875 graphicsMode() and setXY()?
     m_disp.textMode();
     // Ensure we have valid text scale (Adafruit-GFX convention is >=1)
-    nTxtScale = (nTxtScale > 0) : nTxtScale : 0;
+    nTxtScale = (nTxtScale > 0)? : nTxtScale : 0;
     // Adapt to RA8875 text scaling with 0-based notation
     m_disp.textEnlarge(nTxtScale-1);
     m_disp.textColor(nColRaw, nColBgRaw);
