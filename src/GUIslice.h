@@ -3158,6 +3158,19 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
 
+/// Handle dispatch of touch (up,down,move) events to compound elements sub elements
+///
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eTouch:      Touch event type
+/// \param[in]  nRelX:       Touch X coord relative to element
+/// \param[in]  nRelY:       Touch Y coord relative to element
+/// \param[in]  pCollect:    Collection containing sub elements
+///
+/// \return true if success, false otherwise
+///
+bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, int16_t nRelX, int16_t nRelY, gslc_tsCollect* pCollect);
+
 
 /// Handle direct input events within the element collection
 ///
@@ -3168,6 +3181,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 /// \return none
 ///
 void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
+
 
 
 // ------------------------------------------------------------------------
