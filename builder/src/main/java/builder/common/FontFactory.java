@@ -104,18 +104,18 @@ public class FontFactory {
       instance.readFonts(linuxCVS,linuxFonts,linuxMap);
       
       // setup mono font tables
-      MonoPlainSizes[0] = new Dimension(9,14);
-      MonoPlainSizes[1] = new Dimension(13,19);
-      MonoPlainSizes[2] = new Dimension(19,30);
-      MonoPlainSizes[3] = new Dimension(26,39);
+      MonoPlainSizes[0] = new Dimension(11,14);
+      MonoPlainSizes[1] = new Dimension(14,19);
+      MonoPlainSizes[2] = new Dimension(21,30);
+      MonoPlainSizes[3] = new Dimension(28,39);
       MonoBoldSizes[0] = new Dimension(11,16);
       MonoBoldSizes[1] = new Dimension(14,22);
       MonoBoldSizes[2] = new Dimension(21,31);
       MonoBoldSizes[3] = new Dimension(28,41);
-      MonoItalicSizes[0] = new Dimension(10,14);
-      MonoItalicSizes[1] = new Dimension(13,20);
-      MonoItalicSizes[2] = new Dimension(17,30);
-      MonoItalicSizes[3] = new Dimension(25,39);
+      MonoItalicSizes[0] = new Dimension(11,14);
+      MonoItalicSizes[1] = new Dimension(14,20);
+      MonoItalicSizes[2] = new Dimension(21,30);
+      MonoItalicSizes[3] = new Dimension(28,39);
       MonoBoldItalicSizes[0] = new Dimension(11,16);
       MonoBoldItalicSizes[1] = new Dimension(14,22);
       MonoBoldItalicSizes[2] = new Dimension(21,31);
@@ -377,9 +377,9 @@ public class FontFactory {
           break;
         }
       } else {
-        String acHeight = "a";
+        String acHeight = "p$";
         String acWidth  = "W";
-        Font tmpFont = createFont("Monospaced", item.getLogicalSize(), item.getLogicalStyle());
+        Font tmpFont = createFont(item.getLogicalName(), item.getLogicalSize(), item.getLogicalStyle());
         Dimension txtHeight = measureText(acHeight, tmpFont);
         Dimension txtWidth = measureText(acWidth, tmpFont);
         nChSz.width = txtWidth.width-4;

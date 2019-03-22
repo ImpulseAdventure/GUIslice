@@ -689,6 +689,9 @@ public class CodeGenerator {
   @SuppressWarnings("unchecked")
   public String generateCode(String folder, String fileName, List<PagePane> pages) {
     this.pages = pages;
+    countCheckBoxes = 0;
+    countGauges = 0;
+    countSliders = 0;
     GeneralModel generalModel = (GeneralModel) GeneralEditor.getInstance().getModel();
     screenWidth = generalModel.getWidth();
     screenHeight = generalModel.getHeight();
@@ -777,6 +780,9 @@ public class CodeGenerator {
       throws TestException, IOException {
     target = testPlatform;
     this.pages =  pages;
+    countCheckBoxes = 0;
+    countGauges = 0;
+    countSliders = 0;
     background = Color.GRAY;
     maxstr_len = 100;
     listOfTemplates = new ArrayList[32];
