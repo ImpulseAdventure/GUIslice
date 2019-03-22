@@ -2749,7 +2749,21 @@ void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlag
 ///
 /// \return Pointer to Element after ensuring that it is accessible from RAM
 ///
-gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+// TODO: Mark this as public API
+gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
+
+
+/// Returns a pointer to an element from an element reference.
+/// This is a wrapper for GetElemFromRef() including debug checking
+/// for invalid pointers.
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Pointer to Element Reference
+/// \param[in]  nLineNum:     Line number from calling function (ie. __LINE__)
+///
+/// \return Pointer to Element after ensuring that it is accessible from RAM
+///
+gslc_tsElem* gslc_GetElemFromRefD(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nLineNum);
 
 /// Returns a pointer to the data structure associated with an extended element.
 /// - Example usage:
