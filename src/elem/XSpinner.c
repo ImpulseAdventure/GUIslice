@@ -299,15 +299,10 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
   return false;
 #else
 
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerClick";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
 
   // Fetch the parent of the clicked element which is the compound
   // element itself. This enables us to access the extra control data.
