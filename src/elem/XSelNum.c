@@ -374,23 +374,10 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   return false;
 #else
 
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsGui*           pGui = NULL;
-  gslc_tsElemRef*       pElemRef = NULL;
-  gslc_tsElem*          pElem = NULL;
-  gslc_tsXSelNum*       pSelNum = NULL;
-
-
-  // Typecast the parameters to match the GUI
-  pGui      = (gslc_tsGui*)(pvGui);
-  pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-  pSelNum   = (gslc_tsXSelNum*)(pElem->pXData);
-
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsXSelNum* pSelNum = (gslc_tsXSelNum*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SELNUM, __LINE__);
+  if (!pSelNum) return false;
 
   // Handle any compound element operations
   switch(eTouch) {
@@ -410,47 +397,8 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 
   // Get Collection
   gslc_tsCollect* pCollect = &pSelNum->sCollect;
+  return gslc_CollectTouchCompound(pvGui, pvElemRef, eTouch, nRelX, nRelY, pCollect);
 
-  // Now reset the in/out status of the touch event since
-  // we are now looking for coordinates of a sub-element
-  // rather than the compound element. gslc_CollectTouch()
-  // is responsible for determining in/out status at the
-  // next level down in the element hierarchy.
-  switch (eTouch) {
-    case GSLC_TOUCH_DOWN_IN:
-    case GSLC_TOUCH_DOWN_OUT:
-      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
-      eTouch |=  GSLC_TOUCH_DOWN;
-      break;
-    case GSLC_TOUCH_UP_IN:
-    case GSLC_TOUCH_UP_OUT:
-      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
-      eTouch |=  GSLC_TOUCH_UP;
-      break;
-    case GSLC_TOUCH_MOVE_IN:
-    case GSLC_TOUCH_MOVE_OUT:
-      eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
-      eTouch |=  GSLC_TOUCH_MOVE;
-      break;
-    default:
-      break;
-  }
-
-  // Cascade the touch event to the sub-element collection
-  // - Note that we use absolute coordinates
-  gslc_tsEventTouch sEventTouch;
-  sEventTouch.nX      = pElem->rElem.x + nRelX;
-  sEventTouch.nY      = pElem->rElem.y + nRelY;
-  sEventTouch.eTouch  = eTouch;
-  gslc_CollectTouch(pGui,pCollect,&sEventTouch);
-
-  // Mark compound element as needing redraw if any
-  // sub-element needs redraw
-  if (gslc_CollectGetRedraw(pGui,pCollect)) {
-    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
-  }
-
-  return true;
   #endif // !DRV_TOUCH_NONE
 }
 #endif // GSLC_FEATURE_COMPOUND
