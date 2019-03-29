@@ -579,17 +579,21 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Driver-specific overrides
   #if defined(DRV_DISP_ADAGFX_RA8875)
-    // TODO: Handle custom fonts in RA8875 mode
-    // - Need to leverage the setFont() call above
-    // - Might need to use RA8875 graphicsMode() and setXY()?
-    m_disp.textMode();
-    // Ensure we have valid text scale (Adafruit-GFX convention is >=1)
-    nTxtScale = (nTxtScale > 0)? nTxtScale : 0;
-    // Adapt to RA8875 text scaling with 0-based notation
-    m_disp.textEnlarge(nTxtScale-1);
-    m_disp.textColor(nColRaw, nColBgRaw);
-    m_disp.textSetCursor(nTxtX,nTxtY);
-  #endif
+    // TODO: Add a mode to use the RA8875's internal ROM font
+    // - Note that it is larger than the default Adafruit-GFX font
+    //   so for now we won't use it. It is expected that it should
+    //   be much faster.
+    bool bInternal8875Font = false;
+
+    // When using the internal RA8875 font, use the textEnlarge
+    if (bInternal8875Font) {
+      nTxtScale = (nTxtScale > 0) ? nTxtScale : 0;
+      // Adapt to RA8875 text scaling with 0-based notation
+      m_disp.textEnlarge(nTxtScale - 1);
+      m_disp.textColor(nColRaw, nColBgRaw);
+      m_disp.textSetCursor(nTxtX, nTxtY);
+    }
+  #endif // DRV_DISP_*
 
   // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
   bool bProg = false;
@@ -614,8 +618,21 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
     // Render the character
     #if defined(DRV_DISP_ADAGFX_RA8875)
-      m_disp.textWrite((const char *)&ch, 1);
+      // When using custom fonts, we 
+      if (bInternal8875Font) {
+        // Use the default font, so call the RA8875 textWrite() function
+        m_disp.textWrite((const char *)&ch, 1);
+      } else {
+        // Use Adafruit-GFX for rendering
+        // - When using a custom Adafruit-GFX font with RA8875, we need to
+        //   call the Adafruit-GFX base class write() function instead of
+        //   the overloaded version in Adafruit_RA8875
+        //   This is because Adafruit_RA8875 has overloaded the write() calls
+        //   in a way that is not compatible with the Adafruit-GFX font rendering.
+        m_disp.Adafruit_GFX::write(ch);
+      }
     #else
+      // Call Adafruit-GFX for rendering
       m_disp.print(ch);
     #endif
 
@@ -626,8 +643,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     if (ch == '\n') {
       int16_t nCurPosY = m_disp.getCursorY();
       #if defined(DRV_DISP_ADAGFX_RA8875)
+      if (bInternal8875Font) {
         // TODO: Is getCursorY() supported in RA8875 mode?
-        m_disp.textSetCursor(nTxtX,nCurPosY);
+        m_disp.textSetCursor(nTxtX, nCurPosY);
+      }
       #else
         m_disp.setCursor(nTxtX,nCurPosY);
       #endif
@@ -637,11 +656,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Restore the font
   m_disp.setFont();
-
-  #if defined(DRV_DISP_ADAGFX_RA8875)
-    // TODO: Not entirely sure if this is necessary
-    m_disp.graphicsMode();
-  #endif
 
   return true;
 }
