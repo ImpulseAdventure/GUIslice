@@ -255,6 +255,9 @@ extern "C" {
   const char* m_acDrvTouch = "SIMPLE(Analog)";
   TouchScreen m_touch = TouchScreen(ADATOUCH_PIN_XP, ADATOUCH_PIN_YP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YM, ADATOUCH_RX);
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_RA8875)
+  const char* m_acDrvTouch = "RA8875(internal)";
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046_STM)
   const char* m_acDrvTouch = "XPT2046_STM(SPI-HW)";
   // Create an SPI class for XPT2046 access
@@ -1290,6 +1293,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     // during the DrvGetTouch() function.
     //m_touch.setRotation(0);
     return true;
+  #elif defined(DRV_TOUCH_ADA_RA8875)
+    m_disp.touchEnable(true);
+    return true;
   #elif defined(DRV_TOUCH_INPUT)
     // Nothing more to initialize for GPIO input control mode
     return true;
@@ -1587,6 +1593,42 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     }
 
   // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_RA8875)
+    uint16_t  nRawX,nRawY;
+
+    // Use Adafruit_RA8875 display driver for touch
+    // Note that it doesn't support a "pressure" reading
+    if (m_disp.touched()) {
+      m_disp.touchRead(&nRawX,&nRawY);
+
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = 255;  // Select arbitrary non-zero value
+      m_bLastTouched = true;
+      bValid = true;
+
+      // The Adafruit_RA8875 touched() implementation relies on reading
+      // the status of the Touch Panel interrupt register bit. The touchRead()
+      // call clears the status of the interrupt. It appears that the
+      // interrupt requires moderate time to propagate (so that it can be
+      // available for the next call to touched). Therefore, a 1ms delay
+      // is inserted here. Note that a similar delay can be found in
+      // the Adafruit example code.
+      delay(1);
+
+    } else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_HANDLER)
 
     uint16_t  nRawX,nRawY;
@@ -1746,6 +1788,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
   bool bChange = true;
+  bool bSupportRotation = true;
 
   // Determine if the new orientation has swapped axes
   // versus the native orientation (0)
@@ -1836,9 +1879,10 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = LCDHEIGHT;
 
   #elif defined(DRV_DISP_ADAGFX_RA8875)
+    // No support for rotation in Adafruit_RA8875 library
+    bSupportRotation = false;
     pGui->nDisp0W = m_disp.width();
     pGui->nDisp0H = m_disp.height();
-    // No support for rotation in Adafruit_RA8875 library
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
 
@@ -1853,8 +1897,16 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
   #endif
 
   // Update the clipping region
-  gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-  gslc_DrvSetClipRect(pGui,&rClipRect);
+  gslc_tsRect rClipRect = { 0,0,pGui->nDispW,pGui->nDispH };
+  gslc_DrvSetClipRect(pGui, &rClipRect);
+
+  if (!bSupportRotation) {
+    // No support for rotation, so override rotation indicator to 0
+    // This will also ensure that nSwapXY / nFlipX / nFlipY all remain 0
+    pGui->nRotation = 0;
+    // Ensure no redraw forced due to change in rotation value
+    bChange = false;
+  }
 
   // Now update the touch remapping
   #if !defined(DRV_TOUCH_NONE)
