@@ -585,8 +585,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     //   be much faster.
     bool bInternal8875Font = false;
 
-    // When using the internal RA8875 font, use the textEnlarge
     if (bInternal8875Font) {
+      // Enter text mode when using RA8875 built-in fonts
+      m_disp.textMode();
       nTxtScale = (nTxtScale > 0) ? nTxtScale : 0;
       // Adapt to RA8875 text scaling with 0-based notation
       m_disp.textEnlarge(nTxtScale - 1);
@@ -653,6 +654,13 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
 
   } // while(1)
+
+  #if defined(DRV_DISP_ADAGFX_RA8875)
+  if (bInternal8875Font) {
+    // Return to RA8875 graphics mode
+    m_disp.graphicsMode();
+  }
+  #endif // DRV_DISP_ADAGFX_RA8875
 
   // Restore the font
   m_disp.setFont();
