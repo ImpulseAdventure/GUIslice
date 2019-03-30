@@ -721,7 +721,13 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #if defined(DRV_DISP_ADAGFX_RA8875)
+    // It appears that Adafruit_RA8875 has bug in fillRect() that causes it
+    // to overdraw width and height by 1 pixel. Correct it here.
+    m_disp.fillRect(rRect.x,rRect.y,rRect.w-1,rRect.h-1,nColRaw);
+  #else
+    m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #endif
   return true;
 }
 
