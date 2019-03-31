@@ -40,13 +40,17 @@
 enum {E_PG_MAIN,E_PG_EXTRA};
 enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
       E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
-      E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3};
+      E_ELEM_COMP1,E_ELEM_COMP2,E_ELEM_COMP3,
+      E_ELEM_TXT_COMP1,E_ELEM_TXT_COMP2,E_ELEM_TXT_COMP3};
 enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
 
 bool      m_bQuit = false;
 
 // Free-running counter for display
 unsigned  m_nCount = 0;
+int16_t   m_nComp1 = 0;
+int16_t   m_nComp2 = 0;
+int16_t   m_nComp3 = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                2
@@ -54,7 +58,7 @@ unsigned  m_nCount = 0;
 
 // Define the maximum number of elements per page
 #define MAX_ELEM_PG_MAIN        9                 // # Elems total on Main page
-#define MAX_ELEM_PG_EXTRA       7                 // # Elems total on Extra page
+#define MAX_ELEM_PG_EXTRA       10                // # Elems total on Extra page
 #define MAX_ELEM_PG_MAIN_RAM    MAX_ELEM_PG_MAIN  // # Elems in RAM
 #define MAX_ELEM_PG_EXTRA_RAM   MAX_ELEM_PG_EXTRA // # Elems in RAM
 
@@ -68,7 +72,7 @@ gslc_tsElem                 m_asExtraElem[MAX_ELEM_PG_EXTRA_RAM];
 gslc_tsElemRef              m_asExtraElemRef[MAX_ELEM_PG_EXTRA];
 
 gslc_tsXGauge               m_sXGauge;
-gslc_tsXSpinner              m_sXSpinner[3];
+gslc_tsXSpinner             m_sXSpinner[3];
 
 
 #define MAX_STR             8
@@ -76,7 +80,10 @@ gslc_tsXSpinner              m_sXSpinner[3];
   // Save some element pointers for quick access
   gslc_tsElemRef*  m_pElemCnt = NULL;
   gslc_tsElemRef*  m_pElemProgress = NULL;
-
+  gslc_tsElemRef*  m_pElemComp1 = NULL;
+  gslc_tsElemRef*  m_pElemComp2 = NULL;
+  gslc_tsElemRef*  m_pElemComp3 = NULL;
+  
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
@@ -95,6 +102,31 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     } else if (nElemId == E_ELEM_BTN_BACK) {
       gslc_SetPageCur(&m_gui,E_PG_MAIN);
     }
+  }
+  return true;
+}
+
+// Common Input Ready callback
+bool CbInputCommon(void* pvGui,void *pvElemRef)
+{
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem* pElem = pElemRef->pElem;
+  
+  char acTxtNum[4];
+
+  // From the element's ID we can determine which input field is ready.
+  if (pElem->nId == E_ELEM_COMP1) {
+    m_nComp1 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[0]);
+    snprintf(acTxtNum, 4, "%d", m_nComp1);
+    gslc_ElemSetTxtStr(&m_gui,m_pElemComp1,acTxtNum);
+  } else if (pElem->nId == E_ELEM_COMP2) {
+    m_nComp2 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[1]);
+    snprintf(acTxtNum, 4, "%d", m_nComp2);
+    gslc_ElemSetTxtStr(&m_gui,m_pElemComp2,acTxtNum);
+  } else if (pElem->nId == E_ELEM_COMP3) {
+    m_nComp3 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[2]);
+    snprintf(acTxtNum, 4, "%d", m_nComp3);
+    gslc_ElemSetTxtStr(&m_gui,m_pElemComp3,acTxtNum);
   }
   return true;
 }
@@ -158,7 +190,7 @@ bool InitOverlays()
 
   // Add compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSpinner[0],
-    (gslc_tsRect){160,60,120,50},E_FONT_BTN);
+    160,60,0,100,m_nComp1,1,E_FONT_BTN,20,&CbInputCommon);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -173,21 +205,38 @@ bool InitOverlays()
 
 
   // Create a few labels
-  int16_t    nPosY = 50;
-  int16_t    nSpaceY = 20;
+  int16_t    nPosY = 60;
+  int16_t    nSpaceY = 40;
+  
+  // create data 1 display count
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)"Data 1",0,E_FONT_TXT); nPosY += nSpaceY;
+    (char*)"Data 1:",0,E_FONT_TXT); 
+  static char mCompStr1[4] = "0";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COMP1,E_PG_EXTRA,(gslc_tsRect){120,nPosY,50,10},
+    mCompStr1,sizeof(mCompStr1),E_FONT_TXT);
+  m_pElemComp1 = pElemRef; // Save for quick access
+  // create data 2 display count
+  nPosY += nSpaceY;
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)"Data 2",0,E_FONT_TXT); nPosY += nSpaceY;
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
-    (char*)"Data 3",0,E_FONT_TXT); nPosY += nSpaceY;
-
-  // Add compound element
+    (char*)"Data 2:",0,E_FONT_TXT); 
+  static char mCompStr2[4] = "0";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COMP2,E_PG_EXTRA,(gslc_tsRect){120,nPosY,50,10},
+    mCompStr2,sizeof(mCompStr1),E_FONT_TXT);
+  m_pElemComp2 = pElemRef; // Save for quick access
+  // Add XSpinner compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSpinner[1],
-    (gslc_tsRect){130,60,120,50},E_FONT_BTN);
-
+    200,nPosY,0,100,m_nComp2,1,E_FONT_BTN,20,&CbInputCommon);
+  // create data 3 display count
+  nPosY += nSpaceY;
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
+    (char*)"Data 3:",0,E_FONT_TXT); 
+  static char mCompStr3[4] = "0";
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COMP3,E_PG_EXTRA,(gslc_tsRect){120,nPosY,50,10},
+    mCompStr2,sizeof(mCompStr3),E_FONT_TXT);
+  m_pElemComp3 = pElemRef; // Save for quick access
+  // Add XSpinner compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSpinner[2],
-    (gslc_tsRect){130,120,120,50},E_FONT_BTN);
+    200,160,0,100,m_nComp3,1,E_FONT_BTN,20,&CbInputCommon);
 
 
   return true;

@@ -486,6 +486,9 @@ typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElemRef);
 /// Callback function for pin polling
 typedef bool (*GSLC_CB_PIN_POLL)(void* pvGui,int16_t* pnPinInd,int16_t* pnPinVal);
 
+/// Callback function for element input ready
+typedef bool (*GSLC_CB_INPUT)(void* pvGui,void* pvElemRef);
+
 // -----------------------------------------------------------------------
 // Structures
 // -----------------------------------------------------------------------

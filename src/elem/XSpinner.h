@@ -63,7 +63,12 @@ extern "C" {
 typedef struct {
 
   // Core functionality for Spinner
-  int16_t             nCounter;       ///< Counter for demo purposes
+  int16_t             nMin;           ///< Minimum control value
+  int16_t             nMax;           ///< Maximum control value
+  int16_t             nIncr;          ///< Increment by value
+  int16_t             nCounter;       ///< Current value
+  GSLC_CB_INPUT       pfuncXInput;    ///< Callback func ptr for input ready
+  gslc_tsElemRef*     pElemRef;       ///< Save our ElemRef for the callback
 
   // Internal sub-element members
   gslc_tsCollect      sCollect;       ///< Collection management for sub-elements
@@ -88,13 +93,21 @@ typedef struct {
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
-/// \param[in]  rElem:       Rectangle coordinates defining element size
+/// \param[in]  nX0:         X Spinner Starting Coordinate 
+/// \param[in]  nY0:         Y Spinner Starting Coordinate 
+/// \param[in]  nMin:        Minimum value of Spinner
+/// \param[in]  nMax:        Maximum value of Spinner
+/// \param[in]  nVal:        Starting value of Spinner
+/// \param[in]  nIncr:       Increment Spinner by this value
 /// \param[in]  nFontId:     Font ID to use for drawing the element
+/// \param[in]  nButtonSz:   Size of individual buttons
+/// \param[in]  cbInput:     Callback for touch events
 ///
 /// \return Pointer to Element or NULL if failure
 ///
-gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-  gslc_tsXSpinner* pXData,gslc_tsRect rElem,int8_t nFontId);
+gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage, gslc_tsXSpinner* pXData,
+  int16_t nX0, int16_t nY0, int16_t nMin, int16_t nMax, int16_t nVal, int16_t nIncr,
+  int8_t nFontId, int8_t nButtonSz, GSLC_CB_INPUT cbInput);
 
 
 ///
