@@ -409,6 +409,12 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   //  nMin,nMax,nRng,pGauge->nGaugeVal,fScl,nGaugeMid,rGauge.x,rGauge.w);
   #endif
 
+  // Draw a frame around the gauge
+  // - Only draw this during full redraw
+  if (eRedraw == GSLC_REDRAW_FULL) {
+    gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
+  }
+
   // To avoid flicker, we only erase the portion of the gauge
   // that isn't "filled". Determine the gauge empty region and erase it
   // There are two empty regions (one in negative and one in positive)
@@ -446,8 +452,6 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   }
 
 
-  // Draw a frame around the gauge
-  gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
 
   return true;
 }

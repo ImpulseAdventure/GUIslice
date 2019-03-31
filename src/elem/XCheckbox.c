@@ -450,7 +450,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
   if (!pCheckbox) return false;
 
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  //gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   bool  bRadio      = pCheckbox->bRadio;
   bool  bCheckedOld = pCheckbox->bChecked;

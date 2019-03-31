@@ -31,6 +31,7 @@
 // ------------------------------------------------------------
 #if   defined(DRV_TOUCH_ADA_STMPE610)
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+#elif defined(DRV_TOUCH_ADA_RA8875)
 #elif defined(DRV_TOUCH_XPT2046_STM)
 #elif defined(DRV_TOUCH_XPT2046_PS)
 #else
@@ -799,7 +800,7 @@ void DrawCalibResult()
 {
   snprintf(m_acTxt, MAX_STR, "ADATOUCH_X_MIN: %u", m_nTouchCalXMin);
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 00, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
-  snprintf(m_acTxt, MAX_STR, "ADATOUCH_U_MIN: %u", m_nTouchCalYMin);
+  snprintf(m_acTxt, MAX_STR, "ADATOUCH_Y_MIN: %u", m_nTouchCalYMin);
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 20, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
   snprintf(m_acTxt, MAX_STR, "ADATOUCH_X_MAX: %u", m_nTouchCalXMax);
   gslc_DrvDrawTxt(&m_gui, m_rReport.x, m_rReport.y + 40, m_pFont, m_acTxt, GSLC_TXT_DEFAULT, GSLC_COL_YELLOW, GSLC_COL_BLACK);
