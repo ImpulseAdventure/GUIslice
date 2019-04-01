@@ -143,13 +143,17 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   int16_t nOffsetX = rElem.x;
   int16_t nOffsetY = rElem.y;
 
+  gslc_tsRect rSubElem;
+
+  rSubElem = (gslc_tsRect) { nOffsetX+40,nOffsetY+10,30,30 };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},"+",0,nFontId,&gslc_ElemXSelNumClick);
+    rSubElem,"+",0,nFontId,&gslc_ElemXSelNumClick);
   #else
   strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+40,nOffsetY+10,30,30},pXData->acElemTxt[0],SELNUM_STR_LEN,
+    rSubElem,pXData->acElemTxt[0],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
   #endif
   gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
@@ -157,13 +161,15 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
   gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
 
+  rSubElem = (gslc_tsRect) { nOffsetX+80,nOffsetY+10,30,30 };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},"-",0,nFontId,&gslc_ElemXSelNumClick);
+    rSubElem,"-",0,nFontId,&gslc_ElemXSelNumClick);
   #else
   strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+80,nOffsetY+10,30,30},pXData->acElemTxt[1],SELNUM_STR_LEN,
+    rSubElem,pXData->acElemTxt[1],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
   #endif
   gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
@@ -171,13 +177,15 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
   gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
 
+  rSubElem = (gslc_tsRect) { nOffsetX+10,nOffsetY+10,20,30 };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},"0",0,nFontId);
+    rSubElem,"0",0,nFontId);
   #else
   strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    (gslc_tsRect){nOffsetX+10,nOffsetY+10,20,30},pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
+    rSubElem,pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif
   pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
   gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
@@ -213,25 +221,13 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 //   and then redraw the sub-element collection.
 bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  // Typecast the parameters to match the GUI and element types
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsXSelNum* pSelNum = (gslc_tsXSelNum*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SELNUM, __LINE__);
+  if (!pSelNum) return false;
 
   bool bGlow = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
-
-  // Fetch the element's extended data structure
-  gslc_tsXSelNum* pSelNum;
-  pSelNum = (gslc_tsXSelNum*)(pElem->pXData);
-  if (pSelNum == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumDraw(%s) pXData is NULL\n","");
-    return false;
-  }
 
   // Draw the compound element fill (background)
   // - Should only need to do this in full redraw
@@ -251,7 +247,9 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   //   of type box.
   // - We don't need to show any glowing of the compound element
 
-  gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+  if (eRedraw == GSLC_REDRAW_FULL) {
+    gslc_DrawFrameRect(pGui, pElem->rElem, (bGlow) ? pElem->colElemFrameGlow : pElem->colElemFrame);
+  }
 
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
@@ -311,15 +309,10 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
   return false;
 #else
 
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumClick";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
 
   // Fetch the parent of the clicked element which is the compound
   // element itself. This enables us to access the extra control data.
@@ -349,14 +342,14 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
 
     if (nSubElemId == SELNUM_ID_BTN_INC) {
       // Increment button
-      if (nCounter<100) {
+      if (nCounter < 100) {
         nCounter++;
       }
       gslc_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
 
     } else if (nSubElemId == SELNUM_ID_BTN_DEC) {
       // Decrement button
-      if (nCounter>0) {
+      if (nCounter > 0) {
         nCounter--;
       }
       gslc_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
@@ -378,22 +371,6 @@ bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsXSelNum* pSelNum = (gslc_tsXSelNum*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SELNUM, __LINE__);
   if (!pSelNum) return false;
-
-  // Handle any compound element operations
-  switch(eTouch) {
-    case GSLC_TOUCH_DOWN_IN:
-    case GSLC_TOUCH_MOVE_IN:
-      gslc_ElemSetGlow(pGui,pElemRef,true);
-      break;
-    case GSLC_TOUCH_MOVE_OUT:
-    case GSLC_TOUCH_UP_IN:
-    case GSLC_TOUCH_UP_OUT:
-    default:
-      gslc_ElemSetGlow(pGui,pElemRef,false);
-      break;
-  }
-
-  // Handle any sub-element operations
 
   // Get Collection
   gslc_tsCollect* pCollect = &pSelNum->sCollect;
