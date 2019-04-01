@@ -174,17 +174,17 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   int16_t nOffsetX = rElem.x;
   int16_t nOffsetY = rElem.y;
 
+  gslc_tsRect rSubElem;
+
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nOffsetY, nButtonSz, nButtonSz };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX + nTxtBoxW, nOffsetY, nButtonSz, nButtonSz
-  }, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
+    rSubElem, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
   #else
   strncpy(pXData->acElemTxt[0], "\030", SPINNER_STR_LEN - 1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX + nTxtBoxW, nOffsetY, nButtonSz, nButtonSz
-  }, pXData->acElemTxt[0], SPINNER_STR_LEN,
+    rSubElem, pXData->acElemTxt[0], SPINNER_STR_LEN,
       nFontId, &gslc_ElemXSpinnerClick);
   #endif
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
@@ -192,17 +192,15 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nOffsetY, nButtonSz, nButtonSz };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX + nTxtBoxW + nButtonSz, nOffsetY, nButtonSz, nButtonSz
-  }, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
+    rSubElem, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
   #else
   strncpy(pXData->acElemTxt[1], "\031", SPINNER_STR_LEN - 1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX + nTxtBoxW + nButtonSz, nOffsetY, nButtonSz, nButtonSz
-  }, pXData->acElemTxt[1], SPINNER_STR_LEN,
+    rSubElem, pXData->acElemTxt[1], SPINNER_STR_LEN,
       nFontId, &gslc_ElemXSpinnerClick);
   #endif
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
@@ -210,17 +208,15 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
+  rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nButtonSz };
+  rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX, nOffsetY, nTxtBoxW, nButtonSz
-  }, (char*)acTxtNum, 0, nFontId);
+    rSubElem, (char*)acTxtNum, 0, nFontId);
   #else
   strncpy(pXData->acElemTxt[2], acTxtNum, SPINNER_STR_LEN - 1);
   pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
-    (gslc_tsRect) {
-    nOffsetX, nOffsetY, nTxtBoxW, nButtonSz
-  }, pXData->acElemTxt[2], SPINNER_STR_LEN, nFontId);
+    rSubElem, pXData->acElemTxt[2], SPINNER_STR_LEN, nFontId);
   #endif
   gslc_ElemSetTxtAlign(pGui, pElemRefTmp, GSLC_ALIGN_MID_MID);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
@@ -288,7 +284,9 @@ bool gslc_ElemXSpinnerDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   //   of type box.
   // - We don't need to show any glowing of the compound element
 
-  gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+  if (eRedraw == GSLC_REDRAW_FULL) {
+    gslc_DrawFrameRect(pGui, pElem->rElem, (bGlow) ? pElem->colElemFrameGlow : pElem->colElemFrame);
+  }
 
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
@@ -418,26 +416,11 @@ bool gslc_ElemXSpinnerTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
   gslc_tsXSpinner* pSpinner = (gslc_tsXSpinner*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SPINNER, __LINE__);
   if (!pSpinner) return false;
 
-  // Handle any compound element operations
-  switch(eTouch) {
-    case GSLC_TOUCH_DOWN_IN:
-    case GSLC_TOUCH_MOVE_IN:
-      gslc_ElemSetGlow(pGui,pElemRef,true);
-      break;
-    case GSLC_TOUCH_MOVE_OUT:
-    case GSLC_TOUCH_UP_IN:
-    case GSLC_TOUCH_UP_OUT:
-    default:
-      gslc_ElemSetGlow(pGui,pElemRef,false);
-      break;
-  }
-
-  // Handle any sub-element operations
-
   // Get Collection
   gslc_tsCollect* pCollect = &pSpinner->sCollect;
 
   return gslc_CollectTouchCompound(pvGui, pvElemRef, eTouch, nRelX, nRelY, pCollect);
+
   #endif // !DRV_TOUCH_NONE
 }
 #endif // GSLC_FEATURE_COMPOUND
