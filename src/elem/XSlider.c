@@ -246,6 +246,10 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t         nTickLen  = pSlider->nTickLen;
   gslc_tsColor    colTick   = pSlider->colTick;
 
+  // Range check on nPos
+  if (nPos < nPosMin) { nPos = nPosMin; }
+  if (nPos > nPosMax) { nPos = nPosMax; }
+
   int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
   nX0 = pElem->rElem.x;
   nY0 = pElem->rElem.y;
