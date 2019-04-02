@@ -334,19 +334,10 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
     nScl = nElemW*32768/nRng;
   }
 
-  // Calculate the control midpoint (for display purposes)
-  if ((nMin == 0) && (nMax >= 0)) {
-    nGaugeMid = 0;
-  } else if ((nMin < 0) && (nMax > 0)) {
-    nTmpL     = -( (int32_t)nMin * (int32_t)nScl / 32768);
-    nGaugeMid = (int16_t)nTmpL;
-  } else if ((nMin < 0) && (nMax == 0)) {
-    nTmpL     = -( (int32_t)nMin * (int32_t)nScl / 32768);
-    nGaugeMid = (int16_t)nTmpL;
-  } else {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Unsupported gauge range [%d,%d]\n",nMin,nMax);
-    return false;
-  }
+  // Calculate the control midpoint/zeropoint (for display purposes)
+  nTmpL = -((int32_t)nMin * (int32_t)nScl / 32768);
+  nGaugeMid = (int16_t)nTmpL;
+
 
   // Calculate the length of the bar
   // - Use long mult/divide to avoid need for floating point
@@ -418,24 +409,29 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   // To avoid flicker, we only erase the portion of the gauge
   // that isn't "filled". Determine the gauge empty region and erase it
   // There are two empty regions (one in negative and one in positive)
+  int16_t nEmptyPos;
   if (bVert) {
     // Empty Region #1 (negative)
-    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nElemX1-nElemX0+1,nGaugeY0-nElemY0+1};
+    nEmptyPos = (nGaugeY0 > nElemY1) ? nElemY1 : nGaugeY0;
+    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nElemX1-nElemX0+1,nEmptyPos-nElemY0+1};
     rTmp = gslc_ExpandRect(rEmpty,-1,-1);
     gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
     // Empty Region #2 (positive)
-    rEmpty = (gslc_tsRect){nElemX0,nGaugeY1,nElemX1-nElemX0+1,nElemY1-nGaugeY1+1};
+    nEmptyPos = (nGaugeY1 < nElemY0) ? nElemY0 : nGaugeY1;
+    rEmpty = (gslc_tsRect){nElemX0,nEmptyPos,nElemX1-nElemX0+1,nElemY1-nEmptyPos+1};
     rTmp = gslc_ExpandRect(rEmpty,-1,-1);
     gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
   } else {
     // Empty Region #1 (negative)
-    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nGaugeX0-nElemX0+1,nElemY1-nElemY0+1};
+    nEmptyPos = (nGaugeX0 > nElemX1) ? nElemX1 : nGaugeX0;
+    rEmpty = (gslc_tsRect){nElemX0,nElemY0,nEmptyPos-nElemX0+1,nElemY1-nElemY0+1};
     rTmp = gslc_ExpandRect(rEmpty,-1,-1);
-    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
+    gslc_DrawFillRect(pGui, rTmp, pElem->colElemFill);
     // Empty Region #2 (positive)
-    rEmpty = (gslc_tsRect){nGaugeX1,nElemY0,nElemX1-nGaugeX1+1,nElemY1-nElemY0+1};
+    nEmptyPos = (nGaugeX1 < nElemX0) ? nElemX0 : nGaugeX1;
+    rEmpty = (gslc_tsRect){nEmptyPos,nElemY0,nElemX1-nEmptyPos+1,nElemY1-nElemY0+1};
     rTmp = gslc_ExpandRect(rEmpty,-1,-1);
-    gslc_DrawFillRect(pGui,rTmp,pElem->colElemFill);
+    gslc_DrawFillRect(pGui, rTmp, pElem->colElemFill);
   }
 
   // Draw the gauge fill region
@@ -446,9 +442,13 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
 
   // Draw the midpoint line
   if (bVert) {
-    gslc_DrawLine(pGui, nElemX0, nElemY0+nGaugeMid, nElemX1, nElemY0+nGaugeMid, pElem->colElemFrame);
+    if (nElemY0 + nGaugeMid < nElemY1) {
+      gslc_DrawLine(pGui, nElemX0, nElemY0 + nGaugeMid, nElemX1, nElemY0 + nGaugeMid, pElem->colElemFrame);
+    }
   } else {
-    gslc_DrawLine(pGui, nElemX0+nGaugeMid, nElemY0, nElemX0+nGaugeMid, nElemY1, pElem->colElemFrame);
+    if (nElemX0 + nGaugeMid < nElemX1) {
+      gslc_DrawLine(pGui, nElemX0 + nGaugeMid, nElemY0, nElemX0 + nGaugeMid, nElemY1, pElem->colElemFrame);
+    }
   }
 
 
