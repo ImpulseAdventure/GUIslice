@@ -88,6 +88,11 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
 
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
+
+  // Range check on nPos
+  if (nPos < nPosMin) { nPos = nPosMin; }
+  if (nPos > nPosMax) { nPos = nPosMax; }
+
   pXData->nPosMin         = nPosMin;
   pXData->nPosMax         = nPosMax;
   pXData->nPos            = nPos;
