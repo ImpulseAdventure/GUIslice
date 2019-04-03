@@ -91,10 +91,10 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   // determine size of our text box
   // first calculate number of digits required
   int nDigits, nTxtBoxW;
-  char acTxtNum[SPINNER_STR_LEN];
+  char acTxtNum[XSPINNER_STR_LEN];
   // FIXME: Consider replacing the sprintf() with an optimized function to
   //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
-  snprintf(acTxtNum, SPINNER_STR_LEN, "%d", nMax);
+  snprintf(acTxtNum, XSPINNER_STR_LEN, "%d", nMax);
   nDigits = strlen(acTxtNum);
   // Determine the maximum width of a digit, we will use button size for height.
   int16_t       nChOffsetX, nChOffsetY;
@@ -112,7 +112,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   rElem.h = nButtonSz;
 
   // set our intial value for our text field
-  snprintf(acTxtNum, SPINNER_STR_LEN - 1, "%d", nVal);
+  snprintf(acTxtNum, XSPINNER_STR_LEN - 1, "%d", nVal);
 
   gslc_tsElem sElem;
 
@@ -130,16 +130,10 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   pXData->nIncr = nIncr;
   pXData->pfuncXInput = cbInput;
 
-  // Determine the maximum number of elements that we can store
-  // in the sub-element array. We do this at run-time with sizeof()
-  // instead of using #define to avoid polluting the global namespace.
-  int16_t nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
-
-  // NOTE: The count parameters in CollectReset() must match the size of
-  //       the asElem[] array. It is used for bounds checking when we
-  //       add new elements.
-  // NOTE: We only use RAM for subelement storage
-  gslc_CollectReset(&pXData->sCollect, pXData->asElem, nSubElemMax, pXData->asElemRef, nSubElemMax);
+  // Initialize the collection of sub-elements within the compound element
+  // - XSELNUM_COMP_CNT defines the maximum number of sub-elements we have allocated space for
+  // - Note that this example shows RAM being used for storage
+  gslc_CollectReset(&pXData->sCollect, pXData->asElem, XSPINNER_COMP_CNT, pXData->asElemRef, XSPINNER_COMP_CNT);
 
 
   sElem.pXData = (void*)(pXData);
@@ -176,48 +170,34 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 
   gslc_tsRect rSubElem;
 
+  // Create button sub-element
   rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nOffsetY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
     rSubElem, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
-  #else
-  strncpy(pXData->acElemTxt[0], "\030", SPINNER_STR_LEN - 1);
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
-    rSubElem, pXData->acElemTxt[0], SPINNER_STR_LEN,
-      nFontId, &gslc_ElemXSpinnerClick);
-  #endif
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
   gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
+  // Create button sub-element
   rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nOffsetY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
     rSubElem, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
-  #else
-  strncpy(pXData->acElemTxt[1], "\031", SPINNER_STR_LEN - 1);
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
-    rSubElem, pXData->acElemTxt[1], SPINNER_STR_LEN,
-      nFontId, &gslc_ElemXSpinnerClick);
-  #endif
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
   gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
+  // Create dynamic text sub-element
+  // - Note that we are using string storage in the extended element data
+  //   structure (pXData).
   rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
+  strncpy(pXData->acElemTxt[0], acTxtNum, XSPINNER_STR_LEN - 1);
   pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
-    rSubElem, (char*)acTxtNum, 0, nFontId);
-  #else
-  strncpy(pXData->acElemTxt[2], acTxtNum, SPINNER_STR_LEN - 1);
-  pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
-    rSubElem, pXData->acElemTxt[2], SPINNER_STR_LEN, nFontId);
-  #endif
+    rSubElem, pXData->acElemTxt[0], XSPINNER_STR_LEN, nFontId);
   gslc_ElemSetTxtAlign(pGui, pElemRefTmp, GSLC_ALIGN_MID_MID);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);

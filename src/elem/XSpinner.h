@@ -5,8 +5,8 @@
 
 
 // =======================================================================
-// GUIslice library extension: Select Number (Spinner) control
-// - Calvin Hass
+// GUIslice library extension: Spinner (number selection) control
+// - Extension by Paul Conti, Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // =======================================================================
@@ -54,7 +54,11 @@ extern "C" {
 // - Select any number above GSLC_TYPE_BASE_EXTEND
 #define  GSLC_TYPEX_SPINNER GSLC_TYPE_BASE_EXTEND + 15
 
-#define SPINNER_STR_LEN  6
+// Define the max number of sub-elements in compound element
+#define XSPINNER_COMP_CNT 3
+
+// Define the max string length to allocate for dynamic text elements
+#define XSPINNER_STR_LEN  6
 
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
@@ -71,16 +75,14 @@ typedef struct {
   gslc_tsElemRef*     pElemRef;       ///< Save our ElemRef for the callback
 
   // Internal sub-element members
-  gslc_tsCollect      sCollect;       ///< Collection management for sub-elements
-  gslc_tsElemRef      asElemRef[4];   ///< Storage for sub-element references
-  gslc_tsElem         asElem[4];      ///< Storage for sub-elements
+  gslc_tsCollect      sCollect;                      ///< Collection management for sub-elements
+  gslc_tsElemRef      asElemRef[XSPINNER_COMP_CNT];   ///< Storage for sub-element references
+  gslc_tsElem         asElem[XSPINNER_COMP_CNT];      ///< Storage for sub-elements
 
-  #if (GSLC_LOCAL_STR == 0)
-  // If elements don't provide their own internal string buffer, then
-  // we need to provide storage here in the extended data of the compound
-  // element. For now, simply provide a fixed-length memory buffer.
-  char                acElemTxt[4][SPINNER_STR_LEN]; ///< Storage for strings
-  #endif
+  // Provide storage for any dynamic text elements
+  // Simple example here uses fixed-length character array
+  char                acElemTxt[1][XSPINNER_STR_LEN]; ///< Storage for strings
+
 } gslc_tsXSpinner;
 
 
@@ -173,6 +175,7 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXSpinnerTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+
 #endif // GLSC_COMPOUND
 
 // ============================================================================

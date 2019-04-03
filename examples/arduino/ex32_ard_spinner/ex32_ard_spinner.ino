@@ -1,6 +1,6 @@
 //
-// GUIslice Library Examples
-// - Calvin Hass
+// GUIslice Library Example
+// - Paul Conti, Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 32 (Arduino):
@@ -9,6 +9,7 @@
 //   - XSpinner compound elements
 //
 //   - NOTE: The XSpinner compound element requires GSLC_FEATURE_COMPOUND enabled
+//
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. Therefore, it may not
 //     run on Arduino devices with limited memory. A "minimal"
