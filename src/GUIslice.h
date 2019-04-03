@@ -486,6 +486,9 @@ typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElemRef);
 /// Callback function for pin polling
 typedef bool (*GSLC_CB_PIN_POLL)(void* pvGui,int16_t* pnPinInd,int16_t* pnPinVal);
 
+/// Callback function for element input ready
+typedef bool (*GSLC_CB_INPUT)(void* pvGui,void* pvElemRef);
+
 // -----------------------------------------------------------------------
 // Structures
 // -----------------------------------------------------------------------
@@ -2749,7 +2752,21 @@ void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlag
 ///
 /// \return Pointer to Element after ensuring that it is accessible from RAM
 ///
-gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+// TODO: Mark this as public API
+gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
+
+
+/// Returns a pointer to an element from an element reference.
+/// This is a wrapper for GetElemFromRef() including debug checking
+/// for invalid pointers.
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  pElemRef:     Pointer to Element Reference
+/// \param[in]  nLineNum:     Line number from calling function (ie. __LINE__)
+///
+/// \return Pointer to Element after ensuring that it is accessible from RAM
+///
+gslc_tsElem* gslc_GetElemFromRefD(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nLineNum);
 
 /// Returns a pointer to the data structure associated with an extended element.
 /// - Example usage:
@@ -3158,6 +3175,19 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent);
 ///
 void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
 
+/// Handle dispatch of touch (up,down,move) events to compound elements sub elements
+///
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
+/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  eTouch:      Touch event type
+/// \param[in]  nRelX:       Touch X coord relative to element
+/// \param[in]  nRelY:       Touch Y coord relative to element
+/// \param[in]  pCollect:    Collection containing sub elements
+///
+/// \return true if success, false otherwise
+///
+bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, int16_t nRelX, int16_t nRelY, gslc_tsCollect* pCollect);
+
 
 /// Handle direct input events within the element collection
 ///
@@ -3168,6 +3198,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 /// \return none
 ///
 void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch);
+
 
 
 // ------------------------------------------------------------------------

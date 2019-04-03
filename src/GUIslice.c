@@ -2060,7 +2060,8 @@ int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
 
 int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return GSLC_ID_NONE;
   return pElem->nId;
 }
 
@@ -2124,6 +2125,21 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   } else {
     // SRC_ELEMREF_SRC_RAM
     // No copy required
+  }
+  return pElem;
+}
+
+// Fetch element from reference, with debug
+gslc_tsElem* gslc_GetElemFromRefD(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nLineNum)
+{
+  if (pElemRef == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: GetElemFromRefD(Line %d) pElemRef is NULL\n", nLineNum);
+    return NULL;
+  }
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
+  if (pElem == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: GetElemFromRefD(Line %d) pElem is NULL\n", nLineNum);
+    return NULL;
   }
   return pElem;
 }
@@ -2477,13 +2493,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     return true;
   }
 
-  if ((pGui == NULL) || (pElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemDrawByRef";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
 
   // --------------------------------------------------------------------------
   // Handle visibility
@@ -2693,12 +2704,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
 void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetFillEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (bFillEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_FILL_EN;
   } else {
@@ -2710,12 +2718,9 @@ void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
 
 void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetFrameEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (bFrameEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   } else {
@@ -2727,12 +2732,9 @@ void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn
 
 void gslc_ElemSetCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colFrame,gslc_tsColor colFill,gslc_tsColor colFillGlow)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetCol";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->colElemFrame     = colFrame;
   pElem->colElemFill      = colFill;
   pElem->colElemFillGlow  = colFillGlow;
@@ -2741,12 +2743,9 @@ void gslc_ElemSetCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colF
 
 void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlowCol";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->colElemFrameGlow   = colFrameGlow;
   pElem->colElemFillGlow    = colFillGlow;
   pElem->colElemTextGlow    = colTxtGlow;
@@ -2755,59 +2754,43 @@ void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor 
 
 void gslc_ElemSetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nGroupId)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGroup";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->nGroup           = nGroupId;
 }
 
 int gslc_ElemGetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemGetGroup";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return GSLC_GROUP_ID_NONE;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return GSLC_GROUP_ID_NONE;
+
   return pElem->nGroup;
 }
 
 
 void gslc_ElemSetTxtAlign(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nAlign)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtAlign";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->eTxtAlign        = nAlign;
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
 void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nMargin)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtMargin";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->nTxtMargin        = nMargin;
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
 void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pStr)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtStr";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
 
   // Check for read-only status (in case the string was
   // defined in Flash/PROGMEM)
@@ -2829,12 +2812,9 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
 
 void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colVal)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtCol";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (!gslc_ColorEqual(pElem->colElemText, colVal) ||
       !gslc_ColorEqual(pElem->colElemTextGlow, colVal)) {
     pElem->colElemText      = colVal;
@@ -2846,12 +2826,9 @@ void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor c
 
 void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtMem";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (GSLC_LOCAL_STR) {
     if ((eFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
       // ERROR: Unsupported mode
@@ -2867,12 +2844,8 @@ void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlag
 
 void gslc_ElemSetTxtEnc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlags eFlags)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTxtEnc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
 
   gslc_teTxtFlags eFlagsCur = pElem->eTxtFlags;
   pElem->eTxtFlags = (eFlagsCur & ~GSLC_TXT_ENC) | (eFlags & GSLC_TXT_ENC);
@@ -2880,12 +2853,9 @@ void gslc_ElemSetTxtEnc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlag
 
 void gslc_ElemUpdateFont(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nFontId)
 {
-  if ((pGui == NULL) || (pElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemUpdateFont";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->pTxtFont = gslc_FontGet(pGui,nFontId);
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
@@ -2929,19 +2899,19 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   }
 
 #if (GSLC_FEATURE_COMPOUND)
-  // Now propagate up the element hierarchy
-  // (eg. in case of compound elements)
+  // In the case of compound elements, optionally propagate the
+  // redraw status up the hierarchy (ie. to the parent element).
+  // - This may be useful in scenarios wherein a sub-element has
+  //   been marked for redraw, but because it has transparency,
+  //   the parent element may need to be redrawn first.
+  // - For now, assume no need to trigger a parent redraw.
+  // - TODO: Consider detecting scenarios in which we should
+  //   propagate the redraw to the parent.
 
-  // TODO: Perhaps we need to qualify this with bRedraw=true?
-  // - ie. we only want to invalidate the parent element
-  //   containers, but we don't want to reset their status
-
-  // - This functionality is only used in the case of compound
-  //   elements (eg. XSelNum).
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  if (pElem->pElemRefParent != NULL) {
-    gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
-  }
+  //gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  //if (pElem->pElemRefParent != NULL) {
+  //  gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
+  //}
 #endif
 }
 
@@ -2993,11 +2963,9 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
 void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible)
 {
-  if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetVisible";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   bool bVisibleOld = gslc_ElemGetVisible(pGui,pElemRef);
   gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE,(bVisible)?GSLC_ELEMREF_VISIBLE:0);
 
@@ -3025,7 +2993,6 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
     //       redraw during the element-hide operation and
     //       avoid the overdrawing behavior.
 
-    gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
     gslc_tsRect rRect = pElem->rElem;
     gslc_SetClipRect(pGui, &rRect);
     gslc_PageRedrawSet(pGui, true);
@@ -3047,12 +3014,9 @@ bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
 void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlowEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (bGlowEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_GLOW_EN;
   } else {
@@ -3063,23 +3027,17 @@ void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
 
 bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemGetGlowEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+
   return pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN;
 }
 
 void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetClickEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   if (bClickEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
   } else {
@@ -3090,13 +3048,9 @@ void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn
 
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest)
 {
-  if ((pElemRefSrc == NULL) || (pElemRefDest == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetStyleFrom";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElemSrc  = gslc_GetElemFromRef(pGui,pElemRefSrc);
-  gslc_tsElem*  pElemDest = gslc_GetElemFromRef(pGui,pElemRefDest);
+  gslc_tsElem* pElemSrc = gslc_GetElemFromRefD(pGui, pElemRefSrc, __LINE__);
+  gslc_tsElem* pElemDest = gslc_GetElemFromRefD(pGui, pElemRefDest, __LINE__);
+  if ((!pElemSrc) || (!pElemDest)) return;
 
   // TODO: Check ElemRef SRC type for compatibility
 
@@ -3143,12 +3097,9 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 /* UNUSED
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb)
 {
-  if ((pElemRef == NULL) || (funcCb == NULL)) {;
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetEventFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->pfuncXEvent       = funcCb;
 }
 */
@@ -3156,35 +3107,26 @@ void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVE
 
 void gslc_ElemSetDrawFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_DRAW funcCb)
 {
-  if ((pElemRef == NULL) || (funcCb == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetDrawFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem* pElem    = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->pfuncXDraw     = funcCb;
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
 void gslc_ElemSetTickFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_TICK funcCb)
 {
-  if ((pElemRef == NULL) || (funcCb == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetTickFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-  gslc_tsElem* pElem      = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
   pElem->pfuncXTick       = funcCb;
 }
 
 bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int16_t nY,bool bOnlyClickEn)
 {
-  if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemOwnsCoord";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return false;
-  }
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+
   if (bOnlyClickEn && !(pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) ) {
     return false;
   }
@@ -3431,6 +3373,60 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
   }
 
 }
+
+#if (GSLC_FEATURE_COMPOUND)
+
+// Helper function for dispatching touch events to sub-components
+bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, int16_t nRelX, int16_t nRelY, gslc_tsCollect* pCollect)
+{
+  #if defined(DRV_TOUCH_NONE)
+  return false;
+  #else
+
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+
+  // Reset the in/out status of the touch event since
+  // we are now looking for coordinates of a sub-element
+  // rather than the compound element. gslc_CollectTouch()
+  // is responsible for determining in/out status at the
+  // next level down in the element hierarchy.
+  switch (eTouch) {
+  case GSLC_TOUCH_DOWN_IN:
+  case GSLC_TOUCH_DOWN_OUT:
+    eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+    eTouch |= GSLC_TOUCH_DOWN;
+    break;
+  case GSLC_TOUCH_UP_IN:
+  case GSLC_TOUCH_UP_OUT:
+    eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+    eTouch |= GSLC_TOUCH_UP;
+    break;
+  case GSLC_TOUCH_MOVE_IN:
+  case GSLC_TOUCH_MOVE_OUT:
+    eTouch &= ~GSLC_TOUCH_SUBTYPE_MASK;
+    eTouch |= GSLC_TOUCH_MOVE;
+    break;
+  default:
+    break;
+  }
+
+  // Cascade the touch event to the sub-element collection
+  // - Note that we convert to absolute coordinates
+  gslc_tsEventTouch sEventTouch;
+  sEventTouch.nX = pElem->rElem.x + nRelX;
+  sEventTouch.nY = pElem->rElem.y + nRelY;
+  sEventTouch.eTouch = eTouch;
+  gslc_CollectTouch(pGui, pCollect, &sEventTouch);
+
+  return true;
+  #endif // !DRV_TOUCH_NONE
+}
+
+#endif // GSLC_FEATURE_COMPOUND
+
 
 // FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
@@ -4085,13 +4081,8 @@ bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef sImgRef,
   gslc_tsImgRef sImgRefSel)
 {
-  if ((pGui == NULL) || (pElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemSetImage";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
-    return;
-  }
-
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
 
   // Update the normal and glowing images
   gslc_DrvSetElemImageNorm(pGui,pElem,sImgRef);

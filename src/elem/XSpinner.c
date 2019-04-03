@@ -28,7 +28,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XSelNum.c
+/// \file XSpinner.c
 
 
 
@@ -36,7 +36,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#include "elem/XSelNum.h"
+#include "elem/XSpinner.h"
 
 #include <stdio.h>
 
@@ -64,63 +64,88 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 
 #if (GSLC_FEATURE_COMPOUND)
 // ============================================================================
-// Extended Element: SelNum
-// - SelNum (Select Number) element demonstrates a simple up/down counter
+// Extended Element: Spinner
+// - Spinner element demonstrates a simple up/down counter
 // - This is a compound element containing two buttons and
-//   a text area to represent the current count
+//   a text area to represent the current value
 // ============================================================================
 
 // Private sub Element ID definitions
-static const int16_t  SELNUM_ID_BTN_INC = 100;
-static const int16_t  SELNUM_ID_BTN_DEC = 101;
-static const int16_t  SELNUM_ID_TXT     = 102;
+static const int16_t  SPINNER_ID_BTN_INC = 100;
+static const int16_t  SPINNER_ID_BTN_DEC = 101;
+static const int16_t  SPINNER_ID_TXT     = 102;
 
 // Create a compound element
 // - For now just two buttons and a text area
-gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-  gslc_tsXSelNum* pXData,gslc_tsRect rElem,int8_t nFontId)
+gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage, gslc_tsXSpinner* pXData,
+  int16_t nX0, int16_t nY0, int16_t nMin, int16_t nMax, int16_t nVal, int16_t nIncr,
+  int8_t nFontId, int8_t nButtonSz, GSLC_CB_INPUT cbInput)
 {
 
   if ((pGui == NULL) || (pXData == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerCreate";
+    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return NULL;
   }
+
+  // determine size of our text box
+  // first calculate number of digits required
+  int nDigits, nTxtBoxW;
+  char acTxtNum[XSPINNER_STR_LEN];
+  // FIXME: Consider replacing the sprintf() with an optimized function to
+  //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
+  snprintf(acTxtNum, XSPINNER_STR_LEN, "%d", nMax);
+  nDigits = strlen(acTxtNum);
+  // Determine the maximum width of a digit, we will use button size for height.
+  int16_t       nChOffsetX, nChOffsetY;
+  uint16_t      nChSzW, nChSzH;
+  char          acMono[2] = "%";
+  gslc_tsFont*  pTxtFont = gslc_FontGet(pGui, nFontId);
+  gslc_teTxtFlags eTxtFlags = (GSLC_TXT_DEFAULT & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
+  gslc_DrvGetTxtSize(pGui, pTxtFont, (char*)&acMono, eTxtFlags, &nChOffsetX, &nChOffsetY, &nChSzW, &nChSzH);
+  nTxtBoxW = nChSzW * nDigits + 10;  // add padding
+  // now we can work out our rectangle  
+  gslc_tsRect rElem;
+  rElem.x = nX0;
+  rElem.y = nY0;
+  rElem.w = nTxtBoxW + (nButtonSz * 2);
+  rElem.h = nButtonSz;
+
+  // set our intial value for our text field
+  snprintf(acTxtNum, XSPINNER_STR_LEN - 1, "%d", nVal);
+
   gslc_tsElem sElem;
 
-
   // Initialize composite element
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_SELNUM,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
-  sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
-  sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
-  sElem.nFeatures        &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
-  sElem.nGroup            = GSLC_GROUP_ID_NONE;
+  sElem = gslc_ElemCreate(pGui, nElemId, nPage, GSLC_TYPEX_SPINNER, rElem, NULL, 0, GSLC_FONT_NONE);
+  sElem.nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures |= GSLC_ELEM_FEA_FILL_EN;
+  sElem.nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
+  sElem.nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
+  sElem.nGroup = GSLC_GROUP_ID_NONE;
 
-  pXData->nCounter      = 0;
+  pXData->nCounter = nVal;
+  pXData->nMin = nMin;
+  pXData->nMax = nMax;
+  pXData->nIncr = nIncr;
+  pXData->pfuncXInput = cbInput;
 
-  // Determine the maximum number of elements that we can store
-  // in the sub-element array. We do this at run-time with sizeof()
-  // instead of using #define to avoid polluting the global namespace.
-  int16_t nSubElemMax = sizeof(pXData->asElem) / sizeof(pXData->asElem[0]);
-
-  // NOTE: The count parameters in CollectReset() must match the size of
-  //       the asElem[] array. It is used for bounds checking when we
-  //       add new elements.
-  // NOTE: We only use RAM for subelement storage
-  gslc_CollectReset(&pXData->sCollect,pXData->asElem,nSubElemMax,pXData->asElemRef,nSubElemMax);
+  // Initialize the collection of sub-elements within the compound element
+  // - XSELNUM_COMP_CNT defines the maximum number of sub-elements we have allocated space for
+  // - Note that this example shows RAM being used for storage
+  gslc_CollectReset(&pXData->sCollect, pXData->asElem, XSPINNER_COMP_CNT, pXData->asElemRef, XSPINNER_COMP_CNT);
 
 
-  sElem.pXData            = (void*)(pXData);
+  sElem.pXData = (void*)(pXData);
   // Specify the custom drawing callback
-  sElem.pfuncXDraw        = &gslc_ElemXSelNumDraw;
+  sElem.pfuncXDraw = &gslc_ElemXSpinnerDraw;
   // Specify the custom touch tracking callback
-  sElem.pfuncXTouch       = &gslc_ElemXSelNumTouch;
+  sElem.pfuncXTouch = &gslc_ElemXSpinnerTouch;
 
-  sElem.colElemFill       = GSLC_COL_BLACK;
-  sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_GRAY;
-  sElem.colElemFrameGlow  = GSLC_COL_WHITE;
+  sElem.colElemFill = GSLC_COL_BLACK;
+  sElem.colElemFillGlow = GSLC_COL_BLACK;
+  sElem.colElemFrame = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow = GSLC_COL_WHITE;
 
 
   // Now create the sub elements
@@ -134,9 +159,9 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   // - The element IDs assigned to the sub-elements are
   //   arbitrary (with local scope in the compound element),
   //   so they don't need to be unique globally across the GUI.
-  gslc_tsElemRef* pElemRefTmp   = NULL;
-  gslc_tsElem*    pElemTmp      = NULL;
-  gslc_tsElemRef* pElemRef      = NULL;
+  gslc_tsElemRef* pElemRefTmp = NULL;
+  gslc_tsElem*    pElemTmp = NULL;
+  gslc_tsElemRef* pElemRef = NULL;
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.
@@ -145,63 +170,54 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 
   gslc_tsRect rSubElem;
 
-  rSubElem = (gslc_tsRect) { nOffsetX+40,nOffsetY+10,30,30 };
+  // Create button sub-element
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nOffsetY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    rSubElem,"+",0,nFontId,&gslc_ElemXSelNumClick);
-  #else
-  strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
-    rSubElem,pXData->acElemTxt[0],SELNUM_STR_LEN,
-    nFontId,&gslc_ElemXSelNumClick);
-  #endif
-  gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
-  gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
-  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
+    rSubElem, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
+  gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
+  gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
+  pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
+  gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
-  rSubElem = (gslc_tsRect) { nOffsetX+80,nOffsetY+10,30,30 };
+  // Create button sub-element
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nOffsetY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    rSubElem,"-",0,nFontId,&gslc_ElemXSelNumClick);
-  #else
-  strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
-  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
-    rSubElem,pXData->acElemTxt[1],SELNUM_STR_LEN,
-    nFontId,&gslc_ElemXSelNumClick);
-  #endif
-  gslc_ElemSetCol(pGui,pElemRefTmp,(gslc_tsColor){0,0,192},(gslc_tsColor){0,0,128},(gslc_tsColor){0,0,224});
-  gslc_ElemSetTxtCol(pGui,pElemRefTmp,GSLC_COL_WHITE);
-  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
+  pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
+    rSubElem, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
+  gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
+  gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
+  pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
+  gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
-  rSubElem = (gslc_tsRect) { nOffsetX+10,nOffsetY+10,20,30 };
+  // Create dynamic text sub-element
+  // - Note that we are using string storage in the extended element data
+  //   structure (pXData).
+  rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  #if (GSLC_LOCAL_STR)
-  pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    rSubElem,"0",0,nFontId);
-  #else
-  strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
-  pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
-    rSubElem,pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
-  #endif
-  pElemTmp = gslc_GetElemFromRef(pGui,pElemRefTmp);
-  gslc_CollectElemAdd(pGui,&pXData->sCollect,pElemTmp,GSLC_ELEMREF_DEFAULT);
+  strncpy(pXData->acElemTxt[0], acTxtNum, XSPINNER_STR_LEN - 1);
+  pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
+    rSubElem, pXData->acElemTxt[0], XSPINNER_STR_LEN, nFontId);
+  gslc_ElemSetTxtAlign(pGui, pElemRefTmp, GSLC_ALIGN_MID_MID);
+  pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
+  gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
 
   // Now proceed to add the compound element to the page
   if (nPage != GSLC_PAGE_NONE) {
-    pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
+    pElemRef = gslc_ElemAdd(pGui, nPage, &sElem, GSLC_ELEMREF_DEFAULT);
+
+    // save our ElemRef for the callback
+    pXData->pElemRef = pElemRef;
 
     // Now propagate the parent relationship to enable a cascade
     // of redrawing from low-level elements to the top
-    gslc_CollectSetParent(pGui,&pXData->sCollect,pElemRef);
+    gslc_CollectSetParent(pGui, &pXData->sCollect, pElemRef);
 
     return pElemRef;
-  } else {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) Compound elements inside compound elements not supported\n","");
+  }
+  else {
+    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerCreate(%s) Compound elements inside compound elements not supported\n", "");
     return NULL;
 
     // TODO: For now, disable compound elements within
@@ -211,6 +227,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
     // Save as temporary element for further processing
     //pGui->sElemTmp = sElem;   // Need fixing
     //return &(pGui->sElemTmp); // Need fixing
+
   }
 
 }
@@ -219,13 +236,13 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 // Redraw the compound element
 // - When drawing a compound element, we clear the background
 //   and then redraw the sub-element collection.
-bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
+bool gslc_ElemXSpinnerDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXSelNum* pSelNum = (gslc_tsXSelNum*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SELNUM, __LINE__);
-  if (!pSelNum) return false;
+  gslc_tsXSpinner* pSpinner = (gslc_tsXSpinner*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SPINNER, __LINE__);
+  if (!pSpinner) return false;
 
   bool bGlow = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
 
@@ -237,7 +254,7 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
-  gslc_tsCollect* pCollect = &pSelNum->sCollect;
+  gslc_tsCollect* pCollect = &pSpinner->sCollect;
 
   gslc_tsEvent  sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)(pCollect),NULL);
   gslc_CollectEvent(pGui,sEvent);
@@ -261,34 +278,34 @@ bool gslc_ElemXSelNumDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 }
 
 // Fetch the current value of the element's counter
-int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
+int gslc_ElemXSpinnerGetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner)
 {
-  if ((pGui == NULL) || (pSelNum == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumGetCounter";
+  if ((pGui == NULL) || (pSpinner == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerGetCounter";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
-  return pSelNum->nCounter;
+  return pSpinner->nCounter;
 }
 
 
-void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t nCount)
+void gslc_ElemXSpinnerSetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner,int16_t nCount)
 {
-  if (pSelNum == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumSetCounter";
+  if (pSpinner == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerSetCounter";
     GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  pSelNum->nCounter = nCount;
+  pSpinner->nCounter = nCount;
 
   // Determine new counter text
   // FIXME: Consider replacing the printf() with an optimized function to
   //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
   char  acStrNew[GSLC_LOCAL_STR_LEN];
-  snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%hd",pSelNum->nCounter);
+  snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%hd",pSpinner->nCounter);
 
   // Update the element
-  gslc_tsElemRef* pElemRef = gslc_CollectFindElemById(pGui,&pSelNum->sCollect,SELNUM_ID_TXT);
+  gslc_tsElemRef* pElemRef = gslc_CollectFindElemById(pGui,&pSpinner->sCollect,SPINNER_ID_TXT);
   gslc_ElemSetTxtStr(pGui,pElemRef,acStrNew);
 
 }
@@ -303,7 +320,7 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
 // - pvElemRef is a void pointer to the element ref being tracked. From
 //   the pElemRefParent member we can get the parent/compound element
 //   data structures.
-bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
 #if defined(DRV_TOUCH_NONE)
   return false;
@@ -318,62 +335,70 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
   // element itself. This enables us to access the extra control data.
   gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
   if (pElemRefParent == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) parent ElemRef ptr NULL\n","");
+    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerClick(%s) parent ElemRef ptr NULL\n","");
     return false;
   }
 
   gslc_tsElem*    pElemParent = gslc_GetElemFromRef(pGui,pElemRefParent);
-  gslc_tsXSelNum* pSelNum     = (gslc_tsXSelNum*)(pElemParent->pXData);
-  if (pSelNum == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
+  gslc_tsXSpinner* pSpinner     = (gslc_tsXSpinner*)(pElemParent->pXData);
+  if (pSpinner == NULL) {
+    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerClick() element (ID=%d) has NULL pXData\n",pElem->nId);
     return false;
   }
 
   // Begin the core compound element functionality
-  int nCounter  = pSelNum->nCounter;
+  int nCounter  = pSpinner->nCounter;
 
   // Handle the various button presses
+  GSLC_CB_INPUT pfuncXInput = NULL;
   if (eTouch == GSLC_TOUCH_UP_IN) {
 
     // Get the tracked element ID
-    gslc_tsElemRef* pElemRefTracked = pSelNum->sCollect.pElemRefTracked;
+    gslc_tsElemRef* pElemRefTracked = pSpinner->sCollect.pElemRefTracked;
     gslc_tsElem*    pElemTracked    = gslc_GetElemFromRef(pGui,pElemRefTracked);
     int nSubElemId = pElemTracked->nId;
 
-    if (nSubElemId == SELNUM_ID_BTN_INC) {
+    if (nSubElemId == SPINNER_ID_BTN_INC) {
       // Increment button
-      if (nCounter < 100) {
-        nCounter++;
+      if (nCounter < pSpinner->nMax) {
+        nCounter += pSpinner->nIncr;
       }
-      gslc_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
+      gslc_ElemXSpinnerSetCounter(pGui,pSpinner,nCounter);
 
-    } else if (nSubElemId == SELNUM_ID_BTN_DEC) {
+    } else if (nSubElemId == SPINNER_ID_BTN_DEC) {
       // Decrement button
-      if (nCounter > 0) {
-        nCounter--;
+      if (nCounter > pSpinner->nMin) {
+        nCounter -= pSpinner->nIncr;
       }
-      gslc_ElemXSelNumSetCounter(pGui,pSelNum,nCounter);
+      gslc_ElemXSpinnerSetCounter(pGui,pSpinner,nCounter);
 
     }
+
+    // Invoke the callback function
+    pfuncXInput = pSpinner->pfuncXInput;
+    if (pfuncXInput != NULL) {
+      (*pfuncXInput)(pvGui, pSpinner->pElemRef);
+    }
+
   } // eTouch
 
   return true;
 #endif // !DRV_TOUCH_NONE
 }
 
-bool gslc_ElemXSelNumTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
+bool gslc_ElemXSpinnerTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
 #if defined(DRV_TOUCH_NONE)
   return false;
 #else
-
   gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsXSelNum* pSelNum = (gslc_tsXSelNum*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SELNUM, __LINE__);
-  if (!pSelNum) return false;
+  gslc_tsXSpinner* pSpinner = (gslc_tsXSpinner*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SPINNER, __LINE__);
+  if (!pSpinner) return false;
 
   // Get Collection
-  gslc_tsCollect* pCollect = &pSelNum->sCollect;
+  gslc_tsCollect* pCollect = &pSpinner->sCollect;
+
   return gslc_CollectTouchCompound(pvGui, pvElemRef, eTouch, nRelX, nRelY, pCollect);
 
   #endif // !DRV_TOUCH_NONE
