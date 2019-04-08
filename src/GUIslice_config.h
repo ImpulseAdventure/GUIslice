@@ -93,6 +93,7 @@ extern "C" {
   //#include "../configs/esp-shld-ttgo_btc_ticker.h"
   //#include "../configs/esp-tftespi-default-ft6206.h"
   //#include "../configs/esp-tftespi-default-notouch.h"
+  //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
