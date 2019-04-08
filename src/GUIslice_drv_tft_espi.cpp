@@ -1131,6 +1131,14 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
       return true;
     }
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
+    #if defined(ESP32)
+      // ESP32 defaults to 12-bit resolution whereas Adafruit_Touchscreen
+      // hardcodes a 10-bit range. Workaround for now is to change the
+      // ADC resolution to 10-bit.
+      // References:
+      // - https://github.com/adafruit/Adafruit_TouchScreen/issues/15
+      analogReadResolution(10);
+    #endif
     return true;
   #elif defined(DRV_TOUCH_XPT2046_STM)
     m_touch.begin();
@@ -1532,7 +1540,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       nOutputX = nInputX;
       nOutputY = nInputY;
     #endif
-	
+  
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
     GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
