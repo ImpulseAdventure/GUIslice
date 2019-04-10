@@ -1068,17 +1068,27 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     if (nPin >= NUM_DIGITAL_PINS) {
       return (-1);
     }
+#if defined(ESP32) || defined(ESP8266)
+    uint32_t nBit            = digitalPinToBitMask(nPin);
+    uint32_t nPort           = digitalPinToPort(nPin);
+    volatile uint32_t *nReg  = portModeRegister(nPort);
+#else
     uint8_t nBit            = digitalPinToBitMask(nPin);
     uint8_t nPort           = digitalPinToPort(nPin);
+    volatile uint8_t *nReg  = portModeRegister(nPort);
+#endif
 
     // Determine if port is an output
-    volatile uint8_t *nReg  = portModeRegister(nPort);
     if (*nReg & nBit) {
       return (OUTPUT);
     }
 
     // Determine if port is an input and whether pullup is active
+#if defined(ESP32) || defined(ESP8266)
+    volatile  uint32_t *nOut = portOutputRegister(nPort);
+#else
     volatile  uint8_t *nOut = portOutputRegister(nPort);
+#endif
     return ((*nOut & nBit) ? INPUT_PULLUP : INPUT);
   }
 
