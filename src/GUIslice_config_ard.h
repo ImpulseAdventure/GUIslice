@@ -83,8 +83,8 @@ extern "C" {
   // - Uncomment one of the following touchscreen drivers DRV_TOUCH_*
   //   applicable to the controller chip in use
 
-  //  #define DRV_TOUCH_NONE            // No touchscreen support & no input (GPIO / keyboard)
-      #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
+      #define DRV_TOUCH_NONE            // No touchscreen support & no input (GPIO / keyboard)
+  //  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
   //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
   //  #define DRV_TOUCH_TFT_ESPI        // TFT_eSPI integrated XPT2046 touch driver
