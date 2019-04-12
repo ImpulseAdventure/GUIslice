@@ -98,6 +98,10 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 
+  // STM32:
+  // ------------------------------------------------------
+  //#include "../configs/stm32-adagfx-mcufriend-simple.h"
+
   // Multi-device shields:
   // ------------------------------------------------------
   //#include "../configs/mult-shld-adafruit_24_feather_touch.h"
