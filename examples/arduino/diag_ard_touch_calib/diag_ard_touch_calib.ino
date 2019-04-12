@@ -744,7 +744,13 @@ void ReportCalibResult()
       GSLC_DEBUG_PRINT("%s ", m_acTxt);
     #endif
     // Report the pin wiring to the 4-wire resistive interface
-    GSLC_DEBUG_PRINT("(XP=%u,XM=A%d,YP=A%d,YM=%u) ", ADATOUCH_PIN_XP, (ADATOUCH_PIN_XM - A0), (ADATOUCH_PIN_YP - A0), ADATOUCH_PIN_YM);
+    #if !defined(A0)
+      // Support MCUs that don't use analog pin "A0" notation (eg. STM32)
+      GSLC_DEBUG_PRINT("(XP=%d,XM=%d,YP=%d,YM=%d) ", ADATOUCH_PIN_XP, ADATOUCH_PIN_XM, ADATOUCH_PIN_YP, ADATOUCH_PIN_YM);
+    #else
+      GSLC_DEBUG_PRINT("(XP=%u,XM=A%d,YP=A%d,YM=%u) ", ADATOUCH_PIN_XP, (ADATOUCH_PIN_XM - A0), (ADATOUCH_PIN_YP - A0), ADATOUCH_PIN_YM);
+    #endif
+
     GSLC_DEBUG_PRINT("\n", "");
   #elif defined(DRV_TOUCH_ADA_STMPE610)
     GSLC_DEBUG_PRINT("  // DRV_TOUCH_ADA_STMPE610 %s:\n", acDim);
