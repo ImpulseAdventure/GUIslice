@@ -77,7 +77,7 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
-  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9381 // Optionally override the MCUFRIEND initialization ID
+  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9481 // Optionally override the MCUFRIEND initialization ID
   #define DRV_TOUCH_ADA_SIMPLE      // Adafruit_TouchScreen touch driver
 
 
