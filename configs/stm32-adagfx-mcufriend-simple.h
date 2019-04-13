@@ -15,6 +15,12 @@
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
+// IMPORTANT NOTE:
+// - The Adafruit_TouchScreen library is not fully compatible with all STM32 devices.
+//   It is recommended to update Adafruit_TouchScreen (version 1.0.1) TouchScreen.h as follows:
+//   Line 17: FROM: #if defined(ARDUINO_FEATHER52) || defined(ESP32)
+//            TO:   #if defined(ARDUINO_FEATHER52) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
+//
 // WIRING:
 // - As this config file is designed for a breakout board, customization
 //   of the Pinout in SECTION 2 will be required to match your display.
@@ -71,6 +77,7 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
+  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9341 // Optionally override the MCUFRIEND initialization ID
   #define DRV_TOUCH_ADA_SIMPLE      // Adafruit_TouchScreen touch driver
 
 
