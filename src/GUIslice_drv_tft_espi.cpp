@@ -1040,10 +1040,52 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
 #if defined(DRV_TOUCH_ADA_SIMPLE)
 
-  // Enable workaround for Adafruit_TouchScreen pressure readings?
+  // --------------------------------------------------------------------------
+  // Enable Adafruit_TouchScreen workarounds
+  // --------------------------------------------------------------------------
+
+  // NOTE: The Adafruit_TouchScreen is not natively compatible with certain
+  //       devices (eg. ESP32) and also doesn't safeguard against pin-sharing
+  //       conflicts. For these and some other issues, the following workarounds
+  //       are optionally enabled.
+
+  // Enable workaround for ambiguity in Adafruit_TouchScreen pressure readings
   // - See Issue #96
   #define FIX_4WIRE // Comment out to disable
 
+  // Enable workaround for Adafruit_TouchScreen getPoint() altering
+  // the pin state and not restoring it. Without working around this,
+  // the touch handler may interfere with displays that share pins.
+  #define FIX_PIN_STATE // Comment out to disable
+
+  // For ESP32 devices, a workaround is required for the
+  // Adafruit_TouchScreen since it makes an assumption that
+  // the ADC resolution is 10-bit. This workaround enables the
+  // Adafruit library to operate the same was as for AVR devices.
+  #if defined(ESP32)
+    #define FIX_ADC_10 // Comment out to disable
+  #endif
+
+  // Enable workaround for TFT_eSPI with 8-bit parallel TFTs that share
+  // certain pins (eg. RDX, WRX) with the touch overlay. TFT_eSPI appears
+  // to force the TFT chip select low (permanently) in ESP32_PARALLEL mode
+  // which can cause unexpected TFT corruption during the analog read
+  // process. This workaround wraps the touch reads with a TFT chip-select
+  // disable.
+  // - Note that this workaround assumes that TFT_CS has been defined
+  //   in the TFT_eSPI library.
+  #define FIX_FORCE_CS // Comment out to disable
+
+  // --------------------------------------------------------------------------
+
+  // Disable the Adafruit_TouchScreen FIX_PIN_STATE mode in
+  // STM32 as we haven't implemented the equivalent pin save/restore
+  // code yet.
+  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
+    #undef FIX_PIN_STATE
+  #endif
+  
+  #if defined(FIX_PIN_STATE)
   // NOTE: The Adafruit_TouchScreen library alters the state of several
   //       pins during the course of reading the touch coordinates and
   //       pressure. Unfortunately, it does not restore the prior state
@@ -1062,7 +1104,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     bool    bIsHigh;   // Is an output and HIGH?
   };
 
-  /// Return the current pinMOde() for a pin
+  /// Return the current pinMode() for a pin
   int gslc_TDrvGetPinMode(uint8_t nPin)
   {
     if (nPin >= NUM_DIGITAL_PINS) {
@@ -1106,6 +1148,8 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
   }
 
+  #endif // FIX_PIN_STATE
+
 #endif // DRV_TOUCH_ADA_SIMPLE
 
 
@@ -1147,7 +1191,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
       // ADC resolution to 10-bit.
       // References:
       // - https://github.com/adafruit/Adafruit_TouchScreen/issues/15
-      analogReadResolution(10);
+      #if defined(FIX_ADC_10)
+        analogReadResolution(10);
+      #endif // FIX_ADC_10
     #endif
     return true;
   #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -1279,16 +1325,26 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   uint16_t  nRawX,nRawY;
   int16_t   nRawPress;
 
-  // Saved pin state
-  gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
+  #if defined(FIX_PIN_STATE)
+    // Saved pin state
+    gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
 
-  // As Adafruit_TouchScreen polling will alter the pin state and some
-  // of these pins may be shared with the display, we need to save and
-  // then later restore the pin state.
-  gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
-  gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
-  gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
-  gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
+    // As Adafruit_TouchScreen polling will alter the pin state and some
+    // of these pins may be shared with the display, we need to save and
+    // then later restore the pin state.
+    gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
+    gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
+    gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
+    gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
+
+    #if defined(FIX_FORCE_CS)
+      // Preserve the TFT chip select and deassert it during touchscreen reads
+      gslc_tsPinState sPinStateCS;
+      gslc_TDrvSavePinState(TFT_CS, sPinStateCS);
+      digitalWrite(TFT_CS, HIGH);
+    #endif // FIX_FORCE_CS
+
+  #endif // FIX_PIN_STATE
   
   // Perform the polling of touch coordinate & pressure
   TSPoint p = m_touch.getPoint();
@@ -1385,12 +1441,20 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     } // m_bLastTouched
   }
 
-  // Now that we have completed our polling into Adafruit_TouchScreen,
-  // we need to restore the original pin state.
-  gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
-  gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
-  gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
-  gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
+  #if defined(FIX_PIN_STATE)
+    // Now that we have completed our polling into Adafruit_TouchScreen,
+    // we need to restore the original pin state.
+    gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
+    gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
+    gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
+    gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
+
+    #if defined(FIX_FORCE_CS)
+      // Restore TFT chip select
+      gslc_TDrvRestorePinState(TFT_CS, sPinStateCS);
+    #endif // FIX_FORCE_CS
+
+  #endif // FIX_PIN_STATE
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -1549,7 +1613,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif
+    #endif  // DRV_TOUCH_TYPE_RES
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);

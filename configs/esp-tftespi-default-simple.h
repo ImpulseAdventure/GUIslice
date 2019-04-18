@@ -138,8 +138,13 @@ extern "C" {
   //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
 
   // Pin connections from diag_ard_touch_detect:
-  #define ADATOUCH_PIN_YP     13
-  #define ADATOUCH_PIN_XM     12
+  // NOTE: The following will need to be adjusted to match your touch overlay
+  //       This example pin selection is based on a mcufriend-type UNO shield (ILI9341)
+  //       with 8-bit parallel interface pin-sharing with the TFT control signals
+  //       hand-wired to an ESP32. For this particular example, the following
+  //       TFT_eSPI User_Setup was selected: Setup14_ILI9341_Parallel.h.
+  #define ADATOUCH_PIN_YP     4
+  #define ADATOUCH_PIN_XM     15
   #define ADATOUCH_PIN_YM     14
   #define ADATOUCH_PIN_XP     27
 
@@ -151,11 +156,10 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Calibration settings from diag_ard_touch_calib:
-  #define ADATOUCH_X_MIN    100
-  #define ADATOUCH_X_MAX    900
-  #define ADATOUCH_Y_MIN    150
-  #define ADATOUCH_Y_MAX    900
-  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_X_MIN    924
+  #define ADATOUCH_X_MAX    211
+  #define ADATOUCH_Y_MIN    966
+  #define ADATOUCH_Y_MAX    145
   #define ADATOUCH_REMAP_YX 0
 
   // Touch overlay resistance value
