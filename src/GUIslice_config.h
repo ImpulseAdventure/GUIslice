@@ -137,6 +137,8 @@ extern "C" {
   #include "GUIslice_config_ard.h"
 #elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
   #include "GUIslice_config_ard.h"
+#elif defined(__MK20DX256__) // Teensy 3.2
+  #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"
 #endif
