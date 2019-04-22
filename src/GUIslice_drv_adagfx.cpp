@@ -61,6 +61,12 @@
       #include <SD.h>   // Include support for SD card access
     #endif
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    #include <ILI9341_t3.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     #include <Adafruit_SSD1306.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
@@ -155,6 +161,13 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
   const char* m_acDrvDisp = "ADA_ILI9341_8b";
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  const char* m_acDrvDisp = "ADA_ILI9341_T3";
+  ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC); // Default HW-SPI pinout
+  //ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST); // Default HW-SPI pinout
+  //ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO); // Alternate HW-SPI pinout
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
@@ -531,6 +544,15 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   uint16_t  nTxtLen   = 0;
   uint16_t  nTxtScale = pFont->nSize;
 
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  nTxtScale = m_disp.getTextSize();
+  *pnTxtSzW = nTxtScale * m_disp.strPixelLen((char*)pStr);
+  *pnTxtSzH = nTxtScale * 8; // Default font
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+  return true;
+#else
+
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
@@ -562,6 +584,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   m_disp.setFont();
   return true;
+
+#endif // DRV_DISP_*
+
 }
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
@@ -572,7 +597,11 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   char      ch;
 
   // Initialize the font and positioning
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // TODO
+#else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
+#endif
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
@@ -663,7 +692,11 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   #endif // DRV_DISP_ADAGFX_RA8875
 
   // Restore the font
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // TODO
+#else
   m_disp.setFont();
+#endif
 
   return true;
 }
