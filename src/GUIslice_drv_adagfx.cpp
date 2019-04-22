@@ -336,6 +336,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
 
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+      m_disp.begin();
+
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
 
@@ -1889,7 +1892,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
