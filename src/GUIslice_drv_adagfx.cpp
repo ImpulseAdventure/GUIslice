@@ -1977,6 +1977,11 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
 
+  #else
+    // Report error for unsupported display mode
+    // - If we don't trap this condition, the GUI dimensions will be incorrect
+    #error "ERROR: DRV_DISP_* mode not supported in DrvRotate initialization"
+
   #endif
 
   // Update the clipping region
