@@ -544,18 +544,72 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtLen   = 0;
-  uint16_t  nTxtScale = pFont->nSize;
+  uint16_t  nTxtLen = 0;
+  uint16_t  nTxtScale = 0;
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
-  nTxtScale = m_disp.getTextSize();
-  *pnTxtSzW = nTxtScale * m_disp.strPixelLen((char*)pStr);
-  *pnTxtSzH = nTxtScale * 8; // Default font
+
+  // For now, only support the default Adafruit font
+  // - See below for reasoning
+  m_disp.setFontAdafruit();
+
+  // Fetch the string dimensions
+  //
+  // Unfortunately, the PaulStoffregen/ILI9341_t3 library (as of version 1.0) does not
+  // does not provide the Adafruit-GFX style APIs that return text string dimensions
+  // (such as getTextBounds()), hence it is difficult for other libraries to support
+  // features such as text justification / centering.
+  //
+  // While ILI9341_t3 does support a strPixelLen() API, this only provides
+  // horizontal extents. Furthermore, it appears that there is a bug/assumption
+  // in strPixelLen() that the string includes a newline character otherwise
+  // the returned length will be 0.
+  //
+  // Therefore, for the purposes of compatibility with the built-in Adafruit
+  // font, we will replicate the calculation here, based on the standardized
+  // Adafruit font dimension.
+
+  nTxtScale = pFont->nSize;
+  m_disp.setTextSize(nTxtScale);
+
+  int16_t nStrLen = strlen(pStr);
+  
+  // Hardcoded dimension of default Adafruit-GFX font
+  *pnTxtSzW = nTxtScale * nStrLen * 6;
+  *pnTxtSzH = nTxtScale * 8;
+
   *pnTxtX = 0;
   *pnTxtY = 0;
+
+  // TODO: Support ILI9341_t3 fonts
+  // - In order to support the T3 fonts, we would wish to leverage strPixelLen()
+  //   but unfortunately would still encounter the above issue regarding the
+  //   requirement to include a newline character.
+  //   - *pnTxtSzW = m_disp.strPixelLen((char*)pStr);
+  // - As a temporary measure, we could potentially allocate a new string on
+  //   the heap to force a newline termination. However, this would require us
+  //   to predefine the maximum string length (perhaps using GSLC_LOCAL_STR_LEN?)
+  //   since we strictly avoid using dynamic memory allocation.
+  // - Another approach could force a newline at the end of pStr and then
+  //   call strPixelLen() again on a new string that represents the final character
+  //   that was overwritten by the newline, adding the two lengths. The downside
+  //   of this approach is that we couldn't extend to support Flash-based string
+  //   storage.
+  // - In addition to the above, there does not appear to be an API available to
+  //   fetch the vertical font extent to support *pnTxtSzH
+  //
+  // - The best approach of all would be for the ILI9341_t3 library to add
+  //   text dimension APIs.
+  //
+  // - Alternately, there are other forks of ILI9341_t3 that have introduced
+  //   some of these missing text sizing APIs.
+
+  GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s]=%u pixellen=%d scale=%d textsize=%d\n",
+	  pStr, *pnTxtSzW,m_disp.strPixelLen((char*)pStr),nTxtScale,m_disp.getTextSize()); //xxx
   return true;
 #else
 
+  nTxtScale = pFont->nSize;
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
