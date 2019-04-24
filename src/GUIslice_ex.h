@@ -45,7 +45,7 @@
 #include "elem/XTextbox.h"
 
 // Warn users that they should update their includes
-#warning "NOTE: Please replace `GUIslice_ex` per https://github.com/ImpulseAdventure/GUIslice/wiki/Note-_-Include-Extended-Elements"
+// #warning "NOTE: Please replace `GUIslice_ex` per https://github.com/ImpulseAdventure/GUIslice/wiki/Note-_-Include-Extended-Elements"
 
 
 #endif // _GUISLICE_EX_H_
