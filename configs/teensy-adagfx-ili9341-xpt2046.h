@@ -71,7 +71,7 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX                // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341_T3_BL  // blackketter/ILI9341_t3
+  #define DRV_DISP_ADAGFX_ILI9341        // Adafruit/ILI9341
   #define DRV_TOUCH_XPT2046_PS           // PaulStoffregen/XPT2046_Touchscreen
 
 

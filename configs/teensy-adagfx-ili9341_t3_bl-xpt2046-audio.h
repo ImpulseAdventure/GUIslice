@@ -6,7 +6,7 @@
 //   - CPU:     Teensy 3
 //   - Display: ILI9341
 //   - Touch:   XPT2046 (Resistive)
-//   - Wiring:  Custom breakout
+//   - Wiring:  Custom breakout with Audio Adapter
 //              - Pinout:
 //
 //   - Example display:
@@ -80,19 +80,19 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_DC       9     // Display SPI data/command
+  #define ADAGFX_PIN_CS       21    // Display chip select
+  #define ADAGFX_PIN_DC       20    // Display SPI data/command
   #define ADAGFX_PIN_RST      255   // Display Reset (255=UNUSED)
 
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
+  #define ADAGFX_SPI_HW       0	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
 
   // Display interface SPI
   // - Hardware (default) SPI: the following definitions are unused
   // - Software / Hardware (alternate) SPI: the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     11
+  #define ADAGFX_PIN_MOSI     7
   #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      13
+  #define ADAGFX_PIN_CLK      14
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
