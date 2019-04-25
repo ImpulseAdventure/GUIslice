@@ -169,17 +169,27 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
-  const char* m_acDrvDisp = "ADA_ILI9341_T3";
-  ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC); // Default HW-SPI pinout
-  //ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST); // Default HW-SPI pinout
-  //ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO); // Alternate HW-SPI pinout
+  #if (ADAGFX_SPI_HW)
+    // Default hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW)";
+    ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    // Alternate hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW-Alt)";
+    ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
+  #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
-  const char* m_acDrvDisp = "ADA_ILI9341_T3_BL";
-  ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC); // Default HW-SPI pinout
-  //ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST); // Default HW-SPI pinout
-  //ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO); // Alternate HW-SPI pinout
+  #if (ADAGFX_SPI_HW)
+    // Default hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3_BL(SPI-HW)";
+    ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    // Alternate hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3_BL(SPI-HW-Alt)";
+    ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
+  #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
@@ -337,6 +347,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     pGui->bRedrawPartialEn = true;
 
     #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+
+      #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
+        // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
+	      // This may be required for certain pinouts with Teensy 3 devices.
+	      // If enabled, it must be done ahead of m_disp.begin()
+	      m_disp.setMOSI(ADAGFX_PIN_MOSI);
+	      m_disp.setSCK(ADAGFX_PIN_CLK);
+      #endif
+
       m_disp.begin();
       m_disp.readcommand8(ILI9341_RDMODE);
       m_disp.readcommand8(ILI9341_RDMADCTL);
@@ -630,20 +649,18 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   nTxtScale = pFont->nSize;
   m_disp.setTextSize(nTxtScale);
 
-  //int16_t nStrLen = strlen(pStr);
-  
-  // Hardcoded dimension of default Adafruit-GFX font
-  //*pnTxtSzW = nTxtScale * nStrLen * 6;
-  //*pnTxtSzH = nTxtScale * 8;
+  // Fetch the font sizing
   *pnTxtSzW = m_disp.measureTextWidth(pStr,0);
   *pnTxtSzH = m_disp.measureTextHeight(pStr,0);
 
-  GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
-    pStr, *pnTxtSzW,*pnTxtSzH,nTxtScale); //xxx
+  // Debug: report font sizing
+  // GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
+  //   pStr,*pnTxtSzW,*pnTxtSzH,nTxtScale);
 
   *pnTxtX = 0;
   *pnTxtY = 0;
 
+  return true;
 
 #else
 
