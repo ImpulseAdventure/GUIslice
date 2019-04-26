@@ -379,6 +379,19 @@ typedef enum {
 } gslc_teFontRefType;
 
 
+/// Font Reference modes
+/// - The Font Reference mode defines the source for the
+///   selected font. For graphics libraries that offer
+///   multiple types of fonts, this can be used to differentiate
+///   between a default font, hardware fonts, software fonts, etc.
+/// - The encoding between the different modes is driver-specific.
+typedef enum {
+  GSLC_FONTREF_MODE_DEFAULT, ///< Default font mode
+  GSLC_FONTREF_MODE_1,       ///< Font mode 1
+  GSLC_FONTREF_MODE_2,       ///< Font mode 2
+  GSLC_FONTREF_MODE_3        ///< Font mode 3
+} gslc_teFontRefMode;
+
 
 /// Element reference flags: Describes characteristics of an element
 /// - Primarily used to support relocation of elements to Flash memory (PROGMEM)
@@ -538,6 +551,7 @@ typedef struct gslc_tsEventTouch {
 typedef struct {
   int16_t               nId;            ///< Font ID specified by user
   gslc_teFontRefType    eFontRefType;   ///< Font reference type
+  gslc_teFontRefMode    eFontRefMode;   ///< Font reference mode
   const void*           pvFont;         ///< Void ptr to the font reference (type defined by driver)
   uint16_t              nSize;          ///< Font size
 } gslc_tsFont;
@@ -1373,6 +1387,19 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
 ///
 gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 
+
+
+///
+/// Set a font's mode
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nFontId:     ID value used to reference the font (supplied
+///                          originally to gslc_FontAdd()
+/// \param[io]  eFontMode:   Font mode to assign to this font
+///
+/// \return true if success
+///
+bool gslc_FontSetMode(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefMode eFontMode);
 
 
 // ------------------------------------------------------------------------

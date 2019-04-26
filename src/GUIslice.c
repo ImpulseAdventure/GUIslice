@@ -1546,10 +1546,16 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     //       and then return 'false'. Note that DrvFontAdd() may normally
     //       return NULL in ADAGFX mode for some font types.
 
-    pGui->asFont[pGui->nFontCnt].eFontRefType = eFontRefType;
-    pGui->asFont[pGui->nFontCnt].pvFont       = pvFont;
-    pGui->asFont[pGui->nFontCnt].nId          = nFontId;
-    pGui->asFont[pGui->nFontCnt].nSize        = nFontSz;
+    int16_t nFontInd = pGui->nFontCnt;
+
+    gslc_ResetFont(&(pGui->asFont[nFontInd]));
+  
+    pGui->asFont[nFontInd].eFontRefType = eFontRefType;
+	  // TODO: Support specification of mode via FontAdd() API?
+    pGui->asFont[nFontInd].eFontRefMode = GSLC_FONTREF_MODE_DEFAULT;
+    pGui->asFont[nFontInd].pvFont       = pvFont;
+    pGui->asFont[nFontInd].nId          = nFontId;
+    pGui->asFont[nFontInd].nSize        = nFontSz;
     pGui->nFontCnt++;
     return true;
   }
@@ -1567,7 +1573,17 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId)
   return NULL;
 }
 
-
+bool gslc_FontSetMode(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefMode eFontMode)
+{
+  gslc_tsFont* pFont = NULL;
+  pFont = gslc_FontGet(pGui, nFontId);
+  if (!pFont) {
+    // TODO: ERROR
+    return false;
+  }
+  pFont->eFontRefMode = eFontMode;
+  return true;
+}
 
 
 // ------------------------------------------------------------------------
@@ -4193,6 +4209,7 @@ void gslc_ResetFont(gslc_tsFont* pFont)
   }
   pFont->nId            = GSLC_FONT_NONE;
   pFont->eFontRefType   = GSLC_FONTREF_FNAME;
+  pFont->eFontRefMode   = GSLC_FONTREF_MODE_DEFAULT;
   pFont->pvFont         = NULL;
   pFont->nSize          = 0;
 }

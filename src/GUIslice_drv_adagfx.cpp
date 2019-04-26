@@ -587,19 +587,27 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   // Fetch the string dimensions
   //
-  // Unfortunately, the PaulStoffregen/ILI9341_t3 library (as of version 1.0) does not
-  // does not provide the Adafruit-GFX style APIs that return text string dimensions
-  // (such as getTextBounds()), hence it is difficult for other libraries to support
-  // features such as text justification / centering.
-  //
-  // While ILI9341_t3 does support a strPixelLen() API, this only provides
-  // horizontal extents. Furthermore, it appears that there is a bug/assumption
-  // in strPixelLen() that the string includes a newline character otherwise
-  // the returned length will be 0.
-  //
-  // Therefore, for the purposes of compatibility with the built-in Adafruit
-  // font, we will replicate the calculation here, based on the standardized
-  // Adafruit font dimension.
+  // - The PaulStoffregen/ILI9341_t3 library (version 1.0) does not
+  //   provide the APIs necessary to support full text justification
+  //   (both horizontal and vertical), commonly found in the
+  //   Adafruit-GFX getTextBounds() function.
+  // - No API exists for vertical dimensioning
+  // - An API exists for horizontal dimensioning, strPixelLen():
+  //     - *pnTxtSzW = m_disp.strPixelLen((char*)pStr);
+  // - Unfortunately, the strPixelLen() function has a bug/limitation in
+  //   that the returned length is 0 unless a newline has been encountered.
+  //   Most single-line strings will not be terminated in a newline, so
+  //   the API will not work as-is.
+  // - Attempting to work around this newline limitation is not trivial
+  //   because we strictly avoid the use of dynamic memory allocation
+  //   and we don't want to artificially limit the string length by
+  //   allocating a fixed size buffer on the heap.
+  // - In the case of the Adafruit-GFX default font, we can work around
+  //   these limitations by hard-coding the standardized font dimensions 6x8.
+  // - In the case of T3 fonts, no workaround has been devised at this
+  //   time.
+  // - Therefore, only the default Adafruit-GFX font is supported
+  //   in the PaulStoffregen/ILI9341_t3 driver mode.
 
   nTxtScale = pFont->nSize;
   m_disp.setTextSize(nTxtScale);
@@ -614,27 +622,6 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   *pnTxtY = 0;
 
   // TODO: Support ILI9341_t3 fonts
-  // - In order to support the T3 fonts, we would wish to leverage strPixelLen()
-  //   but unfortunately would still encounter the above issue regarding the
-  //   requirement to include a newline character.
-  //   - *pnTxtSzW = m_disp.strPixelLen((char*)pStr);
-  // - As a temporary measure, we could potentially allocate a new string on
-  //   the heap to force a newline termination. However, this would require us
-  //   to predefine the maximum string length (perhaps using GSLC_LOCAL_STR_LEN?)
-  //   since we strictly avoid using dynamic memory allocation.
-  // - Another approach could force a newline at the end of pStr and then
-  //   call strPixelLen() again on a new string that represents the final character
-  //   that was overwritten by the newline, adding the two lengths. The downside
-  //   of this approach is that we couldn't extend to support Flash-based string
-  //   storage.
-  // - In addition to the above, there does not appear to be an API available to
-  //   fetch the vertical font extent to support *pnTxtSzH
-  //
-  // - The best approach of all would be for the ILI9341_t3 library to add
-  //   text dimension APIs.
-  //
-  // - Alternately, there are other forks of ILI9341_t3 that have introduced
-  //   some of these missing text sizing APIs.
 
   //GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s]=%u pixellen=%d scale=%d textsize=%d\n",
   //  pStr, *pnTxtSzW,m_disp.strPixelLen((char*)pStr),nTxtScale,m_disp.getTextSize()); //xxx
@@ -644,7 +631,28 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 #elif defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
   // Use blackketter/ILI9341_t3
 
-  m_disp.setFontAdafruit();
+  // Fetch the string dimensions
+  // - The blackketter/ILI9341_t3 fork provides the necessary
+  //   APIs to support both horizontal and vertical text justification.
+  // - Note that a pending modification is required in the
+  //   blackketter/ILI9341_t3 fork (PR #1) to support vertical
+  //   text dimensioning in the setFontAdafruit() mode. The code
+  //   below assumes that this patch has been applied. Without the
+  //   patch, the vertical justification will be incorrect.
+
+  const ILI9341_t3_font_t* pT3Font = NULL;
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+  default:
+    // Default Adafruit-GFX font
+    m_disp.setFontAdafruit();
+	  break;
+  case GSLC_FONTREF_MODE_1:
+    // T3 font
+	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+	  m_disp.setFont(*pT3Font);
+	  break;
+  }
 
   nTxtScale = pFont->nSize;
   m_disp.setTextSize(nTxtScale);
@@ -710,7 +718,19 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Initialize the font and positioning
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
-  // TODO
+  const ILI9341_t3_font_t* pT3Font = NULL;
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+  default:
+    // Default Adafruit-GFX font
+    m_disp.setFontAdafruit();
+	  break;
+  case GSLC_FONTREF_MODE_1:
+    // T3 font
+	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+	  m_disp.setFont(*pT3Font);
+	  break;
+  }
 #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
 #endif
