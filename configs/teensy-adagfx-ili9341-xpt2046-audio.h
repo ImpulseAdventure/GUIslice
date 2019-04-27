@@ -85,8 +85,8 @@ extern "C" {
   #define ADAGFX_PIN_RST      255   // Display Reset (255=UNUSED)
 
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
-  #define ADAGFX_SPI_SET      1     // Teensy with Adafruit_ILI9341 requires extra SPI init
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware, 0=software
+  #define ADAGFX_SPI_SET      1     // For ILI9341 + alternate hardware SPI, Teensy needs explicit SPI set init
 
   // Display interface SPI
   // - Hardware (default) SPI: the following definitions are unused
@@ -96,7 +96,7 @@ extern "C" {
   #define ADAGFX_PIN_CLK      14
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
