@@ -86,6 +86,7 @@ extern "C" {
 
   // Display interface type
   #define ADAGFX_SPI_HW       0	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
+  #define ADAGFX_SPI_SET      1     // For alternate hardware SPI, Teensy needs explicit SPI set init
 
   // Display interface SPI
   // - Hardware (default) SPI: the following definitions are unused
