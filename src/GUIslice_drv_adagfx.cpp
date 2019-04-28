@@ -352,8 +352,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
         // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
 	      // This may be required for certain pinouts with Teensy 3 devices.
 	      // If enabled, it must be done ahead of m_disp.begin()
-	      m_disp.setMOSI(ADAGFX_PIN_MOSI);
-	      m_disp.setSCK(ADAGFX_PIN_CLK);
+	      SPI.setMOSI(ADAGFX_PIN_MOSI);
+	      SPI.setSCK(ADAGFX_PIN_CLK);
       #endif
 
       m_disp.begin();
