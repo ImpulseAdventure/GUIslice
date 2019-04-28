@@ -5,12 +5,13 @@
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     Teensy 3
 //   - Display: ILI9341
-//   - Touch:   STMPE610 (Resistive)
-//   - Wiring:  Custom breakout
+//   - Touch:   XPT2046 (Resistive)
+//   - Wiring:  Custom breakout with Audio Adapter
 //              - Pinout:
 //
 //   - Example display:
-//     - Adafruit 2.8" TFT LCD Shield w/ Touchscreen (resistive)
+//     - PJRC 320x240 Touchscreen (ILI9341)
+//       https://www.pjrc.com/store/display_ili9341_touch.html
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -70,8 +71,9 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX                // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341_T3_BL  // blackketter/ILI9341_t3
-  #define DRV_TOUCH_ADA_STMPE610         // Adafruit STMPE610 touch driver
+  #define DRV_DISP_ADAGFX_ILI9341_T3     // PaulStoffregen/ILI9341_t3 (NOTE: Requires latest from GitHub)
+	                                     // - See https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  #define DRV_TOUCH_XPT2046_PS           // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -79,22 +81,22 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_DC       9     // Display SPI data/command
-  #define ADAGFX_PIN_RST      0     // Display Reset
+  #define ADAGFX_PIN_CS       21    // Display chip select
+  #define ADAGFX_PIN_DC       20    // Display SPI data/command
+  #define ADAGFX_PIN_RST      255   // Display Reset (255=UNUSED)
 
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
+  #define ADAGFX_SPI_HW       0	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
 
-  // Display interface software SPI
-  // - Hardware SPI: the following definitions are unused
-  // - Software SPI: the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     11
+  // Display interface SPI
+  // - Hardware (default) SPI: the following definitions are unused
+  // - Software / Hardware (alternate) SPI: the following pins need to be defined
+  #define ADAGFX_PIN_MOSI     7
   #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      13
+  #define ADAGFX_PIN_CLK      14
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -117,14 +119,8 @@ extern "C" {
   // SECTION 4A: Update your pin connections here
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
-  #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
-
   // Touch bus & pinout
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
-  #define ADATOUCH_PIN_CS     8     // Touch device chip select (for ADATOUCH_SPI_HW=1)
+  #define XPT2046_CS     8
 
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -134,11 +130,11 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Calibration settings from diag_ard_touch_calib:
-  // DRV_TOUCH_ADA_STMPE610 [240x320]:
-  #define ADATOUCH_X_MIN    244
-  #define ADATOUCH_X_MAX    3858
-  #define ADATOUCH_Y_MIN    141
-  #define ADATOUCH_Y_MAX    3717
+  // DRV_TOUCH_XPT2046:
+  #define ADATOUCH_X_MIN    246
+  #define ADATOUCH_X_MAX    3837
+  #define ADATOUCH_Y_MIN    3925
+  #define ADATOUCH_Y_MAX    370
   // Certain touch controllers may swap X & Y coords
   #define ADATOUCH_REMAP_YX 0
 
@@ -146,6 +142,9 @@ extern "C" {
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN  10
+  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -174,11 +173,11 @@ extern "C" {
   // - For memory constrained devices such as Arduino, it is best to
   //   set the following features to 0 (to disable) unless they are
   //   required.
-  #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
+  #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
+  #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
+  #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
-  #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
+  #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable

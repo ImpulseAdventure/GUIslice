@@ -48,7 +48,7 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if !defined(DRV_DISP_ADAGFX_ILI9341_T3) && !defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+  #if !defined(DRV_DISP_ADAGFX_ILI9341_T3)
     #include <Adafruit_GFX.h>
     #include <gfxfont.h>
   #endif // ILI9341_T3
@@ -66,7 +66,7 @@
       #include <SD.h>   // Include support for SD card access
     #endif
     #include <SPI.h>
-  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
     #include <ILI9341_t3.h>
     #if (GSLC_SD_EN)
       #include <SD.h>   // Include support for SD card access
@@ -176,18 +176,6 @@ extern "C" {
   #else
     // Alternate hardware SPI pinout
     const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW-Alt)";
-    ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
-  #endif
-
-// ------------------------------------------------------------------------
-#elif defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
-  #if (ADAGFX_SPI_HW)
-    // Default hardware SPI pinout
-    const char* m_acDrvDisp = "ADA_ILI9341_T3_BL(SPI-HW)";
-    ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
-  #else
-    // Alternate hardware SPI pinout
-    const char* m_acDrvDisp = "ADA_ILI9341_T3_BL(SPI-HW-Alt)";
     ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
   #endif
 
@@ -367,7 +355,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
 
-    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
       m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -580,65 +568,19 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // Use PaulStoffregen/ILI9341_t3
-
-  // For now, only support the default Adafruit font
-  // - See below for reasoning
-  m_disp.setFontAdafruit();
-
-  // Fetch the string dimensions
   //
-  // - The PaulStoffregen/ILI9341_t3 library (version 1.0) does not
-  //   provide the APIs necessary to support full text justification
-  //   (both horizontal and vertical), commonly found in the
-  //   Adafruit-GFX getTextBounds() function.
-  // - No API exists for vertical dimensioning
-  // - An API exists for horizontal dimensioning, strPixelLen():
-  //     - *pnTxtSzW = m_disp.strPixelLen((char*)pStr);
-  // - Unfortunately, the strPixelLen() function has a bug/limitation in
-  //   that the returned length is 0 unless a newline has been encountered.
-  //   Most single-line strings will not be terminated in a newline, so
-  //   the API will not work as-is.
-  // - Attempting to work around this newline limitation is not trivial
-  //   because we strictly avoid the use of dynamic memory allocation
-  //   and we don't want to artificially limit the string length by
-  //   allocating a fixed size buffer on the heap.
-  // - In the case of the Adafruit-GFX default font, we can work around
-  //   these limitations by hard-coding the standardized font dimensions 6x8.
-  // - In the case of T3 fonts, no workaround has been devised at this
-  //   time.
-  // - Therefore, only the default Adafruit-GFX font is supported
-  //   in the PaulStoffregen/ILI9341_t3 driver mode.
-
-  nTxtScale = pFont->nSize;
-  m_disp.setTextSize(nTxtScale);
-
-  int16_t nStrLen = strlen(pStr);
-  
-  // Hardcoded dimension of default Adafruit-GFX font
-  *pnTxtSzW = nTxtScale * nStrLen * 6;
-  *pnTxtSzH = nTxtScale * 8;
-
-  *pnTxtX = 0;
-  *pnTxtY = 0;
-
-  // TODO: Support ILI9341_t3 fonts
-
-  //GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s]=%u pixellen=%d scale=%d textsize=%d\n",
-  //  pStr, *pnTxtSzW,m_disp.strPixelLen((char*)pStr),nTxtScale,m_disp.getTextSize()); //xxx
-
-  return true;
-
-#elif defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
-  // Use blackketter/ILI9341_t3
+  // - IMPORTANT NOTE: Recent version of ILI9341_t3 library is required
+  // - If you see a compilation error such as the following, then you
+  //   need to update your ILI9341_t3 library to a more recent version:
+  //     error: 'class ILI9341_t3' has no member named 'measureTextWidth'
+  //     error: 'class ILI9341_t3' has no member named 'measureTextHeight'
+  // - To update ILI9341_t3 to the latest, please follow the guidance here:
+  //    https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
 
   // Fetch the string dimensions
-  // - The blackketter/ILI9341_t3 fork provides the necessary
-  //   APIs to support both horizontal and vertical text justification.
-  // - Note that a pending modification is required in the
-  //   blackketter/ILI9341_t3 fork (PR #1) to support vertical
-  //   text dimensioning in the setFontAdafruit() mode. The code
-  //   below assumes that this patch has been applied. Without the
-  //   patch, the vertical justification will be incorrect.
+  // - Note that the following APIs (measureTextHeight / measureTextWidth)
+  //   were recently added to ILI9341_t3, so the latest version of
+  //   the library from GitHub should be used.
 
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
@@ -658,8 +600,8 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   m_disp.setTextSize(nTxtScale);
 
   // Fetch the font sizing
-  *pnTxtSzW = m_disp.measureTextWidth(pStr,0);
-  *pnTxtSzH = m_disp.measureTextHeight(pStr,0);
+  *pnTxtSzW = m_disp.measureTextWidth(pStr,0);  // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  *pnTxtSzH = m_disp.measureTextHeight(pStr,0); // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
 
   // Debug: report font sizing
   // GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
@@ -717,7 +659,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   char      ch;
 
   // Initialize the font and positioning
-#if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
@@ -824,7 +766,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   #endif // DRV_DISP_ADAGFX_RA8875
 
   // Restore the font
-#if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // TODO
 #else
   m_disp.setFont();
@@ -2021,7 +1963,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3_BL)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);

@@ -71,7 +71,8 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX                // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341_T3_BL  // blackketter/ILI9341_t3
+  #define DRV_DISP_ADAGFX_ILI9341_T3     // PaulStoffregen/ILI9341_t3 (NOTE: Requires latest from GitHub)
+	                                     // - See https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
   #define DRV_TOUCH_XPT2046_PS           // PaulStoffregen/XPT2046_Touchscreen
 
 
