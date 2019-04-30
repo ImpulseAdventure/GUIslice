@@ -98,6 +98,13 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 
+  // Teensy:
+  // ------------------------------------------------------
+  //#include "../configs/teensy-adagfx-ili9341-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341-xpt2046-audio.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-audio.h"
+
   // STM32:
   // ------------------------------------------------------
   //#include "../configs/stm32-adagfx-mcufriend-simple.h"
@@ -136,6 +143,8 @@ extern "C" {
 #elif defined(ARDUINO_ARCH_SAM)   // DUE
   #include "GUIslice_config_ard.h"
 #elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
+  #include "GUIslice_config_ard.h"
+#elif defined(__MK20DX256__) // Teensy 3.2
   #include "GUIslice_config_ard.h"
 #else
   #error "Unknown device platform"

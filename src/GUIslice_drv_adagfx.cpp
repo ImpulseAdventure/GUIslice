@@ -45,8 +45,13 @@
 #include <stdio.h>
 
 #if defined(DRV_DISP_ADAGFX)
-  #include <Adafruit_GFX.h>
-  #include <gfxfont.h>
+
+  // Almost all GFX-compatible libraries depend on Adafruit-GFX
+  // There are a couple exceptions that do not require it
+  #if !defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    #include <Adafruit_GFX.h>
+    #include <gfxfont.h>
+  #endif // ILI9341_T3
 
   // Now configure specific display driver for Adafruit-GFX
   #if defined(DRV_DISP_ADAGFX_ILI9341)
@@ -57,6 +62,12 @@
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
     #include <Adafruit_TFTLCD.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    #include <ILI9341_t3.h>
     #if (GSLC_SD_EN)
       #include <SD.h>   // Include support for SD card access
     #endif
@@ -155,6 +166,18 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
   const char* m_acDrvDisp = "ADA_ILI9341_8b";
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #if (ADAGFX_SPI_HW)
+    // Default hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW)";
+    ILI9341_t3 m_disp = ILI9341_t3(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    // Alternate hardware SPI pinout
+    const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW-Alt)";
+    ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
+  #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
@@ -312,6 +335,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     pGui->bRedrawPartialEn = true;
 
     #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+
+      #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
+        // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
+	      // This may be required for certain pinouts with Teensy 3 devices.
+	      // If enabled, it must be done ahead of m_disp.begin()
+	      SPI.setMOSI(ADAGFX_PIN_MOSI);
+	      SPI.setSCK(ADAGFX_PIN_CLK);
+      #endif
+
       m_disp.begin();
       m_disp.readcommand8(ILI9341_RDMODE);
       m_disp.readcommand8(ILI9341_RDMADCTL);
@@ -322,6 +354,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+      m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
@@ -528,9 +563,58 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtLen   = 0;
-  uint16_t  nTxtScale = pFont->nSize;
+  uint16_t  nTxtLen = 0;
+  uint16_t  nTxtScale = 0;
 
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // Use PaulStoffregen/ILI9341_t3
+  //
+  // - IMPORTANT NOTE: Recent version of ILI9341_t3 library is required
+  // - If you see a compilation error such as the following, then you
+  //   need to update your ILI9341_t3 library to a more recent version:
+  //     error: 'class ILI9341_t3' has no member named 'measureTextWidth'
+  //     error: 'class ILI9341_t3' has no member named 'measureTextHeight'
+  // - To update ILI9341_t3 to the latest, please follow the guidance here:
+  //    https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+
+  // Fetch the string dimensions
+  // - Note that the following APIs (measureTextHeight / measureTextWidth)
+  //   were recently added to ILI9341_t3, so the latest version of
+  //   the library from GitHub should be used.
+
+  const ILI9341_t3_font_t* pT3Font = NULL;
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+  default:
+    // Default Adafruit-GFX font
+    m_disp.setFontAdafruit();
+	  break;
+  case GSLC_FONTREF_MODE_1:
+    // T3 font
+	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+	  m_disp.setFont(*pT3Font);
+	  break;
+  }
+
+  nTxtScale = pFont->nSize;
+  m_disp.setTextSize(nTxtScale);
+
+  // Fetch the font sizing
+  *pnTxtSzW = m_disp.measureTextWidth(pStr,0);  // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  *pnTxtSzH = m_disp.measureTextHeight(pStr,0); // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+
+  // Debug: report font sizing
+  // GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
+  //   pStr,*pnTxtSzW,*pnTxtSzH,nTxtScale);
+
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
+  return true;
+
+#else
+
+  nTxtScale = pFont->nSize;
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
@@ -562,6 +646,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   m_disp.setFont();
   return true;
+
+#endif // DRV_DISP_*
+
 }
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
@@ -572,7 +659,23 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   char      ch;
 
   // Initialize the font and positioning
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  const ILI9341_t3_font_t* pT3Font = NULL;
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+  default:
+    // Default Adafruit-GFX font
+    m_disp.setFontAdafruit();
+	  break;
+  case GSLC_FONTREF_MODE_1:
+    // T3 font
+	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+	  m_disp.setFont(*pT3Font);
+	  break;
+  }
+#else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
+#endif
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
@@ -663,7 +766,11 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   #endif // DRV_DISP_ADAGFX_RA8875
 
   // Restore the font
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // TODO
+#else
   m_disp.setFont();
+#endif
 
   return true;
 }
@@ -1770,7 +1877,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       nOutputX = nInputX;
       nOutputY = nInputY;
     #endif  // DRV_TOUCH_TYPE_RES
-	
+  
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
     GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
@@ -1856,7 +1963,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
@@ -1940,6 +2047,11 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     m_disp.setRotation(pGui->nRotation);
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
+
+  #else
+    // Report error for unsupported display mode
+    // - If we don't trap this condition, the GUI dimensions will be incorrect
+    #error "ERROR: DRV_DISP_* mode not supported in DrvRotate initialization"
 
   #endif
 
