@@ -50,8 +50,6 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 void setup()
 {
-  gslc_tsElem*  pElem = NULL;
-
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);

@@ -317,8 +317,6 @@ extern "C" {
 bool gslc_DrvInit(gslc_tsGui* pGui)
 {
 
-  bool bInitOk = true;
-
   // Report any debug info if enabled
   #if defined(DBG_DRIVER)
   // TODO
@@ -385,6 +383,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       // RA8875 requires additional initialization depending on
       // display type. Enable the user to specify the
       // configuration via DRV_DISP_ADAGFX_RA8875_INIT.
+      bool bInitOk = true;
       #ifndef DRV_DISP_ADAGFX_RA8875_INIT
         bInitOk = m_disp.begin(RA8875_800x480);  // Default to 800x480
       #else
@@ -563,7 +562,6 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtLen = 0;
   uint16_t  nTxtScale = 0;
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
@@ -624,7 +622,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
 #if (GSLC_USE_PROGMEM)
-    nTxtLen = strlen_P(pStr);
+    uint16_t nTxtLen = strlen_P(pStr);
     char tempStr[nTxtLen+1];
     strncpy_P(tempStr,pStr,nTxtLen);
     tempStr[nTxtLen] = '\0';  // Force termination
@@ -655,7 +653,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
-  uint16_t  nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   char      ch;
 
   // Initialize the font and positioning
@@ -689,6 +686,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     bool bInternal8875Font = false;
 
     if (bInternal8875Font) {
+      uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
       // Enter text mode when using RA8875 built-in fonts
       m_disp.textMode();
       nTxtScale = (nTxtScale > 0) ? nTxtScale : 0;
@@ -1061,6 +1059,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   int      w, h, row, col;
   uint8_t  r, g, b;
   uint32_t pos = 0, startTime = millis();
+  (void)startTime; // Unused
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
 
@@ -1077,12 +1076,14 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
     uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
+	(void)nFileSize; // Unused
     //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
     uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
+	(void)nHdrSize; // Unused
     //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
@@ -1178,7 +1179,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   #if defined(DBG_DRIVER)
   char addr[6];
   GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
-  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  sprintf(addr,"%04X",(unsigned int)sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
@@ -1950,6 +1951,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
   if ((nRotation == 1) || (nRotation == 3)) {
     bSwap = true;
   }
+  (void)bSwap; // May be Unused in some driver modes
 
   // Did the orientation change?
   if (nRotation == pGui->nRotation) {

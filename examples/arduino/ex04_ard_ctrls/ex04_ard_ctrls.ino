@@ -129,6 +129,7 @@ bool CbCheckbox(void* pvGui, void* pvElemRef, int16_t nSelId, bool bChecked)
     default:
       break;
   } // switch
+  return true;
 }
 
 

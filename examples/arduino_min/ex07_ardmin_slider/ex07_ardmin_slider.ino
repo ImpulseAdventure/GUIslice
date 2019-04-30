@@ -166,12 +166,12 @@ bool InitOverlays()
 
   // Create sliders
   // - Define element arrangement
-  uint16_t  nSlideW   = 80;
-  uint16_t  nSlideH   = 20;
-  int16_t   nLabelX   = 160;
-  uint16_t  nLabelW   = 30;
-  uint16_t  nLabelH   = 20;
-  int16_t   nSlideX   = nLabelX + nLabelW + 20;
+  //uint16_t  nSlideW   = 80;
+  //uint16_t  nSlideH   = 20;
+  //int16_t   nLabelX   = 160;
+  //uint16_t  nLabelW   = 30;
+  //uint16_t  nLabelH   = 20;
+  //int16_t   nSlideX   = nLabelX + nLabelW + 20;
 
   gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,160,115,120,20,"Set LED RGB:",&m_asFont[0],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);

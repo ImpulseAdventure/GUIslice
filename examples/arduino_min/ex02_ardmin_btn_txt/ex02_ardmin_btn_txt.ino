@@ -66,8 +66,6 @@ bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_
 
 void setup()
 {
-  gslc_tsElemRef*  pElemRef = NULL;
-
   // Initialize debug output
   Serial.begin(9600);
   gslc_InitDebug(&DebugOut);

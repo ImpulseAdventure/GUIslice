@@ -186,8 +186,6 @@ bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_
 // Create the default elements on each page
 bool InitOverlays()
 {
-  gslc_tsElemRef*  pElemRef = NULL;
-
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   // Background flat color
@@ -196,6 +194,7 @@ bool InitOverlays()
   // Graphic logo from SD card
   // - If enabling this, ensure MAX_ELEM_PG_MAIN is incremented
   #if 0
+  gslc_tsElemRef*  pElemRef = NULL;
   static const char m_strLogo[] = IMG_LOGO;
   pElemRef = gslc_ElemCreateImg(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160-100,5,200,40},
     gslc_GetImageFromSD(m_strLogo,GSLC_IMGREF_FMT_BMP24));

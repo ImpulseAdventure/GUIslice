@@ -357,6 +357,7 @@ void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   gslc_tsXTextbox*  pBox = NULL;
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
+  (void)pBox; // Unused
   gslc_ElemXTextboxBufAdd(pGui,pElemRef,GSLC_XTEXTBOX_CODE_COL_RESET,true);
 #endif
 }
@@ -372,12 +373,11 @@ void gslc_ElemXTextboxWrapSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bWr
 
 void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
 {
-  gslc_tsXTextbox*  pBox = NULL;
-  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  //pBox = (gslc_tsXTextbox*)(pElem->pXData);
 
   // Warn the user about mode compatibility
 #if (GSLC_FEATURE_XTEXTBOX_EMBED)
+  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  //gslc_tsXTextbox* pBox = (gslc_tsXTextbox*)(pElem->pXData);
   static bool bWarned = false;  // Warn only once
   bool bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
   if ((!bWarned) && (bEncUtf8)) {
@@ -385,10 +385,6 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
     GSLC_DEBUG_PRINT("WARNING: ElemXTextboxAdd(%s) UTF-8 encoding not supported in GSLC_FEATURE_XTEXTBOX_EMBED=1 mode\n","");
     bWarned = true;
   }
-#else
-  // Hide warnings about unused variables
-  (void)pBox;
-  (void)pElem;
 #endif
 
   // Add null-terminated string to the bottom of the buffer

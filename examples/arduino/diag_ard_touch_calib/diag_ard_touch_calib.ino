@@ -371,7 +371,6 @@ bool CalcSegments()
   //      been detected in the 4 points. If not, error.
   // - 5) Identify the mapping type based on the segment assignments.
 
-  bool bOk = true;
   int16_t nXMin = 9999;
   int16_t nXMax = 0;
   int16_t nYMin = 9999;
@@ -932,8 +931,8 @@ void CalcMaxCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
   m_nTouchXMax = (nTouchX > m_nTouchXMax) ? nTouchX : m_nTouchXMax;
   m_nTouchYMin = (nTouchY < m_nTouchYMin) ? nTouchY : m_nTouchYMin;
   m_nTouchYMax = (nTouchY > m_nTouchYMax) ? nTouchY : m_nTouchYMax;
-  m_nTouchZMin = (nTouchZ < m_nTouchZMin) ? nTouchZ : m_nTouchZMin;
-  m_nTouchZMax = (nTouchZ > m_nTouchZMax) ? nTouchZ : m_nTouchZMax;
+  m_nTouchZMin = ((int16_t)nTouchZ < m_nTouchZMin) ? (int16_t)nTouchZ : m_nTouchZMin;
+  m_nTouchZMax = ((int16_t)nTouchZ > m_nTouchZMax) ? (int16_t)nTouchZ : m_nTouchZMax;
 }
 
 // Take raw input down / up events and update with debounced versions
@@ -1104,6 +1103,7 @@ void DoFsm(bool bTouchDown, bool bTouchUp, int16_t nTouchX, int16_t nTouchY, uin
   case STATE_CAPT_ROT:
     // Calculate calibration
     bSegsOk = CalcSegments();
+	(void)bSegsOk; // Unused
     CalcCalib();
 
     GSLC_DEBUG_PRINT("\nCALIB: Rotate\n", "");

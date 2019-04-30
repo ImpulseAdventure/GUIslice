@@ -230,8 +230,8 @@ void CalcMaxCoords(int16_t nTouchX, int16_t nTouchY, uint16_t nTouchZ)
   m_nTouchXMax = (nTouchX > m_nTouchXMax) ? nTouchX : m_nTouchXMax;
   m_nTouchYMin = (nTouchY < m_nTouchYMin) ? nTouchY : m_nTouchYMin;
   m_nTouchYMax = (nTouchY > m_nTouchYMax) ? nTouchY : m_nTouchYMax;
-  m_nTouchZMin = (nTouchZ < m_nTouchZMin) ? nTouchZ : m_nTouchZMin;
-  m_nTouchZMax = (nTouchZ > m_nTouchZMax) ? nTouchZ : m_nTouchZMax;
+  m_nTouchZMin = ((int16_t)nTouchZ < m_nTouchZMin) ? (int16_t)nTouchZ : m_nTouchZMin;
+  m_nTouchZMax = ((int16_t)nTouchZ > m_nTouchZMax) ? (int16_t)nTouchZ : m_nTouchZMax;
 }
 
 // Take raw input down / up events and update with debounced versions

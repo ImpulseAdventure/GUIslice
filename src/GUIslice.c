@@ -105,7 +105,6 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 {
   unsigned  nInd;
   bool      bOk = true;
-  bool      bTouchOk = true;
 
   // Provide indication that debug messaging is active
   #if !defined(INIT_MSG_DISABLE)
@@ -219,7 +218,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       // Instead, a flag is set that can be used to alert the
       // user on their display (in case the debug messaging was
       // not enabled)
-      bTouchOk &= gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
+      bool bTouchOk = gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
         #if !defined(INIT_MSG_DISABLE)
         GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch(pGui));

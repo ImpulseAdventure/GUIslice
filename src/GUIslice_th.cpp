@@ -15,7 +15,7 @@ THPoint::THPoint(void) {
   x = y = z = 0;
 }
 
-THPoint::THPoint(int16_t x0, int16_t y0, int16_t z0) {
+THPoint::THPoint(uint16_t x0, uint16_t y0, uint16_t z0) {
   x = x0;
   y = y0;
   z = z0;
