@@ -98,6 +98,13 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 
+  // Teensy:
+  // ------------------------------------------------------
+  //#include "../configs/teensy-adagfx-ili9341-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341-xpt2046-audio.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-audio.h"
+
   // STM32:
   // ------------------------------------------------------
   //#include "../configs/stm32-adagfx-mcufriend-simple.h"
