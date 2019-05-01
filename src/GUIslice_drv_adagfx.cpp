@@ -335,11 +335,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
 
       #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
+        // TODO: Consider check for GSLC_DEV_TEENSY
         // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
-	      // This may be required for certain pinouts with Teensy 3 devices.
-	      // If enabled, it must be done ahead of m_disp.begin()
-	      SPI.setMOSI(ADAGFX_PIN_MOSI);
-	      SPI.setSCK(ADAGFX_PIN_CLK);
+        // This may be required for certain pinouts with Teensy 3 devices.
+        // If enabled, it must be done ahead of m_disp.begin()
+        SPI.setMOSI(ADAGFX_PIN_MOSI);
+        SPI.setSCK(ADAGFX_PIN_CLK);
       #endif
 
       m_disp.begin();
@@ -586,12 +587,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   default:
     // Default Adafruit-GFX font
     m_disp.setFontAdafruit();
-	  break;
+    break;
   case GSLC_FONTREF_MODE_1:
     // T3 font
-	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
-	  m_disp.setFont(*pT3Font);
-	  break;
+    pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+    m_disp.setFont(*pT3Font);
+    break;
   }
 
   nTxtScale = pFont->nSize;
@@ -663,12 +664,12 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   default:
     // Default Adafruit-GFX font
     m_disp.setFontAdafruit();
-	  break;
+    break;
   case GSLC_FONTREF_MODE_1:
     // T3 font
-	  pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
-	  m_disp.setFont(*pT3Font);
-	  break;
+    pT3Font = (const ILI9341_t3_font_t*)(pFont->pvFont);
+    m_disp.setFont(*pT3Font);
+    break;
   }
 #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
@@ -1076,14 +1077,14 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
     uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
-	(void)nFileSize; // Unused
+  (void)nFileSize; // Unused
     //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
     uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
-	(void)nHdrSize; // Unused
+  (void)nHdrSize; // Unused
     //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);

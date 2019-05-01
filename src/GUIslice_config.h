@@ -127,7 +127,10 @@ extern "C" {
 // Detect device platform
 #if defined(__linux__)
   #define GSLC_CFG_LINUX
-#elif defined(__AVR__) || defined(ARDUINO_SAMD_ZERO)
+#elif defined(__AVR__) && !defined(TEENSYDUINO)
+  // Note: Teensy 2 also defines __AVR__, so differentiate with TEENSYDUINO
+  #define GSLC_CFG_ARD
+#elif defined(ARDUINO_SAMD_ZERO)
   #define GSLC_CFG_ARD
 #elif defined(ESP8266) || defined(ESP32)
   #define GSLC_CFG_ARD
@@ -140,6 +143,9 @@ extern "C" {
 #elif defined(ARDUINO_ARCH_SAM)   // Arduino Due
   #define GSLC_CFG_ARD
 #elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
+  #define GSLC_CFG_ARD
+#elif defined(__AVR__) && defined(TEENSYDUINO) // Teensy 2
+  #define GSLC_DEV_TEENSY_2
   #define GSLC_CFG_ARD
 #elif defined(__MKL26Z64__) // Teensy LC
   #define GSLC_CFG_ARD
@@ -154,6 +160,7 @@ extern "C" {
   #define GSLC_CFG_ARD
   #define GSLC_DEV_TEENSY_3_6
 #else
+#warning Unknown
   #error "Unknown device platform"
 #endif
 
