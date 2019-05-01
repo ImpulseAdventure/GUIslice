@@ -90,8 +90,6 @@ bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t n
 // Create page elements
 bool InitOverlays()
 {
-  gslc_tsElemRef* pElemRef;
-
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPageElem,MAX_ELEM_PG_MAIN_RAM,m_asPageElemRef,MAX_ELEM_PG_MAIN);
 
   // Background flat color

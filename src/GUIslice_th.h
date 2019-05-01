@@ -16,12 +16,12 @@
 class THPoint {
  public:
   THPoint(void);
-  THPoint(int16_t x, int16_t y, int16_t z);
+  THPoint(uint16_t x, uint16_t y, uint16_t z);
   
   bool operator==(THPoint);
   bool operator!=(THPoint);
 
-  int16_t x, y, z;
+  uint16_t x, y, z;
 };
 
 

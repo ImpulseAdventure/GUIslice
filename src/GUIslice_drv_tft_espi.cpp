@@ -1694,6 +1694,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
   if ((nRotation == 1) || (nRotation == 3)) {
     bSwap = true;
   }
+  (void)bSwap; // Unused
 
   // Did the orientation change?
   if (nRotation == pGui->nRotation) {

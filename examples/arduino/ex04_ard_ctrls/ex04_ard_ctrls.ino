@@ -27,12 +27,11 @@
 #include "elem/XSlider.h"
 #include "elem/XGauge.h"
 
-#include <Adafruit_GFX.h>
-
 // To demonstrate additional fonts, uncomment the following line:
 //#define USE_EXTRA_FONTS
 
 #ifdef USE_EXTRA_FONTS
+  #include <Adafruit_GFX.h>
   // Note that these files are located within the Adafruit-GFX library folder:
   #include "Fonts/FreeSansBold12pt7b.h"
 #endif
@@ -130,6 +129,7 @@ bool CbCheckbox(void* pvGui, void* pvElemRef, int16_t nSelId, bool bChecked)
     default:
       break;
   } // switch
+  return true;
 }
 
 
