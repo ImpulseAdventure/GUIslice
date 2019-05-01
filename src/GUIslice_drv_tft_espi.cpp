@@ -1050,20 +1050,20 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   //       are optionally enabled.
 
   // Enable workaround for ambiguity in Adafruit_TouchScreen pressure readings
-  // - See Issue #96
-  #define FIX_4WIRE // Comment out to disable
+  // - See https://github.com/ImpulseAdventure/GUIslice/issues/96
+  #define FIX_4WIRE_Z // Comment out to disable
 
   // Enable workaround for Adafruit_TouchScreen getPoint() altering
   // the pin state and not restoring it. Without working around this,
   // the touch handler may interfere with displays that share pins.
-  #define FIX_PIN_STATE // Comment out to disable
+  #define FIX_4WIRE_PIN_STATE // Comment out to disable
 
   // For ESP32 devices, a workaround is required for the
   // Adafruit_TouchScreen since it makes an assumption that
   // the ADC resolution is 10-bit. This workaround enables the
   // Adafruit library to operate the same was as for AVR devices.
   #if defined(ESP32)
-    #define FIX_ADC_10 // Comment out to disable
+    #define FIX_4WIRE_ADC_10 // Comment out to disable
   #endif
 
   // Enable workaround for TFT_eSPI with 8-bit parallel TFTs that share
@@ -1074,18 +1074,25 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   // disable.
   // - Note that this workaround assumes that TFT_CS has been defined
   //   in the TFT_eSPI library.
-  #define FIX_FORCE_CS // Comment out to disable
+  // - TFT_eSPI does not officially support UNO-style parallel shields
+  //   according to https://github.com/Bodmer/TFT_eSPI/issues/345
+  // - This workaround does enable successful operation with some of
+  //   these shields, but it is not guaranteed to work with all.
+  // - By default, this workaround has been disabled
+  //#define FIX_4WIRE_FORCE_CS // Comment out to disable
 
   // --------------------------------------------------------------------------
 
-  // Disable the Adafruit_TouchScreen FIX_PIN_STATE mode in
-  // STM32 as we haven't implemented the equivalent pin save/restore
-  // code yet.
+  // Disable certain workarounds for Adafruit_TouchScreen in STM32 mode
+  // as we haven't implemented the equivalent pin save/restore code yet.
   #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
-    #undef FIX_PIN_STATE
+    #undef FIX_4WIRE_PIN_STATE
+    #undef FIX_4WIRE_FORCE_CS
   #endif
   
-  #if defined(FIX_PIN_STATE)
+  // --------------------------------------------------------------------------
+
+  #if defined(FIX_4WIRE_PIN_STATE)
   // NOTE: The Adafruit_TouchScreen library alters the state of several
   //       pins during the course of reading the touch coordinates and
   //       pressure. Unfortunately, it does not restore the prior state
@@ -1148,10 +1155,11 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
   }
 
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
+
+  // --------------------------------------------------------------------------
 
 #endif // DRV_TOUCH_ADA_SIMPLE
-
 
 
 #if defined(DRV_TOUCH_TYPE_EXTERNAL)
@@ -1191,9 +1199,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
       // ADC resolution to 10-bit.
       // References:
       // - https://github.com/adafruit/Adafruit_TouchScreen/issues/15
-      #if defined(FIX_ADC_10)
+      #if defined(FIX_4WIRE_ADC_10)
         analogReadResolution(10);
-      #endif // FIX_ADC_10
+      #endif // FIX_4WIRE_ADC_10
     #endif
     return true;
   #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -1325,7 +1333,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   uint16_t  nRawX,nRawY;
   int16_t   nRawPress;
 
-  #if defined(FIX_PIN_STATE)
+  #if defined(FIX_4WIRE_PIN_STATE)
     // Saved pin state
     gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
 
@@ -1337,14 +1345,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
-    #if defined(FIX_FORCE_CS)
+    #if defined(FIX_4WIRE_FORCE_CS)
       // Preserve the TFT chip select and deassert it during touchscreen reads
       gslc_tsPinState sPinStateCS;
       gslc_TDrvSavePinState(TFT_CS, sPinStateCS);
       digitalWrite(TFT_CS, HIGH);
-    #endif // FIX_FORCE_CS
+    #endif // FIX_4WIRE_FORCE_CS
 
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
   
   // Perform the polling of touch coordinate & pressure
   TSPoint p = m_touch.getPoint();
@@ -1371,7 +1379,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // Wasn't touched before; do nothing
     } else {
 
-      #if !defined(FIX_4WIRE) // Original behavior without touch pressure workaround
+      #if !defined(FIX_4WIRE_Z) // Original behavior without touch pressure workaround
 
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
@@ -1434,14 +1442,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
             m_nLastRawPress,m_nLastRawX,m_nLastRawY);
         #endif
       } // nPressCur
-      #endif // FIX_4WIRE
+      #endif // FIX_4WIRE_Z
 
       // TODO: Implement touch debouncing
 
     } // m_bLastTouched
   }
 
-  #if defined(FIX_PIN_STATE)
+  #if defined(FIX_4WIRE_PIN_STATE)
     // Now that we have completed our polling into Adafruit_TouchScreen,
     // we need to restore the original pin state.
     gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
@@ -1449,12 +1457,12 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
 
-    #if defined(FIX_FORCE_CS)
+    #if defined(FIX_4WIRE_FORCE_CS)
       // Restore TFT chip select
       gslc_TDrvRestorePinState(TFT_CS, sPinStateCS);
-    #endif // FIX_FORCE_CS
+    #endif // FIX_4WIRE_FORCE_CS
 
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046_STM)
