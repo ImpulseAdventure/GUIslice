@@ -311,6 +311,7 @@ typedef enum {
   GSLC_DEBUG_PRINT_NORM,
   GSLC_DEBUG_PRINT_TOKEN,
   GSLC_DEBUG_PRINT_UINT16,
+  GSLC_DEBUG_PRINT_CHAR,
   GSLC_DEBUG_PRINT_STR,
   GSLC_DEBUG_PRINT_STR_P
 } gslc_teDebugPrintState;
@@ -320,6 +321,7 @@ typedef enum {
 // supports the following tokens:
 // - %u (16-bit unsigned int in RAM) [see NOTE]
 // - %d (16-bit signed int in RAM)
+// - %c (character)
 // - %s (null-terminated string in RAM)
 // - %z (null-terminated string in FLASH)
 // Format strings are expected to be in FLASH if GSLC_USE_PROGMEM enabled
@@ -398,6 +400,10 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           bNumStart = false;
           nNumDivisor = nMaxDivisor;
 
+        } else if (cFmt == 'c') {
+          nState = GSLC_DEBUG_PRINT_CHAR;
+          cOut = (char)va_arg(vlist,unsigned);
+
         } else if (cFmt == 's') {
           nState = GSLC_DEBUG_PRINT_STR;
           pStr = va_arg(vlist,char*);
@@ -433,6 +439,10 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         } while (cOut != 0);
         nState = GSLC_DEBUG_PRINT_NORM;
         // Don't advance format string index
+
+      } else if (nState == GSLC_DEBUG_PRINT_CHAR) {
+        (g_pfDebugOut)(cOut);
+        nState = GSLC_DEBUG_PRINT_NORM;
 
       } else if (nState == GSLC_DEBUG_PRINT_UINT16) {
 
