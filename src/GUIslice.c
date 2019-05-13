@@ -1550,7 +1550,7 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     gslc_ResetFont(&(pGui->asFont[nFontInd]));
   
     pGui->asFont[nFontInd].eFontRefType = eFontRefType;
-	  // TODO: Support specification of mode via FontAdd() API?
+    // TODO: Support specification of mode via FontAdd() API?
     pGui->asFont[nFontInd].eFontRefMode = GSLC_FONTREF_MODE_DEFAULT;
     pGui->asFont[nFontInd].pvFont       = pvFont;
     pGui->asFont[nFontInd].nId          = nFontId;
@@ -2823,6 +2823,13 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
     // TODO: Might want to change to GSLC_REDRAW_INC
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
+}
+
+char* gslc_ElemGetTxtStr(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return NULL;
+  return pElem->pStrBuf;
 }
 
 void gslc_ElemSetTxtCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colVal)
