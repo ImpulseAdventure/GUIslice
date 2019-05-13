@@ -3068,6 +3068,15 @@ void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn
   // No need to call ElemSetRedraw() as we aren't changing a visual characteristic
 }
 
+void gslc_ElemSetTouchFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_TOUCH funcCb)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
+  pElem->pfuncXTouch = funcCb;
+}
+
+
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest)
 {
   gslc_tsElem* pElemSrc = gslc_GetElemFromRefD(pGui, pElemRefSrc, __LINE__);

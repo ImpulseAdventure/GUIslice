@@ -1934,6 +1934,17 @@ void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn);
 void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn);
 
 ///
+/// Update the touch function callback for an element
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  pElemRef:   Pointer to Element reference
+/// \param[in]  cbTouch:    Pointer to the touch callback function
+///
+/// \return none
+///
+void gslc_ElemSetTouchFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_TOUCH funcCb);
+
+///
 /// Copy style settings from one element to another
 ///
 /// \param[in]  pGui:          Pointer to GUI
