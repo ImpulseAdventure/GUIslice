@@ -405,6 +405,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       // Support override for MCUFRIEND ID auto-detection
       #if defined(DRV_DISP_ADAGFX_MCUFRIEND_FORCE)
         m_disp.begin(DRV_DISP_ADAGFX_MCUFRIEND_FORCE);
+        #if !defined(INIT_MSG_DISABLE)
+        GSLC_DEBUG_PRINT("- MCUfriend ID forced\n","");
+        #endif
       #else
         m_disp.begin(identifier);
       #endif
