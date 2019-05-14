@@ -377,7 +377,7 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
     // Invoke the callback function
     pfuncXInput = pSpinner->pfuncXInput;
     if (pfuncXInput != NULL) {
-      (*pfuncXInput)(pvGui, pSpinner->pElemRef);
+      (*pfuncXInput)(pvGui, (void*)(pSpinner->pElemRef), XSPINNER_CB_STATE_UPDATE, NULL);
     }
 
   } // eTouch

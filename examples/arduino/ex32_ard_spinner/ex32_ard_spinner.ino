@@ -108,12 +108,14 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 }
 
 // Common Input Ready callback
-bool CbInputCommon(void* pvGui,void *pvElemRef)
+bool CbInputCommon(void* pvGui,void *pvElemRef, int16_t nState, void* pvData)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = pElemRef->pElem;
   
   char acTxtNum[4];
+
+  // Assume callback nState == XSPINNER_CB_STATE_UPDATE
 
   // From the element's ID we can determine which input field is ready.
   if (pElem->nId == E_ELEM_COMP1) {

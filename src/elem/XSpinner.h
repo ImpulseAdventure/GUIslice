@@ -60,6 +60,9 @@ extern "C" {
 // Define the max string length to allocate for dynamic text elements
 #define XSPINNER_STR_LEN  6
 
+// Define the status for GSLC_CB_INPUT callback
+#define XSPINNER_CB_STATE_UPDATE 3
+
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
