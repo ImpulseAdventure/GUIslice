@@ -140,10 +140,10 @@ extern "C" {
   //   corresponding MCUFRIEND ID. However, note that these example
   //   calibration values may not provide accurate touch tracking, therefore
   //   using the diag_ard_touch_calib utility is strongly recommended.
-  #define ADATOUCH_X_MIN    150
-  #define ADATOUCH_X_MAX    920
-  #define ADATOUCH_Y_MIN    120
-  #define ADATOUCH_Y_MAX    940
+  #define ADATOUCH_X_MIN    879
+  #define ADATOUCH_X_MAX    153
+  #define ADATOUCH_Y_MIN    107
+  #define ADATOUCH_Y_MAX    915
   // Certain touch controllers may swap X & Y coords
   #define ADATOUCH_REMAP_YX 0
 
