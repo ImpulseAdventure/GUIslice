@@ -36,7 +36,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
   - STMPE610, FT6206, XPT2046, 4-wire, tslib
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
-- GPIO / pin / keyboard control for non-touchscreen devices
+- GPIO / pin / keyboard / Adafruit Seesaw control for non-touchscreen devices
 
 ## Screenshots ##
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)

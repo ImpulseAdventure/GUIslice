@@ -291,6 +291,11 @@ typedef enum {
   GSLC_PIN_BTN_D_LONG,      ///< Button D (long press)
   GSLC_PIN_BTN_E,           ///< Button E (short press)
   GSLC_PIN_BTN_E_LONG,      ///< Button E (long press)
+  GSLC_PIN_BTN_UP,          ///< Button Up (short press)
+  GSLC_PIN_BTN_DOWN,        ///< Button Down (short press)
+  GSLC_PIN_BTN_LEFT,        ///< Button Left (short press)
+  GSLC_PIN_BTN_RIGHT,       ///< Button Right (short press)
+  GSLC_PIN_BTN_SEL,         ///< Button Select (short press)
 } gslc_tePin;
 
 

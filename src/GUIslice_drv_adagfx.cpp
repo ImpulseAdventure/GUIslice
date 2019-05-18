@@ -223,7 +223,7 @@ extern "C" {
   #endif
 
   #ifdef DRV_DISP_ADAGFX_SEESAW_18
-	  Adafruit_TFTShield18 m_seesaw;
+    Adafruit_TFTShield18 m_seesaw;
   #endif
 
 // ------------------------------------------------------------------------
@@ -347,16 +347,16 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // Support any additional initialization prior to display init
     #ifdef DRV_DISP_ADAGFX_SEESAW
       // Special initialization for Adafruit Seesaw chip
-	    if (!m_seesaw.begin()) {
-	     GSLC_DEBUG_PRINT("ERROR: Adafruit seesaw not initialized", "");
-	    } else {
+      if (!m_seesaw.begin()) {
+       GSLC_DEBUG_PRINT("ERROR: Adafruit seesaw not initialized", "");
+      } else {
         #if !defined(INIT_MSG_DISABLE)
-	      GSLC_DEBUG_PRINT("- Adafruit seesaw OK\n", "");
+        GSLC_DEBUG_PRINT("- Adafruit seesaw OK\n", "");
         #endif
-	    }
-	    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_OFF);
-	    m_seesaw.tftReset();
-	    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_ON);
+      }
+      m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_OFF);
+      m_seesaw.tftReset();
+      m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_ON);
     #endif
 
     // Perform any display initialization
@@ -1856,6 +1856,44 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // No more to do for GPIO-only mode since gslc_Update() already
     // looks for GPIO inputs before calling TDrvGetTouch().
     // bValid will default to false
+
+
+  // Assign defaults
+  *pnX = 0;
+  *pnY = 0;
+  *pnPress = 0;
+
+  *peInputEvent = GSLC_INPUT_NONE;
+  *pnInputVal = 0;
+
+  #ifdef DRV_DISP_ADAGFX_SEESAW
+    // Keep track of last value to support simple debouncing
+    static uint32_t nButtonsLast = 0xFFFFFFFF;     // Saved last value (static to preserve b/w calls)
+    uint32_t nButtonsCur = m_seesaw.readButtons(); // Current value (note active low)
+    if ((nButtonsLast & TFTSHIELD_BUTTON_UP) && !(nButtonsCur & TFTSHIELD_BUTTON_UP)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_UP;
+	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_DOWN) && !(nButtonsCur & TFTSHIELD_BUTTON_DOWN)) {
+		  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+		  *pnInputVal = GSLC_PIN_BTN_DOWN;
+	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_LEFT) && !(nButtonsCur & TFTSHIELD_BUTTON_LEFT)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_LEFT;
+	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_RIGHT) && !(nButtonsCur & TFTSHIELD_BUTTON_RIGHT)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_RIGHT;
+	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_IN) && !(nButtonsCur & TFTSHIELD_BUTTON_IN)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_SEL;
+    }
+    // Save button state so that transitions can be detected
+    // during the next pass.
+	  nButtonsLast = nButtonsCur;
+  #endif
+
+
+  // If we reached here, then we had a button event
+  return true;
 
   // ----------------------------------------------------------------
   #endif // DRV_TOUCH_*
