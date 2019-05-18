@@ -110,7 +110,9 @@
 
   // Load any additional drivers
   #ifdef DRV_DISP_ADAGFX_SEESAW_18
+    #define DRV_DISP_ADAGFX_SEESAW
     #include <Adafruit_seesaw.h>
+    // Seesaw config specific to Adafruit 1.8" TFT shield
     #include <Adafruit_TFTShield18.h>
   #endif
 
@@ -342,6 +344,22 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // image in the controller graphics RAM
     pGui->bRedrawPartialEn = true;
 
+    // Support any additional initialization prior to display init
+    #ifdef DRV_DISP_ADAGFX_SEESAW
+      // Special initialization for Adafruit Seesaw chip
+	    if (!m_seesaw.begin()) {
+	     GSLC_DEBUG_PRINT("ERROR: Adafruit seesaw not initialized", "");
+	    } else {
+        #if !defined(INIT_MSG_DISABLE)
+	      GSLC_DEBUG_PRINT("- Adafruit seesaw OK\n", "");
+        #endif
+	    }
+	    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_OFF);
+	    m_seesaw.tftReset();
+	    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_ON);
+    #endif
+
+    // Perform any display initialization
     #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
 
       #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
@@ -371,20 +389,6 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
 
     #elif defined(DRV_DISP_ADAGFX_ST7735)
-
-      #ifdef DRV_DISP_ADAGFX_SEESAW_18
-        // Special initialization for Adafruit 1.8" TFT shield with Seesaw chip
-	      if (!m_seesaw.begin()) {
-		      GSLC_DEBUG_PRINT("ERROR: Adafruit seesaw not initialized", "");
-		    } else {
-          #if !defined(INIT_MSG_DISABLE)
-			      GSLC_DEBUG_PRINT("- Adafruit seesaw OK\n", "");
-          #endif
-		    }
-		    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_OFF);
-		    m_seesaw.tftReset();
-		    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_ON);
-      #endif
 
       // ST7735 requires additional initialization depending on
       // display type. Enable the user to specify the
