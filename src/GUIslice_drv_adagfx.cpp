@@ -108,6 +108,12 @@
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
   #endif
 
+  // Load any additional drivers
+  #ifdef DRV_DISP_ADAGFX_SEESAW_18
+    #include <Adafruit_seesaw.h>
+    #include <Adafruit_TFTShield18.h>
+  #endif
+
 #elif defined(DRV_DISP_ADAGFX_AS)
   #include <Adafruit_GFX_AS.h>
 
@@ -212,6 +218,10 @@ extern "C" {
   #else
     const char* m_acDrvDisp = "ADA_ST7735(SPI-SW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST);
+  #endif
+
+  #ifdef DRV_DISP_ADAGFX_SEESAW_18
+	  Adafruit_TFTShield18 m_seesaw;
   #endif
 
 // ------------------------------------------------------------------------
@@ -361,6 +371,21 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
 
     #elif defined(DRV_DISP_ADAGFX_ST7735)
+
+      #ifdef DRV_DISP_ADAGFX_SEESAW_18
+        // Special initialization for Adafruit 1.8" TFT shield with Seesaw chip
+	      if (!m_seesaw.begin()) {
+		      GSLC_DEBUG_PRINT("ERROR: Adafruit seesaw not initialized", "");
+		    } else {
+          #if !defined(INIT_MSG_DISABLE)
+			      GSLC_DEBUG_PRINT("- Adafruit seesaw OK\n", "");
+          #endif
+		    }
+		    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_OFF);
+		    m_seesaw.tftReset();
+		    m_seesaw.setBacklight(TFTSHIELD_BACKLIGHT_ON);
+      #endif
+
       // ST7735 requires additional initialization depending on
       // display type. Enable the user to specify the
       // configuration via DRV_DISP_ADAGFX_ST7735_INIT.

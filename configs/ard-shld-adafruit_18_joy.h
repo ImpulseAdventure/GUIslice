@@ -71,6 +71,7 @@ extern "C" {
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_ST7735    // Adafruit ST7735
   #define DRV_DISP_ADAGFX_ST7735_INIT  INITR_BLACKTAB
+  #define DRV_DISP_ADAGFX_SEESAW_18 // Display uses Adafruit Seesaw chip
   #define DRV_TOUCH_NONE            // No touch enabled
 
 
@@ -84,7 +85,7 @@ extern "C" {
   #define ADAGFX_PIN_RST      -1    // Display Reset
 
   // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
+  #define ADAGFX_SPI_HW       1      // Display uses SPI interface: 1=hardware 0=software
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused
