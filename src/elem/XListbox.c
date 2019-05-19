@@ -365,9 +365,9 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   pXData->nItemH          = 30;
   pXData->nItemGap        = 2;
   pXData->colGap          = GSLC_COL_BLACK;
-  pXData->nItemMarginW    = 5;
-  pXData->nItemMarginH    = 5;
-  pXData->nItemCurSelLast   = XLISTBOX_SEL_NONE;
+  pXData->nItemMarginW    = 0;
+  pXData->nItemMarginH    = 0;
+  pXData->nItemCurSelLast = XLISTBOX_SEL_NONE;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw        = &gslc_ElemXListboxDraw;
@@ -512,9 +512,14 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     // Create rect for item
     rItemRect = (gslc_tsRect) { nItemX, nItemY, nItemW, nItemH };
 
-    // Create coordinate for text
-    nTxtPixX = nItemX + pListbox->nItemMarginW;
-    nTxtPixY = nItemY + pListbox->nItemMarginH;
+    // Fetch font baseline info (text offset)
+    int16_t       nTxtOffsetX,nTxtOffsetY;
+    uint16_t      nTxtSzW,nTxtSzH;
+    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,acStr,pElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+
+    // Create top-left coordinate for text
+    nTxtPixX = nItemX + nTxtOffsetX + pListbox->nItemMarginW;
+    nTxtPixY = nItemY - nTxtOffsetY + pListbox->nItemMarginH;
 
     // Is the item selected?
     bItemSel = (nItemInd == nItemCurSel) ? true : false;

@@ -638,6 +638,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   // GSLC_DEBUG_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
   //   pStr,*pnTxtSzW,*pnTxtSzH,nTxtScale);
 
+  // TODO: Support for extracting baseline info from Teensy fonts?
   *pnTxtX = 0;
   *pnTxtY = 0;
 
@@ -1873,22 +1874,22 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if ((nButtonsLast & TFTSHIELD_BUTTON_UP) && !(nButtonsCur & TFTSHIELD_BUTTON_UP)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_UP;
-	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_DOWN) && !(nButtonsCur & TFTSHIELD_BUTTON_DOWN)) {
-		  *peInputEvent = GSLC_INPUT_PIN_ASSERT;
-		  *pnInputVal = GSLC_PIN_BTN_DOWN;
-	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_LEFT) && !(nButtonsCur & TFTSHIELD_BUTTON_LEFT)) {
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_DOWN) && !(nButtonsCur & TFTSHIELD_BUTTON_DOWN)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_DOWN;
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_LEFT) && !(nButtonsCur & TFTSHIELD_BUTTON_LEFT)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_LEFT;
-	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_RIGHT) && !(nButtonsCur & TFTSHIELD_BUTTON_RIGHT)) {
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_RIGHT) && !(nButtonsCur & TFTSHIELD_BUTTON_RIGHT)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_RIGHT;
-	  } else if ((nButtonsLast & TFTSHIELD_BUTTON_IN) && !(nButtonsCur & TFTSHIELD_BUTTON_IN)) {
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_IN) && !(nButtonsCur & TFTSHIELD_BUTTON_IN)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_SEL;
     }
     // Save button state so that transitions can be detected
     // during the next pass.
-	  nButtonsLast = nButtonsCur;
+    nButtonsLast = nButtonsCur;
   #endif
 
 
