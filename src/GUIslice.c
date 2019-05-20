@@ -156,6 +156,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->bScreenNeedRedraw  = true;
   pGui->bScreenNeedFlip    = false;
 
+  // Default global element characteristics
+  pGui->nRoundRadius = 4;
+
   // Initialize collection of fonts with user-supplied pointer
   pGui->asFont      = asFont;
   pGui->nFontMax    = nMaxFont;
@@ -1200,6 +1203,24 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   gslc_PageFlipSet(pGui,true);
 }
 
+void gslc_DrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
+{
+  // Ensure dimensions are valid
+  if ((rRect.w == 0) || (rRect.h == 0)) {
+    return;
+  }
+
+#if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
+  // Call optimized driver implementation
+  gslc_DrvDrawFrameRoundRect(pGui,rRect,nRadius,nCol);
+#else
+  // TODO
+#endif
+
+  gslc_PageFlipSet(pGui,true);
+}
+
+
 void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
   // Ensure dimensions are valid
@@ -1222,6 +1243,24 @@ void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
   gslc_PageFlipSet(pGui,true);
 }
+
+void gslc_DrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
+{
+  // Ensure dimensions are valid
+  if ((rRect.w == 0) || (rRect.h == 0)) {
+    return;
+  }
+
+#if (DRV_HAS_DRAW_RECT_ROUND_FILL)
+  // Call optimized driver implementation
+  gslc_DrvDrawFillRoundRect(pGui,rRect,nRadius,nCol);
+#else
+  // TODO
+#endif
+
+  gslc_PageFlipSet(pGui,true);
+}
+
 
 
 // Expand or contract a rectangle in width and/or height (equal
@@ -2193,6 +2232,19 @@ void* gslc_GetXDataFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t n
   return pXData;
 }
 
+// ------------------------------------------------------------------------
+// Element Global Functions
+// ------------------------------------------------------------------------
+
+
+// Set the global rounded radius for rounded rectangles
+void gslc_SetRoundRadius(gslc_tsGui* pGui,uint8_t nRadius)
+{
+  pGui->nRoundRadius = (int16_t)nRadius;
+  // Update redraw flag
+  gslc_PageRedrawSet(pGui,true);
+}
+
 
 // ------------------------------------------------------------------------
 // Element Creation Functions
@@ -2579,11 +2631,14 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
       colBg = pElem->colElemFillGlow;
-      gslc_DrawFillRect(pGui,rElemInner,pElem->colElemFillGlow);
     } else {
       colBg = pElem->colElemFill;
-      gslc_DrawFillRect(pGui,rElemInner,pElem->colElemFill);
     }
+	  if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
+		  gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
+	  } else {
+		  gslc_DrawFillRect(pGui, rElemInner, colBg);
+	  }
   } else {
     // TODO: If unfilled, then we might need
     // to redraw the background layer(s)
@@ -2599,7 +2654,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   #else
   if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
-    gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+	  if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
+		  gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, pElem->colElemFrame);
+	  } else {
+		  gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
+	  }
   }
   #endif
 
@@ -2750,6 +2809,19 @@ void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn
     pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
+  }
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+void gslc_ElemSetRoundEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bRoundEn)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
+  if (bRoundEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_ROUND_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_ROUND_EN;
   }
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
