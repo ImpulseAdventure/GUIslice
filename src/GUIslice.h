@@ -176,6 +176,7 @@ typedef enum {
 
 /// Element features type
 #define GSLC_ELEM_FEA_VALID     0x80      ///< Element record is valid
+#define GSLC_ELEM_FEA_ROUND_EN  0x10      ///< Element is drawn with a rounded profile
 #define GSLC_ELEM_FEA_CLICK_EN  0x08      ///< Element accepts touch presses
 #define GSLC_ELEM_FEA_GLOW_EN   0x04      ///< Element supports glowing state
 #define GSLC_ELEM_FEA_FRAME_EN  0x02      ///< Element is drawn with a frame
@@ -732,6 +733,8 @@ typedef struct {
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
   uint8_t             nFontMax;         ///< Maximum number of fonts to allocate
   uint8_t             nFontCnt;         ///< Number of fonts allocated
+
+  uint8_t             nRoundRadius;     ///< Radius for rounded elements
 
 #if (GSLC_FEATURE_COMPOUND)
   gslc_tsElem         sElemTmp;         ///< Temporary element
@@ -1742,6 +1745,17 @@ void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn);
 /// \return none
 ///
 void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn);
+
+///
+/// Set the rounded frame/fill state for an Element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bRoundEn:    True if rounded, false otherwise
+///
+/// \return none
+///
+void gslc_ElemSetRoundEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bRoundEn);
 
 ///
 /// Update the common color selection for an Element
@@ -2876,6 +2890,16 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 ///
 void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 
+///
+/// Set the global rounded radius
+/// - Used for rounded rectangles
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nRadius:     Radius for rounded elements
+///
+/// \return none
+///
+void gslc_SetRoundRadius(gslc_tsGui* pGui, uint8_t nRadius);
 
 // ------------------------------------------------------------------------
 /// @}
