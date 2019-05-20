@@ -90,15 +90,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     m_disp.init();
 	
-	// TODO: Replace the following with DrvRotate()
-    m_disp.setRotation( pGui->nRotation );
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
+    // Now that we have initialized the display, we can assign
+    // the rotation parameters and clipping region
+    gslc_DrvRotate(pGui,GSLC_ROTATE);
 
-    // Defaults for clipping region
-    gslc_tsRect rClipRect = {0,0,pGui->nDispW,pGui->nDispH};
-    gslc_DrvSetClipRect(pGui,&rClipRect);
-
+    // Additional init specific to M5stack
     pinMode(TFT_LIGHT_PIN, OUTPUT);
     digitalWrite(TFT_LIGHT_PIN, HIGH);
 
