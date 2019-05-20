@@ -753,6 +753,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   int      w, h, row, col;
   uint8_t  r, g, b;
   uint32_t pos = 0, startTime = millis();
+  (void)startTime; // Unused
 
   if((x >= pGui->nDispW) || (y >= pGui->nDispH)) return;
 
@@ -769,12 +770,14 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
     uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
+    (void)nFileSize; // Unused
     //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
     uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
+    (void)nHdrSize; // Unused
     //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
@@ -1194,6 +1197,16 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
   #endif // DRV_TOUCH_TYPE_RES
 
+  // Support touch controllers with swapped X & Y
+  #if defined(ADATOUCH_REMAP_YX)
+    // Capture swap setting from config file
+    pGui->bTouchRemapYX = ADATOUCH_REMAP_YX;
+  #else
+    // For backward compatibility with older config files
+    // that have not defined this config option
+    pGui->bTouchRemapYX = false;
+  #endif
+
   #if defined(DRV_TOUCH_ADA_STMPE610)
     #if (ADATOUCH_I2C_HW)
     if (!m_touch.begin(ADATOUCH_I2C_ADDR)) {
@@ -1608,6 +1621,16 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // Input assignment
     nRawX = m_nLastRawX;
     nRawY = m_nLastRawY;
+
+    // Handle any hardware swapping in native orientation
+    // This is done prior to any flip/swap as a result of
+    // rotation away from the native orientation.
+    // In most cases, the following is not used, but there
+    // may be touch modules that have swapped their X&Y convention.
+    if (pGui->bTouchRemapYX) {
+      nRawX = m_nLastRawY;
+      nRawY = m_nLastRawX;
+    }
 
     nInputX = nRawX;
     nInputY = nRawY;

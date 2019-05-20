@@ -1130,14 +1130,14 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
   // Parse BMP header
   if(gslc_DrvRead16SD(bmpFile) == 0x4D42) { // BMP signature
     uint32_t nFileSize = gslc_DrvRead32SD(bmpFile);
-  (void)nFileSize; // Unused
+    (void)nFileSize; // Unused
     //Serial.print("File size: "); Serial.println(nFileSize);
     (void)gslc_DrvRead32SD(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = gslc_DrvRead32SD(bmpFile); // Start of image data
     //Serial.print("Image Offset: "); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
     uint32_t nHdrSize = gslc_DrvRead32SD(bmpFile);
-  (void)nHdrSize; // Unused
+    (void)nHdrSize; // Unused
     //Serial.print("Header size: "); Serial.println(nHdrSize);
     bmpWidth  = gslc_DrvRead32SD(bmpFile);
     bmpHeight = gslc_DrvRead32SD(bmpFile);
@@ -1364,25 +1364,29 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   // Enable Adafruit_TouchScreen workarounds
   // --------------------------------------------------------------------------
 
-  // Enable workaround for Adafruit_TouchScreen pressure readings?
-  // - See Issue #96
-  #define FIX_4WIRE // Comment out to disable
+  // NOTE: The Adafruit_TouchScreen is not natively compatible with certain
+  //       devices (eg. ESP32) and also doesn't safeguard against pin-sharing
+  //       conflicts. For these and some other issues, the following workarounds
+  //       are optionally enabled.
+
+  // Enable workaround for ambiguity in Adafruit_TouchScreen pressure readings
+  // - See https://github.com/ImpulseAdventure/GUIslice/issues/96
+  #define FIX_4WIRE_Z // Comment out to disable
 
   // Enable workaround for Adafruit_TouchScreen getPoint() altering
   // the pin state and not restoring it. Without working around this,
   // the touch handler may interfere with displays that share pins.
-  #define FIX_PIN_STATE // Comment out to disable
+  #define FIX_4WIRE_PIN_STATE // Comment out to disable
 
   // --------------------------------------------------------------------------
 
-  // Disable the Adafruit_TouchScreen FIX_PIN_STATE mode in
-  // STM32 as we haven't implemented the equivalent pin save/restore
-  // code yet.
+  // Disable certain workarounds for Adafruit_TouchScreen in STM32 mode
+  // as we haven't implemented the equivalent pin save/restore code yet.
   #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
-    #undef FIX_PIN_STATE
+    #undef FIX_4WIRE_PIN_STATE
   #endif
 
-  #if defined(FIX_PIN_STATE)
+  #if defined(FIX_4WIRE_PIN_STATE)
   // NOTE: The Adafruit_TouchScreen library alters the state of several
   //       pins during the course of reading the touch coordinates and
   //       pressure. Unfortunately, it does not restore the prior state
@@ -1435,10 +1439,11 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
   }
 
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
+
+  // --------------------------------------------------------------------------
 
 #endif // DRV_TOUCH_ADA_SIMPLE
-
 
 
 #if defined(DRV_TOUCH_TYPE_EXTERNAL)
@@ -1615,7 +1620,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   uint16_t  nRawX,nRawY;
   int16_t   nRawPress;
 
-  #if defined(FIX_PIN_STATE)
+  #if defined(FIX_4WIRE_PIN_STATE)
     // Saved pin state
     gslc_tsPinState   sPinStateXP, sPinStateXM, sPinStateYP, sPinStateYM;
 
@@ -1626,7 +1631,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
   
   // Perform the polling of touch coordinate & pressure
   TSPoint p = m_touch.getPoint();
@@ -1653,7 +1658,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // Wasn't touched before; do nothing
     } else {
 
-      #if !defined(FIX_4WIRE) // Original behavior without touch pressure workaround
+      #if !defined(FIX_4WIRE_Z) // Original behavior without touch pressure workaround
 
       // Indicate old coordinate but with pressure=0
       m_nLastRawPress = 0;
@@ -1716,21 +1721,21 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
             m_nLastRawPress,m_nLastRawX,m_nLastRawY);
         #endif
       } // nPressCur
-      #endif // FIX_4WIRE
+      #endif // FIX_4WIRE_Z
 
       // TODO: Implement touch debouncing
 
     } // m_bLastTouched
   }
 
-  #if defined(FIX_PIN_STATE)
+  #if defined(FIX_4WIRE_PIN_STATE)
     // Now that we have completed our polling into Adafruit_TouchScreen,
     // we need to restore the original pin state.
     gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
     gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
     gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
-  #endif // FIX_PIN_STATE
+  #endif // FIX_4WIRE_PIN_STATE
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -1955,6 +1960,10 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         // - Swap & Flip done to output of map/constrain according
         //   to GSLC_ROTATE
         //
+        #if defined(DBG_TOUCH)
+          GSLC_DEBUG_PRINT("DBG: remapX: (%d,%d,%d,%d,%d)\n", nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+          GSLC_DEBUG_PRINT("DBG: remapY: (%d,%d,%d,%d,%d)\n", nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+        #endif
         nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
         nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
         // Perform constraining to OUTPUT boundaries
