@@ -113,7 +113,7 @@ typedef int16_t (*XKEYPAD_LOOKUP)(gslc_tsGui* pGui, int16_t nKeyId);
   ///   the resulting edited value.
   typedef struct {
     char*               pStr;             ///< Final value of edited value field
-	int16_t             nTargetId;        ///< Target element ID to receive the value
+    int16_t             nTargetId;        ///< Target element ID to receive the value
   } gslc_tsXKeyPadData;
 
   /// Extended data for KeyPad element
@@ -159,11 +159,12 @@ typedef void (*XKEYPAD_CREATE)(gslc_tsGui* pGui,gslc_tsXKeyPad* pXData);
   /// \param[in]  nColSpan:    Number of rows to occupy by element (1 for normal size, 2 for double height)
   /// \param[in]  cColFill:    Fill color for element
   /// \param[in]  cColGlow:    Fill color for element when glowing
+  /// \param[in]  bVisible:    Initial key visibility state
   ///
   /// \return none
   ///
 void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId, bool bTxtField, int16_t nRow, int16_t nCol,
-  int8_t nRowSpan, int8_t nColSpan, gslc_tsColor cColFill, gslc_tsColor cColGlow);
+  int8_t nRowSpan, int8_t nColSpan, gslc_tsColor cColFill, gslc_tsColor cColGlow, bool bVisible);
 
   ///
   /// Create a KeyPad Element
@@ -332,6 +333,30 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \return none
   ///
   void gslc_ElemXKeyPadCfgSetButtonSz(gslc_tsXKeyPadCfg* pConfig, int8_t nButtonSzW, int8_t nButtonSzH);
+
+  ///
+  /// Update the KeyPad active configuration to enable negative numbers
+  /// - Effectively disables/enables the sign button & handling
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pElemRef:    Pointer to KeyPad element reference
+  /// \param[in]  bEn:         Enable flag (true if negative numbers enabled)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadSetFloatEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn);
+
+  ///
+  /// Update the KeyPad active configuration to enable negative numbers
+  /// - Effectively disables/enables the sign button & handling
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pElemRef:    Pointer to KeyPad element reference
+  /// \param[in]  bEn:         Enable flag (true if negative numbers enabled)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadSetSignEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn);
 
   #endif // GSLC_FEATURE_COMPOUND
 

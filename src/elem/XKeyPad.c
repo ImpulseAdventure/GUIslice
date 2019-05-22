@@ -89,7 +89,7 @@ const char KEYPAD_DISP_DECIMAL_PT = '.';
 
 
 void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId, bool bTxtField, int16_t nRow, int16_t nCol, int8_t nRowSpan, int8_t nColSpan,
-  gslc_tsColor cColFill, gslc_tsColor cColGlow)
+  gslc_tsColor cColFill, gslc_tsColor cColGlow, bool bVisible)
 {
   gslc_tsXKeyPadCfg* pConfig;
   char* pKeyStr = NULL;
@@ -137,6 +137,14 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   // Set color
   gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
   gslc_ElemSetCol(pGui, pElemRefTmp, GSLC_COL_WHITE, cColFill, cColGlow);
+
+  // Set the visibility status
+  // FIXME: Need to fix dynamic visibility change
+  // gslc_ElemSetVisible(pGui, pElemRefTmp, bVisible);
+  if (!bVisible) {
+    // For now, skip addition of invisible buttons
+	  return;
+  }
 
   // Add element to compound element collection
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
@@ -652,13 +660,33 @@ void gslc_ElemXKeyPadCfgSetButtonSz(gslc_tsXKeyPadCfg* pConfig, int8_t nButtonSz
 void gslc_ElemXKeyPadCfgSetFloatEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
 {
   pConfig->bFloatEn = bEn;
-  //GSLC_DEBUG_PRINT("SetFloatEn: FloatEn=%d\n", pConfig->bFloatEn);
 }
 
 void gslc_ElemXKeyPadCfgSetSignEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
 {
   pConfig->bSignEn = bEn;
 }
+
+// FIXME: Runtime API not fully functional yet - Do not use
+void gslc_ElemXKeyPadSetFloatEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (!pKeyPad) return;
+  pKeyPad->sConfig.bFloatEn = bEn;
+  // Mark as needing full redraw as button visibility may have changed
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+// FIXME: Runtime API not fully functional yet - Do not use
+void gslc_ElemXKeyPadSetSignEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (!pKeyPad) return;
+  pKeyPad->sConfig.bSignEn = bEn;
+  // Mark as needing full redraw as button visibility may have changed
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
 
 
 #endif // GSLC_FEATURE_COMPOUND

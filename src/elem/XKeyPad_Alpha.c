@@ -108,22 +108,22 @@ void XKeyPadCreateKeys_Alpha(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData)
   int16_t nRow, nCol;
 
   // - Create the "special" buttons
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_BACKSPACE, false, 1, 6, 1, 2, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_PERIOD, false, 3, 7, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_SPACE, false, 3, 6, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ESC, false, 2, 6, 1, 2, GSLC_COL_RED, GSLC_COL_RED_LT4);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ENTER, false, 0, 6, 1, 2, GSLC_COL_GREEN, GSLC_COL_GREEN_LT4);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_BACKSPACE, false, 1, 6, 1, 2, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, true);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_PERIOD, false, 3, 7, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, true);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_SPACE, false, 3, 6, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, true);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ESC, false, 2, 6, 1, 2, GSLC_COL_RED, GSLC_COL_RED_LT4, true);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ENTER, false, 0, 6, 1, 2, GSLC_COL_GREEN, GSLC_COL_GREEN_LT4, true);
 
   // - Create the "simple" buttons
   for (int16_t nKeyId = KEYPAD_ID_BASIC_START; nKeyId < (KEYPAD_ID_BASIC_START + XKEYPADALPHA_BTN_BASIC); nKeyId++) {
     nKeyInd = nKeyId - KEYPAD_ID_BASIC_START;
     nRow = (nKeyInd / 6) + 1;
     nCol = nKeyInd % 6;
-    XKeyPadAddKeyElem(pGui, pXData, nKeyId, false, nRow, nCol, 1, 1, GSLC_COL_BLUE_LT1, GSLC_COL_BLUE_LT4);
+    XKeyPadAddKeyElem(pGui, pXData, nKeyId, false, nRow, nCol, 1, 1, GSLC_COL_BLUE_LT1, GSLC_COL_BLUE_LT4, true);
   }
 
   // - Create the text field
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_TXT, true, 0, 0, 1, 6, GSLC_COL_BLACK, GSLC_COL_BLACK);
+  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_TXT, true, 0, 0, 1, 6, GSLC_COL_BLACK, GSLC_COL_BLACK, true);
 }
 
 // Convert between keypad ID and the index into the keypad label array

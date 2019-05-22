@@ -90,14 +90,13 @@ gslc_tsXKeyPad_Num          m_sKeyPadNum; // Keypad
 gslc_tsElemRef*  m_pElemVal1 = NULL;
 gslc_tsElemRef*  m_pElemVal2 = NULL;
 gslc_tsElemRef*  m_pElemResult = NULL;
+gslc_tsElemRef*  m_pElemKeyPad = NULL;
 //<Save_References !End!>
 
 
 // ------------------------------------------------
 // Program Globals
 // ------------------------------------------------
-
-int16_t m_nPopup = -1; // Initialize to no popup active
 
 // Define debug message function
 static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); else Serial.write(ch); return 0; }
@@ -301,9 +300,9 @@ bool InitGUI()
   gslc_ElemXKeyPadCfgSetFloatEn(&sCfg, false);
   gslc_ElemXKeyPadCfgSetSignEn(&sCfg, true);
   gslc_ElemXKeyPadCfgSetButtonSz(&sCfg, 25, 25);
-  pElemRef = gslc_ElemXKeyPadCreate_Num(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
+  m_pElemKeyPad = gslc_ElemXKeyPadCreate_Num(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
     &m_sKeyPadNum, 65, 80, E_FONT_TXT1, &sCfg);
-  gslc_ElemXKeyPadValSetCb(&m_gui, pElemRef, &CbInputCommon);
+  gslc_ElemXKeyPadValSetCb(&m_gui, m_pElemKeyPad, &CbInputCommon);
 
   //<InitGUI !End!>
 
