@@ -120,23 +120,18 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
     switch (pElem->nId) {
       //<Button Enums !Start!>
     case E_TXT_VAL1:
-      // Clicked on edit field, so show popup box if not already active
-      if (m_nPopup == -1) {
-        m_nPopup = E_TXT_VAL1; // Keep track of field to edit
-        gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
-        // Preload current value
-        gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-
-      }
+      // Clicked on edit field, so show popup box and associate with this text field
+      gslc_ElemXKeyPadTargetIdSet(&m_gui, &m_sKeyPadNum.sKeyPad, E_TXT_VAL1);
+      gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
+      // Preload current value
+      gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
       break;
     case E_TXT_VAL2:
-      // Clicked on edit field, so show popup box if not already active
-      if (m_nPopup == -1) {
-        m_nPopup = E_TXT_VAL2; // Keep track of field to edit
-        gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
-        // Preload current value
-        gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
-      }
+      // Clicked on edit field, so show popup box and associate with this text field
+      gslc_ElemXKeyPadTargetIdSet(&m_gui, &m_sKeyPadNum.sKeyPad, E_TXT_VAL2);
+      gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
+      // Preload current value
+      gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
       break;
     case E_BTN_ADD:
       // Compute the sum and update the result
@@ -180,20 +175,19 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
   char acTxtNum[11];
   // From the element's ID we can determine which element is ready.
   if (pElem->nId == E_ELEM_KEYPAD) {
+    int16_t nTargetElemId = gslc_ElemXKeyPadDataTargetIdGet(pGui, pvData);
     switch (nState) {
     case XKEYPAD_CB_STATE_DONE:
       // User clicked on Enter to leave popup
       // - If we have a popup active, pass the return value directly to
       //   the corresponding value field
-      if (m_nPopup == E_TXT_VAL1) {
-        gslc_ElemSetTxtStr(pGui, m_pElemVal1, (char*)pvData);
+      if (nTargetElemId == E_TXT_VAL1) {
+        gslc_ElemSetTxtStr(pGui, m_pElemVal1, gslc_ElemXKeyPadDataValGet(pGui, pvData));
         gslc_PopupHide(&m_gui);
-        m_nPopup = -1; // Clear the active popup indicator
       }
-      else if (m_nPopup == E_TXT_VAL2) {
-        gslc_ElemSetTxtStr(pGui, m_pElemVal2, (char*)pvData);
+      else if (nTargetElemId == E_TXT_VAL2) {
+        gslc_ElemSetTxtStr(pGui, m_pElemVal2, gslc_ElemXKeyPadDataValGet(pGui, pvData));
         gslc_PopupHide(&m_gui);
-        m_nPopup = -1; // Clear the active popup indicator
       }
       else {
         // ERROR
@@ -202,12 +196,11 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
     case XKEYPAD_CB_STATE_CANCEL:
       // User escaped from popup, so don't update values
       gslc_PopupHide(&m_gui);
-      m_nPopup = -1; // Clear the active popup indicator
       break;
 
     case XKEYPAD_CB_STATE_UPDATE:
       // KeyPad was updated, so could optionally take action here
-		  break;
+      break;
 
     default:
       break;

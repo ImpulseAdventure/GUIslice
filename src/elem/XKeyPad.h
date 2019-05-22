@@ -107,14 +107,23 @@ typedef int16_t (*XKEYPAD_LOOKUP)(gslc_tsGui* pGui, int16_t nKeyId);
     uint8_t             nMaxRows;         ///< Maximum number of rows to occupy
   } gslc_tsXKeyPadCfg;
 
+  /// Input callback data structure
+  /// - This struct is returned in GSLC_CB_INPUT when the
+  ///   KeyPad edits are complete, and is used to provide
+  ///   the resulting edited value.
+  typedef struct {
+    char*               pStr;             ///< Final value of edited value field
+	int16_t             nTargetId;        ///< Target element ID to receive the value
+  } gslc_tsXKeyPadData;
+
   /// Extended data for KeyPad element
   typedef struct {
 
     // State
-    uint8_t             nValStrPos;  ///< Counter for number digits stored
-    char                acValStr[XKEYPAD_VAL_LEN];  ///< Where input is stored until enter button pressed
+    uint8_t             nValStrPos;       ///< Current number of characters stored in edit value string
+    char                acValStr[XKEYPAD_VAL_LEN];  ///< Storage for edit value string
     bool                bValPositive;     ///< Value is positive if true, negative if false
-    bool                bValDecimalPt;    ///> Value string includes decimal point
+    bool                bValDecimalPt;    ///< Value string includes decimal point
 
     // Config
     char**              pacKeys;          ///< Array of character strings for KeyPad labels
@@ -122,6 +131,7 @@ typedef int16_t (*XKEYPAD_LOOKUP)(gslc_tsGui* pGui, int16_t nKeyId);
 
     GSLC_CB_INPUT       pfuncCb;          ///< Callback function for KeyPad actions
     XKEYPAD_LOOKUP      pfuncLookup;      ///< Callback function for converting key into key label
+    int16_t             nTargetId;        ///< Target element ID associated with keypad (GSLC_CB_INPUT)
 
     // Internal sub-element members
     gslc_tsCollect      sCollect;         ///< Collection management for sub-elements
@@ -185,6 +195,22 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///
   void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const char* pStrBuf);
 
+  ///
+  /// Set target element ID for KeyPad return value
+  /// - The Target ID is used in the GSLC_CB_INPUT callback so that the user
+  ///   has the context needed to determine which field should be edited
+  ///   with the contents of the KeyPad edit field
+  /// - It is expected that the user will call this function when showing
+  ///   the KeyPad popup dialog
+  ///
+  /// \param[in]  pGui:       Pointer to GUI
+  /// \param[in]  pKeyPad:    Ptr to KeyPad Element
+  /// \param[in]  nTargetId:  Element enum ID for target of KeyPad value
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, int16_t nId);
+
 
   ///
   /// Set the current output string buffer associated with NumericInput element
@@ -197,6 +223,27 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \return none
   ///
   bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, char* pStrBuf, uint8_t nStrBufMax);
+
+  ///
+  /// Fetch the edited value string from the KeyPad
+  ///
+  /// \param[in]  pGui:       Pointer to GUI
+  /// \param[in]  pvData :    Void ptr to callback data structure
+  ///
+  /// \return Pointer to edited character string
+  ///
+  char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData);
+
+
+  ///
+  /// Fetch the element target ID associated with this KeyPad
+  ///
+  /// \param[in]  pGui:       Pointer to GUI
+  /// \param[in]  pvData :    Void ptr to callback data structure
+  ///
+  /// \return Target Element ID or GSLC_ID_NONE if unspecified
+  ///
+  int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData);
 
   ///
   /// Draw a KeyPad element on the screen

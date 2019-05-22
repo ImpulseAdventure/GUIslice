@@ -74,7 +74,6 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // - TODO: Create more efficient storage for the labels
 //   so that it doesn't consume 4 bytes even for labels
 //   that can be generated (eg. 0..9, a--z, etc.)
-// - TODO: Define digit & alphanumeric keypads
 // - NOTE: Not using "const char" in order to support
 //   modification of labels by user.
 
@@ -205,6 +204,7 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
   pXData->pacKeys = pConfig->pacKeys;
   pXData->pfuncCb = NULL;
   pXData->pfuncLookup = pfuncLookup;
+  pXData->nTargetId = GSLC_ID_NONE;  // Default to no target defined
   pXData->bValPositive = true;
   pXData->bValDecimalPt = false;
 
@@ -254,7 +254,7 @@ void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const cha
   strncpy(pKeyPad->acValStr, pStrBuf, XKEYPAD_VAL_LEN);
   pKeyPad->acValStr[XKEYPAD_VAL_LEN - 1] = 0; // Force null terminate
 
-  // andle negation and floating point detection
+  // Handle negation and floating point detection
   pKeyPad->bValPositive = true;
   if (pKeyPad->acValStr[0] == KEYPAD_DISP_NEGATIVE) {
     pKeyPad->bValPositive = false;
@@ -273,6 +273,42 @@ void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const cha
   // Mark as needing redraw
   gslc_ElemSetRedraw(pGui,pTxtElemRef,GSLC_REDRAW_INC);
 }
+
+void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, int16_t nTargetId)
+{
+  if (pKeyPad == NULL) {
+    #if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadTargetIdSet() element (ID=%d) has NULL pXData\n", pElem->nId);
+    #endif
+    return;
+  }
+  pKeyPad->nTargetId = nTargetId;
+}
+
+int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData)
+{
+  if (pvData == NULL) {
+    #if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadDataTargetIdGet() NULL data\n", "");
+    #endif
+    return GSLC_ID_NONE;
+  }
+  gslc_tsXKeyPadData* pData = (gslc_tsXKeyPadData*)pvData;
+  return pData->nTargetId;
+}
+
+char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
+{
+  if (pvData == NULL) {
+    #if defined(DEBUG_LOG)
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadDataValGet() NULL data\n", "");
+    #endif
+    return NULL;
+  }
+  gslc_tsXKeyPadData* pData = (gslc_tsXKeyPadData*)pvData;
+  return pData->pStr;
+}
+
 
 
 // NOTE: API changed to pass nStrBufLen (total buffer size including terminator)
@@ -468,10 +504,15 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
 
     GSLC_CB_INPUT pfuncXInput = pKeyPad->pfuncCb;
     XKEYPAD_LOOKUP pfuncLookup = pKeyPad->pfuncLookup;
+    gslc_tsXKeyPadData sKeyPadData;
 
-  if (pfuncLookup != NULL) {
+    if (pfuncLookup != NULL) {
       // FIXME: ERROR
-  }
+    }
+
+    // Prepare the return data
+    sKeyPadData.pStr = pKeyPad->acValStr;
+    sKeyPadData.nTargetId = pKeyPad->nTargetId;
 
     //GSLC_DEBUG_PRINT("KeyPad Click   ID=%d\n", nSubElemId);
 
@@ -481,14 +522,16 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       //GSLC_DEBUG_PRINT("KeyPad Key=ENT\n", "");
       //GSLC_DEBUG_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
 
+   
       // Issue callback with Done status
       if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_DONE, (void*)pKeyPad->acValStr);
+        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_DONE, (void*)(&sKeyPadData));
       }
 
       // Clear the contents
       memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
       pKeyPad->nValStrPos = 0;
+      pKeyPad->nTargetId = GSLC_ID_NONE;
       break;
 
     case KEYPAD_ID_ESC:
@@ -496,11 +539,12 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       // Clear the contents
       memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
       pKeyPad->nValStrPos = 0;
+      pKeyPad->nTargetId = GSLC_ID_NONE;    
       bValRedraw = true;
       //GSLC_DEBUG_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
       // Issue callback with Cancel status
       if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_CANCEL, (void*)pKeyPad->acValStr);
+        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_CANCEL, (void*)(&sKeyPadData));
       }
       break;
 
@@ -556,7 +600,7 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_INC);
       // Issue callback with Update status
       if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_UPDATE, (void*)pKeyPad->acValStr);
+        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_UPDATE, (void*)(&sKeyPadData));
       }
     } // bValRedraw
 
