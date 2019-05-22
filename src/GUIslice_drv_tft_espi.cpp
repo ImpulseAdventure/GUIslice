@@ -965,7 +965,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
       //       extending to support different background drawing
       //       capabilities such as stretching and tiling of background
       //       image.
-      gslc_DrvDrawImage(pGui,0,0,pGui->sImgRefBkgnd);
+      gslc_DrvDrawImage(pGui, 0, 0, pGui->sImgRefBkgnd);
     }
   }
 }
@@ -985,18 +985,18 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 #if defined(DRV_TOUCH_IN_DISP)
 
-bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
   if (pGui == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n", "");
     return false;
   }
 
   // Perform any driver-specific touchscreen init here
 
   // Initialize the touch calibration data
-  #if defined(DRV_TOUCH_TFT_ESPI)
+#if defined(DRV_TOUCH_TFT_ESPI)
   m_disp.setTouch(m_anCalData);
-  #endif
+#endif
 
   // NOTE: TFT_eSPI constructor already initializes the touch
   // driver if TOUCH_CS is defined in the TFT_eSPI library's "User_Setup.h"
@@ -1005,22 +1005,46 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   return true;
 }
 
+  // The TFT_eSPI integrated XPT2046 touch handler appears to have an issue
+  // that causes getTouch() to return true along with a (0,0) coordinate
+  // as one nears the no-touch condition. This can cause spurious read
+  // values that will throw off any touch transition logic. Therefore,
+  // a workaround has been applied to sanitize the TFT_eSPI getTouch() output.
+  // In effect, a getTouch()=true condition with coordinate (0,0) is
+  // deemed invalid. This results in a very small loss of detection
+  // capability (ie. a true 0,0 coordinate), but considering the precision
+  // (and noise) of most touchscreens, this is a non-issue.
+  //
+  // I have filed a fix for this issue at:
+  //   https://github.com/Bodmer/TFT_eSPI/pull/366
+  //
+  // To disable the workaround, comment out the following line
+  #define FIX_TFT_ESPI_TOUCH_BOUNDS
 
-bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
+bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal)
 {
 
   if ((pGui == NULL) || (pGui->pvDriver == NULL)) {
-    GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n","");
+    GSLC_DEBUG_PRINT("ERROR: DrvGetTouch(%s) called with NULL ptr\n", "");
     return false;
   }
 
   // Use TFT_eSPI for touch events
   uint8_t     bPressed = 0;
-  uint16_t    nX=0;
-  uint16_t    nY=0;
+  uint16_t    nX = 0;
+  uint16_t    nY = 0;
   int16_t     nOutputX, nOutputY;
 
-  bPressed = m_disp.getTouch(&nX,&nY);
+  bPressed = m_disp.getTouch(&nX, &nY);
+
+  // Apply TFT_eSPI getTouch() workaround
+  #if defined(FIX_TFT_ESPI_TOUCH_BOUNDS)
+  if (bPressed) {
+    if ((nX == 0) && (nY == 0)) {
+      bPressed = false;
+    }
+  }
+  #endif // FIX_TFT_ESPI_TOUCH_BOUNDS
 
   // Perform any requested swapping of input axes
   if( pGui->nSwapXY ) {
@@ -1050,6 +1074,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   }
   *peInputEvent = GSLC_INPUT_TOUCH;
   *pnInputVal   = 0;
+
+  // Print output for debug
+  #ifdef DBG_TOUCH
+  if (bPressed) {
+	  GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
+		  *pnPress, nX, nY, nOutputX, nOutputY);
+  }
+  #endif
 
   return true;
 }
@@ -1768,9 +1800,19 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Now update the touch remapping
   #if !defined(DRV_TOUCH_NONE)
-    pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
+  #if defined(DRV_TOUCH_TFT_ESPI)
+    // In TFT_eSPI's built-in XPT2046 touch driver, the getTouch()
+    // call already accounts for any setRotation() call. Therefore
+    // we need to disable any correction within GUIslice
+    pGui->nSwapXY = false;
+    pGui->nFlipX = false;
+    pGui->nFlipY = false;
+  #else
+    // Correct touch mapping according to current rotation mode
+	  pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
     pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
     pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
+  #endif // DRV_TOUCH_TFT_ESPI
   #endif // !DRV_TOUCH_NONE
 
   // Mark the current page ask requiring redraw
