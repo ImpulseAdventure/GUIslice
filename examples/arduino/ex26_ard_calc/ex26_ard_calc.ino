@@ -46,7 +46,7 @@
 enum { E_PG_MAIN, E_POP_KEYPAD };
 enum {
   E_BOX1, E_BTN_ADD, E_BTN_MULT, E_BTN_SUB
-  , E_TXT7, E_TXT_VAL1, E_TXT_VAL2, E_ELEM_KEYPAD
+  , E_TXT_RESULT, E_TXT_VAL1, E_TXT_VAL2, E_ELEM_KEYPAD
 };
 enum { E_FONT_SANS2, E_FONT_TXT1 };
 //<Enum !End!>
@@ -112,7 +112,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
   gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
 
   char acTxtNum[11];
-  int16_t nVal1, nVal2, nResult;
+  int32_t nVal1, nVal2, nResult;
 
   if (eTouch == GSLC_TOUCH_UP_IN) {
     // From the element's ID we can determine which button was pressed.
@@ -134,26 +134,26 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       break;
     case E_BTN_ADD:
       // Compute the sum and update the result
-      nVal1 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
       nResult = nVal1 + nVal2;
-      itoa(nResult, acTxtNum, 10);
+      ltoa(nResult, acTxtNum, 10);
       gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
       break;
     case E_BTN_SUB:
       // Compute the subtraction and update the result
-      nVal1 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
       nResult = nVal1 - nVal2;
-      itoa(nResult, acTxtNum, 10);
+      ltoa(nResult, acTxtNum, 10);
       gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
       break;
     case E_BTN_MULT:
       // Compute the multiplication and update the result
-      nVal1 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atoi(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
       nResult = nVal1 * nVal2;
-      itoa(nResult, acTxtNum, 10);
+      ltoa(nResult, acTxtNum, 10);
       gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
       break;
       //<Button Enums !End!>
@@ -261,6 +261,7 @@ bool InitGUI()
   gslc_ElemSetTxtMargin(&m_gui, pElemRef, 5);
   gslc_ElemSetClickEn(&m_gui, pElemRef, true);
   gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
+  m_pElemVal1 = pElemRef; // Save for later
 
   // Create E_TXT_VAL2 modifiable text label
   static char m_strtxt6[11] = "";
@@ -272,12 +273,14 @@ bool InitGUI()
   gslc_ElemSetTxtMargin(&m_gui, pElemRef, 5);
   gslc_ElemSetClickEn(&m_gui, pElemRef, true);
   gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
+  m_pElemVal2 = pElemRef; // Save for later
 
-  // Create E_TXT7 modifiable text label
-  static char m_strtxt7[11] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT7, E_PG_MAIN, (gslc_tsRect) { 150, 200, 62, 12 },
-    (char*)m_strtxt7, 11, E_FONT_TXT1);
+  // Create E_TXT_RESULT modifiable text label
+  static char m_strResult[11] = "";
+  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_RESULT, E_PG_MAIN, (gslc_tsRect) { 150, 200, 62, 12 },
+    (char*)m_strResult, 11, E_FONT_TXT1);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_GREEN);
+  m_pElemResult = pElemRef; // Save for later
 
   // create E_BTN_ADD button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_BTN_ADD, E_PG_MAIN,
@@ -339,9 +342,6 @@ void setup()
   // Save some element references for quick access
   // ------------------------------------------------
   //<Quick_Access !Start!>
-  m_pElemVal1 = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_TXT_VAL1);
-  m_pElemVal2 = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_TXT_VAL2);
-  m_pElemResult = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_TXT7);
   //<Quick_Access !End!>
 
   //<Startup !Start!>
