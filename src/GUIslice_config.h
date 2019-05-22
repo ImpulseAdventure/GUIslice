@@ -65,6 +65,7 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_18_joy.h"
   //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
+  //#include "../configs/ard-shld-elegoo_28_res.h"
   //#include "../configs/ard-shld-generic1_35_touch.h"
   //#include "../configs/ard-shld-mcufriend.h"
   //#include "../configs/ard-shld-mcufriend_4wire.h"
@@ -87,7 +88,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
 
-  // ESP-8266, ESP32, M5stack, TTGO:
+  // ESP8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
   //#include "../configs/esp-shld-m5stack.h"
   //#include "../configs/esp-shld-ttgo_btc_ticker.h"

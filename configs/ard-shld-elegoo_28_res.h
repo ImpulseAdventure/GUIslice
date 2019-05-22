@@ -4,12 +4,13 @@
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     Arduino UNO / MEGA / etc
-//   - Display: ST7735
-//   - Touch:   None (Joystick and physical buttons only)
-//   - Wiring:  Shield
+//   - Display: ILI9341
+//   - Touch:   Simple Analog (Resistive)
+//   - Wiring:  Shield (pinout defined by mcufriend_kbv library)
 //
 //   - Example display:
-//     - Adafruit 1.8" Color TFT Shield w/ microSD and Joystick - v2
+//     - ELEGOO UNO R3 2.8" TFT Touch Screen Shield
+//       https://www.elegoo.com/product/elegoo-uno-r3-2-8-inches-tft-touch-screen/
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -69,33 +70,17 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ST7735    // Adafruit ST7735
-  #define DRV_DISP_ADAGFX_ST7735_INIT  INITR_BLACKTAB
-  #define DRV_DISP_ADAGFX_SEESAW_18 // Display uses Adafruit Seesaw chip
-  #define DRV_TOUCH_INPUT           // Enable seesaw controller input
+  #define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
+  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit_TouchScreen touch driver
 
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
-  // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_DC       8     // Display SPI data/command
-  #define ADAGFX_PIN_RST      -1    // Display Reset
-
-  // Display interface type
-  #define ADAGFX_SPI_HW       1      // Display uses SPI interface: 1=hardware 0=software
-
-  // Display interface software SPI
-  // - Hardware SPI: the following definitions are unused
-  // - Software SPI: the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     11
-  #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      13
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10     // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -107,6 +92,73 @@ extern "C" {
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
 
+  // -----------------------------------------------------------------------------
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
+  // -----------------------------------------------------------------------------
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4A: Update your pin connections here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_PIN_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Set the pinout for the 4-wire resistive touchscreen
+  // - These settings describe the wiring between the MCU and the
+  //   resistive touch overlay.
+  //
+  // - The diag_ard_touch_detect sketch can be used to detect the
+  //   pin connections (on Arduino devices) for your specific shield.
+  //
+
+  // - Definition of the pinout configuration options:
+  //     ADATOUCH_PIN_YP      // "Y+": Must be an analog pin
+  //     ADATOUCH_PIN_XM      // "X-": Must be an analog pin
+  //     ADATOUCH_PIN_YM      // "Y-": Can be a digital pin
+  //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
+
+  // Pin connections from diag_ard_touch_detect:
+  // - These values based on shield definition
+  #define ADATOUCH_PIN_YP     A3
+  #define ADATOUCH_PIN_XM     A2
+  #define ADATOUCH_PIN_YM     9
+  #define ADATOUCH_PIN_XP     8
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Calibration settings from diag_ard_touch_calib:
+  //
+  // - A number of example calibration settings for common MCUFRIEND
+  //   shields have been provided in SECTION 4C, each marked with their
+  //   corresponding MCUFRIEND ID. However, note that these example
+  //   calibration values may not provide accurate touch tracking, therefore
+  //   using the diag_ard_touch_calib utility is strongly recommended.
+  #define ADATOUCH_X_MIN    879
+  #define ADATOUCH_X_MAX    153
+  #define ADATOUCH_Y_MIN    107
+  #define ADATOUCH_Y_MAX    915
+  // Certain touch controllers may swap X & Y coords
+  #define ADATOUCH_REMAP_YX 0
+
+  // Touch overlay resistance value
+  // - In most cases, this value can be left as-is
+  #define ADATOUCH_RX       300   // "rxplate"
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN  10
+  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -139,7 +191,7 @@ extern "C" {
   #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
   #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
-  #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
+  #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
