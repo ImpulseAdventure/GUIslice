@@ -93,6 +93,7 @@ typedef int16_t (*XKEYPAD_LOOKUP)(gslc_tsGui* pGui, int16_t nKeyId);
   typedef struct {
     bool                bFloatEn;         ///< Enable floating point (ie. decimal point)
     bool                bSignEn;          ///< Enable negative numbers
+	  bool                bRoundEn;         ///< Enable rounded corners
     int8_t              nButtonSzW;       ///< Button width (in pixels)
     int8_t              nButtonSzH;       ///< Button height (in pixels)
     char**              pacKeys;          ///< Array of character strings for KeyPad labels
@@ -321,6 +322,17 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \return none
   ///
   void gslc_ElemXKeyPadCfgSetSignEn(gslc_tsXKeyPadCfg* pConfig,bool bEn);
+
+  ///
+  /// Update the KeyPad configuration to enable rounded button corners
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
+  /// \param[in]  bEn:         Enable rounded corners
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadCfgSetRoundEn(gslc_tsXKeyPadCfg* pConfig,bool bEn);
 
   ///
   /// Update the KeyPad configuration to define the KeyPad button sizing

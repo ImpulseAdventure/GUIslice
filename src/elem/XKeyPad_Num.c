@@ -185,6 +185,7 @@ gslc_tsXKeyPadCfg gslc_ElemXKeyPadCfgInit_Num()
   sConfig.nButtonSzH = 25;
   sConfig.bFloatEn = true;
   sConfig.bSignEn = true;
+  sConfig.bRoundEn = false;
   sConfig.nFontId = GSLC_FONT_NONE; // Will be overwritten
   sConfig.pacKeys = KEYPAD_LABEL_STRINGS;
   sConfig.nMaxCols = 8;

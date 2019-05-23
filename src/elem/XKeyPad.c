@@ -132,6 +132,8 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
     pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, nKeyId, GSLC_PAGE_NONE,
       (gslc_tsRect) { nOffsetX + (nCol*nButtonSzW), nOffsetY + (nRow*nButtonSzH), nButtonW - 1, nButtonH - 1 },
       pKeyStr, sizeof(pKeyStr), nFontId, &gslc_ElemXKeyPadClick);
+    // For the text buttons, optionally use rounded profile if enabled
+    gslc_ElemSetRoundEn(pGui, pElemRefTmp, pConfig->bRoundEn);
   }
 
   // Set color
@@ -666,6 +668,12 @@ void gslc_ElemXKeyPadCfgSetSignEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
 {
   pConfig->bSignEn = bEn;
 }
+
+void gslc_ElemXKeyPadCfgSetRoundEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
+{
+  pConfig->bRoundEn = bEn;
+}
+
 
 // FIXME: Runtime API not fully functional yet - Do not use
 void gslc_ElemXKeyPadSetFloatEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn)
