@@ -190,12 +190,12 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// Set the current value for the editable text field
   ///
   /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  pKeyPad:     Ptr to KeyPad Element
+  /// \param[in]  pElemRef:   Ptr to KeyPad Element reference
   /// \param[in]  pStrBuf:     String to copy into keypad
   ///
   /// \return none
   ///
-  void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const char* pStrBuf);
+  void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const char* pStrBuf);
 
   ///
   /// Set target element ID for KeyPad return value
@@ -206,25 +206,25 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///   the KeyPad popup dialog
   ///
   /// \param[in]  pGui:       Pointer to GUI
-  /// \param[in]  pKeyPad:    Ptr to KeyPad Element
+  /// \param[in]  pElemRef:   Ptr to KeyPad Element reference
   /// \param[in]  nTargetId:  Element enum ID for target of KeyPad value
   ///
   /// \return none
   ///
-  void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, int16_t nId);
+  void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nId);
 
 
   ///
   /// Set the current output string buffer associated with NumericInput element
   ///
   /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  pKeyPad:     Ptr to KeyPad Element
+  /// \param[in]  pElemRef:    Ptr to KeyPad Element reference
   /// \param[in]  pStrBuf:     String to copy into element
   /// \param[in]  nStrBufMax:  Maximum length of string buffer (pStrBuf)
   ///
   /// \return none
   ///
-  bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, char* pStrBuf, uint8_t nStrBufMax);
+  bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pStrBuf, uint8_t nStrBufMax);
 
   ///
   /// Fetch the edited value string from the KeyPad

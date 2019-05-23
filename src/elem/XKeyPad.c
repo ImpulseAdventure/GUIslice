@@ -251,14 +251,10 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
 
 }
 
-void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const char* pStrBuf)
+void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const char* pStrBuf)
 {
-  if (pKeyPad == NULL) {
-    #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadValSet() element (ID=%d) has NULL pXData\n", pElem->nId);
-    #endif
-    return;
-  }
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (!pKeyPad) return;
 
   // Copy over the new value string
   strncpy(pKeyPad->acValStr, pStrBuf, XKEYPAD_VAL_LEN);
@@ -284,14 +280,10 @@ void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, const cha
   gslc_ElemSetRedraw(pGui,pTxtElemRef,GSLC_REDRAW_INC);
 }
 
-void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, int16_t nTargetId)
+void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nTargetId)
 {
-  if (pKeyPad == NULL) {
-    #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadTargetIdSet() element (ID=%d) has NULL pXData\n", pElem->nId);
-    #endif
-    return;
-  }
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (!pKeyPad) return;
   pKeyPad->nTargetId = nTargetId;
 }
 
@@ -323,15 +315,10 @@ char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
 
 // NOTE: API changed to pass nStrBufLen (total buffer size including terminator)
 //       instead of nStrBufMax (max index value)
-// TODO: Revise params for API consistency?
-bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, char* pStrBuf, uint8_t nStrBufLen)
+bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pStrBuf, uint8_t nStrBufLen)
 {
-  if (pKeyPad == NULL) {
-    #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadValGet() element (ID=%d) has NULL pXData\n", pElem->nId);
-    #endif
-    return false;
-  }
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (!pKeyPad) return false;
 
   // return our keypad value field
   char* pValue = pKeyPad->acValStr;

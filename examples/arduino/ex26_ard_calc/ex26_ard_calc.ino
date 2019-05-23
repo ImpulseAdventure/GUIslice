@@ -120,17 +120,17 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       //<Button Enums !Start!>
     case E_TXT_VAL1:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadTargetIdSet(&m_gui, &m_sKeyPadNum.sKeyPad, E_TXT_VAL1);
+      gslc_ElemXKeyPadTargetIdSet(&m_gui, m_pElemKeyPad, E_TXT_VAL1);
       gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
       // Preload current value
-      gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+      gslc_ElemXKeyPadValSet(&m_gui, m_pElemKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
       break;
     case E_TXT_VAL2:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadTargetIdSet(&m_gui, &m_sKeyPadNum.sKeyPad, E_TXT_VAL2);
+      gslc_ElemXKeyPadTargetIdSet(&m_gui, m_pElemKeyPad, E_TXT_VAL2);
       gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
       // Preload current value
-      gslc_ElemXKeyPadValSet(&m_gui, &m_sKeyPadNum.sKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      gslc_ElemXKeyPadValSet(&m_gui, m_pElemKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
       break;
     case E_BTN_ADD:
       // Compute the sum and update the result
