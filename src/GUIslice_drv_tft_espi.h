@@ -70,6 +70,8 @@ extern "C" {
 #elif defined(DRV_TOUCH_XPT2046_PS)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_TFT_ESPI)
+  #define DRV_TOUCH_TYPE_RES         // Resistive
 #elif defined(DRV_TOUCH_INPUT)
   #define DRV_TOUCH_TYPE_EXTERNAL
 #elif defined(DRV_TOUCH_HANDLER)

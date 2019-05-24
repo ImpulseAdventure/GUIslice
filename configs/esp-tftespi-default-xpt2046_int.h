@@ -117,17 +117,33 @@ extern "C" {
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4B: Update your calibration settings here
-  // - These values should come from the TFT_eSPI/Touch_calibrate utility
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  // Calibration data from TFT_eSPI for integrated XPT2046
-  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+  // Calibration settings from diag_ard_touch_calib:
+  #define ADATOUCH_X_MIN    3914
+  #define ADATOUCH_X_MAX    211
+  #define ADATOUCH_Y_MIN    3945
+  #define ADATOUCH_Y_MAX    407
   // Certain touch controllers may swap X & Y coords
   #define ADATOUCH_REMAP_YX 0
+
+
+  // Calibration data from TFT_eSPI for integrated XPT2046
+  // NOTE: The TFT_ESPI_TOUCH_CALIB calibration settings will be unused as we will
+	//       bypass TFT_eSPI's calibration and use raw touch values instead.
+  //       Reference: https://github.com/Bodmer/TFT_eSPI/issues/365
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Define pressure threshold for detecting a touch
+  #define ADATOUCH_PRESS_MIN  200
+  #define ADATOUCH_PRESS_MAX  4000
+
 
 
   // -----------------------------------------------------------------------------

@@ -1005,22 +1005,6 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
   return true;
 }
 
-  // The TFT_eSPI integrated XPT2046 touch handler appears to have an issue
-  // that causes getTouch() to return true along with a (0,0) coordinate
-  // as one nears the no-touch condition. This can cause spurious read
-  // values that will throw off any touch transition logic. Therefore,
-  // a workaround has been applied to sanitize the TFT_eSPI getTouch() output.
-  // In effect, a getTouch()=true condition with coordinate (0,0) is
-  // deemed invalid. This results in a very small loss of detection
-  // capability (ie. a true 0,0 coordinate), but considering the precision
-  // (and noise) of most touchscreens, this is a non-issue.
-  //
-  // I have filed a fix for this issue at:
-  //   https://github.com/Bodmer/TFT_eSPI/pull/366
-  //
-  // To disable the workaround, comment out the following line
-  #define FIX_TFT_ESPI_TOUCH_BOUNDS
-
 bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal)
 {
 
@@ -1029,61 +1013,173 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     return false;
   }
 
-  // Use TFT_eSPI for touch events
-  uint8_t     bPressed = 0;
-  uint16_t    nX = 0;
-  uint16_t    nY = 0;
-  int16_t     nOutputX, nOutputY;
+  // Use TFT_eSPI's integrated XPT2046 touch handler
+  // - Note that the TFT_eSPI getTouch() calls are not used here because
+  //   they don't currently support dynamic rotation. Without dynamic rotation
+  //   support, the coordinate transform will not be correct after issuing a
+  //   setRotation() call to the TFT_eSPI display library.
+  // - Therefore, we will instead use the raw XPT2046 readings (from TFT_eSPI)
+  //   and let GUIslice perform the calibration and dynamic rotation.
+  // - Note that these readings will naturally be quite noisy w/o filtering.
+  // - Reference: https://github.com/Bodmer/TFT_eSPI/issues/365
 
-  bPressed = m_disp.getTouch(&nX, &nY);
+  // - TODO: Consider merging this logic with gslc_TDrvGetTouch() and remove
+  //         the special case for DRV_TOUCH_IN_DISP
 
-  // Apply TFT_eSPI getTouch() workaround
-  #if defined(FIX_TFT_ESPI_TOUCH_BOUNDS)
-  if (bPressed) {
-    if ((nX == 0) && (nY == 0)) {
-      bPressed = false;
+  // As some touch hardware drivers don't appear to return
+  // an indication of "touch released" with a coordinate, we
+  // must detect the release transition here and send the last
+  // known coordinate but with pressure=0. To do this, we are
+  // allocating a static variable to maintain the last touch
+  // coordinate.
+  // TODO: This code can be reworked / simplified
+  static int16_t  m_nLastRawX     = 0;
+  static int16_t  m_nLastRawY     = 0;
+  static uint16_t m_nLastRawPress = 0;
+  static bool     m_bLastTouched  = false;
+
+  bool bValid = false;  // Indicate a touch event to GUIslice core?
+
+  // Define maximum bounds for display in native orientation
+  int nDispOutMaxX,nDispOutMaxY;
+  nDispOutMaxX = pGui->nDisp0W-1;
+  nDispOutMaxY = pGui->nDisp0H-1;
+
+  uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+  uint16_t  nRawPress;   //XPT2046 returns values up to 4095
+
+  // Retrieve the raw touch coordinates from the XPT2046
+  // NOTE: We can't use TFT_eSPI's validTouch() as it is declared private
+  nRawPress = m_disp.getTouchRawZ();
+  m_disp.getTouchRaw(&nRawX, &nRawY);
+
+  if ((nRawPress > ADATOUCH_PRESS_MIN) && (nRawPress < ADATOUCH_PRESS_MAX)) {
+
+    m_nLastRawX = nRawX;
+    m_nLastRawY = nRawY;
+    m_nLastRawPress = nRawPress;
+    m_bLastTouched = true;
+    bValid = true;
+  } else {
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
     }
   }
-  #endif // FIX_TFT_ESPI_TOUCH_BOUNDS
 
-  // Perform any requested swapping of input axes
-  if( pGui->nSwapXY ) {
-    nOutputX = (int16_t)nY;
-    nOutputY = (int16_t)nX;
-  } else {
-    nOutputX = (int16_t)nX;
-    nOutputY = (int16_t)nY;
+  // If an event was detected, signal it back to GUIslice
+  if (bValid) {
+
+    int nRawX,nRawY;
+    int nInputX,nInputY;
+    int nOutputX,nOutputY;
+
+    // Input assignment
+    nRawX = m_nLastRawX;
+    nRawY = m_nLastRawY;
+
+    // Handle any hardware swapping in native orientation
+    // This is done prior to any flip/swap as a result of
+    // rotation away from the native orientation.
+    // In most cases, the following is not used, but there
+    // may be touch modules that have swapped their X&Y convention.
+    if (pGui->bTouchRemapYX) {
+      nRawX = m_nLastRawY;
+      nRawY = m_nLastRawX;
+    }
+
+    nInputX = nRawX;
+    nInputY = nRawY;
+
+    // For resistive displays, perform constraint and scaling
+    #if defined(DRV_TOUCH_TYPE_RES)
+      if (pGui->bTouchRemapEn) {
+        // Perform scaling from input to output
+        // - Calibration done in native orientation (GSLC_ROTATE=0)
+        // - Input to map() is done with raw unswapped X,Y
+        // - map() and constrain() done with native dimensions and
+        //   native calibration
+        // - Swap & Flip done to output of map/constrain according
+        //   to GSLC_ROTATE
+        //
+        #if defined(DBG_TOUCH)
+          GSLC_DEBUG_PRINT("DBG: remapX: (%d,%d,%d,%d,%d)\n", nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+          GSLC_DEBUG_PRINT("DBG: remapY: (%d,%d,%d,%d,%d)\n", nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+        #endif
+        nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+        nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+        // Perform constraining to OUTPUT boundaries
+        nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
+        nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
+      } else {
+        // No scaling from input to output
+        nOutputX = nInputX;
+        nOutputY = nInputY;
+      }
+    #else
+      // No scaling from input to output
+      nOutputX = nInputX;
+      nOutputY = nInputY;
+    #endif  // DRV_TOUCH_TYPE_RES
+  
+    #ifdef DBG_TOUCH
+    GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
+    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+      pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #endif // DBG_TOUCH
+
+    // Perform remapping due to current orientation
+    if (pGui->bTouchRemapEn) {
+      // Perform any requested swapping of input axes
+      if (pGui->nSwapXY) {
+        int16_t nOutputXTmp = nOutputX;
+        nOutputX = nOutputY;
+        nOutputY = nOutputXTmp;
+        // Perform any requested output axis flipping
+        // TODO: Collapse these cases
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxY - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxX - nOutputY;
+        }
+      } else {
+        // Perform any requested output axis flipping
+        if (pGui->nFlipX) {
+          nOutputX = nDispOutMaxX - nOutputX;
+        }
+        if (pGui->nFlipY) {
+          nOutputY = nDispOutMaxY - nOutputY;
+        }
+      }
+    }
+
+    // Final assignment
+    *pnX          = nOutputX;
+    *pnY          = nOutputY;
+    *pnPress      = m_nLastRawPress;
+    *peInputEvent = GSLC_INPUT_TOUCH;
+    *pnInputVal   = 0;
+
+    // Print output for debug
+    #ifdef DBG_TOUCH
+    if (bPressed) {
+    GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
+        m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
+    }
+    #endif
+
+    // Return with indication of new value
+    return true;
   }
 
-  // Perform any requested output axis flipping
-  if( pGui->nFlipX ) {
-    nOutputX = pGui->nDispW - 1 - nOutputX;
-  }
-  if( pGui->nFlipY ) {
-    nOutputY = pGui->nDispH - 1 - nOutputY;
-  }
-
-  // Assign coordinates
-  *pnX = (int16_t)nOutputX;
-  *pnY = (int16_t)nOutputY;
-
-  if (bPressed > 0) {
-    *pnPress = 1;
-  } else {
-    *pnPress = 0;
-  }
-  *peInputEvent = GSLC_INPUT_TOUCH;
-  *pnInputVal   = 0;
-
-  // Print output for debug
-  #ifdef DBG_TOUCH
-  if (bPressed) {
-	  GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
-		  *pnPress, nX, nY, nOutputX, nOutputY);
-  }
-  #endif
-
-  return true;
+  // No new value
+  return false;
 }
 
 #endif // DRV_TOUCH_IN_DISP
@@ -1800,19 +1896,10 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Now update the touch remapping
   #if !defined(DRV_TOUCH_NONE)
-  #if defined(DRV_TOUCH_TFT_ESPI)
-    // In TFT_eSPI's built-in XPT2046 touch driver, the getTouch()
-    // call already accounts for any setRotation() call. Therefore
-    // we need to disable any correction within GUIslice
-    pGui->nSwapXY = false;
-    pGui->nFlipX = false;
-    pGui->nFlipY = false;
-  #else
     // Correct touch mapping according to current rotation mode
-	  pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
+    pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
     pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
     pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
-  #endif // DRV_TOUCH_TFT_ESPI
   #endif // !DRV_TOUCH_NONE
 
   // Mark the current page ask requiring redraw
