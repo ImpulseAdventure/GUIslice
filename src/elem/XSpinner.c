@@ -255,9 +255,14 @@ bool gslc_ElemXSpinnerDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   // Draw the sub-elements
   // - For now, force redraw of entire compound element
   gslc_tsCollect* pCollect = &pSpinner->sCollect;
-
-  gslc_tsEvent  sEvent = gslc_EventCreate(pGui,GSLC_EVT_DRAW,GSLC_EVTSUB_DRAW_FORCE,(void*)(pCollect),NULL);
-  gslc_CollectEvent(pGui,sEvent);
+  if (eRedraw != GSLC_REDRAW_NONE) {
+    uint8_t sEventSubType = GSLC_EVTSUB_DRAW_NEEDED;
+    if (eRedraw == GSLC_REDRAW_FULL) {
+      sEventSubType = GSLC_EVTSUB_DRAW_FORCE;
+    }
+    gslc_tsEvent  sEvent = gslc_EventCreate(pGui, GSLC_EVT_DRAW, sEventSubType, (void*)(pCollect), NULL);
+    gslc_CollectEvent(pGui, sEvent);
+  }
 
   // Optionally, draw a frame around the compound element
   // - This could instead be done by creating a sub-element
@@ -377,7 +382,7 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
     // Invoke the callback function
     pfuncXInput = pSpinner->pfuncXInput;
     if (pfuncXInput != NULL) {
-      (*pfuncXInput)(pvGui, pSpinner->pElemRef);
+      (*pfuncXInput)(pvGui, (void*)(pSpinner->pElemRef), XSPINNER_CB_STATE_UPDATE, NULL);
     }
 
   } // eTouch

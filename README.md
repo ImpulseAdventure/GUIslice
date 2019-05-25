@@ -21,7 +21,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 ## Features ##
 - Pure C library, no dynamic memory allocation
 - *Widgets*:
-  - text, images, buttons, checkboxes, radio buttons, sliders,
+  - text, images, buttons, checkboxes, radio buttons, sliders, keypad,
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - Cross-platform **GUIslice Builder** (beta) desktop application to generate layouts
 - *Platform-independent* GUI core currently supports:

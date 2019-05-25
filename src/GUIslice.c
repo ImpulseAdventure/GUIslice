@@ -1757,6 +1757,8 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   #endif
 
   // A change of page should always force a future redraw
+  // TODO: Consider that showing a popup could potentially optimize out
+  // the forced redraw step.
   if (nPageSaved != nPageId) {
     gslc_PageRedrawSet(pGui,true);
   }
@@ -1947,6 +1949,10 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   // TODO: Handle GSLC_EVTSUB_DRAW_NEEDED
   uint32_t nSubType = (bPageRedraw)?GSLC_EVTSUB_DRAW_FORCE:GSLC_EVTSUB_DRAW_NEEDED;
   void*    pvData = NULL;
+
+  // TODO: Consider creating a flag that indicates whether any elements
+  // on the page have requested redraw. This would enable us to skip
+  // over this exhaustive search every time we call Update()
 
   // Issue page redraw events to all pages in stack
   // - Start from bottom page in stack first
@@ -3029,11 +3035,10 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // - For now, assume no need to trigger a parent redraw.
   // - TODO: Consider detecting scenarios in which we should
   //   propagate the redraw to the parent.
-
-  //gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  //if (pElem->pElemRefParent != NULL) {
-  //  gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
-  //}
+  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElem->pElemRefParent != NULL) {
+    gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
+  }
 #endif
 }
 
@@ -4135,8 +4140,14 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
     pCollect->nElemRefCnt++;
   }
 
+  // Fetch a pointer to the element reference array entry
+  gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[nElemRefInd]);
+
+  // Mark any newly added element as requiring redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+
   // Return the new element reference
-  return &(pCollect->asElemRef[nElemRefInd]);
+  return pElemRef;
 }
 
 bool gslc_CollectGetRedraw(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
@@ -4193,6 +4204,7 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
   gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
+
   return pElemRefAdd;
 }
 
