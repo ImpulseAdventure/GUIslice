@@ -2566,6 +2566,100 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
   gslc_ElemEvent(pGui,sEvent);
 }
 
+void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf,gslc_tsRect rTxt,gslc_tsFont* pTxtFont,gslc_teTxtFlags eTxtFlags,
+	int8_t eTxtAlign,gslc_tsColor colTxt,gslc_tsColor colBg,int16_t nMarginW,int16_t nMarginH)
+{
+  int16_t   nElemX,nElemY;
+  uint16_t  nElemW,nElemH;
+
+  nElemX    = rTxt.x;
+  nElemY    = rTxt.y;
+  nElemW    = rTxt.w;
+  nElemH    = rTxt.h;
+
+  // Overlay the text
+  bool bRenderTxt = true;
+  // Skip text render if buffer pointer not allocated
+  if ((bRenderTxt) && (pStrBuf == NULL)) { bRenderTxt = false; }
+  // Skip text render if string is not set
+  if ((bRenderTxt) && ((eTxtFlags & GSLC_TXT_ALLOC) == GSLC_TXT_ALLOC_NONE)) { bRenderTxt = false; }
+
+  // Do we still want to render?
+  if (bRenderTxt) {
+#if (DRV_HAS_DRAW_TEXT)
+
+    // Determine if GUIslice or driver should perform text alignment
+    // - Generally, GUIslice provides the text alignment functionality
+    //   by querying the display driver for the dimensions of the text
+    //   to be rendered.
+    // - Some drivers (such as TFT_eSPI) perform more complex logic
+    //   associated with the text alignment and hence GUIslice will
+    //   defer to the driver to handle the positioning. In that case
+    //   the bounding box and alignment mode is provided to the driver.
+#if (DRV_OVERRIDE_TXT_ALIGN)
+
+    // GUIslice will allow the driver to perform the text alignment
+    // calculations.
+
+    // Provide bounding box and alignment flag to driver to calculate
+    int16_t nX0 = nElemX + nMarginW;
+    int16_t nY0 = nElemY + nMarginH;
+    int16_t nX1 = nX0 + nElemW - 2*nMarginW;
+    int16_t nY1 = nY0 + nElemH - 2*nMarginH;
+
+    gslc_DrvDrawTxtAlign(pGui,nX0,nY0,nX1,nY1,eTxtAlign,pTxtFont,
+            pStrBuf,eTxtFlags,colTxt,colBg);
+
+#else // DRV_OVERRIDE_TXT_ALIGN
+
+    // GUIslice will ask the driver for the text dimensions and calculate
+    // the appropriate positioning to support the requested text
+    // alignment mode.
+
+    // Fetch the size of the text to allow for justification
+    // NOTE: For multi-line text strings, the following call will
+    //       return the maximum dimensions of the entire block of
+    //       text, thus alignment will be based on the outer dimensions
+    //       not individual rows of text. As a result, the overall
+    //       text block will be rendered with the requested alignment
+    //       but individual rows will render like GSLC_ALIGNH_LEFT
+    //       within the aligned text block. In order to support per-line
+    //       horizontal justification, a pre-scan and alignment calculation
+    //       for each text row would need to be performed.
+    int16_t       nTxtOffsetX,nTxtOffsetY;
+    uint16_t      nTxtSzW,nTxtSzH;
+    gslc_DrvGetTxtSize(pGui,pTxtFont,pStrBuf,eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+
+    // Calculate the text alignment
+    int16_t       nTxtX,nTxtY;
+
+    // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
+    if      (eTxtAlign & GSLC_ALIGNH_LEFT)     { nTxtX = nElemX+nMarginW; }
+    else if (eTxtAlign & GSLC_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMarginW-nTxtSzW; }
+    else                                       { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
+
+    // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
+    if      (eTxtAlign & GSLC_ALIGNV_TOP)      { nTxtY = nElemY+nMarginH; }
+    else if (eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMarginH-nTxtSzH; }
+    else                                       { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
+
+    // Now correct for offset from text bounds
+    // - This is used by the driver (such as Adafruit-GFX) to provide an
+    //   adjustment for baseline height, etc.
+    nTxtX += nTxtOffsetX;
+    nTxtY -= nTxtOffsetY;
+
+    // Call the driver text rendering routine
+    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pTxtFont,pStrBuf,eTxtFlags,colTxt,colBg);
+
+#endif // DRV_OVERRIDE_TXT_ALIGN
+
+#else // DRV_HAS_DRAW_TEXT
+    // No text support in driver, so skip
+#endif // DRV_HAS_DRAW_TEXT
+  }
+}
+
 // Draw an element to the active display
 // - Element is referenced by an element pointer
 // - TODO: Handle GSLC_TYPE_BKGND
@@ -2640,11 +2734,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     } else {
       colBg = pElem->colElemFill;
     }
-	  if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
-		  gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
-	  } else {
-		  gslc_DrawFillRect(pGui, rElemInner, colBg);
-	  }
+    if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
+      gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
+    } else {
+      gslc_DrawFillRect(pGui, rElemInner, colBg);
+    }
   } else {
     // TODO: If unfilled, then we might need
     // to redraw the background layer(s)
@@ -2660,11 +2754,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   #else
   if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
-	  if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
-		  gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, pElem->colElemFrame);
-	  } else {
-		  gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
-	  }
+    if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
+      gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, pElem->colElemFrame);
+    } else {
+      gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
+    }
   }
   #endif
 
@@ -2694,92 +2788,16 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Text overlays
   // --------------------------------------------------------------------------
 
-  // Overlay the text
-  bool bRenderTxt = true;
-  // Skip text render if buffer pointer not allocated
-  if ((bRenderTxt) && (pElem->pStrBuf == NULL)) { bRenderTxt = false; }
-  // Skip text render if string is not set
-  if ((bRenderTxt) && ((pElem->eTxtFlags & GSLC_TXT_ALLOC) == GSLC_TXT_ALLOC_NONE)) { bRenderTxt = false; }
-
-  // Do we still want to render?
-  if (bRenderTxt) {
-#if (DRV_HAS_DRAW_TEXT)
+  // Draw text string if defined
+  if (pElem->pStrBuf) {
+    gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
     int16_t       nMargin   = pElem->nTxtMargin;
 
-    // Determine the text color
-    gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
-
-
-    // Determine if GUIslice or driver should perform text alignment
-    // - Generally, GUIslice provides the text alignment functionality
-    //   by querying the display driver for the dimensions of the text
-    //   to be rendered.
-    // - Some drivers (such as TFT_eSPI) perform more complex logic
-    //   associated with the text alignment and hence GUIslice will
-    //   defer to the driver to handle the positioning. In that case
-    //   the bounding box and alignment mode is provided to the driver.
-#if (DRV_OVERRIDE_TXT_ALIGN)
-
-    // GUIslice will allow the driver to perform the text alignment
-    // calculations.
-
-    // Provide bounding box and alignment flag to driver to calculate
-    int16_t nX0 = nElemX + nMargin;
-    int16_t nY0 = nElemY + nMargin;
-    int16_t nX1 = nX0 + nElemW - 2*nMargin;
-    int16_t nY1 = nY0 + nElemH - 2*nMargin;
-
-    gslc_DrvDrawTxtAlign(pGui,nX0,nY0,nX1,nY1,pElem->eTxtAlign,pElem->pTxtFont,
-            pElem->pStrBuf,pElem->eTxtFlags,colTxt,colBg);
-
-#else // DRV_OVERRIDE_TXT_ALIGN
-
-    // GUIslice will ask the driver for the text dimensions and calculate
-    // the appropriate positioning to support the requested text
-    // alignment mode.
-
-    // Fetch the size of the text to allow for justification
-    // NOTE: For multi-line text strings, the following call will
-    //       return the maximum dimensions of the entire block of
-    //       text, thus alignment will be based on the outer dimensions
-    //       not individual rows of text. As a result, the overall
-    //       text block will be rendered with the requested alignment
-    //       but individual rows will render like GSLC_ALIGNH_LEFT
-    //       within the aligned text block. In order to support per-line
-    //       horizontal justification, a pre-scan and alignment calculation
-    //       for each text row would need to be performed.
-    int16_t       nTxtOffsetX,nTxtOffsetY;
-    uint16_t      nTxtSzW,nTxtSzH;
-    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
-
-    // Calculate the text alignment
-    int16_t       nTxtX,nTxtY;
-
-    // Check for ALIGNH_LEFT & ALIGNH_RIGHT. Default to ALIGNH_MID
-    if      (pElem->eTxtAlign & GSLC_ALIGNH_LEFT)     { nTxtX = nElemX+nMargin; }
-    else if (pElem->eTxtAlign & GSLC_ALIGNH_RIGHT)    { nTxtX = nElemX+nElemW-nMargin-nTxtSzW; }
-    else                                              { nTxtX = nElemX+(nElemW/2)-(nTxtSzW/2); }
-
-    // Check for ALIGNV_TOP & ALIGNV_BOT. Default to ALIGNV_MID
-    if      (pElem->eTxtAlign & GSLC_ALIGNV_TOP)      { nTxtY = nElemY+nMargin; }
-    else if (pElem->eTxtAlign & GSLC_ALIGNV_BOT)      { nTxtY = nElemY+nElemH-nMargin-nTxtSzH; }
-    else                                              { nTxtY = nElemY+(nElemH/2)-(nTxtSzH/2); }
-
-    // Now correct for offset from text bounds
-    // - This is used by the driver (such as Adafruit-GFX) to provide an
-    //   adjustment for baseline height, etc.
-    nTxtX += nTxtOffsetX;
-    nTxtY -= nTxtOffsetY;
-
-    // Call the driver text rendering routine
-    gslc_DrvDrawTxt(pGui,nTxtX,nTxtY,pElem->pTxtFont,pElem->pStrBuf,pElem->eTxtFlags,colTxt,colBg);
-
-#endif // DRV_OVERRIDE_TXT_ALIGN
-
-#else // DRV_HAS_DRAW_TEXT
-    // No text support in driver, so skip
-#endif // DRV_HAS_DRAW_TEXT
+	  gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
+		  pElem->eTxtAlign, colTxt, colBg, nMargin, nMargin);
   }
+
+  // --------------------------------------------------------------------------
 
   // Mark the element as no longer requiring redraw
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);

@@ -2890,6 +2890,29 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 ///
 void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 
+
+///
+/// Draw text with full text justification
+/// - This function is usually only required by internal GUIslice rendering
+///   operations but is made available for custom element usage as well
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pStrBuf:     Pointer to text string buffer
+/// \param[in]  rTxt:        Rectangle region to contain the text
+/// \param[in]  pTxtFont:    Pointer to the font
+/// \param[in]  eTxtFlags:   Text string attributes
+/// \param[in]  eTxtAlign:   Text alignment / justification mode
+/// \param[in]  colTxt:      Text foreground color
+/// \param[in]  colBg:       Text background color
+/// \param[in]  nMarginW:    Horizontal margin within rect region to keep text away
+/// \param[in]  nMarginH:    Vertical margin within rect region to keep text away
+///
+/// \return none
+///
+void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf, gslc_tsRect rTxt, gslc_tsFont* pTxtFont, gslc_teTxtFlags eTxtFlags,
+	int8_t eTxtAlign, gslc_tsColor colTxt, gslc_tsColor colBg, int16_t nMarginW, int16_t nMarginH);
+
+
 ///
 /// Set the global rounded radius
 /// - Used for rounded rectangles
