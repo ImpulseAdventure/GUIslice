@@ -1258,6 +1258,17 @@ void gslc_DrawLinePolar(gslc_tsGui* pGui,int16_t nX,int16_t nY,uint16_t nRadStar
 ///
 void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 
+///
+/// Draw a framed rounded rectangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  rRect:       Rectangular region to frame
+/// \param[in]  nRadius:     Radius for the rounded corners
+/// \param[in]  nCol:        Color RGB value for the frame
+///
+/// \return none
+///
+void gslc_DrawFrameRoundRect(gslc_tsGui* pGui, gslc_tsRect rRect, int16_t nRadius, gslc_tsColor nCol);
 
 ///
 /// Draw a filled rectangle
@@ -1269,6 +1280,18 @@ void gslc_DrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
 /// \return none
 ///
 void gslc_DrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol);
+
+///
+/// Draw a filled rounded rectangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  rRect:       Rectangular region to fill
+/// \param[in]  nRadius:     Radius for the rounded corners
+/// \param[in]  nCol:        Color RGB value to fill
+///
+/// \return none
+///
+void gslc_DrawFillRoundRect(gslc_tsGui* pGui, gslc_tsRect rRect, int16_t nRadius, gslc_tsColor nCol);
 
 ///
 /// Draw a framed circle
