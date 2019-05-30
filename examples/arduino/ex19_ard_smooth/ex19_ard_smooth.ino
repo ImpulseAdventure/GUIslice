@@ -47,13 +47,12 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX, E_ELEM_BTN_QUIT1, E_ELEM_BTN_QUIT2, E_ELEM_TEXT};
-enum {E_FONT_BTN, E_FONT_AATEXT};
+enum {E_FONT_BTN, E_FONT_AATEXT, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 
 bool    m_bQuit = false;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            2
 #define MAX_ELEM_PG_MAIN    4
 
 gslc_tsGui                  m_gui;

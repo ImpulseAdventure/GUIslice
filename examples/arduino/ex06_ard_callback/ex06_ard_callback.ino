@@ -38,7 +38,7 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
       E_ELEM_DATAX,E_ELEM_DATAY,E_ELEM_DATAZ,E_ELEM_SCAN,
       E_ELEM_CHECK1};
-enum {E_FONT_BTN,E_FONT_TXT};
+enum {E_FONT_BTN,E_FONT_TXT,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 
 bool      m_bQuit = false;
 
@@ -51,7 +51,6 @@ float     m_fCoordZ = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                2
 
 // Define the maximum number of elements per page
 #define MAX_ELEM_PG_MAIN          21                // # Elems total

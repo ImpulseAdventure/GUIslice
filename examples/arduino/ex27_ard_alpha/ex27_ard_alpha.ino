@@ -48,7 +48,7 @@ enum {
   E_BOX1,
   E_TXT_VAL1, E_ELEM_KEYPAD
 };
-enum { E_FONT_SANS2, E_FONT_TXT1 };
+enum { E_FONT_SANS2, E_FONT_TXT1, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -58,7 +58,6 @@ enum { E_FONT_SANS2, E_FONT_TXT1 };
 // Define the maximum number of elements per page
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
-#define MAX_FONT                2
 #define MAX_ELEM_PG_MAIN 3
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
 #define MAX_ELEM_POP_KEYPAD 1

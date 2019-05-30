@@ -61,7 +61,7 @@
 // ------------------------------------------------
 enum { E_PG_MAIN };
 enum { E_BTN_QUIT, E_SCROLL, E_LISTBOX };
-enum { E_FONT_TITLE, E_FONT_LISTBOX, E_FONT_TXT };
+enum { E_FONT_TITLE, E_FONT_LISTBOX, E_FONT_TXT, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 
 
 // ------------------------------------------------
@@ -70,7 +70,6 @@ enum { E_FONT_TITLE, E_FONT_LISTBOX, E_FONT_TXT };
 
 // Define the maximum number of elements per page
 #define MAX_PAGE                1
-#define MAX_FONT                3
 #define MAX_ELEM_PG_MAIN        10
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
 

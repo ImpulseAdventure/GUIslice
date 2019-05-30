@@ -22,14 +22,13 @@
 // Enumerations for pages, elements, fonts, images
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_ROTATE};
-enum {E_FONT_BTN};
+enum {E_FONT_BTN,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 
 bool      m_bRotate = false;
 uint8_t   m_nRotation = 1;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            1
 #define MAX_ELEM_PG_MAIN    2
 
 gslc_tsGui                  m_gui;

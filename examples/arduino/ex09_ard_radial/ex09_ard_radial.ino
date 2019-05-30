@@ -44,7 +44,7 @@ enum {
   E_ELEM_BOX, E_ELEM_BTN_QUIT, E_ELEM_COLOR,
   E_RADIAL, E_RAMP, E_SLIDER, E_ELEM_TXT_COUNT
 };
-enum { E_FONT_BTN, E_FONT_TXT, E_FONT_TITLE };
+enum { E_FONT_BTN, E_FONT_TXT, E_FONT_TITLE, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 
 bool      m_bQuit = false;
 
@@ -53,7 +53,6 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                3
 
 // Define the maximum number of elements per page
 #define MAX_ELEM_PG_MAIN          8                 // # Elems total

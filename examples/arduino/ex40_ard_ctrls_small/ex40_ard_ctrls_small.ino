@@ -30,7 +30,7 @@ enum {
   E_BOX1, E_BTN_OK, E_CHECK1, E_PROGRESS1,
   E_PROGRESS2, E_SLIDER1, E_TXT_CNT
 };
-enum { E_FONT_TXT1 };
+enum { E_FONT_TXT1, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 
 // ------------------------------------------------
 // Instantiate the GUI
@@ -38,7 +38,6 @@ enum { E_FONT_TXT1 };
 
 // Define the maximum number of elements per page
 #define MAX_PAGE                1
-#define MAX_FONT                1
 #define MAX_ELEM_PG_MAIN 9
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
 

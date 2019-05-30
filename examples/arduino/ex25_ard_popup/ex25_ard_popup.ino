@@ -50,7 +50,7 @@
 //<Enum !Start!>
 enum { E_PG_MAIN, E_PG_POPUP };
 enum { E_BTN_CANCEL, E_BTN_OK, E_BTN_QUIT, E_PROGRESS, E_TXT_STATUS };
-enum { E_FONT_SANS1, E_FONT_TXT2 };
+enum { E_FONT_SANS1, E_FONT_TXT2, MAX_FONT }; // Use separate enum for fonts, MAX_FONT at end
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -60,7 +60,6 @@ enum { E_FONT_SANS1, E_FONT_TXT2 };
 // Define the maximum number of elements per page
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
-#define MAX_FONT                2
 #define MAX_ELEM_PG_MAIN        3
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN
 #define MAX_ELEM_PG_POPUP       5
