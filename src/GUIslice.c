@@ -1581,11 +1581,11 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
 // Font Functions
 // -----------------------------------------------------------------------
 
-bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefType,
-    const void* pvFontRef,uint16_t nFontSz)
+bool gslc_FontSetBase(gslc_tsGui* pGui, uint8_t nFontInd, int16_t nFontId, gslc_teFontRefType eFontRefType,
+	const void* pvFontRef, uint16_t nFontSz)
 {
-  if (pGui->nFontCnt+1 > (pGui->nFontMax)) {
-    GSLC_DEBUG_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
+  if (nFontInd >= pGui->nFontMax) {
+    GSLC_DEBUG_PRINT("ERROR: FontSetBase() invalid Font index=%d\n",nFontInd);
     return false;
   } else {
     // Fetch a font resource from the driver
@@ -1593,8 +1593,6 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     // TODO: Resolve a means to detect if LINUX font files failed to load
     //       and then return 'false'. Note that DrvFontAdd() may normally
     //       return NULL in ADAGFX mode for some font types.
-
-    int16_t nFontInd = pGui->nFontCnt;
 
     gslc_ResetFont(&(pGui->asFont[nFontInd]));
   
@@ -1604,8 +1602,51 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     pGui->asFont[nFontInd].pvFont       = pvFont;
     pGui->asFont[nFontInd].nId          = nFontId;
     pGui->asFont[nFontInd].nSize        = nFontSz;
-    pGui->nFontCnt++;
+
     return true;
+  }
+}
+
+
+// Store font into indexed position in font storage
+// - nFontId must be in range 0..nFontMax-1
+bool gslc_FontSet(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefType eFontRefType,
+	const void* pvFontRef, uint16_t nFontSz)
+{
+  if ((nFontId < 0) || (nFontId >= pGui->nFontMax)) {
+    GSLC_DEBUG_PRINT("ERROR: FontSet() invalid Font ID=%d\n",nFontId);
+    return false;
+  } else {
+	  bool bRet = false;
+
+    // The font index is set to the same as the font enum ID
+	  uint8_t nFontInd = nFontId;
+	  bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
+
+    // Ensure the total font count is set to max
+	  pGui->nFontCnt = pGui->nFontMax;
+
+	  return bRet;
+  }
+}
+
+bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefType,
+    const void* pvFontRef,uint16_t nFontSz)
+{
+  if (pGui->nFontCnt+1 > (pGui->nFontMax)) {
+    GSLC_DEBUG_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
+    return false;
+  } else {
+	  bool bRet = false;
+
+	  // Fetch the next unallocated index
+	  uint8_t nFontInd = pGui->nFontCnt;
+	  bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
+
+	  // Increment the current font index
+	  pGui->nFontCnt++;
+
+	  return bRet;
   }
 }
 

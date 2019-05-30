@@ -29,7 +29,7 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
       E_SLIDER_R,E_SLIDER_G,E_SLIDER_B,E_ELEM_BTN_ROOM};
-enum {E_FONT_TXT,E_FONT_TITLE};
+enum {E_FONT_TXT,E_FONT_TITLE,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 
 bool      m_bQuit = false;
 
@@ -38,7 +38,6 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                2
 
 // Define the maximum number of elements per page
 // - To enable the same code to run on devices that support storing
@@ -131,9 +130,9 @@ bool InitOverlays()
   #define TMP_COL1 (gslc_tsColor){ 32, 32, 60}
   #define TMP_COL2 (gslc_tsColor){128,128,240}
   // Note: must use title Font ID
-  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",&m_asFont[1],
+  gslc_ElemCreateTxt_P(&m_gui,98,E_PG_MAIN,2,2,320,50,"Home Automation",&m_asFont[E_FONT_TITLE],
           TMP_COL1,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
-  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",&m_asFont[1],
+  gslc_ElemCreateTxt_P(&m_gui,99,E_PG_MAIN,0,0,320,50,"Home Automation",&m_asFont[E_FONT_TITLE],
           TMP_COL2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 
 
@@ -153,15 +152,15 @@ bool InitOverlays()
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,colRGB,GSLC_COL_WHITE);
 
   // Create Quit button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,250,60,50,30,"SAVE",&m_asFont[E_FONT_TXT],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
 
   // Create dummy selector
-  gslc_ElemCreateTxt_P(&m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",&m_asFont[0],
+  gslc_ElemCreateTxt_P(&m_gui,100,E_PG_MAIN,20,65,100,20,"Selected Room:",&m_asFont[E_FONT_TXT],
           GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Create room button
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_ROOM,E_PG_MAIN,140,65,80,20,"Kitchen...",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_ROOM,E_PG_MAIN,140,65,80,20,"Kitchen...",&m_asFont[E_FONT_TXT],
     GSLC_COL_WHITE,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,NULL,NULL);
 
   // Create sliders
@@ -173,7 +172,7 @@ bool InitOverlays()
   //uint16_t  nLabelH   = 20;
   //int16_t   nSlideX   = nLabelX + nLabelW + 20;
 
-  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,160,115,120,20,"Set LED RGB:",&m_asFont[0],
+  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,160,115,120,20,"Set LED RGB:",&m_asFont[E_FONT_TXT],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Create three sliders (R,G,B) and assign callback function
@@ -181,7 +180,7 @@ bool InitOverlays()
   // the color box.
 
   // Static text label
-  gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",&m_asFont[0],
+  gslc_ElemCreateTxt_P(&m_gui,106,E_PG_MAIN,160,140,30,20,"Red:",&m_asFont[E_FONT_TXT],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_R,E_PG_MAIN,210,140,80,20,
@@ -191,7 +190,7 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
   // Static text label
-  gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",&m_asFont[0],
+  gslc_ElemCreateTxt_P(&m_gui,107,E_PG_MAIN,160,170,30,20,"Green:",&m_asFont[E_FONT_TXT],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_G,E_PG_MAIN,210,170,80,20,
@@ -201,7 +200,7 @@ bool InitOverlays()
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
 
   // Static text label
-  gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",&m_asFont[0],
+  gslc_ElemCreateTxt_P(&m_gui,108,E_PG_MAIN,160,200,30,20,"Blue:",&m_asFont[E_FONT_TXT],
           GSLC_COL_GRAY_LT3,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   // Slider
   gslc_ElemXSliderCreate_P(&m_gui,E_SLIDER_B,E_PG_MAIN,210,200,80,20,
@@ -228,11 +227,8 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
-  //   the font pointer (array index) as it will be provided to certain
-  //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }   // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,3)) { return; } // m_asFont[1]
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,3)) { return; }
 
   // Create pages display
   InitOverlays();

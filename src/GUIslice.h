@@ -1392,6 +1392,8 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 ///
 /// Load a font into the local font cache and assign
 /// font ID (nFontId).
+/// - Font is stored into next available internal array element
+/// - NOTE: Use FontSet() instead
 ///
 /// \param[in]  pGui:           Pointer to GUI
 /// \param[in]  nFontId:        ID to use when referencing this font
@@ -1406,6 +1408,25 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefType,
     const void* pvFontRef,uint16_t nFontSz);
 
+///
+/// Load a font into the local font cache and store as font ID (nFontId)
+/// - Font is stored into index nFontId, so nFontId must be from
+///   separate font enum (0-based).
+/// - Example:
+///   enum { E_FONT_BTN, E_FONT_TXT, MAX_FONT };
+///
+/// \param[in]  pGui:           Pointer to GUI
+/// \param[in]  nFontId:        ID to use when referencing this font
+/// \param[in]  eFontRefType:   Font reference type (eg. filename or pointer)
+/// \param[in]  pvFontRef:      Reference pointer to identify the font. In the case of SDL
+///                             mode, it is a filepath to the font file. In the case of Arduino
+///                             it is a pointer value to the font bitmap array (GFXFont)
+/// \param[in]  nFontSz:        Typeface size to use (only used in SDL mode)
+///
+/// \return true if load was successful, false otherwise
+///
+bool gslc_FontSet(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefType eFontRefType,
+	const void* pvFontRef, uint16_t nFontSz);
 
 ///
 /// Fetch a font from its ID value

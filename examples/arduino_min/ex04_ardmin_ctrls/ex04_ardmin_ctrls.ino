@@ -31,7 +31,7 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_PROGRESS1,
       E_ELEM_CHECK1,E_ELEM_RADIO1,E_ELEM_RADIO2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
-enum {E_FONT_BTN,E_FONT_TXT};
+enum {E_FONT_BTN,E_FONT_TXT,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 enum {E_GROUP1};
 
 bool        m_bQuit = false;
@@ -42,7 +42,6 @@ unsigned    m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                1
-#define MAX_FONT                2
 
 // Define the maximum number of elements per page
 // - To enable the same code to run on devices that support storing
@@ -99,19 +98,19 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,10,50,300,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create Quit button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,160,80,80,40,"Quit",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,160,80,80,40,"Quit",&m_asFont[E_FONT_BTN],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnQuit,NULL);
 
 
   // Create counter
-  gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,20,60,50,10,"Count:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,20,60,50,10,"Count:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   static char mstr3[8] = ""; // Provide space for large counter value
-  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,80,60,50,10,mstr3,8,&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,80,60,50,10,mstr3,8,&m_asFont[E_FONT_TXT],
           GSLC_COL_GRAY_LT2,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   // Create progress bar (horizontal)
-  gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   gslc_ElemXGaugeCreate_P(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,80,80,50,10,
     0,100,0,GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_GREEN,false);
@@ -125,19 +124,19 @@ bool InitOverlays()
   m_pElemProgress1 = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);
 
   // Create checkbox 1
-  gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,20,100,20,20,"Check1:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,80,100,20,20,GSLC_COL_BLACK,true,
           GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
 
   // Create radio 1
-  gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,104,E_PG_MAIN,20,135,20,20,"Radio1:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,80,135,20,20,GSLC_COL_BLACK,true,
           E_GROUP1,true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
 
   // Create radio 2
-  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,20,160,20,20,"Radio2:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,105,E_PG_MAIN,20,160,20,20,"Radio2:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,80,160,20,20,GSLC_COL_BLACK,true,
           E_GROUP1,true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
@@ -149,11 +148,11 @@ bool InitOverlays()
   gslc_ElemXSliderSetStyle(&m_gui,m_pElemSlider,true,(gslc_tsColor){0,0,128},10,5,(gslc_tsColor){64,64,64});
 
 
-  gslc_ElemCreateTxt_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,160,160,60,20,"Slider:",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,160,160,60,20,"Slider:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   static char mstr8[6] = "???"; // Provide space for counter value
-  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,220,160,40,20,mstr8,6,&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,220,160,40,20,mstr8,6,&m_asFont[E_FONT_TXT],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   m_pElemSliderTxt = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER); // Save for quick access
 
@@ -172,11 +171,8 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
-  //   the font pointer (array index) as it will be provided to certain
-  //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[1]
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create graphic elements
   InitOverlays();

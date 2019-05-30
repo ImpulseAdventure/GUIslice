@@ -33,7 +33,7 @@ enum {E_PG_MAIN,E_PG_EXTRA};
 enum {E_ELEM_BTN_QUIT,E_ELEM_BTN_EXTRA,E_ELEM_BTN_BACK,
       E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,
       E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_CHECK3};
-enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
+enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 
 bool      m_bQuit = false;
 
@@ -42,7 +42,6 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE                2
-#define MAX_FONT                3
 
 // Define the maximum number of elements per page
 // - To enable the same code to run on devices that support storing
@@ -126,31 +125,31 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,100,E_PG_MAIN,20,50,280,150,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create title
-  gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",&m_asFont[2], // E_FONT_TITLE
+  gslc_ElemCreateTxt_P(&m_gui,101,E_PG_MAIN,10,10,310,40,"GUIslice Demo",&m_asFont[E_FONT_TITLE],
           GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_MID,false,false);
 
   // Create Quit button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,100,140,50,20,"Quit",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,100,140,50,20,"Quit",&m_asFont[E_FONT_BTN],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
 
 
 
   // Create Extra button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,170,140,50,20,"Extra",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,170,140,50,20,"Extra",&m_asFont[E_FONT_BTN],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
 
 
   // Create counter
-  gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,40,60,50,10,"Count",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,40,60,50,10,"Count",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   static char mstr5[8] = "????";  // Placeholder for counter
-  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,100,60,50,10,mstr5,8,&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,100,60,50,10,mstr5,8,&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
 
   // Create progress bar
-  gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,40,80,50,10,"Progress",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,103,E_PG_MAIN,40,80,50,10,"Progress",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,(gslc_tsRect){100,80,50,10},
     0,100,0,GSLC_COL_GREEN,false);
@@ -168,21 +167,21 @@ bool InitOverlays()
   gslc_ElemCreateBox_P(&m_gui,200,E_PG_EXTRA,40,40,240,160,GSLC_COL_WHITE,GSLC_COL_BLACK,true,true,NULL,NULL);
 
   // Create Back button with text label
-  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,50,170,50,20,"Back",&m_asFont[0],
+  gslc_ElemCreateBtnTxt_P(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,50,170,50,20,"Back",&m_asFont[E_FONT_BTN],
     GSLC_COL_WHITE,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK2,GSLC_COL_BLUE_DK1,GSLC_ALIGN_MID_MID,true,true,&CbBtnCommon,NULL);
 
   // Create a few labels & checkboxes
   gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,60,50,20,20,GSLC_COL_BLACK,true,
           GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  gslc_ElemCreateTxt_P(&m_gui,201,E_PG_EXTRA,100,50,50,10,"Data 1",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,201,E_PG_EXTRA,100,50,50,10,"Data 1",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   gslc_ElemXCheckboxCreate_P(&m_gui,E_ELEM_CHECK3,E_PG_EXTRA,60,80,20,20,GSLC_COL_BLACK,true,
           GSLC_GROUP_ID_NONE,false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
-  gslc_ElemCreateTxt_P(&m_gui,202,E_PG_EXTRA,100,80,50,10,"Data 2",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,202,E_PG_EXTRA,100,80,50,10,"Data 2",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
-  gslc_ElemCreateTxt_P(&m_gui,203,E_PG_EXTRA,100,110,50,10,"Data 3",&m_asFont[1], // E_FONT_TXT
+  gslc_ElemCreateTxt_P(&m_gui,203,E_PG_EXTRA,100,110,50,10,"Data 3",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
 
@@ -202,12 +201,9 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  // - NOTE: If we are using the ElemCreate*_P() macros then it is important to note
-  //   the font pointer (array index) as it will be provided to certain
-  //   ElemCreate*_P() functions (eg. ElemCreateTxt_P).
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[0]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }    // m_asFont[1]
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }  // m_asFont[2]
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create page elements
   InitOverlays();
