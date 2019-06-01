@@ -192,7 +192,7 @@ bool InitOverlays()
 
   // Add compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSpinner[0],
-    160,60,0,100,m_nComp1,1,E_FONT_BTN,20,&CbInputCommon);
+    (gslc_tsRect){160,60,68,20},0,100,m_nComp1,1,E_FONT_BTN,20,&CbInputCommon);
 
   // -----------------------------------
   // PAGE: EXTRA
@@ -217,6 +217,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COMP1,E_PG_EXTRA,(gslc_tsRect){120,nPosY,50,10},
     mCompStr1,sizeof(mCompStr1),E_FONT_TXT);
   m_pElemComp1 = pElemRef; // Save for quick access
+
   // create data 2 display count
   nPosY += nSpaceY;
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
@@ -227,7 +228,8 @@ bool InitOverlays()
   m_pElemComp2 = pElemRef; // Save for quick access
   // Add XSpinner compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSpinner[1],
-    200,nPosY,0,100,m_nComp2,1,E_FONT_BTN,20,&CbInputCommon);
+    (gslc_tsRect){200,nPosY,68,20},0,100,m_nComp2,1,E_FONT_BTN,20,&CbInputCommon);
+
   // create data 3 display count
   nPosY += nSpaceY;
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_EXTRA,(gslc_tsRect){60,nPosY,50,10},
@@ -238,7 +240,7 @@ bool InitOverlays()
   m_pElemComp3 = pElemRef; // Save for quick access
   // Add XSpinner compound element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP3,E_PG_EXTRA,&m_sXSpinner[2],
-    200,160,0,100,m_nComp3,1,E_FONT_BTN,20,&CbInputCommon);
+    (gslc_tsRect){200,nPosY,68,20},0,100,m_nComp3,1,E_FONT_BTN,20,&CbInputCommon);
 
 
   return true;

@@ -78,7 +78,7 @@ static const int16_t  SPINNER_ID_TXT     = 102;
 // Create a compound element
 // - For now just two buttons and a text area
 gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage, gslc_tsXSpinner* pXData,
-  int16_t nX0, int16_t nY0, int16_t nMin, int16_t nMax, int16_t nVal, int16_t nIncr,
+  gslc_tsRect rElem, int16_t nMin, int16_t nMax, int16_t nVal, int16_t nIncr,
   int8_t nFontId, int8_t nButtonSz, GSLC_CB_INPUT cbInput)
 {
 
@@ -90,26 +90,16 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 
   // determine size of our text box
   // first calculate number of digits required
-  int nDigits, nTxtBoxW;
+  int16_t nTxtBoxW,nTxtBoxH,nBtnPosY;
   char acTxtNum[XSPINNER_STR_LEN];
   // FIXME: Consider replacing the sprintf() with an optimized function to
   //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
-  snprintf(acTxtNum, XSPINNER_STR_LEN, "%d", nMax);
-  nDigits = strlen(acTxtNum);
+  nTxtBoxW = rElem.w - 2 * (nButtonSz);
   // Determine the maximum width of a digit, we will use button size for height.
-  int16_t       nChOffsetX, nChOffsetY;
-  uint16_t      nChSzW, nChSzH;
-  char          acMono[2] = "%";
-  gslc_tsFont*  pTxtFont = gslc_FontGet(pGui, nFontId);
-  gslc_teTxtFlags eTxtFlags = (GSLC_TXT_DEFAULT & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
-  gslc_DrvGetTxtSize(pGui, pTxtFont, (char*)&acMono, eTxtFlags, &nChOffsetX, &nChOffsetY, &nChSzW, &nChSzH);
-  nTxtBoxW = nChSzW * nDigits + 10;  // add padding
   // now we can work out our rectangle  
-  gslc_tsRect rElem;
-  rElem.x = nX0;
-  rElem.y = nY0;
-  rElem.w = nTxtBoxW + (nButtonSz * 2);
-  rElem.h = nButtonSz;
+  nTxtBoxH = rElem.h;
+
+  nBtnPosY = rElem.y + (rElem.h - nButtonSz) / 2;
 
   // set our intial value for our text field
   snprintf(acTxtNum, XSPINNER_STR_LEN - 1, "%d", nVal);
@@ -171,7 +161,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   gslc_tsRect rSubElem;
 
   // Create button sub-element
-  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nOffsetY, nButtonSz, nButtonSz };
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nBtnPosY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
     rSubElem, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
@@ -181,7 +171,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
   // Create button sub-element
-  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nOffsetY, nButtonSz, nButtonSz };
+  rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nBtnPosY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
     rSubElem, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
@@ -193,7 +183,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   // Create dynamic text sub-element
   // - Note that we are using string storage in the extended element data
   //   structure (pXData).
-  rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nButtonSz };
+  rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nTxtBoxH };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   strncpy(pXData->acElemTxt[0], acTxtNum, XSPINNER_STR_LEN - 1);
   pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
