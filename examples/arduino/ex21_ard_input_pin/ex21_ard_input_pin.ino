@@ -236,8 +236,8 @@ void setup()
   gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, PIN_NEXT, GSLC_ACTION_FOCUS_NEXT, 0);
 
   // Use default font
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create graphic elements
   InitOverlays();

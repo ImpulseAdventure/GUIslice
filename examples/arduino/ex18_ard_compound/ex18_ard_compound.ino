@@ -204,9 +204,9 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create page elements
   InitOverlays();

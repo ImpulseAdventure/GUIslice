@@ -309,17 +309,17 @@ void setup()
   // ------------------------------------------------
 #if defined(FONTS_T3)
   // Teensy fonts
-  if (!gslc_FontAdd(&m_gui, E_FONT_TITLE, GSLC_FONTREF_PTR, &Arial_12, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TITLE, GSLC_FONTREF_PTR, &Arial_12, 1)) { return; }
   gslc_FontSetMode(&m_gui, E_FONT_TITLE, GSLC_FONTREF_MODE_1);
-  if (!gslc_FontAdd(&m_gui, E_FONT_LISTBOX, GSLC_FONTREF_PTR, &Arial_8, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_LISTBOX, GSLC_FONTREF_PTR, &Arial_8, 1)) { return; }
   gslc_FontSetMode(&m_gui, E_FONT_LISTBOX, GSLC_FONTREF_MODE_1);
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, &Arial_10, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, &Arial_10, 1)) { return; }
   gslc_FontSetMode(&m_gui, E_FONT_TXT, GSLC_FONTREF_MODE_1);
 #else  
   // Extra Adafruit-GFX fonts
-  if (!gslc_FontAdd(&m_gui, E_FONT_TITLE, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
-  if (!gslc_FontAdd(&m_gui, E_FONT_LISTBOX, GSLC_FONTREF_PTR, &FreeMono9pt7b, 1)) { return; }
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TITLE, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_LISTBOX, GSLC_FONTREF_PTR, &FreeMono9pt7b, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
 #endif
 
   // ------------------------------------------------

@@ -195,7 +195,7 @@ void setup()
   // ------------------------------------------------
   // Load Fonts
   // ------------------------------------------------
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT1, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT1, GSLC_FONTREF_PTR, NULL, 1)) { return; }
 
   // ------------------------------------------------
   // Create graphic elements

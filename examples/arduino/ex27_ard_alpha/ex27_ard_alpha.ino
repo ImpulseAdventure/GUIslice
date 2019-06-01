@@ -245,8 +245,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
   //<Load_Fonts !Start!>
-  if (!gslc_FontAdd(&m_gui, E_FONT_SANS2, GSLC_FONTREF_PTR, &FreeSans12pt7b, 1)) { return; }
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT1, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_SANS2, GSLC_FONTREF_PTR, &FreeSans12pt7b, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT1, GSLC_FONTREF_PTR, NULL, 1)) { return; }
   //<Load_Fonts !End!>
 
   // ------------------------------------------------

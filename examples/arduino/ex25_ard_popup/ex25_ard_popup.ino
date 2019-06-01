@@ -235,11 +235,11 @@ void setup()
   // ------------------------------------------------
   //<Load_Fonts !Start!>
 #if defined(FONTS_T3)
-  if (!gslc_FontAdd(&m_gui, E_FONT_SANS1, GSLC_FONTREF_PTR, &Arial_12, 1)) { return; }
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT2, GSLC_FONTREF_PTR, NULL, 2)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_SANS1, GSLC_FONTREF_PTR, &Arial_12, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT2, GSLC_FONTREF_PTR, NULL, 2)) { return; }
 #else
-  if (!gslc_FontAdd(&m_gui, E_FONT_SANS1, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
-  if (!gslc_FontAdd(&m_gui, E_FONT_TXT2, GSLC_FONTREF_PTR, NULL, 2)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_SANS1, GSLC_FONTREF_PTR, &FreeSans9pt7b, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_TXT2, GSLC_FONTREF_PTR, NULL, 2)) { return; }
 #endif
   //<Load_Fonts !End!>
 

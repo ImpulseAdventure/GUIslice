@@ -90,7 +90,7 @@ void setup()
   gslc_InitTouchHandler(&touchHandler);
 
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // -----------------------------------
   // Create page elements
