@@ -2967,8 +2967,7 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
     strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
     pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
-    // TODO: Might want to change to GSLC_REDRAW_INC
-    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 }
 

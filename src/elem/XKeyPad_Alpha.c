@@ -170,6 +170,14 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreate_Alpha(gslc_tsGui* pGui, int16_t nElemId, 
   pXDataBase->nSubElemMax = XKEYPADALPHA_ELEM_MAX;
   pXDataBase->psElemRef = pXData->asElemRef;
   pXDataBase->psElem = pXData->asElem;
+
+  // Provide default config if none supplied
+  gslc_tsXKeyPadCfg sConfigTmp;
+  if (pConfig == NULL) {
+    sConfigTmp = gslc_ElemXKeyPadCfgInit_Alpha();
+    pConfig = &sConfigTmp;
+  }
+
   return gslc_ElemXKeyPadCreateBase(pGui, nElemId, nPage, pXDataBase, nX0, nY0, nFontId, pConfig,
     &XKeyPadCreateKeys_Alpha,&XKeyPadLookup_Alpha);
 }
