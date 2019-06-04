@@ -104,9 +104,11 @@ SRC =   ex01_lnx_basic.c \
 	ex05_lnx_pages.c \
 	ex06_lnx_callback.c \
 	ex07_lnx_slider.c \
+	ex08_lnx_tuner.c \
 	ex09_lnx_radial.c \
 	ex10_lnx_textbox.c \
 	ex11_lnx_graph.c \
+	ex15_lnx_foreign.c \
 	ex18_lnx_compound.c \
 	ex22_lnx_input_key.c \
 	ex24_lnx_tabs.c \
@@ -169,6 +171,10 @@ ex07_lnx_slider: ex07_lnx_slider.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex07_lnx_slider.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
 
+ex08_lnx_tuner: ex08_lnx_tuner.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex08_lnx_tuner.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
 ex09_lnx_radial: ex09_lnx_radial.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex09_lnx_radial.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
@@ -180,6 +186,10 @@ ex10_lnx_textbox: ex10_lnx_textbox.c $(GSLC_CORE) $(GSLC_SRCS)
 ex11_lnx_graph: ex11_lnx_graph.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex11_lnx_graph.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
+ex15_lnx_foreign: ex15_lnx_foreign.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex15_lnx_foreign.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
 
 ex18_lnx_compound: ex18_lnx_compound.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]

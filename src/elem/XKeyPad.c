@@ -198,8 +198,6 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
   sElem.colElemFrameGlow = GSLC_COL_BLUE_LT4;
 
   // Now create the sub elements
-  gslc_tsElemRef* pElemRefTmp = NULL;
-  gslc_tsElem*    pElemTmp = NULL;
   gslc_tsElemRef* pElemRef = NULL;
 
   // Determine offset coordinate of compound element so that we can
@@ -319,9 +317,6 @@ bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pS
 {
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return false;
-
-  // return our keypad value field
-  char* pValue = pKeyPad->acValStr;
 
   // - Check for negation flag
   // - If negative, copy minus sign

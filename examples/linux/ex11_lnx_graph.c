@@ -23,7 +23,7 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_COLOR,
       E_SLIDER,E_ELEM_TXT_COUNT,
       E_ELEM_GRAPH,E_SCROLLBAR};
-enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE};
+enum {E_FONT_BTN,E_FONT_TXT,E_FONT_TITLE,MAX_FONT};
 
 bool      m_bQuit = false;
 
@@ -32,7 +32,6 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            3
 #define MAX_ELEM_PG_MAIN    9
 
 gslc_tsGui                  m_gui;
@@ -219,12 +218,12 @@ int main( int argc, char* args[] )
 
   // Load Fonts
   // - Normally we would select a number of different fonts
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,14);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,36);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,14);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,36);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
 
   // -----------------------------------
   // Start display

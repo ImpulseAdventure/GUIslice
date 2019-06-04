@@ -27,14 +27,13 @@
 // ------------------------------------------------
 enum {E_PG_MAIN};
 enum {E_BTN_QUIT,E_SCROLL,E_LISTBOX};
-enum {E_FONT_TITLE,E_FONT_LISTBOX,E_FONT_TXT};
+enum {E_FONT_TITLE,E_FONT_LISTBOX,E_FONT_TXT,MAX_FONT};
 
 
 // ------------------------------------------------
 // Instantiate the GUI
 // ------------------------------------------------
 #define MAX_PAGE                1
-#define MAX_FONT                3
 #define MAX_ELEM_PG_MAIN        10
 
 
@@ -289,9 +288,9 @@ int main( int argc, char* args[] )
   // ------------------------------------------------
   // Load Fonts
   // ------------------------------------------------
-  if (!gslc_FontAdd(&m_gui,E_FONT_LISTBOX,GSLC_FONTREF_FNAME,FONT1,14)) { return 0; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT2,22)) { return 0; }
-  if (!gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT3,14)) { return 0; }
+  if (!gslc_FontSet(&m_gui,E_FONT_LISTBOX,GSLC_FONTREF_FNAME,FONT1,14)) { return 0; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT2,22)) { return 0; }
+  if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT3,14)) { return 0; }
 
   // ------------------------------------------------
   // Create graphic elements

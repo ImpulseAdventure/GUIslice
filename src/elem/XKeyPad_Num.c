@@ -102,7 +102,6 @@ enum {
 // Generate the keypad layout
 void XKeyPadCreateKeys_Num(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData)
 {
-  int16_t nKeyId;
   int16_t nKeyInd;
   int16_t nRow, nCol;
   gslc_tsXKeyPadCfg* pConfig = &pXData->sConfig;

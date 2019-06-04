@@ -138,8 +138,7 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Fetch the element's extended data structure
-  gslc_tsXTemplate* pTemplate;
-  pTemplate = (gslc_tsXTemplate*)(pElem->pXData);
+  gslc_tsXTemplate* pTemplate = (gslc_tsXTemplate*)(pElem->pXData);
   if (pTemplate == NULL) {
     GSLC_DEBUG_PRINT("ERROR: ElemXTemplateDraw(%s) pXData is NULL\n","");
     return false;
@@ -152,13 +151,13 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   // --------------------------------------------------------------------------
 
   bool      bGlowEn,bGlowing,bGlowNow;
-  int16_t   nElemX,nElemY;
-  uint16_t  nElemW,nElemH;
+  //int16_t   nElemX,nElemY;
+  //uint16_t  nElemW,nElemH;
 
-  nElemX    = pElem->rElem.x;
-  nElemY    = pElem->rElem.y;
-  nElemW    = pElem->rElem.w;
-  nElemH    = pElem->rElem.h;
+  //nElemX    = pElem->rElem.x;
+  //nElemY    = pElem->rElem.y;
+  //nElemW    = pElem->rElem.w;
+  //nElemH    = pElem->rElem.h;
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
   bGlowing  = gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
@@ -248,14 +247,14 @@ bool gslc_ElemXTemplateTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   }
   gslc_tsGui*           pGui = NULL;
   gslc_tsElemRef*       pElemRef = NULL;
-  gslc_tsElem*          pElem = NULL;
-  gslc_tsXTemplate*     pTemplate = NULL;
+  //gslc_tsElem*          pElem = NULL;
+  //gslc_tsXTemplate*     pTemplate = NULL;
 
   // Typecast the parameters to match the GUI
   pGui      = (gslc_tsGui*)(pvGui);
   pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-  pTemplate = (gslc_tsXTemplate*)(pElem->pXData);
+  //pElem     = gslc_GetElemFromRef(pGui,pElemRef);
+  //pTemplate = (gslc_tsXTemplate*)(pElem->pXData);
 
   bool    bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
 

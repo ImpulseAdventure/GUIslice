@@ -31,7 +31,7 @@ enum {
   // E_PG_ALERT
   E_ELEM_ALERT_OK, E_ELEM_ALERT_CANCEL,
 };
-enum { E_FONT_BTN, E_FONT_TXT, E_FONT_TITLE };
+enum { E_FONT_BTN, E_FONT_TXT, E_FONT_TITLE, MAX_FONT };
 
 bool      m_bQuit = false;
 
@@ -40,7 +40,6 @@ unsigned  m_nCount = 0;
 
 // Instantiate the GUI
 #define MAX_PAGE            4
-#define MAX_FONT            3
 #define MAX_ELEM_PG_BASE    8   // # Elems total on Global page
 #define MAX_ELEM_PG_MAIN    3   // # Elems total on Main page
 #define MAX_ELEM_PG_CONFIG  6   // # Elems total on Extra page
@@ -297,12 +296,12 @@ int main( int argc, char* args[] )
   // - In this example, we are loading the same font but at
   //   different point sizes. We could also refer to other
   //   font files as well.
-  bOk = gslc_FontAdd(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,12);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
-  bOk = gslc_FontAdd(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,12);
-  if (!bOk) { fprintf(stderr,"ERROR: FontAdd failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,12);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
+  bOk = gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,12);
+  if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
 
 
   // -----------------------------------
