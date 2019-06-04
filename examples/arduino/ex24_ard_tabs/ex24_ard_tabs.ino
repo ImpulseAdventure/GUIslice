@@ -299,8 +299,10 @@ void loop()
   // - Note: we can make the updates conditional on the active
   //   page by checking gslc_GetPageCur() first.
 
-  snprintf(acTxt, MAX_STR, "%u", m_nCount);
-  gslc_ElemSetTxtStr(&m_gui, m_pElemCnt, acTxt);
+  if ((m_nCount % 50) == 0) {
+    snprintf(acTxt, MAX_STR, "%u", m_nCount);
+    gslc_ElemSetTxtStr(&m_gui, m_pElemCnt, acTxt);
+  }
 
   gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress, ((m_nCount / 2) % 100));
 

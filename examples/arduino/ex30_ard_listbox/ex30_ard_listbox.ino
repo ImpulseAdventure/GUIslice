@@ -32,7 +32,7 @@
 
 #ifdef USE_EXTRA_FONTS
   // Note that these files are located within the Adafruit-GFX library folder:
-#include "Fonts/FreeSansBold12pt7b.h"
+#include "Fonts/FreeSansBold9pt7b.h"
 #endif
 
 // Defines for resources
@@ -147,6 +147,7 @@ bool InitOverlays()
     (gslc_tsRect) { 60, 50, 160, 160 }, E_FONT_EXTRA, m_pXListboxBuf, 50, XLISTBOX_SEL_NONE);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 4, 2);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
+  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 8);
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Red");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Orange");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Yellow");
@@ -178,7 +179,7 @@ void setup()
   // Load Fonts
   #ifdef USE_EXTRA_FONTS
     // Demonstrate the use of additional fonts (must have #include)
-    if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, &FreeSansBold12pt7b, 1)) { return; }
+    if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, &FreeSansBold9pt7b, 1)) { return; }
   #else
     // Use default font
     if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, NULL, 1)) { return; }

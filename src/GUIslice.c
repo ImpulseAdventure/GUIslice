@@ -43,6 +43,10 @@
 
 #include <stdio.h>
 
+#if defined(DBG_REDRAW)
+  #include <Arduino.h> // For delay()
+#endif // DBG_REDRAW
+
 #ifdef DBG_FRAME_RATE
   #include <time.h> // for FrameRate reporting
 #endif
@@ -156,6 +160,8 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->bScreenNeedRedraw  = true;
   pGui->bScreenNeedFlip    = false;
 
+  gslc_InvalidateRgnReset(pGui);
+
   // Default global element characteristics
   pGui->nRoundRadius = 4;
 
@@ -233,6 +239,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       }
     }
   #endif
+
+  // Initialize the entire display as being invalidated
+  gslc_InvalidateRgnScreen(pGui);
 
   // If the display didn't initialize properly, then return
   // false which should mark it as a fatal error. Note that
@@ -1293,6 +1302,86 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 }
 
 
+// Expand the current rect (pRect) to enclose the additional rect region (rAddRect)
+void gslc_UnionRect(gslc_tsRect* pRect,gslc_tsRect rAddRect)
+{
+  int16_t nSrcX0, nSrcY0, nSrcX1, nSrcY1;
+  int16_t nAddX0, nAddY0, nAddX1, nAddY1;
+
+  // If the source rect has zero dimensions, then treat as empty
+  if ((pRect->w == 0) || (pRect->h == 0)) {
+    // No source region defined, simply copy add region
+    *pRect = rAddRect;
+    return;
+  }
+
+  // Source region valid, so increase dimensions
+
+  // Calculate the rect boundary coordinates
+  nSrcX0 = pRect->x;
+  nSrcY0 = pRect->y;
+  nSrcX1 = pRect->x + pRect->w - 1;
+  nSrcY1 = pRect->y + pRect->h - 1;
+  nAddX0 = rAddRect.x;
+  nAddY0 = rAddRect.y;
+  nAddX1 = rAddRect.x + rAddRect.w - 1;
+  nAddY1 = rAddRect.y + rAddRect.h - 1;
+
+  // Find the new maximal dimensions
+  nSrcX0 = (nAddX0 < nSrcX0) ? nAddX0 : nSrcX0;
+  nSrcY0 = (nAddY0 < nSrcY0) ? nAddY0 : nSrcY0;
+  nSrcX1 = (nAddX1 > nSrcX1) ? nAddX1 : nSrcX1;
+  nSrcY1 = (nAddY1 > nSrcY1) ? nAddY1 : nSrcY1;
+
+  // Update the original rect region
+  pRect->x = nSrcX0;
+  pRect->y = nSrcY0;
+  pRect->w = nSrcX1 - nSrcX0 + 1;
+  pRect->h = nSrcY1 - nSrcY0 + 1;
+
+}
+
+void gslc_InvalidateRgnReset(gslc_tsGui* pGui)
+{
+  pGui->bInvalidateEn = false;
+  pGui->rInvalidateRect = (gslc_tsRect) { 0, 0, 1, 1 };
+}
+
+void gslc_InvalidateRgnScreen(gslc_tsGui* pGui)
+{
+#if defined(DBG_REDRAW)
+  GSLC_DEBUG_PRINT("DBG: InvRgnScreen\n", "");
+#endif
+  pGui->bInvalidateEn = true;
+  pGui->rInvalidateRect = (gslc_tsRect) { 0, 0, pGui->nDispW, pGui->nDispH };
+}
+
+void gslc_InvalidateRgnPage(gslc_tsGui* pGui, gslc_tsPage* pPage)
+{
+  if (pPage == NULL) {
+    return;
+  }
+#if defined(DBG_REDRAW)
+  GSLC_DEBUG_PRINT("DBG: InvRgnPage: Page=%d (%d,%d)-(%d,%d)\n",
+    pPage->nPageId,
+    pPage->rBounds.x, pPage->rBounds.y, pPage->rBounds.x + pPage->rBounds.w - 1, pPage->rBounds.y + pPage->rBounds.h - 1); //xxx
+#endif // DBG_REDRAW
+  gslc_InvalidateRgnAdd(pGui, pPage->rBounds);
+  pGui->bInvalidateEn = true;
+}
+
+
+void gslc_InvalidateRgnAdd(gslc_tsGui* pGui, gslc_tsRect rAddRect)
+{
+  if (pGui->bInvalidateEn) {
+    gslc_UnionRect(&(pGui->rInvalidateRect), rAddRect);
+  } else {
+    pGui->bInvalidateEn = true;
+    pGui->rInvalidateRect = rAddRect;
+  }
+}
+
+
 // Draw a circle using midpoint circle algorithm
 // - Algorithm reference: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void gslc_DrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,
@@ -1739,6 +1828,9 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   // Assign the requested Page ID
   pPage->nPageId = nPageId;
 
+  // Initialize the page elements bounds to empty
+  pPage->rBounds = (gslc_tsRect) { 0, 0, 0, 0 };
+
   // Increment the page count
   pGui->nPageCnt++;
 
@@ -1768,9 +1860,9 @@ int gslc_GetPageCur(gslc_tsGui* pGui)
 void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 {
   int16_t nPageSaved = GSLC_PAGE_NONE;
-  gslc_tsPage* pStackPage = pGui->apPageStack[nStackPos];
-  if (pStackPage != NULL) {
-    nPageSaved = pStackPage->nPageId;
+  gslc_tsPage* pPageSaved = pGui->apPageStack[nStackPos];
+  if (pPageSaved != NULL) {
+    nPageSaved = pPageSaved->nPageId;
   }
 
   gslc_tsPage* pPage = NULL;
@@ -1802,6 +1894,20 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   // the forced redraw step.
   if (nPageSaved != nPageId) {
     gslc_PageRedrawSet(pGui,true);
+  }
+
+  // Invalidate the old page in the stack
+  if (pPageSaved != NULL) {
+    gslc_InvalidateRgnPage(pGui, pPageSaved);
+  }
+
+  // Invalidate the new page in the stack and any above
+  for (uint8_t nStackPage = nStackPos; nStackPage < GSLC_STACK__MAX; nStackPage++) {
+    // Select the page collection to process
+    pPage = pGui->apPageStack[nStackPage];
+    if (pPage != NULL) {
+      gslc_InvalidateRgnPage(pGui, pPage);
+    }
   }
 }
 
@@ -1967,8 +2073,35 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
   //   cause other elements to be redrawn as well.
   gslc_PageRedrawCalc(pGui);
 
-  // Determine final state of full-page redraw
+  // Determine final state of full-screen redraw
   bool  bPageRedraw = gslc_PageRedrawGet(pGui);
+
+  // Set the clipping based on the current invalidated region
+  if (pGui->bInvalidateEn) {
+    #if defined(DBG_REDRAW)
+    // Note that this will still outline the invalidation region
+    // even if we later discover that the changed element is on
+    // a page in the stack that has been disabled through
+    // abPageStackDoDraw[] = false.
+    GSLC_DEBUG_PRINT("DBG: PageRedrawGo() InvRgn: En=%d (%d,%u)-(%d,%d) PageRedraw=%d\n",
+      pGui->bInvalidateEn, pGui->rInvalidateRect.x, pGui->rInvalidateRect.y,
+      pGui->rInvalidateRect.x + pGui->rInvalidateRect.w - 1,
+      pGui->rInvalidateRect.y + pGui->rInvalidateRect.h - 1, bPageRedraw);
+
+    // Mark the invalidation region
+    gslc_DrvDrawFrameRect(pGui, pGui->rInvalidateRect, GSLC_COL_RED);
+
+    // Slow down rendering
+    delay(1000);
+    #endif // DBG_REDRAW
+
+    gslc_SetClipRect(pGui, &(pGui->rInvalidateRect));
+  }
+  else {
+    // No invalidation region defined, so default the
+    // clipping region to the entire display
+    gslc_SetClipRect(pGui, NULL);
+  }
 
   // If a full page redraw is required, then start by
   // redrawing the background.
@@ -2023,6 +2156,12 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
   // Clear the page redraw flag
   gslc_PageRedrawSet(pGui,false);
+
+  // Reset the invalidated regions
+  gslc_InvalidateRgnReset(pGui);
+ 
+  // Restore the clipping region to the entire display
+  gslc_SetClipRect(pGui, NULL);
 
   // Page flip the entire screen
   // - TODO: We could also call Update instead of Flip as that would
@@ -3045,9 +3184,13 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
       break;
     case GSLC_REDRAW_FULL:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_FULL;
+      // Mark the region as invalidated
+      gslc_InvalidateRgnAdd(pGui, pElemRef->pElem->rElem);
       break;
     case GSLC_REDRAW_INC:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_INC;
+      // Mark the region as invalidated
+      gslc_InvalidateRgnAdd(pGui, pElemRef->pElem->rElem);
       break;
   }
 
@@ -3141,31 +3284,6 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 
-  // Request page redraw if element is becoming hidden
-  // - Determine minimum page redraw required to display
-  //   background that may be revealed behind hidden element
-  if ((!bVisible) && (bVisibleOld)) {
-    // Current method: Force redraw now with clipping active
-
-    // TODO: Enable deferred PageRedrawGo() by saving clip
-    //       region for later and/or mark which element is
-    //       being hidden.
-
-    // TODO: When deferring PageRedrawGo(), we can also support
-    //       more intelligent redraw calculations that will
-    //       only attempt to redraw elements that are not
-    //       either a) fully outside of the clipping rect or
-    //       b) elements that are fully obscured by elements
-    //       with a higher Z-index. Doing so should speed up
-    //       redraw during the element-hide operation and
-    //       avoid the overdrawing behavior.
-
-    gslc_tsRect rRect = pElem->rElem;
-    gslc_SetClipRect(pGui, &rRect);
-    gslc_PageRedrawSet(pGui, true);
-    gslc_PageRedrawGo(pGui);
-    gslc_SetClipRect(pGui, NULL);
-  }
 }
 
 bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -4245,6 +4363,9 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
   gslc_tsCollect* pCollect = &pPage->sCollect;
   gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
 
+  // Update the page's bounding rect
+  gslc_UnionRect(&(pPage->rBounds), pElem->rElem);
+
   return pElemRefAdd;
 }
 
@@ -4296,7 +4417,12 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
 {
   // Simple wrapper for driver-specific rotation
-  return gslc_DrvRotate(pGui,nRotation);
+  bool bOk = gslc_DrvRotate(pGui,nRotation);
+
+  // Invalidate the new screen dimensions
+  gslc_InvalidateRgnScreen(pGui);
+
+  return bOk;
 }
 
 // Trigger a touch event on an element

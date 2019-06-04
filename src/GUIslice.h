@@ -687,6 +687,9 @@ typedef struct {
   // Callback functions
   //GSLC_CB_EVENT       pfuncXEvent;          ///< UNUSED: Callback func ptr for events
 
+  // Bounding region
+  gslc_tsRect         rBounds;              ///< Bounding rect for page elements
+
 } gslc_tsPage;
 
 
@@ -779,6 +782,10 @@ typedef struct {
   // Redraw of screen (ie. across page stack)
   bool                bScreenNeedRedraw; ///< Screen requires a redraw
   bool                bScreenNeedFlip;   ///< Screen requires a page flip
+
+  // Current clip region
+  bool                bInvalidateEn;     ///< A region of the display has been invalidated
+  gslc_tsRect         rInvalidateRect;   ///< The rect region that has been invalidated
 
   // Callback functions
   //GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for events
@@ -996,6 +1003,57 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
 /// \return true if inside region, false otherwise
 ///
 bool gslc_IsInWH(int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight);
+
+///
+/// Expand a rect to include another rect
+/// - This routine can be useful to modify an invalidation region to
+///   include another modified element
+///
+/// \param[in]  pRect:    Initial rect region
+/// \param[in]  rAddRect: Rectangle to add to the rect region
+///
+/// \return none
+///
+void gslc_UnionRect(gslc_tsRect* pRect, gslc_tsRect rAddRect);
+
+///
+/// Reset the invalidation region
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return none
+///
+void gslc_InvalidateRgnReset(gslc_tsGui* pGui);
+
+///
+/// Include an entire page (eg. from a page stack) in the invalidation region
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pPage:       Pointer to page
+///
+/// \return none
+///
+void gslc_InvalidateRgnPage(gslc_tsGui* pGui, gslc_tsPage* pPage);
+
+///
+/// Mark the entire screen as invalidated
+///
+/// \param[in]  pGui:   Pointer to GUI
+///
+/// \return none
+///
+void gslc_InvalidateRgnScreen(gslc_tsGui* pGui);
+
+///
+/// Add a rectangular region to the invalidation region
+/// - This is usually called when an element has been modified
+///
+/// \param[in]  pGui:     Pointer to GUI
+/// \param[in]  rAddRect: Rectangle to add to the invalidation region
+///
+/// \return none
+///
+void gslc_InvalidateRgnAdd(gslc_tsGui* pGui, gslc_tsRect rAddRect);
 
 ///
 /// Perform basic clipping of a single point to a clipping region
@@ -1426,7 +1484,7 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
 /// \return true if load was successful, false otherwise
 ///
 bool gslc_FontSet(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefType eFontRefType,
-	const void* pvFontRef, uint16_t nFontSz);
+  const void* pvFontRef, uint16_t nFontSz);
 
 ///
 /// Fetch a font from its ID value
@@ -2954,7 +3012,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 /// \return none
 ///
 void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf, gslc_tsRect rTxt, gslc_tsFont* pTxtFont, gslc_teTxtFlags eTxtFlags,
-	int8_t eTxtAlign, gslc_tsColor colTxt, gslc_tsColor colBg, int16_t nMarginW, int16_t nMarginH);
+  int8_t eTxtAlign, gslc_tsColor colTxt, gslc_tsColor colBg, int16_t nMarginW, int16_t nMarginH);
 
 
 ///
