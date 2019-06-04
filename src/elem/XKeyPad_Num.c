@@ -172,6 +172,14 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreate_Num(gslc_tsGui* pGui, int16_t nElemId, in
   pXDataBase->nSubElemMax = XKEYPADNUM_ELEM_MAX;
   pXDataBase->psElemRef = pXData->asElemRef;
   pXDataBase->psElem = pXData->asElem;
+
+  // Provide default config if none supplied
+  gslc_tsXKeyPadCfg sConfigTmp;
+  if (pConfig == NULL) {
+    sConfigTmp = gslc_ElemXKeyPadCfgInit_Num();
+    pConfig = &sConfigTmp;
+  }
+
   return gslc_ElemXKeyPadCreateBase(pGui, nElemId, nPage, pXDataBase, nX0, nY0, nFontId, pConfig,
     &XKeyPadCreateKeys_Num,&XKeyPadLookup_Num);
 }
