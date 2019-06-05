@@ -78,7 +78,7 @@ void debug_ElemXListboxDump(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
   gslc_tsXListbox*  pListbox = (gslc_tsXListbox*)(pElem->pXData);
 
   char acTxt[40 + 1];
-  GSLC_DEBUG_PRINT("Xlistbox:Dump (nBufPos=%d nItemCnt=%d)\n", pListbox->nBufItemsPos,pListbox->nItemCnt);
+  GSLC_DEBUG2_PRINT("Xlistbox:Dump (nBufPos=%d nItemCnt=%d)\n", pListbox->nBufItemsPos,pListbox->nItemCnt);
   for (unsigned nInd = 0; nInd < pListbox->nBufItemsPos; nInd++) {
     char ch = pListbox->pBufItems[nInd];
     if (ch == 0) {
@@ -87,7 +87,7 @@ void debug_ElemXListboxDump(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
     else {
       snprintf(acTxt, 40,"[%2u] = %02X = [%c]", nInd, ch, ch);
     }
-    GSLC_DEBUG_PRINT("XListbox:Dump: %s\n", acTxt);
+    GSLC_DEBUG2_PRINT("XListbox:Dump: %s\n", acTxt);
   }
 }
 */
@@ -243,7 +243,7 @@ bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const 
   if (nBufItemsPos + nStrItemLen + 1 > nBufItemsMax) {
     // Proceed with truncation
     nStrItemLen = nBufItemsMax - pListbox->nBufItemsPos - 1;
-    GSLC_DEBUG_PRINT("ERROR: ElemXListboxAddItem() buffer too small\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXListboxAddItem() buffer too small\n", "");
   }
 
   // If the truncation left nothing to add, skip out now
@@ -263,7 +263,7 @@ bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const 
 
   pListbox->nItemCnt++;
 
-  //GSLC_DEBUG_PRINT("Xlistbox:Add\n", "");
+  //GSLC_DEBUG2_PRINT("Xlistbox:Add\n", "");
   //debug_ElemXListboxDump(pGui, pElemRef);
 
   // Inidicate sizing may need update
@@ -333,7 +333,7 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXListboxCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;

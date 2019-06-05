@@ -75,7 +75,7 @@ gslc_tsElemRef* gslc_ElemXTemplateCreate(gslc_tsGui* pGui, int16_t nElemId, int1
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTemplateCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -129,7 +129,7 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTemplateDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -140,7 +140,7 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   // Fetch the element's extended data structure
   gslc_tsXTemplate* pTemplate = (gslc_tsXTemplate*)(pElem->pXData);
   if (pTemplate == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXTemplateDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXTemplateDraw(%s) pXData is NULL\n","");
     return false;
   }
 
@@ -242,7 +242,7 @@ bool gslc_ElemXTemplateTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
 
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTemplateTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*           pGui = NULL;

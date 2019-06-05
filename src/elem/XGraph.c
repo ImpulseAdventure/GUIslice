@@ -69,7 +69,7 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGraphCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -240,7 +240,7 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGraphDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -252,7 +252,7 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   gslc_tsXGraph* pBox;
   pBox = (gslc_tsXGraph*)(pElem->pXData);
   if (pBox == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGraphDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXGraphDraw(%s) pXData is NULL\n","");
     return false;
   }
 

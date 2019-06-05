@@ -83,7 +83,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem sElem;
@@ -201,7 +201,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 
     return pElemRef;
   } else {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumCreate(%s) Compound elements inside compound elements not supported\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSelNumCreate(%s) Compound elements inside compound elements not supported\n","");
     return NULL;
 
     // TODO: For now, disable compound elements within
@@ -265,7 +265,7 @@ int gslc_ElemXSelNumGetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum)
 {
   if ((pGui == NULL) || (pSelNum == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumGetCounter";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
   return pSelNum->nCounter;
@@ -276,14 +276,14 @@ void gslc_ElemXSelNumSetCounter(gslc_tsGui* pGui,gslc_tsXSelNum* pSelNum,int16_t
 {
   if (pSelNum == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSelNumSetCounter";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pSelNum->nCounter = nCount;
 
   // Determine new counter text
   // FIXME: Consider replacing the printf() with an optimized function to
-  //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
+  //        conserve RAM. Potentially leverage GSLC_DEBUG2_PRINT().
   char  acStrNew[GSLC_LOCAL_STR_LEN];
   snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%hd",pSelNum->nCounter);
 
@@ -318,14 +318,14 @@ bool gslc_ElemXSelNumClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16
   // element itself. This enables us to access the extra control data.
   gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
   if (pElemRefParent == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick(%s) parent ElemRef ptr NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSelNumClick(%s) parent ElemRef ptr NULL\n","");
     return false;
   }
 
   gslc_tsElem*    pElemParent = gslc_GetElemFromRef(pGui,pElemRefParent);
   gslc_tsXSelNum* pSelNum     = (gslc_tsXSelNum*)(pElemParent->pXData);
   if (pSelNum == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSelNumClick() element (ID=%d) has NULL pXData\n",pElem->nId);
     return false;
   }
 

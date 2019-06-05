@@ -117,7 +117,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
     pKeyStr = pXData->pacKeys[nKeyInd];
   }
 
-  //GSLC_DEBUG_PRINT("DBG: KeyId=%d R=%d C=%d str=[%s] SubElemMax=%d\n", nKeyId, nRow,nCol,pKeyStr,pXData->nSubElemMax);
+  //GSLC_DEBUG2_PRINT("DBG: KeyId=%d R=%d C=%d str=[%s] SubElemMax=%d\n", nKeyId, nRow,nCol,pKeyStr,pXData->nSubElemMax);
 
   if (bTxtField) {
     // Text field
@@ -128,7 +128,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
     gslc_ElemSetTxtMargin(pGui, pElemRefTmp, 5); // Apply default margin
   } else {
     // Text button
-    //GSLC_DEBUG_PRINT("DrawBtn: %d [%s] @ r=%d,c=%d,width=%d\n", nKeyId, pXData->pacKeys[nKeyId], nRow, nCol, nButtonW);
+    //GSLC_DEBUG2_PRINT("DrawBtn: %d [%s] @ r=%d,c=%d,width=%d\n", nKeyId, pXData->pacKeys[nKeyId], nRow, nCol, nButtonW);
     pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, nKeyId, GSLC_PAGE_NONE,
       (gslc_tsRect) { nOffsetX + (nCol*nButtonSzW), nOffsetY + (nRow*nButtonSzH), nButtonW - 1, nButtonH - 1 },
       pKeyStr, sizeof(pKeyStr), nFontId, &gslc_ElemXKeyPadClick);
@@ -159,7 +159,7 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXKeyPadCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return NULL;
   }
 
@@ -242,7 +242,7 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
   }
   else {
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadCreate(%s) Compound elements inside compound elements not supported\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadCreate(%s) Compound elements inside compound elements not supported\n", "");
     #endif
     return NULL;
   }
@@ -289,7 +289,7 @@ int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData)
 {
   if (pvData == NULL) {
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadDataTargetIdGet() NULL data\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadDataTargetIdGet() NULL data\n", "");
     #endif
     return GSLC_ID_NONE;
   }
@@ -301,7 +301,7 @@ char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
 {
   if (pvData == NULL) {
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXKeyPadDataValGet() NULL data\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadDataValGet() NULL data\n", "");
     #endif
     return NULL;
   }
@@ -400,13 +400,13 @@ void gslc_ElemXKeyPadValSetSign(gslc_tsGui* pGui, gslc_tsElemRef *pElemRef, bool
 
   char* pStrBuf = pKeyPad->acValStr;
 
-  //GSLC_DEBUG_PRINT("SetSign: old=%d new=%d\n", pKeyPad->bValPositive, bPositive);
+  //GSLC_DEBUG2_PRINT("SetSign: old=%d new=%d\n", pKeyPad->bValPositive, bPositive);
   if (pKeyPad->bValPositive == bPositive) {
     // No change to sign
     return;
   }
 
-  //GSLC_DEBUG_PRINT("SetSign:   str_old=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
+  //GSLC_DEBUG2_PRINT("SetSign:   str_old=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
 
   if ((pKeyPad->bValPositive) && (!bPositive)) {
     // Change from positive to negative
@@ -427,7 +427,7 @@ void gslc_ElemXKeyPadValSetSign(gslc_tsGui* pGui, gslc_tsElemRef *pElemRef, bool
     }
   }
 
-  //GSLC_DEBUG_PRINT("SetSign:   str_new=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
+  //GSLC_DEBUG2_PRINT("SetSign:   str_new=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
 
   // Update sign state
   pKeyPad->bValPositive = bPositive;
@@ -475,14 +475,14 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
   // element itself. This enables us to access the extra control data.
   gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
   if (pElemRefParent == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXKeyPadClick(%s) parent ElemRef ptr NULL\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXKeyPadClick(%s) parent ElemRef ptr NULL\n", "");
     return false;
   }
 
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRefParent, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return false;
 
-  //GSLC_DEBUG_PRINT("KeyPad Click   Touch=%d\n", eTouch);
+  //GSLC_DEBUG2_PRINT("KeyPad Click   Touch=%d\n", eTouch);
 
   // Handle the various button presses
   if (eTouch == GSLC_TOUCH_UP_IN) {
@@ -506,13 +506,13 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
     sKeyPadData.pStr = pKeyPad->acValStr;
     sKeyPadData.nTargetId = pKeyPad->nTargetId;
 
-    //GSLC_DEBUG_PRINT("KeyPad Click   ID=%d\n", nSubElemId);
+    //GSLC_DEBUG2_PRINT("KeyPad Click   ID=%d\n", nSubElemId);
 
     switch (nSubElemId) {
 
     case KEYPAD_ID_ENTER:
-      //GSLC_DEBUG_PRINT("KeyPad Key=ENT\n", "");
-      //GSLC_DEBUG_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
+      //GSLC_DEBUG2_PRINT("KeyPad Key=ENT\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
 
    
       // Issue callback with Done status
@@ -527,13 +527,13 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       break;
 
     case KEYPAD_ID_ESC:
-      //GSLC_DEBUG_PRINT("KeyPad Key=ESC\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Key=ESC\n", "");
       // Clear the contents
       memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
       pKeyPad->nValStrPos = 0;
       pKeyPad->nTargetId = GSLC_ID_NONE;    
       bValRedraw = true;
-      //GSLC_DEBUG_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
+      //GSLC_DEBUG2_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
       // Issue callback with Cancel status
       if (pfuncXInput != NULL) {
         (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_CANCEL, (void*)(&sKeyPadData));
@@ -541,7 +541,7 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       break;
 
     case KEYPAD_ID_DECIMAL:
-      //GSLC_DEBUG_PRINT("KeyPad Key=Decimal\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Key=Decimal\n", "");
       if (!pKeyPad->sConfig.bFloatEn) break; // Ignore if floating point not enabled
       if (!pKeyPad->bValDecimalPt) {
         bValRedraw |= ElemXKeyPadAddChar(pGui, pKeyPad, KEYPAD_DISP_DECIMAL_PT);
@@ -549,7 +549,7 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       break;
 
     case KEYPAD_ID_MINUS:
-      //GSLC_DEBUG_PRINT("KeyPad Key=Minus\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Key=Minus\n", "");
       if (!pKeyPad->sConfig.bSignEn) break; // Ignore if negative numbers not enabled
       // Toggle sign
       gslc_ElemXKeyPadValSetSign(pGui, pElemRefParent, pKeyPad->bValPositive ? false : true);
@@ -557,13 +557,13 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
       break;
 
     case KEYPAD_ID_BACKSPACE:
-      //GSLC_DEBUG_PRINT("KeyPad Key=BS\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Key=BS\n", "");
       if (pKeyPad->nValStrPos < 1) break;
       pKeyPad->nValStrPos--;
       // Handle the special case of decimal point if floating point enabled
       if (pKeyPad->sConfig.bFloatEn) {
         if (pKeyPad->acValStr[pKeyPad->nValStrPos] == KEYPAD_DISP_DECIMAL_PT) {
-          //GSLC_DEBUG_PRINT("KeyPad Key=BS across decimal\n", "");
+          //GSLC_DEBUG2_PRINT("KeyPad Key=BS across decimal\n", "");
           pKeyPad->bValDecimalPt = false;
         }
       }
@@ -579,7 +579,7 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
     case KEYPAD_ID_SPACE:
     default:
       // Normal character
-      //GSLC_DEBUG_PRINT("KeyPad Key=Digit\n", "");
+      //GSLC_DEBUG2_PRINT("KeyPad Key=Digit\n", "");
       // For basic buttons, we need to fetch the keypad string index
       nKeyInd = (*pfuncLookup)(pGui, nSubElemId);
       bValRedraw |= ElemXKeyPadAddChar(pGui, pKeyPad, pKeyPad->pacKeys[nKeyInd][0]);
@@ -610,7 +610,7 @@ bool gslc_ElemXKeyPadTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, in
 
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXKeyPadTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return false;
   }
   gslc_tsGui*           pGui = NULL;

@@ -79,7 +79,7 @@ gslc_tsElemRef* gslc_ElemXGaugeCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -130,7 +130,7 @@ void gslc_ElemXGaugeSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teXG
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetStyle";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -148,7 +148,7 @@ void gslc_ElemXGaugeSetIndicator(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetIndicator";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -168,7 +168,7 @@ void gslc_ElemXGaugeSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetTicks";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -188,7 +188,7 @@ void gslc_ElemXGaugeUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVa
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeUpdate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
@@ -218,7 +218,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeSetFlip";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -226,7 +226,7 @@ void gslc_ElemXGaugeSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFlip
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
   gslc_tsXGauge*  pGauge  = (gslc_tsXGauge*)(pElem->pXData);
   if (pGauge == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) pXData is NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXGaugeSetFlip(%s) pXData is NULL\n","");
     return;
   }
   pGauge->bFlip = bFlip;
@@ -245,7 +245,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXGaugeDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -258,7 +258,7 @@ bool gslc_ElemXGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   gslc_tsXGauge* pGauge;
   pGauge = (gslc_tsXGauge*)(pElem->pXData);
   if (pGauge == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXGaugeDraw(%s) pXData is NULL\n","");
     return false;
   }
 
@@ -324,7 +324,7 @@ bool gslc_ElemXGaugeDrawProgressBar(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gs
   int32_t nTmpL = 0;
 
   if (nRng == 0) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
+    GSLC_DEBUG2_PRINT("ERROR: ElemXGaugeDraw() Zero gauge range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
@@ -532,7 +532,7 @@ bool gslc_ElemXGaugeDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_te
 
 
   if (nRng == 0) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXRadialDraw() Zero range [%d,%d]\n",nMin,nMax);
+    GSLC_DEBUG2_PRINT("ERROR: ElemXRadialDraw() Zero range [%d,%d]\n",nMin,nMax);
     return false;
   }
 
@@ -589,7 +589,7 @@ bool gslc_ElemXGaugeDrawRamp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRe
   int16_t   nInd;
 
   if (nRng == 0) {
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXGaugeDrawRamp() Zero range [%d,%d]\n",nMin,nMax);
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXGaugeDrawRamp() Zero range [%d,%d]\n",nMin,nMax);
     return false;
   }
 

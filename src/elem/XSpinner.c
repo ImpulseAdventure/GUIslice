@@ -84,7 +84,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return NULL;
   }
 
@@ -93,7 +93,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   int16_t nTxtBoxW,nTxtBoxH,nBtnPosY;
   char acTxtNum[XSPINNER_STR_LEN];
   // FIXME: Consider replacing the sprintf() with an optimized function to
-  //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
+  //        conserve RAM. Potentially leverage GSLC_DEBUG2_PRINT().
   nTxtBoxW = rElem.w - 2 * (nButtonSz);
   // Determine the maximum width of a digit, we will use button size for height.
   // now we can work out our rectangle  
@@ -207,7 +207,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
     return pElemRef;
   }
   else {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerCreate(%s) Compound elements inside compound elements not supported\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSpinnerCreate(%s) Compound elements inside compound elements not supported\n", "");
     return NULL;
 
     // TODO: For now, disable compound elements within
@@ -277,7 +277,7 @@ int gslc_ElemXSpinnerGetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner)
 {
   if ((pGui == NULL) || (pSpinner == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerGetCounter";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
   return pSpinner->nCounter;
@@ -288,14 +288,14 @@ void gslc_ElemXSpinnerSetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner,int1
 {
   if (pSpinner == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSpinnerSetCounter";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pSpinner->nCounter = nCount;
 
   // Determine new counter text
   // FIXME: Consider replacing the printf() with an optimized function to
-  //        conserve RAM. Potentially leverage GSLC_DEBUG_PRINT().
+  //        conserve RAM. Potentially leverage GSLC_DEBUG2_PRINT().
   char  acStrNew[GSLC_LOCAL_STR_LEN];
   snprintf(acStrNew,GSLC_LOCAL_STR_LEN,"%hd",pSpinner->nCounter);
 
@@ -330,14 +330,14 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
   // element itself. This enables us to access the extra control data.
   gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
   if (pElemRefParent == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerClick(%s) parent ElemRef ptr NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSpinnerClick(%s) parent ElemRef ptr NULL\n","");
     return false;
   }
 
   gslc_tsElem*    pElemParent = gslc_GetElemFromRef(pGui,pElemRefParent);
   gslc_tsXSpinner* pSpinner     = (gslc_tsXSpinner*)(pElemParent->pXData);
   if (pSpinner == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXSpinnerClick() element (ID=%d) has NULL pXData\n",pElem->nId);
+    GSLC_DEBUG2_PRINT("ERROR: ElemXSpinnerClick() element (ID=%d) has NULL pXData\n",pElem->nId);
     return false;
   }
 

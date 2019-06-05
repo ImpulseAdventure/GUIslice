@@ -212,10 +212,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
     bOk &= gslc_DrvInit(pGui);
     if (bOk) {
       #if !defined(INIT_MSG_DISABLE)
-      GSLC_DEBUG_PRINT("- Initialized display handler [%s] OK\n", gslc_GetNameDisp(pGui));
+      GSLC_DEBUG_PRINT("- Init display handler [%s] OK\n", gslc_GetNameDisp(pGui));
       #endif
     } else {
-      GSLC_DEBUG_PRINT("- Initialized display handler [%s] FAIL\n", gslc_GetNameDisp(pGui));
+      GSLC_DEBUG_PRINT("- Init display handler [%s] FAIL\n", gslc_GetNameDisp(pGui));
     }
   }
   #if defined(DRV_TOUCH_NONE)
@@ -230,11 +230,11 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       bool bTouchOk = gslc_InitTouch(pGui,GSLC_DEV_TOUCH);
       if (bTouchOk) {
         #if !defined(INIT_MSG_DISABLE)
-        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] OK\n", gslc_GetNameTouch(pGui));
+        GSLC_DEBUG_PRINT("- Init touch handler [%s] OK\n", gslc_GetNameTouch(pGui));
         #endif
         pGui->eInitStatTouch = GSLC_INITSTAT_ACTIVE;
       } else {
-        GSLC_DEBUG_PRINT("- Initialized touch handler [%s] FAIL\n", gslc_GetNameTouch(pGui));
+        GSLC_DEBUG_PRINT("- Init touch handler [%s] FAIL\n", gslc_GetNameTouch(pGui));
         pGui->eInitStatTouch = GSLC_INITSTAT_FAIL;
       }
     }
@@ -273,7 +273,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
   return;
 #else
   if (pGui->nInputMapCnt >= pGui->nInputMapMax) {
-    GSLC_DEBUG_PRINT("ERROR: InputMapAdd() too many mappings. Max=%u\n",pGui->nInputMapMax);
+    GSLC_DEBUG2_PRINT("ERROR: InputMapAdd() too many mappings. Max=%u\n",pGui->nInputMapMax);
     return;
   }
   gslc_tsInputMap sInputMap;
@@ -320,12 +320,12 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
 
 // Internal enumerations for printf() parser state machine
 typedef enum {
-  GSLC_DEBUG_PRINT_NORM,
-  GSLC_DEBUG_PRINT_TOKEN,
-  GSLC_DEBUG_PRINT_UINT16,
-  GSLC_DEBUG_PRINT_CHAR,
-  GSLC_DEBUG_PRINT_STR,
-  GSLC_DEBUG_PRINT_STR_P
+  GSLC_DEBUG2_PRINT_NORM,
+  GSLC_DEBUG2_PRINT_TOKEN,
+  GSLC_DEBUG2_PRINT_UINT16,
+  GSLC_DEBUG2_PRINT_CHAR,
+  GSLC_DEBUG2_PRINT_STR,
+  GSLC_DEBUG2_PRINT_STR_P
 } gslc_teDebugPrintState;
 
 // A lightweight printf() routine that calls user function for
@@ -359,7 +359,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
     va_list  vlist;
     va_start(vlist,pFmt);
 
-    gslc_teDebugPrintState  nState = GSLC_DEBUG_PRINT_NORM;
+    gslc_teDebugPrintState  nState = GSLC_DEBUG2_PRINT_NORM;
 
     // Determine maximum number digit size
     #if defined(__AVR__)
@@ -376,21 +376,21 @@ void gslc_DebugPrintf(const char* pFmt, ...)
 
     while (cFmt != 0) {
 
-      if (nState == GSLC_DEBUG_PRINT_NORM) {
+      if (nState == GSLC_DEBUG2_PRINT_NORM) {
 
         if (cFmt == '%') {
-          nState = GSLC_DEBUG_PRINT_TOKEN;
+          nState = GSLC_DEBUG2_PRINT_TOKEN;
         } else {
           // Normal char
           (g_pfDebugOut)(cFmt);
         }
         nFmtInd++; // Advance format index
 
-      } else if (nState == GSLC_DEBUG_PRINT_TOKEN) {
+      } else if (nState == GSLC_DEBUG2_PRINT_TOKEN) {
 
         // Get token
         if (cFmt == 'd') {
-          nState = GSLC_DEBUG_PRINT_UINT16;
+          nState = GSLC_DEBUG2_PRINT_UINT16;
           // Detect negative value and convert to unsigned value
           // with negation flag. This enables us to reuse the same
           // decoding logic.
@@ -406,38 +406,38 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           nNumDivisor = nMaxDivisor;
 
         } else if (cFmt == 'u') {
-          nState = GSLC_DEBUG_PRINT_UINT16;
+          nState = GSLC_DEBUG2_PRINT_UINT16;
           nNumRemain = va_arg(vlist,unsigned);
           bNumNeg = false;
           bNumStart = false;
           nNumDivisor = nMaxDivisor;
 
         } else if (cFmt == 'c') {
-          nState = GSLC_DEBUG_PRINT_CHAR;
+          nState = GSLC_DEBUG2_PRINT_CHAR;
           cOut = (char)va_arg(vlist,unsigned);
 
         } else if (cFmt == 's') {
-          nState = GSLC_DEBUG_PRINT_STR;
+          nState = GSLC_DEBUG2_PRINT_STR;
           pStr = va_arg(vlist,char*);
 
         } else if (cFmt == 'z') {
-          nState = GSLC_DEBUG_PRINT_STR_P;
+          nState = GSLC_DEBUG2_PRINT_STR_P;
           pStr = va_arg(vlist,char*);
         } else {
           // ERROR
         }
         nFmtInd++; // Advance format index
 
-      } else if (nState == GSLC_DEBUG_PRINT_STR) {
+      } else if (nState == GSLC_DEBUG2_PRINT_STR) {
         while (*pStr != 0) {
           cOut = *pStr;
           (g_pfDebugOut)(cOut);
           pStr++;
         }
-        nState = GSLC_DEBUG_PRINT_NORM;
+        nState = GSLC_DEBUG2_PRINT_NORM;
         // Don't advance format string index
 
-      } else if (nState == GSLC_DEBUG_PRINT_STR_P) {
+      } else if (nState == GSLC_DEBUG2_PRINT_STR_P) {
         do {
           #if (GSLC_USE_PROGMEM)
           cOut = pgm_read_byte(pStr);
@@ -449,14 +449,14 @@ void gslc_DebugPrintf(const char* pFmt, ...)
             pStr++;
           }
         } while (cOut != 0);
-        nState = GSLC_DEBUG_PRINT_NORM;
+        nState = GSLC_DEBUG2_PRINT_NORM;
         // Don't advance format string index
 
-      } else if (nState == GSLC_DEBUG_PRINT_CHAR) {
+      } else if (nState == GSLC_DEBUG2_PRINT_CHAR) {
         (g_pfDebugOut)(cOut);
-        nState = GSLC_DEBUG_PRINT_NORM;
+        nState = GSLC_DEBUG2_PRINT_NORM;
 
-      } else if (nState == GSLC_DEBUG_PRINT_UINT16) {
+      } else if (nState == GSLC_DEBUG2_PRINT_UINT16) {
 
         // Handle the negation flag if required
         if (bNumNeg) {
@@ -493,7 +493,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         // Detect end of digit decode (ie. 1's)
         if (nNumDivisor == 1) {
           // Done
-          nState = GSLC_DEBUG_PRINT_NORM;
+          nState = GSLC_DEBUG2_PRINT_NORM;
         } else {
           // Shift the divisor by an order of magnitude
           nNumDivisor /= 10;
@@ -686,7 +686,7 @@ void gslc_Update(gslc_tsGui* pGui)
   pGui->nFrameRateCnt++;
   uint32_t  nElapsed = (time(NULL) - pGui->nFrameRateStart);
   if (nElapsed > 0) {
-    GSLC_DEBUG_PRINT("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
+    GSLC_DEBUG2_PRINT("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
     pGui->nFrameRateStart = time(NULL);
     pGui->nFrameRateCnt = 0;
   }
@@ -906,7 +906,7 @@ gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
   sImgRef.pvImgRaw  = NULL;
 #else
   // TODO: Change message to also handle non-Arduino output
-  GSLC_DEBUG_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
+  GSLC_DEBUG2_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
   sImgRef.eImgFlags = GSLC_IMGREF_NONE;
 #endif
   return sImgRef;
@@ -1086,7 +1086,7 @@ void gslc_DrawSetPixel(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
   // Call optimized driver point drawing
   gslc_DrvDrawPoint(pGui,nX,nY,nCol);
 #else
-  GSLC_DEBUG_PRINT("ERROR: Mandatory DrvDrawPoint() is not defined in driver\n");
+  GSLC_DEBUG2_PRINT("ERROR: Mandatory DrvDrawPoint() is not defined in driver\n");
 #endif
 
   gslc_PageFlipSet(pGui,true);
@@ -1281,7 +1281,7 @@ gslc_tsRect gslc_ExpandRect(gslc_tsRect rRect,int16_t nExpandW,int16_t nExpandH)
   // Detect error case of contracting region too far
   if ( ((int16_t)rRect.w < (-2*nExpandW)) || ((int16_t)rRect.h < (-2*nExpandH)) ) {
     // Return an empty coordinate box (which won't be drawn)
-    //GSLC_DEBUG_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
+    //GSLC_DEBUG2_PRINT("ERROR: ExpandRect(%d,%d) contracts too far\n",nExpandW,nExpandH);
     return rNew;
   }
 
@@ -1350,7 +1350,7 @@ void gslc_InvalidateRgnReset(gslc_tsGui* pGui)
 void gslc_InvalidateRgnScreen(gslc_tsGui* pGui)
 {
 #if defined(DBG_REDRAW)
-  GSLC_DEBUG_PRINT("DBG: InvRgnScreen\n", "");
+  GSLC_DEBUG2_PRINT("DBG: InvRgnScreen\n", "");
 #endif
   pGui->bInvalidateEn = true;
   pGui->rInvalidateRect = (gslc_tsRect) { 0, 0, pGui->nDispW, pGui->nDispH };
@@ -1362,7 +1362,7 @@ void gslc_InvalidateRgnPage(gslc_tsGui* pGui, gslc_tsPage* pPage)
     return;
   }
 #if defined(DBG_REDRAW)
-  GSLC_DEBUG_PRINT("DBG: InvRgnPage: Page=%d (%d,%d)-(%d,%d)\n",
+  GSLC_DEBUG2_PRINT("DBG: InvRgnPage: Page=%d (%d,%d)-(%d,%d)\n",
     pPage->nPageId,
     pPage->rBounds.x, pPage->rBounds.y, pPage->rBounds.x + pPage->rBounds.w - 1, pPage->rBounds.y + pPage->rBounds.h - 1); //xxx
 #endif // DBG_REDRAW
@@ -1674,7 +1674,7 @@ bool gslc_FontSetBase(gslc_tsGui* pGui, uint8_t nFontInd, int16_t nFontId, gslc_
 	const void* pvFontRef, uint16_t nFontSz)
 {
   if (nFontInd >= pGui->nFontMax) {
-    GSLC_DEBUG_PRINT("ERROR: FontSetBase() invalid Font index=%d\n",nFontInd);
+    GSLC_DEBUG2_PRINT("ERROR: FontSetBase() invalid Font index=%d\n",nFontInd);
     return false;
   } else {
     // Fetch a font resource from the driver
@@ -1703,7 +1703,7 @@ bool gslc_FontSet(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefType eFontRef
 	const void* pvFontRef, uint16_t nFontSz)
 {
   if ((nFontId < 0) || (nFontId >= pGui->nFontMax)) {
-    GSLC_DEBUG_PRINT("ERROR: FontSet() invalid Font ID=%d\n",nFontId);
+    GSLC_DEBUG2_PRINT("ERROR: FontSet() invalid Font ID=%d\n",nFontId);
     return false;
   } else {
 	  bool bRet = false;
@@ -1723,7 +1723,7 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     const void* pvFontRef,uint16_t nFontSz)
 {
   if (pGui->nFontCnt+1 > (pGui->nFontMax)) {
-    GSLC_DEBUG_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
+    GSLC_DEBUG2_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
     return false;
   } else {
 	  bool bRet = false;
@@ -1773,7 +1773,7 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "PageEvent";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   //gslc_tsGui*       pGui        = (gslc_tsGui*)(pvGui);
@@ -1783,7 +1783,7 @@ bool gslc_PageEvent(void* pvGui,gslc_tsEvent sEvent)
 
   if (pPage == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "PageEvent";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
   }
 
   // Handle any page-level events first
@@ -1814,7 +1814,7 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
         gslc_tsElemRef* psElemRef,uint16_t nMaxElemRef)
 {
   if (pGui->nPageCnt+1 > (pGui->nPageMax)) {
-    GSLC_DEBUG_PRINT("ERROR: PageAdd(%s) added too many pages\n","");
+    GSLC_DEBUG2_PRINT("ERROR: PageAdd(%s) added too many pages\n","");
     return;
   }
 
@@ -1869,7 +1869,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   if (nPageId == GSLC_PAGE_NONE) {
     // Disable the page
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG_PRINT("INFO: Disabled PageStack[%u]\n",nStackPos);
+    GSLC_DEBUG2_PRINT("INFO: Disabled PageStack[%u]\n",nStackPos);
     #endif
     pPage = NULL;
   } else {
@@ -1877,7 +1877,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
     // Find the page
     pPage = gslc_PageFindById(pGui, nPageId);
     if (pPage == NULL) {
-      GSLC_DEBUG_PRINT("ERROR: SetStackPage() can't find page (ID=%d)\n", nPageId);
+      GSLC_DEBUG2_PRINT("ERROR: SetStackPage() can't find page (ID=%d)\n", nPageId);
       return;
     }
   }
@@ -1886,7 +1886,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   pGui->apPageStack[nStackPos] = pPage;
 
   #if defined(DEBUG_LOG)
-  GSLC_DEBUG_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
+  GSLC_DEBUG2_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
   #endif
 
   // A change of page should always force a future redraw
@@ -2023,7 +2023,7 @@ void gslc_PageRedrawCalc(gslc_tsGui* pGui)
       pElemRef = &pCollect->asElemRef[nInd];
       gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
       pElem = gslc_GetElemFromRef(pGui,pElemRef);
-      //GSLC_DEBUG_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
+      //GSLC_DEBUG2_PRINT("PageRedrawCalc: Ind=%u ID=%u redraw=%u flags_old=%u fea=%u\n",nInd,pElem->nId,
       //        (eFlags & GSLC_ELEMREF_REDRAW_MASK),eFlags,pElem->nFeatures);
       if ((eFlags & GSLC_ELEMREF_REDRAW_MASK) != GSLC_ELEMREF_REDRAW_NONE) {
 
@@ -2083,7 +2083,7 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
     // even if we later discover that the changed element is on
     // a page in the stack that has been disabled through
     // abPageStackDoDraw[] = false.
-    GSLC_DEBUG_PRINT("DBG: PageRedrawGo() InvRgn: En=%d (%d,%u)-(%d,%d) PageRedraw=%d\n",
+    GSLC_DEBUG2_PRINT("DBG: PageRedrawGo() InvRgn: En=%d (%d,%u)-(%d,%d) PageRedraw=%d\n",
       pGui->bInvalidateEn, pGui->rInvalidateRect.x, pGui->rInvalidateRect.y,
       pGui->rInvalidateRect.x + pGui->rInvalidateRect.w - 1,
       pGui->rInvalidateRect.y + pGui->rInvalidateRect.h - 1, bPageRedraw);
@@ -2229,7 +2229,7 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId)
   // as it shows a serious config error and continued operation
   // is not viable.
   if (pFoundPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageFindById() can't find page (ID=%d)\n",nPageId);
+    GSLC_DEBUG2_PRINT("ERROR: PageFindById() can't find page (ID=%d)\n",nPageId);
     return NULL;
   }
 
@@ -2244,7 +2244,7 @@ gslc_tsElemRef* gslc_PageFindElemById(gslc_tsGui* pGui,int16_t nPageId,int16_t n
   // Get the page
   pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
+    GSLC_DEBUG2_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
     return NULL;
   }
   // Find the element reference in the page's element collection
@@ -2257,7 +2257,7 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
 {
   if ((pPage == NULL) || (funcCb == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "PageSetEventFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pPage->pfuncXEvent       = funcCb;
@@ -2322,7 +2322,7 @@ uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nF
 {
   if (!pElemRef) {
     static const char GSLC_PMEM FUNCSTR[] = "GetElemRefFlag";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return 0;
   }
   return pElemRef->eElemFlags & nFlagMask;
@@ -2334,7 +2334,7 @@ void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlag
 {
   if (!pElemRef) {
     static const char GSLC_PMEM FUNCSTR[] = "SetElemRefFlag";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   uint8_t nCurFlags = pElemRef->eElemFlags;
@@ -2348,7 +2348,7 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (!pElemRef) {
     static const char GSLC_PMEM FUNCSTR[] = "GetElemFromRef";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_teElemRefFlags eFlags  = pElemRef->eElemFlags;
@@ -2383,12 +2383,12 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 gslc_tsElem* gslc_GetElemFromRefD(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nLineNum)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetElemFromRefD(Line %d) pElemRef is NULL\n", nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetElemFromRefD(Line %d) pElemRef is NULL\n", nLineNum);
     return NULL;
   }
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
   if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetElemFromRefD(Line %d) pElem is NULL\n", nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetElemFromRefD(Line %d) pElem is NULL\n", nLineNum);
     return NULL;
   }
   return pElem;
@@ -2398,21 +2398,21 @@ gslc_tsElem* gslc_GetElemFromRefD(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, in
 void* gslc_GetXDataFromRef(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nType, int16_t nLineNum)
 {
   if (pElemRef == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElemRef is NULL\n", nType, nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElemRef is NULL\n", nType, nLineNum);
     return NULL;
   }
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
   if (pElem == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElem is NULL\n", nType, nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pElem is NULL\n", nType, nLineNum);
     return NULL;
   }
   if (pElem->nType != nType) {
-    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) Elem type mismatch\n", nType, nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) Elem type mismatch\n", nType, nLineNum);
     return NULL;
   }
   void* pXData = pElem->pXData;
   if (pXData == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pXData is NULL\n", nType, nLineNum);
+    GSLC_DEBUG2_PRINT("ERROR: GetXDataFromRef(Type %d, Line %d) pXData is NULL\n", nType, nLineNum);
     return NULL;
   }
   return pXData;
@@ -2473,7 +2473,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
 
   // Ensure the Font has been defined
   if (gslc_FontGet(pGui,nFontId) == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
+    GSLC_DEBUG2_PRINT("ERROR: ElemCreateBtnTxt(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
     return NULL;
   }
 
@@ -2632,7 +2632,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemEvent";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   gslc_tsGui*         pGui              = (gslc_tsGui*)(pvGui);
@@ -3141,7 +3141,7 @@ void gslc_ElemSetTxtMem(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teTxtFlag
       // ERROR: Unsupported mode
       // - We don't support internal buffer mode with initialization
       //   from flash (PROGMEM)
-      GSLC_DEBUG_PRINT("ERROR: ElemSetTxtMem(%s) GSLC_LOCAL_STR can't be used with GSLC_TXT_MEM_PROG\n","");
+      GSLC_DEBUG2_PRINT("ERROR: ElemSetTxtMem(%s) GSLC_LOCAL_STR can't be used with GSLC_TXT_MEM_PROG\n","");
       return;
     }
   }
@@ -3172,7 +3172,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetRedraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -3229,7 +3229,7 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetRedraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return GSLC_REDRAW_NONE;
   }
   gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
@@ -3249,7 +3249,7 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
 {
   if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlow";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // FIXME: Should also check for change in bGlowEn
@@ -3265,7 +3265,7 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetGlow";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING);
@@ -3290,7 +3290,7 @@ bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetVisible";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE);
@@ -3726,12 +3726,12 @@ bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
 {
 #if !(GSLC_FEATURE_INPUT)
-  GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
+  GSLC_DEBUG2_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
   return;
 #else
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackInput";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -3856,7 +3856,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -3870,12 +3870,12 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
     eTouch = GSLC_TOUCH_DOWN;
     #ifdef DBG_TOUCH
-    GSLC_DEBUG_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchDown\n",nX,nY,nPress);
+    GSLC_DEBUG2_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchDown\n",nX,nY,nPress);
     #endif
   } else if ((pGui->nTouchLastPress > 0) && (nPress == 0)) {
     eTouch = GSLC_TOUCH_UP;
     #ifdef DBG_TOUCH
-    GSLC_DEBUG_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchUp\n",nX,nY,nPress);
+    GSLC_DEBUG2_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchUp\n",nX,nY,nPress);
     #endif
 
   } else if ((pGui->nTouchLastX != nX) || (pGui->nTouchLastY != nY)) {
@@ -3883,7 +3883,7 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
     if (nPress > 0) {
       eTouch = GSLC_TOUCH_MOVE;
       #ifdef DBG_TOUCH
-      GSLC_DEBUG_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchMove\n",nX,nY,nPress);
+      GSLC_DEBUG2_PRINT("Trk:                                           (%3d,%3d) P=%3u : TouchMove\n",nX,nY,nPress);
       #endif
     }
   }
@@ -3946,7 +3946,7 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
   bool bOk;
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "InitTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -3965,7 +3965,7 @@ bool gslc_InitTouch(gslc_tsGui* pGui,const char* acDev)
   bOk = gslc_TDrvInitTouch(pGui,acDev);
 #endif
   if (!bOk) {
-    GSLC_DEBUG_PRINT("ERROR: InitTouch() failed in touch driver init\n",0);
+    GSLC_DEBUG2_PRINT("ERROR: InitTouch() failed in touch driver init\n",0);
   }
   return bOk;
 }
@@ -3975,7 +3975,7 @@ bool gslc_GetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "GetTouch";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
 
@@ -4001,7 +4001,7 @@ void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn)
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapEn";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return;
   }
   pGui->bTouchRemapEn = bEn;
@@ -4011,7 +4011,7 @@ void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapCal";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return;
   }
   pGui->nTouchCalXMin = nXMin;
@@ -4024,7 +4024,7 @@ void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap)
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "SetTouchRemapYX";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
     return;
   }
   pGui->bTouchRemapYX = bSwap;
@@ -4058,7 +4058,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
 
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return sElem;
   }
 
@@ -4072,7 +4072,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     // This is a temporary element, so we skip the ID collision checks.
     // In this mode we don't support auto ID assignment
     if (nElemId == GSLC_ID_AUTO) {
-      GSLC_DEBUG_PRINT("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
+      GSLC_DEBUG2_PRINT("ERROR: ElemCreate(%s) doesn't support temp elements with auto ID\n","");
       return sElem;
     }
 #endif
@@ -4082,7 +4082,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     // next available if auto-incremented)
     pPage = gslc_PageFindById(pGui,nPageId);
     if (pPage == NULL) {
-      GSLC_DEBUG_PRINT("ERROR: ElemCreate() can't find page (ID=%d)\n",nPageId);
+      GSLC_DEBUG2_PRINT("ERROR: ElemCreate() can't find page (ID=%d)\n",nPageId);
       return sElem;
     }
     pCollect  = &pPage->sCollect;
@@ -4094,12 +4094,12 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
     } else {
       // Ensure the ID is positive
       if (nElemId < 0) {
-        GSLC_DEBUG_PRINT("ERROR: ElemCreate() called with negative ID (%d)\n",nElemId);
+        GSLC_DEBUG2_PRINT("ERROR: ElemCreate() called with negative ID (%d)\n",nElemId);
         return sElem;
       }
       // Ensure the ID isn't already taken
       if (gslc_CollectFindElemById(pGui,pCollect,nElemId) != NULL) {
-        GSLC_DEBUG_PRINT("ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
+        GSLC_DEBUG2_PRINT("ERROR: ElemCreate() called with existing ID (%d)\n",nElemId);
         return sElem;
       }
     }
@@ -4160,7 +4160,7 @@ bool gslc_CollectEvent(void* pvGui,gslc_tsEvent sEvent)
 {
   if (pvGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectEvent";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   void*           pvScope   = sEvent.pvScope;
@@ -4228,12 +4228,12 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
 {
   if ((pCollect == NULL) || (pElem == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectElemAdd";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
 
   if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many element references (max=%u) on ElemId=%u\n",
+    GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many element references (max=%u) on ElemId=%u\n",
             pCollect->nElemRefMax,pElem->nId);
     // TODO: Implement a function that returns the current page's ID so that
     //       users can more easily identify the problematic page.
@@ -4256,7 +4256,7 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   //   variable.
 
   #if defined(DBG_LOG)
-  GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
+  GSLC_DEBUG2_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
           pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
   #endif
 
@@ -4266,7 +4266,7 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
 
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u) on ElemId=%u\n",
+      GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u) on ElemId=%u\n",
               pCollect->nElemMax,pElem->nId);
       // TODO: Implement a function that returns the current page's ID so that
       //       users can more easily identify the problematic page.
@@ -4343,20 +4343,20 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
 {
   if ((pGui == NULL) || (pElem == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemAdd";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
 
   if (nPageId == GSLC_PAGE_NONE) {
     // No page ID was provided, so skip add
-    GSLC_DEBUG_PRINT("ERROR: ElemAdd(%s) with PAGE_NONE\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemAdd(%s) with PAGE_NONE\n","");
     return NULL;
   }
 
   // Fetch the page containing the item
   gslc_tsPage* pPage = gslc_PageFindById(pGui,nPageId);
   if (pPage == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
+    GSLC_DEBUG2_PRINT("ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
     return NULL;
   }
 
@@ -4448,7 +4448,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ResetElem";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pElem->nFeatures        = GSLC_ELEM_FEA_NONE;
@@ -4497,7 +4497,7 @@ void gslc_ResetFont(gslc_tsFont* pFont)
 {
   if (pFont == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ResetFont";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pFont->nId            = GSLC_FONT_NONE;
@@ -4513,7 +4513,7 @@ void gslc_ElemDestruct(gslc_tsElem* pElem)
 {
   if (pElem == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemDestruct";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   if (pElem->sImgRefNorm.pvImgRaw != NULL) {
@@ -4539,7 +4539,7 @@ void gslc_CollectDestruct(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
   if (pCollect == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectDestruct";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   uint16_t      nInd;
@@ -4566,7 +4566,7 @@ void gslc_PageDestruct(gslc_tsGui* pGui,gslc_tsPage* pPage)
 {
   if (pPage == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "PageDestruct";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsCollect* pCollect = &pPage->sCollect;
@@ -4578,7 +4578,7 @@ void gslc_GuiDestruct(gslc_tsGui* pGui)
 {
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "GuiDestruct";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // Loop through all pages in GUI
@@ -4613,7 +4613,7 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 {
   if (pCollect == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectReset";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
 
@@ -4692,7 +4692,7 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
     pElemRef = &(pCollect->asElemRef[nInd]);
     if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
       if (pElemRef->pElem == NULL) {
-        GSLC_DEBUG_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
+        GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
         exit(1); // FATAL
       } else {
         // Check the "click enable" flag
@@ -4722,7 +4722,7 @@ gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pColle
 {
   if (pCollect == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectFindElemById";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem*      pElem = NULL;
@@ -4732,7 +4732,7 @@ gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pColle
 
   if (nElemId == GSLC_ID_TEMP) {
     // ERROR: Don't expect to do this
-    GSLC_DEBUG_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
+    GSLC_DEBUG2_PRINT("ERROR: CollectFindElemById(%s) searching for temp ID\n","");
     return NULL;
   }
 
@@ -4838,7 +4838,7 @@ void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_
 {
   if ((pCollect == NULL) || (funcCb == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "CollectSetEventFunc";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   pCollect->pfuncXEvent       = funcCb;

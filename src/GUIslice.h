@@ -2320,11 +2320,23 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
               gslc_DebugPrintf(PSTR(sFmt),__VA_ARGS__);         \
             }                                                   \
           } while (0)
+  #define GSLC_DEBUG2_PRINT(sFmt, ...)                          \
+          do {                                                  \
+            if (DEBUG_ERR >= 2) {                               \
+              gslc_DebugPrintf(PSTR(sFmt),__VA_ARGS__);         \
+            }                                                   \
+          } while (0)
 #else
   // Debug print macro for CPUs that don't support PROGMEM (Flash)
   #define GSLC_DEBUG_PRINT(sFmt, ...)                           \
           do {                                                  \
             if (DEBUG_ERR) {                                    \
+              gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
+            }                                                   \
+          } while (0)
+  #define GSLC_DEBUG2_PRINT(sFmt, ...)                          \
+          do {                                                  \
+            if (DEBUG_ERR >= 2) {                               \
               gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
             }                                                   \
           } while (0)
@@ -2336,6 +2348,14 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
               gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
             }                                                   \
           } while (0)
+  #define GSLC_DEBUG2_PRINT_CONST(sFmt, ...)                    \
+          do {                                                  \
+            if (DEBUG_ERR >= 2) {                               \
+              gslc_DebugPrintf(sFmt,__VA_ARGS__);               \
+            }                                                   \
+          } while (0)
+
+
 
 // ------------------------------------------------------------------------
 /// @}

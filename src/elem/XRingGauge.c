@@ -74,7 +74,7 @@ gslc_tsElemRef* gslc_ElemXRingGaugeCreate(gslc_tsGui* pGui, int16_t nElemId, int
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXRingGaugeCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -206,7 +206,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
     nSegStart = 0;
     nSegEnd = nMaxSegs;
   }
-  //GSLC_DEBUG_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nSegStart, nSegEnd);
+  //GSLC_DEBUG2_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nSegStart, nSegEnd);
 
   // TODO: Consider drawing in reverse order if (nVal < nValLast)
   for (uint16_t nSegInd = nSegStart; nSegInd < nSegEnd; nSegInd++) {

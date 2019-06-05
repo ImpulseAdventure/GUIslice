@@ -70,7 +70,7 @@ gslc_tsElemRef* gslc_ElemXTextboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxCreate";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
@@ -168,7 +168,7 @@ void gslc_ElemXTextboxReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxReset";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsXTextbox*  pBox;
@@ -197,7 +197,7 @@ void gslc_ElemXTextboxLineWrAdv(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxLineWrAdv";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   gslc_tsXTextbox*  pBox;
@@ -236,7 +236,7 @@ void gslc_ElemXTextboxScrollSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_
 
   // Check for out-of-range values
   if (nScrollPos > nScrollMax) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxScrollSet() pos [%u] exceeds max [%u]\n", nScrollPos,nScrollMax);
+    GSLC_DEBUG2_PRINT("ERROR: ElemXTextboxScrollSet() pos [%u] exceeds max [%u]\n", nScrollPos,nScrollMax);
     // Force the position to the max
     nScrollPos = nScrollMax;
   }
@@ -326,7 +326,7 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned 
 void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor nCol)
 {
 #if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
-  GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColSet() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
+  GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTextboxColSet() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
   return;
 #else
   gslc_tsXTextbox*  pBox = NULL;
@@ -337,7 +337,7 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
   // buffer row to accommodate the color code (4 bytes)
   if (pBox->nBufPosX +4 >= pBox->nBufCols) {
     // Not enough space for the code, so ignore it
-    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColSet() not enough cols [Pos=%u Cols=%u]\n",pBox->nBufPosX,pBox->nBufCols);
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTextboxColSet() not enough cols [Pos=%u Cols=%u]\n",pBox->nBufPosX,pBox->nBufCols);
     return;
   }
 
@@ -351,7 +351,7 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
 #if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
-  GSLC_DEBUG_PRINT("ERROR: gslc_ElemXTextboxColReset() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
+  GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTextboxColReset() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
   return;
 #else
   gslc_tsXTextbox*  pBox = NULL;
@@ -382,7 +382,7 @@ void gslc_ElemXTextboxAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,char* pTxt)
   bool bEncUtf8 = ((pElem->eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8);
   if ((!bWarned) && (bEncUtf8)) {
     // Continue to render the text, but issue warning to the user
-    GSLC_DEBUG_PRINT("WARNING: ElemXTextboxAdd(%s) UTF-8 encoding not supported in GSLC_FEATURE_XTEXTBOX_EMBED=1 mode\n","");
+    GSLC_DEBUG2_PRINT("WARNING: ElemXTextboxAdd(%s) UTF-8 encoding not supported in GSLC_FEATURE_XTEXTBOX_EMBED=1 mode\n","");
     bWarned = true;
   }
 #endif
@@ -433,7 +433,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 {
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTextboxDraw";
-    GSLC_DEBUG_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   // Typecast the parameters to match the GUI and element types
@@ -445,7 +445,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   gslc_tsXTextbox* pBox;
   pBox = (gslc_tsXTextbox*)(pElem->pXData);
   if (pBox == NULL) {
-    GSLC_DEBUG_PRINT("ERROR: ElemXTextboxDraw(%s) pXData is NULL\n","");
+    GSLC_DEBUG2_PRINT("ERROR: ElemXTextboxDraw(%s) pXData is NULL\n","");
     return false;
   }
 
