@@ -136,7 +136,7 @@ void setup()
 
   // Create a Glowball
   pElemRef = gslc_ElemXGlowballCreate(&m_gui, E_ELEM_XGLOW, E_PG_MAIN, &m_sXGlowball,
-    160, 120, asRings, NUM_RINGS);
+    120, 120, asRings, NUM_RINGS);
   gslc_ElemXGlowballSetColorBack(&m_gui, pElemRef, GSLC_COL_BLACK);
   gslc_ElemXGlowballSetAngles(&m_gui, pElemRef, 0, 360); // Full-circle (default)
   //gslc_ElemXGlowballSetAngles(&m_gui, pElemRef, 270, 360 + 90); // Semi-circle

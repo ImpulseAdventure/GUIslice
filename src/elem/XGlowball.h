@@ -68,7 +68,7 @@ typedef struct {
   gslc_tsXGlowballRing* pRings;         ///< Ring definition array
   uint8_t               nNumRings;      ///< Number of rings in definition
   // Style config
-  uint8_t               nQuality;       ///< Rendering quality (number of segments / rotation)
+  uint16_t              nQuality;       ///< Rendering quality (number of segments / rotation)
   int16_t               nAngStart;      ///< Starting angle (0..510 degrees)
   int16_t               nAngEnd;        ///< Ending angle (0..510 degrees)
   gslc_tsColor          colBg;          ///< Background color (for redraw)
@@ -119,6 +119,7 @@ void drawXGlowball(gslc_tsGui* pGui, gslc_tsXGlowball* pGlowball, int16_t nMidX,
 
 void gslc_ElemXGlowballSetAngles(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nAngStart, int16_t nAngEnd);
 void gslc_ElemXGlowballSetVal(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nVal);
+void gslc_ElemXGlowballSetQuality(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nQuality);
 void gslc_ElemXGlowballSetColorBack(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colBg);
 
 // ============================================================================

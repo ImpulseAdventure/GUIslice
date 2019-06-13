@@ -144,8 +144,7 @@ void drawXGlowballArc(gslc_tsGui* pGui, gslc_tsXGlowball* pGlowball, int16_t nMi
 {
   gslc_tsPt anPts[4];
   // TODO: Cleanup
-  int16_t nStepAng = 360 / pGlowball->nQuality;
-  int16_t nStep64 = 64 * nStepAng;
+  int16_t nStep64 = 64*360 / pGlowball->nQuality;
   int16_t nAng64;
   int16_t nX, nY;
   int16_t nSegStart, nSegEnd;
@@ -239,6 +238,24 @@ void gslc_ElemXGlowballSetAngles(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int
   // Update the angular ranges
   pGlowball->nAngStart = nAngStart;
   pGlowball->nAngEnd = nAngEnd;
+
+  // Mark for redraw
+  // - Force full redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+void gslc_ElemXGlowballSetQuality(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nQuality)
+{
+  if ((pGui == NULL) || (pElemRef == NULL)) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXGlowballSetQuality";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsXGlowball* pGlowball = (gslc_tsXGlowball*)(pElem->pXData);
+
+  // Update the rendering quality setting
+  pGlowball->nQuality = nQuality;
 
   // Mark for redraw
   // - Force full redraw
