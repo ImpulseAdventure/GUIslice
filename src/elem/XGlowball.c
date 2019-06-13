@@ -147,7 +147,6 @@ void drawXGlowballArc(gslc_tsGui* pGui, gslc_tsXGlowball* pGlowball, int16_t nMi
   int16_t nStepAng = 360 / pGlowball->nQuality;
   int16_t nStep64 = 64 * nStepAng;
   int16_t nAng64;
-  int16_t nSegs = pGlowball->nQuality;
   int16_t nX, nY;
   int16_t nSegStart, nSegEnd;
   nSegStart = nAngStart * pGlowball->nQuality / 360;

@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 43 (Arduino):
-//   - XGlowball demo
+//   - Demonstrate XGlowball gauge, controlled by slider
 //
 
 // ARDUINO NOTES:
@@ -15,21 +15,21 @@
 #include "GUIslice_drv.h"
 
 // Include any extended elements
+#include "elem/XSlider.h"
 #include "elem/XGlowball.h"
 
 // Defines for resources
 
 // Enumerations for pages, elements, fonts, images
 enum { E_PG_MAIN };
-enum { E_ELEM_BOX, E_ELEM_BTN_QUIT, E_ELEM_XGLOW };
-enum { E_FONT_BTN };
+enum { E_ELEM_BOX, E_ELEM_BTN_QUIT, E_ELEM_XGLOW, E_ELEM_SLIDER };
+enum { E_FONT_BTN, MAX_FONT };
 
 bool    m_bQuit = false;
 
 // Instantiate the GUI
 #define MAX_PAGE            1
-#define MAX_FONT            1
-#define MAX_ELEM_PG_MAIN    3
+#define MAX_ELEM_PG_MAIN    4
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -38,17 +38,20 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGlowball  m_sXGlowball;
+gslc_tsXSlider              m_sXSlider;
+gslc_tsXGlowball            m_sXGlowball;
 
 // Save some element references for quick access
+gslc_tsElemRef* m_pElemSlider = NULL;
 gslc_tsElemRef* m_pElemXGlowball = NULL;
 
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
-int16_t m_nCount = 0;
-bool m_bCountUp = true;
+// Program global variables
+int16_t m_nSliderPos = 0;
+
 
 
 // Define the XGlowball appearance
@@ -74,7 +77,7 @@ gslc_tsXGlowballRing asRings[NUM_RINGS] = {
 };
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui, void *pvElem, gslc_teTouch eTouch, int16_t nX, int16_t nY)
+bool CbBtnQuit(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
@@ -83,6 +86,23 @@ bool CbBtnQuit(void* pvGui, void *pvElem, gslc_teTouch eTouch, int16_t nX, int16
 }
 
 
+// Callback function for when a slider's position has been updated
+bool CbSlidePos(void* pvGui, void* pvElemRef, int16_t nPos)
+{
+  gslc_tsGui*     pGui     = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem    = gslc_GetElemFromRef(pGui,pElemRef);
+  //gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);
+
+  switch (pElem->nId) {
+  case E_ELEM_SLIDER:
+    m_nSliderPos = gslc_ElemXSliderGetPos(pGui, pElemRef);
+    break;
+  default:
+    break;
+  }
+  return true;
+}
 
 void setup()
 {
@@ -97,7 +117,7 @@ void setup()
   if (!gslc_Init(&m_gui, &m_drv, m_asPage, MAX_PAGE, m_asFont, MAX_FONT)) { return; }
 
   // Load Fonts
-  if (!gslc_FontAdd(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
 
   // -----------------------------------
   // Create page elements
@@ -114,6 +134,7 @@ void setup()
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui, E_ELEM_BTN_QUIT, E_PG_MAIN,
     (gslc_tsRect) { 235, 5, 80, 30 }, (char*)"Quit", 0, E_FONT_BTN, &CbBtnQuit);
 
+  // Create a Glowball
   pElemRef = gslc_ElemXGlowballCreate(&m_gui, E_ELEM_XGLOW, E_PG_MAIN, &m_sXGlowball,
     160, 120, asRings, NUM_RINGS);
   gslc_ElemXGlowballSetColorBack(&m_gui, pElemRef, GSLC_COL_BLACK);
@@ -122,28 +143,35 @@ void setup()
   //gslc_ElemXGlowballSetAngles(&m_gui, pElemRef, 0, 90); // Quarter-circle
   m_pElemXGlowball = pElemRef; // Save for quick access
 
+
+   // Create slider
+  pElemRef = gslc_ElemXSliderCreate(&m_gui, E_ELEM_SLIDER, E_PG_MAIN, &m_sXSlider,
+    (gslc_tsRect) { 200, 80, 100, 20 }, 0, 9, 0, 5, false);
+  gslc_ElemXSliderSetStyle(&m_gui, pElemRef, true, (gslc_tsColor) { 0, 0, 128 }, 10,
+    5, (gslc_tsColor) { 64, 64, 64 });
+  gslc_ElemXSliderSetPosFunc(&m_gui, pElemRef, &CbSlidePos);
+  m_pElemSlider = pElemRef; // Save for quick access
+  
   // -----------------------------------
   // Start up display on main page
   gslc_SetPageCur(&m_gui, E_PG_MAIN);
 
   m_bQuit = false;
 
-  m_nCount = 0;
+  // Initialize startup state
+  m_nSliderPos = gslc_ElemXSliderGetPos(&m_gui, m_pElemSlider);
 }
 
 
 void loop()
 {
+
+  // Update the XGlowball value with the slider position
+  gslc_ElemXGlowballSetVal(&m_gui, m_pElemXGlowball, m_nSliderPos);
+
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
-
-  // Create pulsing counter
-  m_nCount += (m_bCountUp) ? 1 : -1;
-  if (m_nCount >= NUM_RINGS) { m_bCountUp = false; m_nCount = NUM_RINGS; }
-  else if (m_nCount < 0) { m_bCountUp = true; m_nCount = 1; }
-
-  gslc_ElemXGlowballSetVal(&m_gui, m_pElemXGlowball, m_nCount);
 
   // In a real program, we would detect the button press and take an action.
   // For this Arduino demo, we will pretend to exit by emulating it with an
