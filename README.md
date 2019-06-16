@@ -22,7 +22,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 ## Features ##
 - Pure C library, no dynamic memory allocation
 - *Widgets*:
-  - text, images, buttons, checkboxes, radio buttons, sliders, keypad,
+  - text, images, buttons, checkboxes, radio buttons, sliders, keypad, listbox,
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - Cross-platform **GUIslice Builder** (beta) desktop application to generate layouts
 - *Platform-independent* GUI core currently supports:
@@ -34,7 +34,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Display drivers include*:
   - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, ILI9341_t3
 - *Touchscreen control including*:
-  - STMPE610, FT6206, XPT2046, 4-wire, tslib
+  - STMPE610, FT6206, XPT2046, 4-wire, tslib, Adafruit Seesaw
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
 - GPIO / pin / keyboard / Adafruit Seesaw control for non-touchscreen devices
