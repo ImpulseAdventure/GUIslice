@@ -79,7 +79,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS    10     // SD card chip select (if GSLC_SD_EN=1)
 
 
 

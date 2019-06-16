@@ -79,7 +79,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10     // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -169,6 +169,18 @@ extern "C" {
   //#define ADATOUCH_X_MAX    104
   //#define ADATOUCH_Y_MIN    99
   //#define ADATOUCH_Y_MAX    892
+
+  // MCUFRIEND_ID == 0x1581:
+  // - mcufriend 3.5" red
+  // - DRV_TOUCH_ADA_SIMPLE [320x480]: (MCUFRIEND ID=0x1581) (XP=6,XM=56,YP=55,YM=7) [TESTED]
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    905
+  //#define ADATOUCH_X_MAX    164
+  //#define ADATOUCH_Y_MIN    954
+  //#define ADATOUCH_Y_MAX    152
 
   // MCUFRIEND_ID == 0x2053:
   //#define ADATOUCH_PIN_YP   A2
