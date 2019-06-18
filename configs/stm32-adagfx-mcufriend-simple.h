@@ -87,7 +87,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     PA15    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -135,10 +135,10 @@ extern "C" {
   //     ADATOUCH_PIN_XP      // "X+": Can be a digital pin
 
   // Pin connections from diag_ard_touch_detect:
-  #define ADATOUCH_PIN_YP     PB1
-  #define ADATOUCH_PIN_XM     PB0
-  #define ADATOUCH_PIN_YM     PB15
-  #define ADATOUCH_PIN_XP     PB14
+  #define ADATOUCH_PIN_YP     PA6
+  #define ADATOUCH_PIN_XM     PA7
+  #define ADATOUCH_PIN_YM     PB7
+  #define ADATOUCH_PIN_XP     PB6
 
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
