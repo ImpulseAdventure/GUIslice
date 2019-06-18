@@ -108,6 +108,7 @@ extern "C" {
 
   // STM32:
   // ------------------------------------------------------
+  //#include "../configs/stm32-adagfx-mcufriend-notouch.h"
   //#include "../configs/stm32-adagfx-mcufriend-simple.h"
 
   // Multi-device shields:
