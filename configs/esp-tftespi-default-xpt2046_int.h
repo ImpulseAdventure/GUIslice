@@ -132,15 +132,19 @@ extern "C" {
 
   // Calibration data from TFT_eSPI for integrated XPT2046
   // NOTE: The TFT_ESPI_TOUCH_CALIB calibration settings will be unused as we will
-	//       bypass TFT_eSPI's calibration and use raw touch values instead.
-  //       Reference: https://github.com/Bodmer/TFT_eSPI/issues/365
-  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 }
+  //       bypass TFT_eSPI's calibration and use raw touch values instead.
+  //       Reference: https://github.com/ImpulseAdventure/GUIslice/pull/143
+  #define TFT_ESPI_TOUCH_CALIB { 321,3498,280,3593,3 } // UNUSED
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - MIN should be less than the smallest Z value reported during calibration
+  // - MAX should be more than the largest Z value reported during calibration
   #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
 

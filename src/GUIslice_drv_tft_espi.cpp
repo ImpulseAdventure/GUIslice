@@ -994,9 +994,28 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
   // Perform any driver-specific touchscreen init here
 
   // Initialize the touch calibration data
-#if defined(DRV_TOUCH_TFT_ESPI)
-  m_disp.setTouch(m_anCalData);
-#endif
+  #if defined(DRV_TOUCH_TFT_ESPI)
+    // NOTE: TFT_eSPI calibration unused as GUIslice calibration is used instead
+    m_disp.setTouch(m_anCalData);
+  #endif
+
+  // Load calibration settings for resistive displays from config
+  #if defined(DRV_TOUCH_TYPE_RES)
+    pGui->nTouchCalXMin = ADATOUCH_X_MIN;
+    pGui->nTouchCalXMax = ADATOUCH_X_MAX;
+    pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
+    pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
+  #endif // DRV_TOUCH_TYPE_RES
+
+  // Support touch controllers with swapped X & Y
+  #if defined(ADATOUCH_REMAP_YX)
+    // Capture swap setting from config file
+    pGui->bTouchRemapYX = ADATOUCH_REMAP_YX;
+  #else
+    // For backward compatibility with older config files
+    // that have not defined this config option
+    pGui->bTouchRemapYX = false;
+  #endif
 
   // NOTE: TFT_eSPI constructor already initializes the touch
   // driver if TOUCH_CS is defined in the TFT_eSPI library's "User_Setup.h"
@@ -1168,7 +1187,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
 
     // Print output for debug
     #ifdef DBG_TOUCH
-    if (bPressed) {
+    if (m_nLastRawPress > 0) {
     GSLC_DEBUG2_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     }
