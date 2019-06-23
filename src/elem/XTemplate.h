@@ -74,12 +74,10 @@ typedef struct {
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
-/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
-/// \param[in]  nPosMin:     Minimum position value
-/// \param[in]  nPosMax:     Maximum position value
-/// \param[in]  nPos:        Starting position value
-/// \param[in]  nThumbSz:    Size of the thumb control
-/// \param[in]  bVert:       Orientation (true for vertical)
+/// \param[in]  rElem:       Rectangle coordinates defining element size
+/// \param[in]  pStrBuf:     Ptr to string buffer
+/// \param[in]  nStrBufMax:  Maximum buffer alength allocated to pStrBuf
+/// \param[in]  nFontId:     ID of font to use for text output
 ///
 /// \return Pointer to Element reference or NULL if failure
 ///

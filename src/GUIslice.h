@@ -1500,12 +1500,12 @@ gslc_tsFont* gslc_FontGet(gslc_tsGui* pGui,int16_t nFontId);
 
 
 ///
-/// Set a font's mode
+/// Set the font operating mode
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nFontId:     ID value used to reference the font (supplied
 ///                          originally to gslc_FontAdd()
-/// \param[io]  eFontMode:   Font mode to assign to this font
+/// \param[in,out]  eFontMode:   Font mode to assign to this font
 ///
 /// \return true if success
 ///
@@ -2059,7 +2059,7 @@ void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn
 ///
 /// \param[in]  pGui:       Pointer to GUI
 /// \param[in]  pElemRef:   Pointer to Element reference
-/// \param[in]  cbTouch:    Pointer to the touch callback function
+/// \param[in]  funcCb:     Pointer to the touch callback function
 ///
 /// \return none
 ///
@@ -3400,7 +3400,7 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 /// Handle dispatch of touch (up,down,move) events to compound elements sub elements
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element Reference(typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
