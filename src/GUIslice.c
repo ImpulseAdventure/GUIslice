@@ -320,12 +320,12 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
 
 // Internal enumerations for printf() parser state machine
 typedef enum {
-  GSLC_DEBUG2_PRINT_NORM,
-  GSLC_DEBUG2_PRINT_TOKEN,
-  GSLC_DEBUG2_PRINT_UINT16,
-  GSLC_DEBUG2_PRINT_CHAR,
-  GSLC_DEBUG2_PRINT_STR,
-  GSLC_DEBUG2_PRINT_STR_P
+  GSLC_S_DEBUG_PRINT_NORM,
+  GSLC_S_DEBUG_PRINT_TOKEN,
+  GSLC_S_DEBUG_PRINT_UINT16,
+  GSLC_S_DEBUG_PRINT_CHAR,
+  GSLC_S_DEBUG_PRINT_STR,
+  GSLC_S_DEBUG_PRINT_STR_P
 } gslc_teDebugPrintState;
 
 // A lightweight printf() routine that calls user function for
@@ -359,7 +359,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
     va_list  vlist;
     va_start(vlist,pFmt);
 
-    gslc_teDebugPrintState  nState = GSLC_DEBUG2_PRINT_NORM;
+    gslc_teDebugPrintState  nState = GSLC_S_DEBUG_PRINT_NORM;
 
     // Determine maximum number digit size
     #if defined(__AVR__)
@@ -376,21 +376,21 @@ void gslc_DebugPrintf(const char* pFmt, ...)
 
     while (cFmt != 0) {
 
-      if (nState == GSLC_DEBUG2_PRINT_NORM) {
+      if (nState == GSLC_S_DEBUG_PRINT_NORM) {
 
         if (cFmt == '%') {
-          nState = GSLC_DEBUG2_PRINT_TOKEN;
+          nState = GSLC_S_DEBUG_PRINT_TOKEN;
         } else {
           // Normal char
           (g_pfDebugOut)(cFmt);
         }
         nFmtInd++; // Advance format index
 
-      } else if (nState == GSLC_DEBUG2_PRINT_TOKEN) {
+      } else if (nState == GSLC_S_DEBUG_PRINT_TOKEN) {
 
         // Get token
         if (cFmt == 'd') {
-          nState = GSLC_DEBUG2_PRINT_UINT16;
+          nState = GSLC_S_DEBUG_PRINT_UINT16;
           // Detect negative value and convert to unsigned value
           // with negation flag. This enables us to reuse the same
           // decoding logic.
@@ -406,38 +406,38 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           nNumDivisor = nMaxDivisor;
 
         } else if (cFmt == 'u') {
-          nState = GSLC_DEBUG2_PRINT_UINT16;
+          nState = GSLC_S_DEBUG_PRINT_UINT16;
           nNumRemain = va_arg(vlist,unsigned);
           bNumNeg = false;
           bNumStart = false;
           nNumDivisor = nMaxDivisor;
 
         } else if (cFmt == 'c') {
-          nState = GSLC_DEBUG2_PRINT_CHAR;
+          nState = GSLC_S_DEBUG_PRINT_CHAR;
           cOut = (char)va_arg(vlist,unsigned);
 
         } else if (cFmt == 's') {
-          nState = GSLC_DEBUG2_PRINT_STR;
+          nState = GSLC_S_DEBUG_PRINT_STR;
           pStr = va_arg(vlist,char*);
 
         } else if (cFmt == 'z') {
-          nState = GSLC_DEBUG2_PRINT_STR_P;
+          nState = GSLC_S_DEBUG_PRINT_STR_P;
           pStr = va_arg(vlist,char*);
         } else {
           // ERROR
         }
         nFmtInd++; // Advance format index
 
-      } else if (nState == GSLC_DEBUG2_PRINT_STR) {
+      } else if (nState == GSLC_S_DEBUG_PRINT_STR) {
         while (*pStr != 0) {
           cOut = *pStr;
           (g_pfDebugOut)(cOut);
           pStr++;
         }
-        nState = GSLC_DEBUG2_PRINT_NORM;
+        nState = GSLC_S_DEBUG_PRINT_NORM;
         // Don't advance format string index
 
-      } else if (nState == GSLC_DEBUG2_PRINT_STR_P) {
+      } else if (nState == GSLC_S_DEBUG_PRINT_STR_P) {
         do {
           #if (GSLC_USE_PROGMEM)
           cOut = pgm_read_byte(pStr);
@@ -449,14 +449,14 @@ void gslc_DebugPrintf(const char* pFmt, ...)
             pStr++;
           }
         } while (cOut != 0);
-        nState = GSLC_DEBUG2_PRINT_NORM;
+        nState = GSLC_S_DEBUG_PRINT_NORM;
         // Don't advance format string index
 
-      } else if (nState == GSLC_DEBUG2_PRINT_CHAR) {
+      } else if (nState == GSLC_S_DEBUG_PRINT_CHAR) {
         (g_pfDebugOut)(cOut);
-        nState = GSLC_DEBUG2_PRINT_NORM;
+        nState = GSLC_S_DEBUG_PRINT_NORM;
 
-      } else if (nState == GSLC_DEBUG2_PRINT_UINT16) {
+      } else if (nState == GSLC_S_DEBUG_PRINT_UINT16) {
 
         // Handle the negation flag if required
         if (bNumNeg) {
@@ -493,7 +493,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         // Detect end of digit decode (ie. 1's)
         if (nNumDivisor == 1) {
           // Done
-          nState = GSLC_DEBUG2_PRINT_NORM;
+          nState = GSLC_S_DEBUG_PRINT_NORM;
         } else {
           // Shift the divisor by an order of magnitude
           nNumDivisor /= 10;
