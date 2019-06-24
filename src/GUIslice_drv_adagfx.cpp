@@ -1055,7 +1055,7 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
     w = *(pImage++);
   }
   #if defined(DBG_DRIVER)
-  GSLC_DEBUG2_PRINT("DBG: DrvDrawBmp24FromMem() w=%d h=%d\n", w, h);
+  GSLC_DEBUG_PRINT("DBG: DrvDrawBmp24FromMem() w=%d h=%d\n", w, h);
   #endif
   int row, col;
   for (row=0; row<h; row++) { // For each scanline...
@@ -1232,9 +1232,9 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 {
   #if defined(DBG_DRIVER)
   char addr[6];
-  GSLC_DEBUG2_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
   sprintf(addr,"%04X",(unsigned int)sImgRef.pImgBuf);
-  GSLC_DEBUG2_PRINT("%s\n",addr);
+  GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
   // GUIslice adapter library for Adafruit-GFX does not pre-load
@@ -1665,7 +1665,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       m_bLastTouched = false;
       bValid = true;
       #ifdef DBG_TOUCH
-      GSLC_DEBUG2_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+      GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
           m_nLastRawPress,m_nLastRawX,m_nLastRawY);
       #endif
 
@@ -1704,7 +1704,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         bValid = true;
         #ifdef DBG_TOUCH
         // Give indication that workaround applied: continue press
-        GSLC_DEBUG2_PRINT("DBG: Touch Cont =%u Raw[%d,%d]\n",
+        GSLC_DEBUG_PRINT("DBG: Touch Cont =%u Raw[%d,%d]\n",
             m_nLastRawPress,m_nLastRawX,m_nLastRawY);
         #endif
       } else {
@@ -1717,7 +1717,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         m_bLastTouched = false;
         bValid = true;
         #ifdef DBG_TOUCH
-        GSLC_DEBUG2_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
+        GSLC_DEBUG_PRINT("DBG: Touch End  =%u Raw[%d,%d] *****\n",
             m_nLastRawPress,m_nLastRawX,m_nLastRawY);
         #endif
       } // nPressCur
@@ -1961,8 +1961,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         //   to GSLC_ROTATE
         //
         #if defined(DBG_TOUCH)
-          GSLC_DEBUG2_PRINT("DBG: remapX: (%d,%d,%d,%d,%d)\n", nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
-          GSLC_DEBUG2_PRINT("DBG: remapY: (%d,%d,%d,%d,%d)\n", nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
+          GSLC_DEBUG_PRINT("DBG: remapX: (%d,%d,%d,%d,%d)\n", nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
+          GSLC_DEBUG_PRINT("DBG: remapY: (%d,%d,%d,%d,%d)\n", nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
         #endif
         nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
         nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
@@ -1981,8 +1981,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     #endif  // DRV_TOUCH_TYPE_RES
   
     #ifdef DBG_TOUCH
-    GSLC_DEBUG2_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
-    GSLC_DEBUG2_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+    GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
+    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
       pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
     #endif // DBG_TOUCH
 
@@ -2021,7 +2021,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     // Print output for debug
     #ifdef DBG_TOUCH
-    GSLC_DEBUG2_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
+    GSLC_DEBUG_PRINT("DBG: Touch Press=%u Raw[%d,%d] Out[%d,%d]\n",
         m_nLastRawPress,m_nLastRawX,m_nLastRawY,nOutputX,nOutputY);
     #endif
 

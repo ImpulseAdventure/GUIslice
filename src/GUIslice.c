@@ -686,7 +686,7 @@ void gslc_Update(gslc_tsGui* pGui)
   pGui->nFrameRateCnt++;
   uint32_t  nElapsed = (time(NULL) - pGui->nFrameRateStart);
   if (nElapsed > 0) {
-    GSLC_DEBUG2_PRINT("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
+    GSLC_DEBUG_PRINT("Update rate: %6u / sec\n",pGui->nFrameRateCnt);
     pGui->nFrameRateStart = time(NULL);
     pGui->nFrameRateCnt = 0;
   }
@@ -1350,7 +1350,7 @@ void gslc_InvalidateRgnReset(gslc_tsGui* pGui)
 void gslc_InvalidateRgnScreen(gslc_tsGui* pGui)
 {
 #if defined(DBG_REDRAW)
-  GSLC_DEBUG2_PRINT("DBG: InvRgnScreen\n", "");
+  GSLC_DEBUG_PRINT("DBG: InvRgnScreen\n", "");
 #endif
   pGui->bInvalidateEn = true;
   pGui->rInvalidateRect = (gslc_tsRect) { 0, 0, pGui->nDispW, pGui->nDispH };
@@ -1362,7 +1362,7 @@ void gslc_InvalidateRgnPage(gslc_tsGui* pGui, gslc_tsPage* pPage)
     return;
   }
 #if defined(DBG_REDRAW)
-  GSLC_DEBUG2_PRINT("DBG: InvRgnPage: Page=%d (%d,%d)-(%d,%d)\n",
+  GSLC_DEBUG_PRINT("DBG: InvRgnPage: Page=%d (%d,%d)-(%d,%d)\n",
     pPage->nPageId,
     pPage->rBounds.x, pPage->rBounds.y, pPage->rBounds.x + pPage->rBounds.w - 1, pPage->rBounds.y + pPage->rBounds.h - 1); //xxx
 #endif // DBG_REDRAW
@@ -1869,7 +1869,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   if (nPageId == GSLC_PAGE_NONE) {
     // Disable the page
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG2_PRINT("INFO: Disabled PageStack[%u]\n",nStackPos);
+    GSLC_DEBUG_PRINT("INFO: Disabled PageStack[%u]\n",nStackPos);
     #endif
     pPage = NULL;
   } else {
@@ -1886,7 +1886,7 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
   pGui->apPageStack[nStackPos] = pPage;
 
   #if defined(DEBUG_LOG)
-  GSLC_DEBUG2_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
+  GSLC_DEBUG_PRINT("INFO: Changed PageStack[%u] to page %u\n",nStackPos,nPageId);
   #endif
 
   // A change of page should always force a future redraw
@@ -2083,7 +2083,7 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
     // even if we later discover that the changed element is on
     // a page in the stack that has been disabled through
     // abPageStackDoDraw[] = false.
-    GSLC_DEBUG2_PRINT("DBG: PageRedrawGo() InvRgn: En=%d (%d,%u)-(%d,%d) PageRedraw=%d\n",
+    GSLC_DEBUG_PRINT("DBG: PageRedrawGo() InvRgn: En=%d (%d,%u)-(%d,%d) PageRedraw=%d\n",
       pGui->bInvalidateEn, pGui->rInvalidateRect.x, pGui->rInvalidateRect.y,
       pGui->rInvalidateRect.x + pGui->rInvalidateRect.w - 1,
       pGui->rInvalidateRect.y + pGui->rInvalidateRect.h - 1, bPageRedraw);
@@ -3726,7 +3726,7 @@ bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
 {
 #if !(GSLC_FEATURE_INPUT)
-  GSLC_DEBUG2_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
+  GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
   return;
 #else
   if (pGui == NULL) {
@@ -4256,7 +4256,7 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   //   variable.
 
   #if defined(DBG_LOG)
-  GSLC_DEBUG2_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
+  GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
           pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
   #endif
 

@@ -748,9 +748,9 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
 {
   #if defined(DBG_DRIVER)
   char addr[6];
-  GSLC_DEBUG2_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
+  GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
   sprintf(addr,"%04X",sImgRef.pImgBuf);
-  GSLC_DEBUG2_PRINT("%s\n",addr);
+  GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
   // GUIslice adapter library for Adafruit-GFX does not pre-load
