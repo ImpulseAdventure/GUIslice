@@ -2117,15 +2117,15 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   #elif defined(DRV_DISP_ADAGFX_HX8357)
     m_disp.setRotation(0);
-    pGui->nDisp0W = HX8357_TFTHEIGHT;
-    pGui->nDisp0H = HX8357_TFTWIDTH;
+    pGui->nDisp0W = HX8357_TFTWIDTH;
+    pGui->nDisp0H = HX8357_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
     if (!bSwap) {
-      pGui->nDispW = HX8357_TFTHEIGHT;
-      pGui->nDispH = HX8357_TFTWIDTH;
-    } else {
       pGui->nDispW = HX8357_TFTWIDTH;
       pGui->nDispH = HX8357_TFTHEIGHT;
+    } else {
+      pGui->nDispW = HX8357_TFTHEIGHT;
+      pGui->nDispH = HX8357_TFTWIDTH;
     }
 
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
