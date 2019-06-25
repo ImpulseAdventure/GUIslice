@@ -2444,8 +2444,8 @@ gslc_tsElemRef* gslc_ElemCreateTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t nPag
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_TXT,rElem,pStrBuf,nStrBufMax,nFontId);
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_BLACK;
-  sElem.colElemFrameGlow  = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_GRAY;
+  sElem.colElemFrameGlow  = GSLC_COL_GRAY;
   sElem.colElemText       = GSLC_COL_YELLOW;
   sElem.colElemTextGlow   = GSLC_COL_YELLOW;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
