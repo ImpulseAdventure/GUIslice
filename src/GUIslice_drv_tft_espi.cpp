@@ -985,6 +985,59 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 #if defined(DRV_TOUCH_IN_DISP)
 
+// Enable touch filtering from TFT_eSPI (comment to disable)
+#define DRV_TOUCH_TFT_ESPI_FILTER
+
+
+// Import touch filtering code from TFT_eSPI
+#if defined(DRV_TOUCH_TFT_ESPI_FILTER)
+  // - NOTE: We can't use TFT_eSPI's validTouch() as it is declared private
+  //   so instead we have replicated code here.
+  // ----- REFERENCE CODE begin
+  //   Reference code: https://github.com/Bodmer/TFT_eSPI/blob/master/Extensions/Touch.cpp
+  #define TFT_eSPI_RAWERR 20 // Deadband error allowed in successive position samples
+  uint8_t TFT_eSPI_validTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
+  uint16_t x_tmp, y_tmp, x_tmp2, y_tmp2;
+
+  // Wait until pressure stops increasing to debounce pressure
+  uint16_t z1 = 1;
+  uint16_t z2 = 0;
+  while (z1 > z2)
+  {
+    z2 = z1;
+    z1 = m_disp.getTouchRawZ();
+    delay(1);
+  }
+
+  //  Serial.print("Z = ");Serial.println(z1);
+
+  if (z1 <= threshold) return false;
+
+  m_disp.getTouchRaw(&x_tmp, &y_tmp);
+
+  //  Serial.print("Sample 1 x,y = "); Serial.print(x_tmp);Serial.print(",");Serial.print(y_tmp);
+  //  Serial.print(", Z = ");Serial.println(z1);
+
+  delay(1); // Small delay to the next sample
+  if (m_disp.getTouchRawZ() <= threshold) return false;
+
+  delay(2); // Small delay to the next sample
+  m_disp.getTouchRaw(&x_tmp2, &y_tmp2);
+
+  //  Serial.print("Sample 2 x,y = "); Serial.print(x_tmp2);Serial.print(",");Serial.println(y_tmp2);
+  //  Serial.print("Sample difference = ");Serial.print(abs(x_tmp - x_tmp2));Serial.print(",");Serial.println(abs(y_tmp - y_tmp2));
+
+  if (abs(x_tmp - x_tmp2) > TFT_eSPI_RAWERR) return false;
+  if (abs(y_tmp - y_tmp2) > TFT_eSPI_RAWERR) return false;
+
+  *x = x_tmp;
+  *y = y_tmp;
+
+  return true;
+  }
+  // ----- REFERENCE CODE end
+#endif // DRV_TOUCH_TFT_ESPI_FILTER
+
 bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
   if (pGui == NULL) {
     GSLC_DEBUG2_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n", "");
@@ -1068,9 +1121,28 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
   uint16_t  nRawPress;   //XPT2046 returns values up to 4095
 
   // Retrieve the raw touch coordinates from the XPT2046
-  // NOTE: We can't use TFT_eSPI's validTouch() as it is declared private
-  nRawPress = m_disp.getTouchRawZ();
-  m_disp.getTouchRaw(&nRawX, &nRawY);
+
+  // Provide optional touch filtering
+  #if defined(DRV_TOUCH_TFT_ESPI_FILTER)
+    // Use touch filtering code from TFT_eSPI
+    uint8_t nSamples = 5;
+    uint8_t nSamplesValid = 0;
+    while (nSamples--) {
+      if (TFT_eSPI_validTouch(&nRawX, &nRawY, 20)) nSamplesValid++;
+    }
+    if (nSamplesValid < 1) {
+      nRawPress = 0; // Invalidate the reading
+    }
+    else {
+      // Force a value within range
+      nRawPress = ADATOUCH_PRESS_MIN + 1;
+    }
+  #else
+    // No additional touch filtering
+    // NOTE: On some displays this will lead to very noisy touch readings
+    nRawPress = m_disp.getTouchRawZ();
+    m_disp.getTouchRaw(&nRawX, &nRawY);
+  #endif // DRV_TOUCH_TFT_ESPI_FILTER
 
   if ((nRawPress > ADATOUCH_PRESS_MIN) && (nRawPress < ADATOUCH_PRESS_MAX)) {
 
