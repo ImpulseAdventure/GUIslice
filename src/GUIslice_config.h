@@ -67,6 +67,7 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_28_res.h"
   //#include "../configs/ard-shld-elegoo_28_res.h"
   //#include "../configs/ard-shld-generic1_35_touch.h"
+  //#include "../configs/ard-shld-ili9341_16b_touch.h"
   //#include "../configs/ard-shld-mcufriend.h"
   //#include "../configs/ard-shld-mcufriend_4wire.h"
   //#include "../configs/ard-shld-mcufriend_xpt2046.h"
