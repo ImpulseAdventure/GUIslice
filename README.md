@@ -26,7 +26,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
 - Cross-platform **GUIslice Builder** (beta) desktop application to generate layouts
 - *Platform-independent* GUI core currently supports:
-  - Adafruit-GFX, TFT_eSPI, SDL1.2, SDL2.0
+  - Adafruit-GFX, TFT_eSPI, mcufriend, UTFT, SDL1.2, SDL2.0
 - *Devices*:
   - Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32
 - *Typical displays*:
@@ -34,7 +34,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Display drivers include*:
   - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, ILI9341_t3
 - *Touchscreen control including*:
-  - STMPE610, FT6206, XPT2046, 4-wire, tslib, Adafruit Seesaw
+  - STMPE610, FT6206, XPT2046, 4-wire, tslib, URTouch, Adafruit Seesaw
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
 - GPIO / pin / keyboard / Adafruit Seesaw control for non-touchscreen devices
