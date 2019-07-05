@@ -44,6 +44,9 @@
 
 #include <stdio.h>
 
+// ------------------------------------------------------------------------
+// Load display drivers
+// ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX)
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
@@ -56,21 +59,12 @@
   // Now configure specific display driver for Adafruit-GFX
   #if defined(DRV_DISP_ADAGFX_ILI9341)
     #include <Adafruit_ILI9341.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
     #include <Adafruit_TFTLCD.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
     #include <ILI9341_t3.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     #include <Adafruit_SSD1306.h>
@@ -82,16 +76,10 @@
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8347)
     #include <HX8347D_kbv.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8357)
     #include <Adafruit_HX8357.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
     #include <Adafruit_PCD8544.h>
@@ -100,9 +88,6 @@
     #include <Adafruit_RA8875.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     #include <MCUFRIEND_kbv.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
 
   #else
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
@@ -122,9 +107,6 @@
   // Now configure specific display driver for Adafruit-GFX-AS
   #if defined(DRV_DISP_ADAGFX_ILI9341_STM)
     #include <Adafruit_ILI9341_STM.h>
-    #if (GSLC_SD_EN)
-      #include <SD.h>   // Include support for SD card access
-    #endif
     #include <SPI.h>
   #else
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
@@ -132,7 +114,31 @@
 
 #endif
 
+// ------------------------------------------------------------------------
+// Load storage drivers
+// - Support SD card interface
+// ------------------------------------------------------------------------
+#if (GSLC_SD_EN)
+  #if (GSLC_SD_EN == 1)
+    // Use Arduino built-in SD library
+    // - Only supports HW SPI
+    #include <SD.h>
+  #elif (GSLC_SD_EN == 2)
+    // Use greiman/SdFat library
+    // - Supports SW SPI
+    // - Recommend usage of SdFat library version 1.0.1
+    // - To support SW SPI interface, need to make mod to SdFat lib:
+    // -   Arduino\libraries\SdFat\src\SdFatConfig.h:
+    // -     #define ENABLE_SOFTWARE_SPI_CLASS 1 // Change default from 0 to 1
+    #include <SdFat.h>
+    SdFatSoftSpi<12, 11, 13> SD; // FIXME: Add configurability
+  #endif
+#endif
+ 
 
+// ------------------------------------------------------------------------
+// Load touch drivers
+// ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
   #include <SPI.h>
   #include <Wire.h>
@@ -152,6 +158,8 @@
 #elif defined(DRV_TOUCH_HANDLER)
   #include <GUIslice_th.h>
 #endif
+
+// ------------------------------------------------------------------------
 
 
 #ifdef __cplusplus
