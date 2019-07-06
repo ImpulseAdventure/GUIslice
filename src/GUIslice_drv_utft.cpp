@@ -312,6 +312,10 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   *pnTxtSzW = nTxtLen * m_disp.getFontXsize();
   *pnTxtSzH = 1 * m_disp.getFontYsize(); // TODO: Handle multi-line
 
+  // No baseline info available
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
   // TODO m_disp.setFont();
   return true;
 
