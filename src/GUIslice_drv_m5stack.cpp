@@ -88,8 +88,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // image in the controller graphics RAM
     pGui->bRedrawPartialEn = true;
 
-    m_disp.init();
-	
+    // Initialize the M5stack driver
+    // - Note that this will automatically initialize the SD driver
+    // - It also configures the serial interface for 115200 baud
+    m5.begin();
+  
     // Now that we have initialized the display, we can assign
     // the rotation parameters and clipping region
     gslc_DrvRotate(pGui,GSLC_ROTATE);
@@ -786,7 +789,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       return true;
     } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
       // 24-bit Bitmap in flash
-	  // FIXME: Should we be passing "true" as last param?
+      // FIXME: Should we be passing "true" as last param?
       gslc_DrvDrawBmp24FromMem(pGui,nDstX,nDstY,sImgRef.pImgBuf,false);
       return true;
     } else {
