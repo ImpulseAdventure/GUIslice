@@ -28,6 +28,10 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
+// Ensure optional SD feature is enabled in the configuration
+#if !(GSLC_SD_EN)
+  #error "Config: GSLC_SD_EN required for this example but not enabled. Please update GUIslice_config."
+#endif
 
 
 // Defines for resources
