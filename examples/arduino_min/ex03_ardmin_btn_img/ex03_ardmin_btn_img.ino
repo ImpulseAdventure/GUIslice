@@ -31,8 +31,8 @@
 
 
 // Defines for resources
-#define IMG_BTN_QUIT      "exit_n24.bmp"
-#define IMG_BTN_QUIT_SEL  "exit_g24.bmp"
+#define IMG_BTN_QUIT      "/exit_n24.bmp"
+#define IMG_BTN_QUIT_SEL  "/exit_g24.bmp"
 
 
 // Enumerations for pages, elements, fonts, images
