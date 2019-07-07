@@ -66,6 +66,10 @@
   #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
     #include <ILI9341_t3.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    #include <ILI9341_due.h>
+    #include <SPI.h>
+    #include <SystemFont5x7.h> // FIXME: Add support for user-defined fonts
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     #include <Adafruit_SSD1306.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
@@ -155,6 +159,8 @@
   #include <XPT2046_touch.h>
 #elif defined(DRV_TOUCH_XPT2046_PS)
   #include <XPT2046_Touchscreen.h>
+#elif defined(DRV_TOUCH_URTOUCH)
+  #include <URTouch.h>  
 #elif defined(DRV_TOUCH_HANDLER)
   #include <GUIslice_th.h>
 #endif
@@ -209,6 +215,11 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-SW)";
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  const char* m_acDrvDisp = "ADA_ILI9341_DUE_MB(SPI-HW)";
+  ILI9341_due m_disp = ILI9341_due(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -313,6 +324,10 @@ extern "C" {
   // Use SPI, no IRQs
   XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_URTOUCH)
+  const char* m_acDrvTouch = "URTOUCH";
+  URTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_HANDLER)
   const char* m_acDrvTouch = "Handler";
 // ------------------------------------------------------------------------
@@ -368,7 +383,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #endif
 
     // Perform any display initialization
-    #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM)
+    #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
 
       #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
         // TODO: Consider check for GSLC_DEV_TEENSY
@@ -652,6 +667,23 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  // FIXME: Add support for user defined fonts
+  m_disp.setFont(SystemFont5x7);
+
+  nTxtScale = pFont->nSize;
+  m_disp.setTextScale(nTxtScale);
+
+  // Fetch the font sizing
+  *pnTxtSzW = m_disp.getStringWidth(pStr);
+  *pnTxtSzH = nTxtScale * m_disp.getFontHeight();
+
+  // No baseline info
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
+  return true;
+
 #else
 
   nTxtScale = pFont->nSize;
@@ -663,7 +695,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
 
   } else if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_PROG) {
-#if (GSLC_USE_PROGMEM)
+    #if (GSLC_USE_PROGMEM)
     uint16_t nTxtLen = strlen_P(pStr);
     char tempStr[nTxtLen+1];
     strncpy_P(tempStr,pStr,nTxtLen);
@@ -671,7 +703,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
     // Fetch the text bounds
     m_disp.getTextBounds(tempStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
-#else
+    #else
     // NOTE: Should not get here
     // - The text string has been marked as being stored in
     //   FLASH via PROGMEM (typically for Arduino) but
@@ -681,7 +713,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
     // Fetch the text bounds
     m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
-#endif
+    #endif
   }
 
   m_disp.setFont();
@@ -712,12 +744,21 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     m_disp.setFont(*pT3Font);
     break;
   }
-#else
-  m_disp.setFont((const GFXfont *)pFont->pvFont);
-#endif
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  // FIXME: Add support for user defined fonts
+  m_disp.setFont(SystemFont5x7);
+  m_disp.setTextColor(nColRaw);
+  m_disp.cursorToXY(nTxtX,nTxtY);
+  m_disp.setTextScale(nTxtScale);
+#else
+  m_disp.setFont((const GFXfont *)pFont->pvFont);
+  m_disp.setTextColor(nColRaw);
+  m_disp.setCursor(nTxtX,nTxtY);
+  m_disp.setTextSize(nTxtScale);
+#endif
 
   // Driver-specific overrides
   #if defined(DRV_DISP_ADAGFX_RA8875)
@@ -777,6 +818,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       }
     #else
       // Call Adafruit-GFX for rendering
+      // NOTE: This should automatically advance the "cursor" (current text position)
       m_disp.print(ch);
     #endif
 
@@ -785,14 +827,18 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     // the Y cursor but reset the X cursor to 0. Therefore we need to
     // readjust the X cursor to our aligned bounding box.
     if (ch == '\n') {
-      int16_t nCurPosY = m_disp.getCursorY();
       #if defined(DRV_DISP_ADAGFX_RA8875)
+      int16_t nCurPosY = m_disp.getCursorY();
       if (bInternal8875Font) {
         // TODO: Is getCursorY() supported in RA8875 mode?
         m_disp.textSetCursor(nTxtX, nCurPosY);
       }
+      #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+      nTxtY += m_disp.getFontHeight();
+      m_disp.cursorToXY(nTxtX,nTxtY);
       #else
-        m_disp.setCursor(nTxtX,nCurPosY);
+      int16_t nCurPosY = m_disp.getCursorY();
+      m_disp.setCursor(nTxtX,nCurPosY);
       #endif
     }
 
@@ -807,6 +853,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Restore the font
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // TODO
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
   // TODO
 #else
   m_disp.setFont();
@@ -1514,6 +1562,12 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #elif defined(DRV_TOUCH_ADA_RA8875)
     m_disp.touchEnable(true);
     return true;
+  #elif defined(DRV_TOUCH_URTOUCH)
+    m_touch.InitTouch();
+    m_touch.setPrecision(PREC_MEDIUM);
+    // Disable touch remapping since URTouch handles it
+    gslc_SetTouchRemapEn(pGui, false);
+    return true;
   #elif defined(DRV_TOUCH_INPUT)
     // Nothing more to initialize for GPIO input control mode
     return true;
@@ -1886,6 +1940,50 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     }
 
   // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_URTOUCH)
+
+    // Note that we rely on URTouch's calibration
+    // - This is detected by URTouch / URTouch_Calibration
+    // - The calibration settings are stored in URTouch/URTouchCD.h
+
+    uint16_t  nRawX,nRawY;
+    uint16_t  nRawPress;
+    bool bTouchOk = true;
+
+    if (!m_touch.dataAvailable()) {
+      bTouchOk = false;
+    }
+
+    if (bTouchOk) {
+      m_touch.read();
+      nRawX = m_touch.getX();
+      nRawY = m_touch.getY();
+      if ((nRawX == -1) || (nRawY == -1)) {
+        bTouchOk = false;
+      }
+    }
+
+    if (bTouchOk) {
+      nRawPress = 255; // Dummy non-zero value
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    } else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_INPUT)
     // No more to do for GPIO-only mode since gslc_Update() already
     // looks for GPIO inputs before calling TDrvGetTouch().
@@ -1990,8 +2088,10 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
-    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
-      pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #if defined(DRV_TOUCH_TYPE_RES)
+      GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+        pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #endif // DRV_TOUCH_TYPE_RES
     #endif // DBG_TOUCH
 
     // Perform remapping due to current orientation
@@ -2074,7 +2174,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
