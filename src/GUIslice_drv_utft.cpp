@@ -52,7 +52,11 @@
 
 
 #if defined(DRV_TOUCH_URTOUCH)
-  #include <URTouch.h>
+  #if defined(DRV_TOUCH_URTOUCH_UTOUCH)
+    #include <UTouch.h> // Select old version of URTouch
+  #else
+    #include <URTouch.h>
+  #endif
 #endif
 
 
@@ -74,8 +78,13 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_URTOUCH)
-  const char* m_acDrvTouch = "URTOUCH";
-  URTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #if defined(DRV_TOUCH_URTOUCH_UTOUCH)
+    const char* m_acDrvTouch = "UTOUCH";
+    UTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #else
+    const char* m_acDrvTouch = "URTOUCH";
+    URTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_INPUT)
   const char* m_acDrvTouch = "INPUT";

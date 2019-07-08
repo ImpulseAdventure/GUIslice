@@ -160,7 +160,11 @@
 #elif defined(DRV_TOUCH_XPT2046_PS)
   #include <XPT2046_Touchscreen.h>
 #elif defined(DRV_TOUCH_URTOUCH)
-  #include <URTouch.h>  
+  #if defined(DRV_TOUCH_URTOUCH_UTOUCH)
+    #include <UTouch.h> // Select old version of URTouch
+  #else
+    #include <URTouch.h>
+  #endif
 #elif defined(DRV_TOUCH_HANDLER)
   #include <GUIslice_th.h>
 #endif
@@ -325,8 +329,13 @@ extern "C" {
   XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_URTOUCH)
-  const char* m_acDrvTouch = "URTOUCH";
-  URTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #if defined(DRV_TOUCH_URTOUCH_UTOUCH)
+    const char* m_acDrvTouch = "UTOUCH";
+    UTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #else
+    const char* m_acDrvTouch = "URTOUCH";
+    URTouch m_touch(DRV_TOUCH_URTOUCH_INIT);
+  #endif
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_HANDLER)
   const char* m_acDrvTouch = "Handler";
