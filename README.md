@@ -32,7 +32,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Typical displays*:
   - PiTFT, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", FeatherWing TFT, OLED 0.96", mcufriend, BuyDisplay / EastRising 4.3" 5" 7", Waveshare, 4D Cape
 - *Display drivers include*:
-  - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, ILI9341_t3
+  - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, ILI9341_t3, ILI9341_due
 - *Touchscreen control including*:
   - STMPE610, FT6206, XPT2046, 4-wire, tslib, URTouch, Adafruit Seesaw
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
