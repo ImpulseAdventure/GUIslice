@@ -104,7 +104,8 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_ROTATE     1
+  // - NOTE: Rotation 3 is selected to match URTouch/UTFT default
+  #define GSLC_ROTATE     3
 
   // -----------------------------------------------------------------------------
   // SECTION 4: Touch Handling
