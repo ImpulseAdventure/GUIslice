@@ -1205,6 +1205,17 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
         nOutputX = map(nInputX, pGui->nTouchCalXMin, pGui->nTouchCalXMax, 0, nDispOutMaxX);
         nOutputY = map(nInputY, pGui->nTouchCalYMin, pGui->nTouchCalYMax, 0, nDispOutMaxY);
         // Perform constraining to OUTPUT boundaries
+        // NOTE: TFT_eSPI's getTouch readings occasionally return spurious touch
+        //       events. These are often at the limit of the calibrated X/Y
+        //       space. Post constraint, this may appear as events with one
+        //       coordinate clipped to 0, for example. Bodmer provides
+        //       one additional check in that if the mapped coordinate
+        //       exceeds the positive bounds of the display (eg. 320px)
+        //       then he marks the touch event invalid. Doing this may
+        //       block some of the spurious events but not all (it would be
+        //       calibration dependent). If we do decide to add in a similar
+        //       check here, then we would want to force (bValid=false) here
+        //       and then only proceed after re-checking (bValid==true).
         nOutputX = constrain(nOutputX, 0, nDispOutMaxX);
         nOutputY = constrain(nOutputY, 0, nDispOutMaxY);
       } else {
