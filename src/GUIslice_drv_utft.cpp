@@ -1010,8 +1010,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // - This is detected by URTouch / URTouch_Calibration
     // - The calibration settings are stored in URTouch/URTouchCD.h
 
-    uint16_t  nRawX,nRawY;
-    uint16_t  nRawPress;
+    int16_t   nRawX,nRawY;
+    uint16_t  nRawPress = 0;
     bool bTouchOk = true;
 
     if (!m_touch.dataAvailable()) {
