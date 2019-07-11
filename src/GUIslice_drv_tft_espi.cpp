@@ -83,6 +83,23 @@ extern "C" {
 TFT_eSPI m_disp = TFT_eSPI();
 
 
+// ------------------------------------------------------------------------
+// Load storage drivers
+// - Support SD card interface
+// ------------------------------------------------------------------------
+#if (GSLC_SD_EN)
+  #if (GSLC_SD_EN == 1)
+    // Use built-in SD library
+    // - Only supports HW SPI
+    #include <FS.h>
+    #include <SD.h>
+  #elif (GSLC_SD_EN == 2)
+    // Use greiman/SdFat library
+    // TODO
+    #error "GSLC_SD_EN=2 not yet implemented in TFT_eSPI mode"
+  #endif
+#endif
+ 
 
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -723,14 +740,14 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
 // These read 16- and 32-bit types from the SD card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
-uint16_t gslc_DrvRead16SD(File &f) {
+uint16_t gslc_DrvRead16SD(fs::File &f) {
   uint16_t result;
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read(); // MSB
   return result;
 }
 
-uint32_t gslc_DrvRead32SD(File &f) {
+uint32_t gslc_DrvRead32SD(fs::File &f) {
   uint32_t result;
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read();
