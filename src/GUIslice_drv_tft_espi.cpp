@@ -187,12 +187,15 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // the rotation parameters and clipping region
     gslc_DrvRotate(pGui,GSLC_ROTATE);
 
-	  // Initialize SD card usage
+    // Initialize SD card usage
     #if (GSLC_SD_EN)
-	  if (!SD.begin(ADAGFX_PIN_SDCS)) {
-		  GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n", 0);
-		  return false;
-	  }
+      #if (!defined(ADAGFX_PIN_SDCS))
+        #error "ERROR: ADAGFX_PIN_SDCS must be defined in config for SD support"
+      #endif
+      if (!SD.begin(ADAGFX_PIN_SDCS)) {
+        GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n", 0);
+        return false;
+      }
     #endif
 
   }
