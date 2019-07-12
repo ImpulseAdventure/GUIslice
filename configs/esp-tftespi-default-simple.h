@@ -96,6 +96,10 @@ extern "C" {
 
   // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
 
+  // SD Card
+  //#define ADAGFX_PIN_SDCS    2 // ESP8266 + Adafruit FeatherWing 2.4"
+  #define ADAGFX_PIN_SDCS     14 // ESP32   + Adafruit FeatherWing 2.4"
+  //#define ADAGFX_PIN_SDCS    5 // Others  + Adafruit FeatherWing 2.4"
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
