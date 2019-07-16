@@ -1,6 +1,8 @@
 #ifndef _GUISLICE_CONFIG_ARD_H_
 #define _GUISLICE_CONFIG_ARD_H_
 
+#warning No config selected in GUIslice_config.h - resorting to defaults.
+
 // =============================================================================
 // GUIslice library (user configuration) for:
 //     - Arduino
