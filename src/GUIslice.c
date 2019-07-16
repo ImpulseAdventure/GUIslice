@@ -165,6 +165,18 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   // Default global element characteristics
   pGui->nRoundRadius = 4;
 
+  // Default image transparency setting
+  // - Used when GSLC_BMP_TRANS_EN=1
+  // - Defined by config file GSLC_BMP_TRANS_RGB
+  // - Can be overridden by user with SetTransparentColor()
+  #if defined(GSLC_BMP_TRANS_RGB)
+    pGui->sTransCol = (gslc_tsColor){ GSLC_BMP_TRANS_RGB };
+  #else
+    // Provide a default if not defined in config
+    // - The following is equivalent to GSLC_COL_MAGENTA
+    pGui->sTransCol = (gslc_tsColor) { 0xFF, 0x00, 0xFF };
+  #endif
+
   // Initialize collection of fonts with user-supplied pointer
   pGui->asFont      = asFont;
   pGui->nFontMax    = nMaxFont;
@@ -1671,7 +1683,7 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
 // -----------------------------------------------------------------------
 
 bool gslc_FontSetBase(gslc_tsGui* pGui, uint8_t nFontInd, int16_t nFontId, gslc_teFontRefType eFontRefType,
-	const void* pvFontRef, uint16_t nFontSz)
+  const void* pvFontRef, uint16_t nFontSz)
 {
   if (nFontInd >= pGui->nFontMax) {
     GSLC_DEBUG2_PRINT("ERROR: FontSetBase() invalid Font index=%d\n",nFontInd);
@@ -1700,22 +1712,22 @@ bool gslc_FontSetBase(gslc_tsGui* pGui, uint8_t nFontInd, int16_t nFontId, gslc_
 // Store font into indexed position in font storage
 // - nFontId must be in range 0..nFontMax-1
 bool gslc_FontSet(gslc_tsGui* pGui, int16_t nFontId, gslc_teFontRefType eFontRefType,
-	const void* pvFontRef, uint16_t nFontSz)
+  const void* pvFontRef, uint16_t nFontSz)
 {
   if ((nFontId < 0) || (nFontId >= pGui->nFontMax)) {
     GSLC_DEBUG2_PRINT("ERROR: FontSet() invalid Font ID=%d\n",nFontId);
     return false;
   } else {
-	  bool bRet = false;
+    bool bRet = false;
 
     // The font index is set to the same as the font enum ID
-	  uint8_t nFontInd = nFontId;
-	  bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
+    uint8_t nFontInd = nFontId;
+    bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
 
     // Ensure the total font count is set to max
-	  pGui->nFontCnt = pGui->nFontMax;
+    pGui->nFontCnt = pGui->nFontMax;
 
-	  return bRet;
+    return bRet;
   }
 }
 
@@ -1726,16 +1738,16 @@ bool gslc_FontAdd(gslc_tsGui* pGui,int16_t nFontId,gslc_teFontRefType eFontRefTy
     GSLC_DEBUG2_PRINT("ERROR: FontAdd(%s) added too many fonts\n","");
     return false;
   } else {
-	  bool bRet = false;
+    bool bRet = false;
 
-	  // Fetch the next unallocated index
-	  uint8_t nFontInd = pGui->nFontCnt;
-	  bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
+    // Fetch the next unallocated index
+    uint8_t nFontInd = pGui->nFontCnt;
+    bRet = gslc_FontSetBase(pGui, nFontInd, nFontId, eFontRefType, pvFontRef, nFontSz);
 
-	  // Increment the current font index
-	  pGui->nFontCnt++;
+    // Increment the current font index
+    pGui->nFontCnt++;
 
-	  return bRet;
+    return bRet;
   }
 }
 
@@ -2747,7 +2759,7 @@ void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 }
 
 void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf,gslc_tsRect rTxt,gslc_tsFont* pTxtFont,gslc_teTxtFlags eTxtFlags,
-	int8_t eTxtAlign,gslc_tsColor colTxt,gslc_tsColor colBg,int16_t nMarginW,int16_t nMarginH)
+  int8_t eTxtAlign,gslc_tsColor colTxt,gslc_tsColor colBg,int16_t nMarginW,int16_t nMarginH)
 {
   int16_t   nElemX,nElemY;
   uint16_t  nElemW,nElemH;
@@ -2973,8 +2985,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
     int16_t       nMargin   = pElem->nTxtMargin;
 
-	  gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
-		  pElem->eTxtAlign, colTxt, colBg, nMargin, nMargin);
+    gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
+      pElem->eTxtAlign, colTxt, colBg, nMargin, nMargin);
   }
 
   // --------------------------------------------------------------------------
@@ -4411,6 +4423,12 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
     return false;
   }
   gslc_PageFlipSet(pGui,true);
+  return true;
+}
+
+bool gslc_SetTransparentColor(gslc_tsGui* pGui, gslc_tsColor nCol)
+{
+	pGui->sTransCol = nCol;
   return true;
 }
 

@@ -739,6 +739,8 @@ typedef struct {
 
   uint8_t             nRoundRadius;     ///< Radius for rounded elements
 
+  gslc_tsColor        sTransCol;        ///< Color used for transparent image regions (GSLC_BMP_TRANS_EN=1)
+
 #if (GSLC_FEATURE_COMPOUND)
   gslc_tsElem         sElemTmp;         ///< Temporary element
   gslc_tsElemRef      sElemRefTmp;      ///< Temporary element reference
@@ -940,6 +942,19 @@ bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef);
 /// \return true if success, false if fail
 ///
 bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
+
+///
+/// Configure the color to use for image transparency
+/// - Drawing a BMP with transparency enabled will cause
+///   regions in this specific color to appear transparent
+/// - This API overrides the config option GSLC_BMP_TRANS_RGB
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nCol:        RGB Color to use
+///
+/// \return true if success, false if fail
+///
+bool gslc_SetTransparentColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
 ///
 /// Set the clipping rectangle for further drawing
