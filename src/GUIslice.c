@@ -2669,11 +2669,17 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
 
       if (sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) {
+        // Despite the current pending redraw state of the element,
+        // we will force a full redraw as requested.
+        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d: force to FULL\n",pElemRef->pElem->nId,eRedraw);
         return gslc_ElemDrawByRef(pGui,pElemRef,GSLC_REDRAW_FULL);
       } else if (eRedraw != GSLC_REDRAW_NONE) {
+        // There is a pending redraw for the element. It may
+        // either be an incremental or full redraw.
+        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d\n",pElemRef->pElem->nId,eRedraw);
         return gslc_ElemDrawByRef(pGui,pElemRef,eRedraw);
       } else {
-        // No redraw needed
+        // No redraw needed pending
         return true;
       }
       break;
@@ -2870,7 +2876,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // --------------------------------------------------------------------------
   bool bVisible = gslc_ElemGetVisible(pGui, pElemRef);
   if (!bVisible) {
-    // The element is hidden, so no drawing required
+    // The element is hidden, so no drawing required.
+    // Clear the redraw-pending flag.
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
     return true;
   }
 
@@ -3294,6 +3302,14 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
   // Mark the element as needing redraw if its visibility status changed
   if (bVisible != bVisibleOld) {
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+    if (bVisible == false) {
+      // Since we are hiding an element, we need to invalidate
+      // the region underneath the element, so that it can
+      // be redrawn.
+      gslc_InvalidateRgnAdd(pGui, pElem->rElem);
+      // Mark the page as having a redraw pending
+      gslc_PageRedrawSet(pGui,true);
+     }
   }
 
 }
