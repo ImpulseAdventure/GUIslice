@@ -36,7 +36,7 @@
 // Define current release (X.Y.Z) & build number
 // =======================================================================
 
-#define GUISLICE_VER "0.12.2.23"
+#define GUISLICE_VER "0.12.2.24"
 
 #endif // _GUISLICE_VERSION_H_
 
