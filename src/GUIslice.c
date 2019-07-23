@@ -2664,6 +2664,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
+	  pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
 
       // Determine if redraw is needed
       gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
@@ -2671,12 +2672,12 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       if (sEvent.nSubType == GSLC_EVTSUB_DRAW_FORCE) {
         // Despite the current pending redraw state of the element,
         // we will force a full redraw as requested.
-        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d: force to FULL\n",pElemRef->pElem->nId,eRedraw);
+        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d: force to FULL\n",pElem->nId,eRedraw);
         return gslc_ElemDrawByRef(pGui,pElemRef,GSLC_REDRAW_FULL);
       } else if (eRedraw != GSLC_REDRAW_NONE) {
         // There is a pending redraw for the element. It may
         // either be an incremental or full redraw.
-        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d\n",pElemRef->pElem->nId,eRedraw);
+        //GSLC_DEBUG_PRINT("DBG: ElemEvent(Draw) nId=%d eRedraw=%d\n",pElem->nId,eRedraw);
         return gslc_ElemDrawByRef(pGui,pElemRef,eRedraw);
       } else {
         // No redraw needed pending
@@ -3198,6 +3199,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   // Update the redraw flag
   gslc_teElemRefFlags eFlags = pElemRef->eElemFlags;
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   switch (eRedraw) {
     case GSLC_REDRAW_NONE:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_NONE;
@@ -3205,12 +3207,12 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     case GSLC_REDRAW_FULL:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_FULL;
       // Mark the region as invalidated
-      gslc_InvalidateRgnAdd(pGui, pElemRef->pElem->rElem);
+      gslc_InvalidateRgnAdd(pGui, pElem->rElem);
       break;
     case GSLC_REDRAW_INC:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_INC;
       // Mark the region as invalidated
-      gslc_InvalidateRgnAdd(pGui, pElemRef->pElem->rElem);
+      gslc_InvalidateRgnAdd(pGui, pElem->rElem);
       break;
   }
 
@@ -4686,6 +4688,7 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
   return false;
 #else
   gslc_tsElemRef*   pElemRef = NULL;
+  gslc_tsElem*      pElem = NULL;
   int16_t           nIndStart;
   bool              bFound = false;
   unsigned          nElemIndCnt = pCollect->nElemRefCnt;
@@ -4724,13 +4727,14 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
     // Get focus capability attribute
     bCanFocus = false;
     pElemRef = &(pCollect->asElemRef[nInd]);
+	pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
     if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
       if (pElemRef->pElem == NULL) {
         GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
         exit(1); // FATAL
       } else {
         // Check the "click enable" flag
-        if (pElemRef->pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) {
+        if (pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) {
           bCanFocus = true;
         }
       }
