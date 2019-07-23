@@ -19,8 +19,10 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
+
+// Include any extended elements
+#include "elem/XProgress.h"
 
 
 // Determine whether to load Adafruit-GFX extra fonts or Teensy fonts
@@ -77,7 +79,7 @@ gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                     m_asPage2Elem[MAX_ELEM_PG_POPUP_RAM];
 gslc_tsElemRef                  m_asPage2ElemRef[MAX_ELEM_PG_POPUP];
-gslc_tsXGauge                   m_sXGauge[1];
+gslc_tsXProgress                m_sXGauge[1];
 
 #define MAX_STR                 100
 
@@ -176,7 +178,7 @@ bool InitGUI()
   m_pTxtStatus = pElemRef;
 
   // Create progress bar E_PROGRESS 
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui, E_PROGRESS, E_PG_MAIN, &m_sXGauge[0],
+  pElemRef = gslc_ElemXProgressCreate(&m_gui, E_PROGRESS, E_PG_MAIN, &m_sXGauge[0],
     (gslc_tsRect) { 70, 68, 100, 20 }, 0, 100, 0, GSLC_COL_GREEN, false);
   m_pElemProgress = pElemRef;
 
@@ -273,7 +275,7 @@ void loop()
 
   // General counter
   m_nCount++;
-  gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress, ((m_nCount / 1) % 100));
+  gslc_ElemXProgressSetVal(&m_gui, m_pElemProgress, ((m_nCount / 1) % 100));
 
 
   // ------------------------------------------------

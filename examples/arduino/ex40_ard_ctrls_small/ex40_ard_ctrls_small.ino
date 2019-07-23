@@ -18,9 +18,12 @@
 //
 
 #include "GUIslice.h"
-#include "GUIslice_ex.h"
 #include "GUIslice_drv.h"
 
+// Include any extended elements
+#include "elem/XCheckbox.h"
+#include "elem/XSlider.h"
+#include "elem/XProgress.h"
 
 // ------------------------------------------------
 // Enumerations for pages, elements, fonts, images
@@ -50,7 +53,7 @@ gslc_tsPage                     m_asPage[MAX_PAGE];
 gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsXCheckbox                m_asXCheck[1];
-gslc_tsXGauge                   m_sXGauge[2];
+gslc_tsXProgress                m_sXGauge[2];
 gslc_tsXSlider                  m_sXSlider[1];
 
 #define MAX_STR                 100
@@ -111,7 +114,7 @@ bool CbSlidePos(void* pvGui, void* pvElemRef, int16_t nPos)
     // Fetch the slider position (0..100)
     nVal = gslc_ElemXSliderGetPos(pGui, pElemRef);
     // Update the right progress bar
-    gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress2, nVal);
+    gslc_ElemXProgressSetVal(&m_gui, m_pElemProgress2, nVal);
     break;
   default:
     break;
@@ -148,11 +151,11 @@ bool InitGUI()
   gslc_ElemXSliderSetPosFunc(&m_gui, m_pElemSlider1, &CbSlidePos);
 
   // Create progress bar E_PROGRESS1 
-  m_pElemProgress1 = gslc_ElemXGaugeCreate(&m_gui, E_PROGRESS1, E_PG_MAIN, &m_sXGauge[0],
+  m_pElemProgress1 = gslc_ElemXProgressCreate(&m_gui, E_PROGRESS1, E_PG_MAIN, &m_sXGauge[0],
     (gslc_tsRect) { 10, 60, 10, 50 }, 0, 100, 0, GSLC_COL_GREEN, true);
 
   // Create progress bar E_PROGRESS2 
-  m_pElemProgress2 = gslc_ElemXGaugeCreate(&m_gui, E_PROGRESS2, E_PG_MAIN, &m_sXGauge[1],
+  m_pElemProgress2 = gslc_ElemXProgressCreate(&m_gui, E_PROGRESS2, E_PG_MAIN, &m_sXGauge[1],
     (gslc_tsRect) { 30, 60, 10, 50 }, 0, 100, 0, GSLC_COL_RED, true);
 
   pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 50, 60, 15, 12 },
@@ -223,7 +226,7 @@ void loop()
   m_nCount++;
 
   // Update left progress bar
-  gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress1, m_nCount % 100);
+  gslc_ElemXProgressSetVal(&m_gui, m_pElemProgress1, m_nCount % 100);
 
   // Update counter text
   snprintf(m_acTxt, 10, "%d", (m_nCount / 10) % 10000);

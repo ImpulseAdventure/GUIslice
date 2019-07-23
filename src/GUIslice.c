@@ -4887,8 +4887,8 @@ void gslc_CollectSetEventFunc(gslc_tsGui* pGui,gslc_tsCollect* pCollect,GSLC_CB_
 //   has provided a relatively lightweight fixed-point representation
 //   using the following 16-bit LUT (8-bit index).
 // - At this point in time, the LUT is only used by GUIslice for sin/cos
-//   in supporting the XGauge Radial controls (enabled by GSLC_FEATURE_XGAUGE_RADIAL)
-// - The LUT consumes approx 514 bytes of FLASH memory
+//   in supporting the XRadial controls
+// - The LUT consumes approx 514 bytes of FLASH memory. FIXME: Ensure in FLASH!
 uint16_t  m_nLUTSinF0X16[257] = {
   0x0000,0x0192,0x0324,0x04B6,0x0648,0x07DA,0x096C,0x0AFD,0x0C8F,0x0E21,0x0FB2,0x1143,0x12D5,0x1465,0x15F6,0x1787,
   0x1917,0x1AA7,0x1C37,0x1DC6,0x1F56,0x20E5,0x2273,0x2402,0x258F,0x271D,0x28AA,0x2A37,0x2BC3,0x2D4F,0x2EDB,0x3066,
