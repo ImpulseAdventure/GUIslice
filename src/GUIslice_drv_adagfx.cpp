@@ -94,7 +94,7 @@
     #include <MCUFRIEND_kbv.h>
 
   #else
-    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
+    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice config"
   #endif
 
   // Load any additional drivers
@@ -113,7 +113,7 @@
     #include <Adafruit_ILI9341_STM.h>
     #include <SPI.h>
   #else
-    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice_config_ard.h"
+    #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice config"
   #endif
 
 #endif
