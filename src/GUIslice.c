@@ -3240,7 +3240,6 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // - For now, assume no need to trigger a parent redraw.
   // - TODO: Consider detecting scenarios in which we should
   //   propagate the redraw to the parent.
-  gslc_tsElem*  pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (pElem->pElemRefParent != NULL) {
     gslc_ElemSetRedraw(pGui,pElem->pElemRefParent,eRedraw);
   }
