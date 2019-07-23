@@ -30,6 +30,12 @@
 // =======================================================================
 /// \file XGauge.c
 
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+// WARNING: The XGauge element has been replaced by XProgress / XRadial / XRamp
+//          Please update your code according to the migration notes in:
+//          https://github.com/ImpulseAdventure/GUIslice/pull/157
+//          XGauge may be removed in a future release.
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
 
 // GUIslice library

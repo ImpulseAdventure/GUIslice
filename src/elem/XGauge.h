@@ -5,7 +5,7 @@
 
 
 // =======================================================================
-// GUIslice library extension: Gauge control
+// GUIslice library extension: Gauge control (See replacement warning below)
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
@@ -35,6 +35,13 @@
 //
 // =======================================================================
 /// \file XGauge.h
+
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+// WARNING: The XGauge element has been replaced by XProgress / XRadial / XRamp
+//          Please update your code according to the migration notes in:
+//          https://github.com/ImpulseAdventure/GUIslice/pull/157
+//          XGauge may be removed in a future release.
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
 #ifdef __cplusplus
 extern "C" {
