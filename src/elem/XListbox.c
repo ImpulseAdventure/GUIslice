@@ -379,6 +379,10 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   sElem.colElemFrame      = GSLC_COL_GRAY;
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;
 
+  // Set default text alignment:
+  // - Vertical center, left justify
+  sElem.eTxtAlign        = GSLC_ALIGN_MID_LEFT;
+
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
     return pElemRef;
@@ -448,8 +452,6 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   int16_t       nItemBaseX, nItemBaseY;
   int16_t       nItemX, nItemY;
   int16_t       nItemW, nItemH;
-  int16_t       nTxtPixX;
-  int16_t       nTxtPixY;
   bool          bItemSel;
   gslc_tsColor  colFill, colTxt;
 
@@ -512,15 +514,6 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     // Create rect for item
     rItemRect = (gslc_tsRect) { nItemX, nItemY, nItemW, nItemH };
 
-    // Fetch font baseline info (text offset)
-    int16_t       nTxtOffsetX,nTxtOffsetY;
-    uint16_t      nTxtSzW,nTxtSzH;
-    gslc_DrvGetTxtSize(pGui,pElem->pTxtFont,acStr,pElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
-
-    // Create top-left coordinate for text
-    nTxtPixX = nItemX + nTxtOffsetX + pListbox->nItemMarginW;
-    nTxtPixY = nItemY - nTxtOffsetY + pListbox->nItemMarginH;
-
     // Is the item selected?
     bItemSel = (nItemInd == nItemCurSel) ? true : false;
 
@@ -540,10 +533,18 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
         bDoRedraw = true;
       }
     }
+
     // Draw the list item
     if (bDoRedraw) {
       gslc_DrawFillRect(pGui, rItemRect, colFill);
-      gslc_DrvDrawTxt(pGui, nTxtPixX, nTxtPixY, pElem->pTxtFont, acStr, pElem->eTxtFlags, colTxt, colFill);
+
+      // Set the text flags to indicate that the user has separately
+      // allocated memory for the text strings.
+      gslc_teTxtFlags eTxtFlags = GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT;
+
+      // Draw the aligned text string (by default it is GSLC_ALIGN_MID_LEFT)
+      gslc_DrawTxtBase(pGui, acStr, rItemRect, pElem->pTxtFont, eTxtFlags,
+        pElem->eTxtAlign, colTxt, colFill, pListbox->nItemMarginW, pListbox->nItemMarginH);
     }
 
 

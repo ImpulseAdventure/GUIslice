@@ -25,14 +25,13 @@
 // Include any extended elements
 #include "elem/XListbox.h"
 
-#include <Adafruit_GFX.h>
-
 // To demonstrate additional fonts, uncomment the following line:
 //#define USE_EXTRA_FONTS
 
 #ifdef USE_EXTRA_FONTS
   // Note that these files are located within the Adafruit-GFX library folder:
-#include "Fonts/FreeSansBold9pt7b.h"
+  #include <Adafruit_GFX.h>
+  #include "Fonts/FreeSansBold9pt7b.h"
 #endif
 
 // Defines for resources
@@ -93,7 +92,7 @@ bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
 {
   gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
+  //gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
   if (pElemRef == NULL) {
     return false;
   }
@@ -147,7 +146,7 @@ bool InitOverlays()
     (gslc_tsRect) { 60, 50, 160, 160 }, E_FONT_EXTRA, m_pXListboxBuf, 50, XLISTBOX_SEL_NONE);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 4, 2);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
-  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 8);
+  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Red");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Orange");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Yellow");

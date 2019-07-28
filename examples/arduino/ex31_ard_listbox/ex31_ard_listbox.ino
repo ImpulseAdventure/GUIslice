@@ -27,14 +27,10 @@
 #include "elem/XSlider.h"
 
 // Determine whether to load Adafruit-GFX extra fonts or Teensy fonts
-// - And also define any positioning adjustment in the listbox to
-//   account for the font's baseline. Adafruit-GFX mode automatically
-//   detects the baseline but Teensy APIs require custom adjustment.
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
-#define FONTS_T3
-#define FONT_MARGIN_X 2
-#define FONT_MARGIN_Y 4
+  #define FONTS_T3
 #endif
+
 
 // ------------------------------------------------
 // Load specific fonts
@@ -243,9 +239,7 @@ bool InitGUI()
     m_pXListboxBuf, sizeof(m_pXListboxBuf), 0);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 5, 1); // 5 rows, 1 column
-  #if defined(FONTS_T3)
-  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, FONT_MARGIN_X, FONT_MARGIN_Y); // Adjust for font baseline
-  #endif
+  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   gslc_ElemXListboxSetSelFunc(&m_gui, pElemRef, &CbListBox);
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_GRAY, GSLC_COL_BLACK, GSLC_COL_BLUE_DK3);
