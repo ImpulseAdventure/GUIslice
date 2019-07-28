@@ -239,12 +239,12 @@ bool InitGUI()
     m_pXListboxBuf, sizeof(m_pXListboxBuf), 0);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 5, 1); // 5 rows, 1 column
-  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   gslc_ElemXListboxSetSelFunc(&m_gui, pElemRef, &CbListBox);
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_GRAY, GSLC_COL_BLACK, GSLC_COL_BLUE_DK3);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_BLUE_LT3);
   gslc_ElemSetGlowCol(&m_gui, pElemRef, GSLC_COL_GRAY, GSLC_COL_BLUE_DK3, GSLC_COL_WHITE);
+  gslc_ElemSetTxtMarginXY(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   m_pElemListbox = pElemRef;
 
   // Create vertical scrollbar for textbox

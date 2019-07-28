@@ -166,18 +166,6 @@ void gslc_ElemXListboxSetMargin(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8
   gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXListboxItemsSetTxtMargin(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8_t nMarginW, int8_t nMarginH)
-{
-  gslc_tsXListbox* pListbox = (gslc_tsXListbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_LISTBOX, __LINE__);
-  if (!pListbox) return;
-
-  pListbox->nItemMarginW = nMarginW;
-  pListbox->nItemMarginH = nMarginH;
-  pListbox->bNeedRecalc = true;
-  // Mark as needing full redraw
-  gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_FULL);
-}
-
 
 void gslc_ElemXListboxItemsSetSize(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemW, int16_t nItemH)
 {
@@ -365,8 +353,6 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   pXData->nItemH          = 30;
   pXData->nItemGap        = 2;
   pXData->colGap          = GSLC_COL_BLACK;
-  pXData->nItemMarginW    = 0;
-  pXData->nItemMarginH    = 0;
   pXData->nItemCurSelLast = XLISTBOX_SEL_NONE;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
@@ -544,9 +530,8 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
       // Draw the aligned text string (by default it is GSLC_ALIGN_MID_LEFT)
       gslc_DrawTxtBase(pGui, acStr, rItemRect, pElem->pTxtFont, eTxtFlags,
-        pElem->eTxtAlign, colTxt, colFill, pListbox->nItemMarginW, pListbox->nItemMarginH);
+        pElem->eTxtAlign, colTxt, colFill, pElem->nTxtMarginX, pElem->nTxtMarginY);
     }
-
 
   }
 
