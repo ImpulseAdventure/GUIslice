@@ -410,6 +410,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.readcommand8(ILI9341_RDIMGFMT);
       m_disp.readcommand8(ILI9341_RDSELFDIAG);
 
+      #if defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+        // ILI9341_DUE_MB library defaults to "solid" mode, so we
+        // initialize it to transparent mode for consistency.
+        m_disp.setFontMode(gTextFontModeTransparent);
+      #endif
+
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
