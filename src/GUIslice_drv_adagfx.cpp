@@ -742,6 +742,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
+  int16_t   nCurPosX = 0;
+  int16_t   nCurPosY = 0;
   char      ch;
 
   // Initialize the font and positioning
@@ -801,6 +803,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     bProg = true;
   }
 
+  bool bFirstChar = true;
   while (1) {
     // Fetch the next character
     if (!bProg) {
@@ -831,6 +834,33 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
         //   in a way that is not compatible with the Adafruit-GFX font rendering.
         m_disp.Adafruit_GFX::write(ch);
       }
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+      // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
+	    // to control the kerning / spacing between letters in a string.
+	    // With a "letter spacing" (_letterSpacing variable in the lib) of
+      // 0, the characters will be horizontally abutted. Therefore, a
+      // small non-zero _letterSpacing is typically used (default is 2).
+      //
+      // When printing a string with ILI9341_DUE_MB, the cursor is automatically
+      // advanced after every character. The ILI9341_DUE_MB library increments
+      // the current text cursor by the character width plus the _letterSpacing
+      // (multiplied by the text scale factor). However, the ILI9341_DUE_MB treats
+      // the first character of a string differently from the remainder in that the
+      // _letterSpacing is not used in the first character.
+      //
+      // Since we are rendering individual characters, we need to adjust the
+      // cursor position to advance the _letterSpacing offset accordingly.
+
+      // Print the character
+      // - Note that this will automatically advance the text cursor
+      m_disp.print(ch);
+
+      // Now account for the _letterSpacing
+      nCurPosY = m_disp.getCursorY();
+      nCurPosX = m_disp.getCursorX();
+      nCurPosX += m_disp.getTextLetterSpacing() * nTxtScale;
+      m_disp.cursorToXY(nCurPosX,nCurPosY);
+
     #else
       // Call Adafruit-GFX for rendering
       // NOTE: This should automatically advance the "cursor" (current text position)
@@ -843,7 +873,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     // readjust the X cursor to our aligned bounding box.
     if (ch == '\n') {
       #if defined(DRV_DISP_ADAGFX_RA8875)
-      int16_t nCurPosY = m_disp.getCursorY();
+      nCurPosY = m_disp.getCursorY();
       if (bInternal8875Font) {
         // TODO: Is getCursorY() supported in RA8875 mode?
         m_disp.textSetCursor(nTxtX, nCurPosY);
@@ -852,10 +882,12 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       nTxtY += m_disp.getFontHeight();
       m_disp.cursorToXY(nTxtX,nTxtY);
       #else
-      int16_t nCurPosY = m_disp.getCursorY();
+      nCurPosY = m_disp.getCursorY();
       m_disp.setCursor(nTxtX,nCurPosY);
       #endif
     }
+
+    bFirstChar = false;
 
   } // while(1)
 
@@ -1273,7 +1305,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
             gslc_tsColor nCol = (gslc_tsColor){r,g,b};
             bool bDrawBit = true;
             if (GSLC_BMP_TRANS_EN) {
-				      gslc_tsColor nColTrans = pGui->sTransCol;
+              gslc_tsColor nColTrans = pGui->sTransCol;
               if ((nCol.r == nColTrans.r) && (nCol.g == nColTrans.g) && (nCol.b == nColTrans.b)) {
                 bDrawBit = false;
               }
