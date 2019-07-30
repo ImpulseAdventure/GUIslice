@@ -838,6 +838,34 @@ const char* gslc_GetNameDisp(gslc_tsGui* pGui);
 const char* gslc_GetNameTouch(gslc_tsGui* pGui);
 
 ///
+/// Get the native display driver instance
+/// - This can be useful to access special commands
+///   available in the selected driver.
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return Void pointer to the display driver instance.
+///         This pointer should be typecast to the particular
+///         driver being used. If no driver was created then
+///         this function will return NULL.
+///
+void* gslc_GetDriverDisp(gslc_tsGui* pGui);
+
+///
+/// Get the native touch driver instance
+/// - This can be useful to access special commands
+///   available in the selected driver.
+///
+/// \param[in]  pGui:      Pointer to GUI
+///
+/// \return Void pointer to the touch driver instance.
+///         This pointer should be typecast to the particular
+///         driver being used. If no driver was created then
+///         this function will return NULL.
+///
+void* gslc_GetDriverTouch(gslc_tsGui* pGui);
+
+///
 /// Initialize the GUIslice library
 /// - Configures the primary screen surface(s)
 /// - Initializes font support

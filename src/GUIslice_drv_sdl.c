@@ -239,6 +239,10 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
   return true;
 }
 
+void* gslc_DrvGetDriverDisp(gslc_tsGui* pGui)
+{
+  return (pGui->pvDriver);
+}
 
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
@@ -267,7 +271,6 @@ const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui)
 {
   return m_acDrvTouch;
 }
-
 
 // -----------------------------------------------------------------------
 // Image/surface handling Functions
@@ -892,6 +895,10 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev)
   return true;
 }
 
+void* gslc_DrvGetDriverTouch(gslc_tsGui* pGui)
+{
+  return NULL;
+}
 
 
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
