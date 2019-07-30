@@ -3001,10 +3001,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Draw text string if defined
   if (pElem->pStrBuf) {
     gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
-    int16_t       nMargin   = pElem->nTxtMargin;
+    int8_t        nMarginX  = pElem->nTxtMarginX;
+    int8_t        nMarginY  = pElem->nTxtMarginY;
 
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
-      pElem->eTxtAlign, colTxt, colBg, nMargin, nMargin);
+      pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
   }
 
   // --------------------------------------------------------------------------
@@ -3114,7 +3115,18 @@ void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nM
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
-  pElem->nTxtMargin        = nMargin;
+  pElem->nTxtMarginX       = nMargin;
+  pElem->nTxtMarginY       = nMargin;
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+void gslc_ElemSetTxtMarginXY(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int8_t nMarginX,int8_t nMarginY)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
+  pElem->nTxtMarginX       = nMarginX;
+  pElem->nTxtMarginY       = nMarginY;
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
@@ -3413,7 +3425,8 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   pElemDest->colElemText      = pElemSrc->colElemText;
   pElemDest->colElemTextGlow  = pElemSrc->colElemTextGlow;
   pElemDest->eTxtAlign        = pElemSrc->eTxtAlign;
-  pElemDest->nTxtMargin       = pElemSrc->nTxtMargin;
+  pElemDest->nTxtMarginX      = pElemSrc->nTxtMarginX;
+  pElemDest->nTxtMarginY      = pElemSrc->nTxtMarginY;
   pElemDest->pTxtFont         = pElemSrc->pTxtFont;
 
   // pXData
@@ -4522,7 +4535,8 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->colElemText      = GSLC_COL_WHITE;
   pElem->colElemTextGlow  = GSLC_COL_WHITE;
   pElem->eTxtAlign        = GSLC_ALIGN_MID_MID;
-  pElem->nTxtMargin       = 0;
+  pElem->nTxtMarginX      = 0;
+  pElem->nTxtMarginY      = 0;
   pElem->pTxtFont         = NULL;
 
   pElem->pXData           = NULL;

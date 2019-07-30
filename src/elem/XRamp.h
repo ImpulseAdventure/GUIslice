@@ -203,6 +203,7 @@ bool gslc_ElemXRampDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRed
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
       0,                                                          \
+      0,                                                          \
       NULL,                                                       \
       (void*)(&sGauge##nElemId),                                  \
       NULL,                                                       \
@@ -242,6 +243,7 @@ bool gslc_ElemXRampDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRed
       GSLC_COL_WHITE,                                             \
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
       0,                                                          \
       NULL,                                                       \
       (void*)(&sGauge##nElemId),                                  \

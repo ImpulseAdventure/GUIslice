@@ -629,7 +629,8 @@ typedef struct gslc_tsElem {
   gslc_tsColor        colElemText;      ///< Color of overlay text
   gslc_tsColor        colElemTextGlow;  ///< Color of overlay text when glowing
   int8_t              eTxtAlign;        ///< Alignment of overlay text
-  uint8_t             nTxtMargin;       ///< Margin of overlay text within rect region
+  int8_t              nTxtMarginX;      ///< Margin of overlay text within rect region (x offset)
+  int8_t              nTxtMarginY;      ///< Margin of overlay text within rect region (y offset)
   gslc_tsFont*        pTxtFont;         ///< Ptr to Font for overlay text
 
   // Extended data elements
@@ -1982,6 +1983,17 @@ void gslc_ElemSetTxtAlign(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nAl
 ///
 void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nMargin);
 
+/// Set the margin around of a textual element (X & Y offsets can be different)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  nMarginX:    Number of pixels gap to offset text horizontally
+/// \param[in]  nMarginY:    Number of pixels gap to offset text vertically
+///
+/// \return none
+///
+void gslc_ElemSetTxtMarginXY(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int8_t nMarginX,int8_t nMarginY);
+
 ///
 /// Update the text string associated with an Element
 ///
@@ -2552,6 +2564,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
+      0,                                                          \
       pFont,                                                      \
       NULL,                                                       \
       NULL,                                                       \
@@ -2582,6 +2595,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
+      0,                                                          \
       0,                                                          \
       pFont,                                                      \
       NULL,                                                       \
@@ -2614,6 +2628,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
       0,                                                          \
+      0,                                                          \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
@@ -2642,6 +2657,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       GSLC_COL_WHITE,                                             \
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
       0,                                                          \
       NULL,                                                       \
       NULL,                                                       \
@@ -2675,6 +2691,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
+      0,                                                          \
       pFont,                                                      \
       (void*)extraData,                                           \
       NULL,                                                       \
@@ -2705,6 +2722,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
+      0,                                                          \
       0,                                                          \
       pFont,                                                      \
       (void*)extraData,                                           \
@@ -2741,6 +2759,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       nAlignTxt,                                                  \
       0,                                                          \
+      0,                                                          \
       pFont,                                                      \
       NULL,                                                       \
       NULL,                                                       \
@@ -2771,6 +2790,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
+      0,                                                          \
       0,                                                          \
       pFont,                                                      \
       NULL,                                                       \
@@ -2803,6 +2823,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
       0,                                                          \
+      0,                                                          \
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
@@ -2831,6 +2852,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       GSLC_COL_WHITE,                                             \
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
       0,                                                          \
       NULL,                                                       \
       NULL,                                                       \
@@ -2863,6 +2885,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       colTxt,                                                     \
       colTxt,                                                     \
       nAlignTxt,                                                  \
+      0,                                                          \
       0,                                                          \
       pFont,                                                      \
       (void*)extraData,                                           \
