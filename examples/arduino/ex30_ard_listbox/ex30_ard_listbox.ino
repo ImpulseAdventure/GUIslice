@@ -146,7 +146,6 @@ bool InitOverlays()
     (gslc_tsRect) { 60, 50, 160, 160 }, E_FONT_EXTRA, m_pXListboxBuf, 50, XLISTBOX_SEL_NONE);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 4, 2);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
-  gslc_ElemXListboxItemsSetTxtMargin(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Red");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Orange");
   gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Yellow");
@@ -158,6 +157,7 @@ bool InitOverlays()
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK3, GSLC_COL_GRAY_DK3, GSLC_COL_GREEN_DK1);
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
+  gslc_ElemSetTxtMarginXY(&m_gui, pElemRef, 5, 0); // Provide additional margin from left side
   m_pElemListbox = pElemRef; // Save for quick access
 
 

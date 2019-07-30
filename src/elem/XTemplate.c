@@ -214,10 +214,11 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   // Draw text string if defined
   if (pElem->pStrBuf) {
     gslc_tsColor  colTxt    = (bGlowNow)? pElem->colElemTextGlow : pElem->colElemText;
-    int16_t       nMargin   = pElem->nTxtMargin;
+    int8_t        nMarginX  = pElem->nTxtMarginX;
+    int8_t        nMarginY  = pElem->nTxtMarginY;
 
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
-      pElem->eTxtAlign, colTxt, colBg, nMargin, nMargin);
+      pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
   }
 
   // --------------------------------------------------------------------------

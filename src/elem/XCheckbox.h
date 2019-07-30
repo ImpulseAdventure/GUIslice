@@ -230,6 +230,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
       0,                                                          \
+      0,                                                          \
       NULL,                                                       \
       (void*)(&sCheckbox##nElemId),                               \
       NULL,                                                       \
@@ -267,6 +268,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
       GSLC_COL_WHITE,                                             \
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
       0,                                                          \
       NULL,                                                       \
       (void*)(&sCheckbox##nElemId),                               \

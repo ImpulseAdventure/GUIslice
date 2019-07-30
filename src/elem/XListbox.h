@@ -82,8 +82,6 @@ typedef struct {
   int16_t         nItemH;         ///< Height of listbox item
   int8_t          nItemGap;       ///< Gap between listbox items
   gslc_tsColor    colGap;         ///< Gap color
-  int8_t          nItemMarginW;   ///< Text margin inside listbox items (X offset)
-  int8_t          nItemMarginH;   ///< Text margin inside listbox items (Y offset)
   bool            bItemAutoSizeW; ///< Enable auto-sizing of items (in width)
   bool            bItemAutoSizeH; ///< Enable auto-sizing of items (in height)
 
@@ -144,19 +142,6 @@ void gslc_ElemXListboxSetSize(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8_t
 /// \return none
 ///
 void gslc_ElemXListboxSetMargin(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8_t nMarginW, int8_t nMarginH);
-
-///
-/// Configure the text margin inside the listbox items
-/// - Defines the region bewteen the listbox item and the text labels
-///
-/// \param[in]  pGui:          Pointer to GUI
-/// \param[in]  pElemRef:      Ptr to Element Reference to update
-/// \param[in]  nMarginW:      Set the margin (horizontal) inside the item (0 for none)
-/// \param[in]  nMarginH:      Set the margin (horizontal) inside the item (0 for none)
-///
-/// \return none
-///
-void gslc_ElemXListboxItemsSetTxtMargin(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8_t nMarginW, int8_t nMarginH);
 
 ///
 /// Configure the size of the listbox items

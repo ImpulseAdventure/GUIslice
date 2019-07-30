@@ -264,6 +264,7 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
       0,                                                          \
+      0,                                                          \
       NULL,                                                       \
       (void*)(&sGauge##nElemId),                                  \
       NULL,                                                       \
@@ -312,6 +313,7 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
       GSLC_COL_WHITE,                                             \
       GSLC_COL_WHITE,                                             \
       GSLC_ALIGN_MID_MID,                                         \
+      0,                                                          \
       0,                                                          \
       NULL,                                                       \
       (void*)(&sGauge##nElemId),                                  \
