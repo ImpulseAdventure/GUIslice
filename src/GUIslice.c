@@ -103,6 +103,15 @@ const char* gslc_GetNameTouch(gslc_tsGui* pGui)
   return gslc_DrvGetNameTouch(pGui);
 }
 
+void* gslc_GetDriverDisp(gslc_tsGui* pGui)
+{
+  return gslc_DrvGetDriverDisp(pGui);
+}
+
+void* gslc_GetDriverTouch(gslc_tsGui* pGui)
+{
+  return gslc_DrvGetDriverTouch(pGui);
+}
 
 
 bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxPage,gslc_tsFont* asFont,uint8_t nMaxFont)
