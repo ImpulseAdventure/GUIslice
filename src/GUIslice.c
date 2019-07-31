@@ -952,6 +952,9 @@ gslc_tsImgRef gslc_GetImageFromProg(const unsigned char* pImgBuf,gslc_teImgRefFl
 
 
 // Sine function with optional lookup table
+// - Note that the n64Ang range is limited by 16-bit integers
+//   to an effective degree range of -511 to +511 degrees,
+//   defined by the max integer range: 32767/64.
 int16_t gslc_sinFX(int16_t n64Ang)
 {
   int16_t   nRetValS;
@@ -975,11 +978,9 @@ int16_t gslc_sinFX(int16_t n64Ang)
 
   // Support multiple waveform periods
   if (n64Ang >= 360*64) {
-    // For some reason this modulus is broken!
-    n64Ang = (int32_t)n64Ang % (int32_t)(360*64);
-    //n64Ang = n64Ang - (360*64);
+    n64Ang = n64Ang - (360*64);
   } else if (n64Ang <= -360*64) {
-    n64Ang = -(-(int32_t)n64Ang % (int32_t)(360*64));
+    n64Ang = n64Ang + (360*64);
   }
   // Handle negative range
   if (n64Ang < 0) {
@@ -1015,14 +1016,17 @@ int16_t gslc_sinFX(int16_t n64Ang)
 }
 
 // Cosine function with optional lookup table
+// - Note that the n64Ang range is limited by 16-bit integers
+//   to an effective degree range of -511 to +511 degrees,
+//   defined by the max integer range: 32767/64.
 int16_t gslc_cosFX(int16_t n64Ang)
 {
 #if (GSLC_USE_FLOAT)
-  int16_t   nRetValS;
+int16_t   nRetValS;
   // Use floating-point math library function
 
   // Calculate angle in radians
-  float fAngRad = n64Ang*GSLC_2PI/(360.0*64.0);
+  float fAngRad = n64Ang * GSLC_2PI / (360.0*64.0);
   // Perform floating point calc
   float fCos = cos(fAngRad);
   // Return as fixed point result
@@ -1032,7 +1036,15 @@ int16_t gslc_cosFX(int16_t n64Ang)
 #else
   // Use lookup tables
   // Cosine function is equivalent to Sine shifted by 90 degrees
-  return gslc_sinFX(n64Ang+90*64);
+  // - To avoid int16_t overflow, we trap range beyond 360 degrees
+  //   and shift the angle by one rotation (360 degrees).
+  // - This is necessary because otherwise the +90*64 would reduce the
+  //   effective range of cosFX() to +421 degrees.
+  if (n64Ang >= 360 * 64) {
+    return gslc_sinFX((n64Ang - 360*64) + 90*64);
+  } else {
+    return gslc_sinFX(n64Ang+90*64);
+  }
 
 #endif
 
