@@ -13,7 +13,7 @@
 
 // Include any extended elements
 #include "elem/XCheckbox.h"
-#include "elem/XGauge.h"
+#include "elem/XProgress.h"
 
 #include <libgen.h>       // For path parsing
 
@@ -58,7 +58,7 @@ gslc_tsElemRef              m_asConfigElemRef[MAX_ELEM_PG_CONFIG];
 gslc_tsElem                 m_asAlertElem[MAX_ELEM_PG_ALERT];
 gslc_tsElemRef              m_asAlertElemRef[MAX_ELEM_PG_ALERT];
 
-gslc_tsXGauge               m_sXGauge;
+gslc_tsXProgress            m_sXProgress;
 gslc_tsXCheckbox            m_asXCheck[3];
 
 
@@ -214,7 +214,7 @@ bool InitOverlays()
   // Create progress bar
   pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 40, 120, 50, 10 },
     (char*)"Progress:", 0, E_FONT_TXT);
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui, E_ELEM_PROGRESS, E_PG_MAIN, &m_sXGauge, (gslc_tsRect) { 100, 120, 50, 10 },
+  pElemRef = gslc_ElemXProgressCreate(&m_gui, E_ELEM_PROGRESS, E_PG_MAIN, &m_sXProgress, (gslc_tsRect) { 100, 120, 50, 10 },
     0, 100, 0, GSLC_COL_GREEN, false);
   m_pElemProgress = pElemRef; // Save for quick access
 
@@ -333,7 +333,7 @@ int main( int argc, char* args[] )
     snprintf(acTxt,MAX_STR,"%u",m_nCount);
     gslc_ElemSetTxtStr(&m_gui,m_pElemCnt,acTxt);
 
-    gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress,((m_nCount/200)%100));
+    gslc_ElemXProgressSetVal(&m_gui,m_pElemProgress,((m_nCount/200)%100));
 
     // We can change or disable the global page as needed:
     //   gslc_SetPageBase(&m_gui, E_PG_BASE);    // Set to E_PG_BASE

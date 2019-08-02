@@ -6,14 +6,13 @@
 // - Example 09 (LINUX):
 //     Demonstrate radial and ramp controls
 //     NOTE: The ramp control is still beta and subject to change
-//     NOTE: The radial control is disabled by default, but can
-//           be enabled by GSLC_FEATURE_XGAUGE_RADIAL
 //
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
 // Include any extended elements
-#include "elem/XGauge.h"
+#include "elem/XRadial.h"
+#include "elem/XRamp.h"
 #include "elem/XSlider.h"
 
 #include "unistd.h"   // For usleep() //xxx
@@ -43,7 +42,8 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXRadial,m_sXRamp;
+gslc_tsXRadial              m_sXRadial;
+gslc_tsXRamp                m_sXRamp;
 gslc_tsXSlider              m_sXSlider;
 
 
@@ -102,11 +102,11 @@ bool CbSlideRadial(void* pvGui,void* pvElemRef,int16_t nPos)
 
       // Link slider to the radial control
       gslc_tsElemRef* pElemRad = gslc_PageFindElemById(pGui,E_PG_MAIN,E_RADIAL);
-      gslc_ElemXGaugeUpdate(pGui,pElemRad,nVal);
+      gslc_ElemXRadialSetVal(pGui,pElemRad,nVal);
 
       // Link slider to the ramp control
       gslc_tsElemRef* pElemRamp = gslc_PageFindElemById(pGui,E_PG_MAIN,E_RAMP);
-      gslc_ElemXGaugeUpdate(pGui,pElemRamp,nVal);
+      gslc_ElemXRampSetVal(pGui,pElemRamp,nVal);
 
       // Link slider to the numerical display
       snprintf(acTxt,8,"%u",nVal);
@@ -146,17 +146,15 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXRadial,
+  pElemRef = gslc_ElemXRadialCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXRadial,
           (gslc_tsRect){210,140,80,80},0,100,0,GSLC_COL_YELLOW,false);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RADIAL);
-  gslc_ElemXGaugeSetIndicator(&m_gui,pElemRef,GSLC_COL_YELLOW,30,3,true);
-  gslc_ElemXGaugeSetTicks(&m_gui,pElemRef,GSLC_COL_GRAY_LT1,8,5);
+  gslc_ElemXRadialSetIndicator(&m_gui,pElemRef,GSLC_COL_YELLOW,30,3,true);
+  gslc_ElemXRadialSetTicks(&m_gui,pElemRef,GSLC_COL_GRAY_LT1,8,5);
 
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_RAMP,E_PG_MAIN,&m_sXRamp,
+  pElemRef = gslc_ElemXRampCreate(&m_gui,E_RAMP,E_PG_MAIN,&m_sXRamp,
           (gslc_tsRect){80,140,100,80},0,100,50,GSLC_COL_YELLOW,false);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
-  gslc_ElemXGaugeSetStyle(&m_gui,pElemRef,GSLCX_GAUGE_STYLE_RAMP);
 
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider,
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);

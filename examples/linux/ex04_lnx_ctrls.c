@@ -13,7 +13,7 @@
 // Include any extended elements
 #include "elem/XCheckbox.h"
 #include "elem/XSlider.h"
-#include "elem/XGauge.h"
+#include "elem/XProgress.h"
 
 #include <time.h> // For clock() (frame rate reporting)
 
@@ -43,7 +43,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXGauge               m_sXGauge,m_sXGauge1;
+gslc_tsXProgress            m_sXProgress,m_sXProgress1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
@@ -120,12 +120,12 @@ bool InitOverlays()
   // Create progress bar (horizontal)
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",0,E_FONT_TXT);
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXProgress,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXProgress1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
@@ -211,7 +211,7 @@ int main( int argc, char* args[] )
     snprintf(acTxt,MAX_STR,"%u",m_nCount);
     gslc_ElemSetTxtStr(&m_gui,pElemCnt,acTxt);
 
-    gslc_ElemXGaugeUpdate(&m_gui,pElemProgress,((m_nCount/200)%100));
+    gslc_ElemXProgressSetVal(&m_gui,pElemProgress,((m_nCount/200)%100));
 
     // NOTE: A more efficient method is to move the following
     //       code into the slider position callback function.
@@ -220,7 +220,7 @@ int main( int argc, char* args[] )
     snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
     gslc_ElemSetTxtStr(&m_gui,pElemSliderTxt,acTxt);
 
-    gslc_ElemXGaugeUpdate(&m_gui,pElemProgress1,(nPos*80.0/100.0)-15);
+    gslc_ElemXProgressSetVal(&m_gui,pElemProgress1,(nPos*80.0/100.0)-15);
 
     // Periodically call GUIslice update function
     gslc_Update(&m_gui);
