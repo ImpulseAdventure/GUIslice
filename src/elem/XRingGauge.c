@@ -228,7 +228,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
     if (nSegInd < nValSegs) {
       if (pXRingGauge->bGradient) {
         // Gradient coloring
-        uint16_t nGradPos = 1000.0 * nSegInd / nMaxSegs;
+        uint16_t nGradPos = 1000 * nSegInd / nMaxSegs;
         colStep = gslc_ColorBlend2(colRingActive1, colRingActive2, 500, nGradPos);
       } else {
         // Flat coloring
