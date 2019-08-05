@@ -1483,6 +1483,59 @@ void gslc_DrawFrameQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 ///
 void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 
+///
+/// Draw a gradient filled sector of a circle with support for inner and outer radius
+/// - Can be used to create a ring or pie chart
+/// - Note that the gradient fill is defined by both the color stops (cArcStart..cArcEnd) as well as
+///   a gradient angular range (nAngGradStart..nAngGradStart+nAngGradRange). This gradient angular
+///   range can be differeng from the drawing angular range (nAngSegStart..nAngSecEnd) to enable
+///   more advanced control styling / updates.
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  nQuality:      Number of segments used to depict a full circle.
+///                            The higher the value, the smoother the resulting
+///                            arcs. A value of 72 provides 360/72=5 degrees per
+///                            segment which is a reasonable compromise between
+///                            smoothness and performance.
+/// \param[in]  nMidX:         Midpoint X coordinate of circle
+/// \param[in]  nMidY:         Midpoint Y coordinate of circle
+/// \param[in]  nRad1:         Inner sector radius (0 for sector / pie, non-zero for ring)
+/// \param[in]  nRad2:         Outer sector radius. Delta from nRad1 defines ring thickness.
+/// \param[in]  cArcStart:     Start color for gradient fill (with angular range defined by nAngGradStart,nAngGradRange)
+/// \param[in]  cArcEnd:       End color for gradient fill
+/// \param[in]  nAngSecStart:  Angle of start of sector drawing (0 at top), measured in degrees.
+/// \param[in]  nAngSecEnd:    Angle of end of sector drawing (0 at top), measured in degrees.
+/// \param[in]  nAngGradStart: For gradient fill, defines the starting angle associated with the starting color (cArcStart)
+/// \param[in]  nAngGradRange: For gradient fill, defines the angular range associated with the start-to-end color range (cArcStart..cArcEnd)
+///
+/// \return none
+///
+void gslc_DrawFillGradSector(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, int16_t nMidY, int16_t nRad1, int16_t nRad2,
+  gslc_tsColor cArcStart, gslc_tsColor cArcEnd, int16_t nAngSecStart, int16_t nAngSecEnd, int16_t nAngGradStart, int16_t nAngGradRange);
+
+///
+/// Draw a flat filled sector of a circle with support for inner and outer radius
+/// - Can be used to create a ring or pie chart
+///
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  nQuality:      Number of segments used to depict a full circle.
+///                            The higher the value, the smoother the resulting
+///                            arcs. A value of 72 provides 360/72=5 degrees per
+///                            segment which is a reasonable compromise between
+///                            smoothness and performance.
+/// \param[in]  nMidX:         Midpoint X coordinate of circle
+/// \param[in]  nMidY:         Midpoint Y coordinate of circle
+/// \param[in]  nRad1:         Inner sector radius (0 for sector / pie, non-zero for ring)
+/// \param[in]  nRad2:         Outer sector radius. Delta from nRad1 defines ring thickness.
+/// \param[in]  cArc:          Color for flat fill
+/// \param[in]  nAngSecStart:  Angle of start of sector drawing (0 at top), measured in degrees.
+/// \param[in]  nAngSecEnd:    Angle of end of sector drawing (0 at top), measured in degrees.
+///
+/// \return none
+///
+void gslc_DrawFillSector(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, int16_t nMidY, int16_t nRad1, int16_t nRad2,
+  gslc_tsColor cArc, int16_t nAngSecStart, int16_t nAngSecEnd);
 
 // -----------------------------------------------------------------------
 /// @}

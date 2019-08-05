@@ -1698,6 +1698,87 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol)
 
 }
 
+void gslc_DrawFillSectorBase(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, int16_t nMidY, int16_t nRad1, int16_t nRad2,
+  gslc_tsColor cArcStart, gslc_tsColor cArcEnd,bool bGradient, int16_t nAngGradStart, int16_t nAngGradRange,int16_t nAngSecStart,int16_t nAngSecEnd)
+{
+  gslc_tsPt anPts[4];
+
+  // Calculate degrees per step (based on quality setting)
+  int16_t nStepAng = 360 / nQuality;
+  int16_t nStep64 = 64 * nStepAng;
+
+  int16_t nAng64;
+  int16_t nX, nY;
+  int16_t nSegStart, nSegEnd;
+  gslc_tsColor colSeg;
+
+  nSegStart = nAngSecStart * nQuality / 360;
+  nSegEnd = nAngSecEnd * nQuality / 360;
+
+  int16_t nSegGradStart, nSegGradRange;
+  nSegGradStart = nAngGradStart * nQuality / 360;
+  nSegGradRange = nAngGradRange * nQuality / 360;
+  nSegGradRange = (nSegGradRange == 0) ? 1 : nSegGradRange; // Guard against div/0
+
+  bool bClockwise;
+  int16_t nSegInd;
+  int16_t nStepCnt;
+  if (nSegEnd >= nSegStart) {
+    nStepCnt = nSegEnd - nSegStart;
+    bClockwise = true;
+  } else {
+    nStepCnt = nSegStart - nSegEnd;
+    bClockwise = false;
+  }
+
+  for (int16_t nStepInd = 0; nStepInd < nStepCnt; nStepInd++) {
+    // Remap from the step to the segment index, depending on direction
+    nSegInd = (bClockwise)? (nSegStart + nStepInd) : (nSegStart - nStepInd - 1);
+
+    nAng64 = (nSegInd * nStep64) % (360 * 64);
+    #if defined(DBG_REDRAW)
+    GSLC_DEBUG2_PRINT("FillSector: StepInd=%d SegInd=%d (%d..%d)\n", nStepInd, nSegInd, nSegStart, nSegEnd);
+    #endif
+
+    gslc_PolarToXY(nRad1, nAng64, &nX, &nY);
+    anPts[0] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
+    gslc_PolarToXY(nRad2, nAng64, &nX, &nY);
+    anPts[1] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
+    gslc_PolarToXY(nRad2, nAng64 + nStep64, &nX, &nY);
+    anPts[2] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
+    gslc_PolarToXY(nRad1, nAng64 + nStep64, &nX, &nY);
+    anPts[3] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
+
+    if (bGradient) {
+      // Gradient coloring
+      int16_t nGradPos = 1000 * (int32_t)(nSegInd-nSegGradStart) / nSegGradRange;
+      #if defined(DBG_REDRAW)
+      GSLC_DEBUG2_PRINT("FillSector:  GradPos=%d\n", nGradPos);
+      #endif
+      colSeg = gslc_ColorBlend2(cArcStart, cArcEnd, 500, nGradPos);
+    } else {
+      // Flat coloring
+      colSeg = cArcStart;
+    }
+    
+    gslc_DrawFillQuad(pGui, anPts, colSeg);
+  }
+}
+
+void gslc_DrawFillGradSector(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, int16_t nMidY, int16_t nRad1, int16_t nRad2,
+  gslc_tsColor cArcStart, gslc_tsColor cArcEnd, int16_t nAngSecStart, int16_t nAngSecEnd, int16_t nAngGradStart, int16_t nAngGradRange)
+{
+  gslc_DrawFillSectorBase(pGui, nQuality, nMidX, nMidY, nRad1, nRad2, cArcStart, cArcEnd, true,
+    nAngGradStart, nAngGradRange, nAngSecStart, nAngSecEnd);
+}
+
+void gslc_DrawFillSector(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, int16_t nMidY, int16_t nRad1, int16_t nRad2,
+  gslc_tsColor cArc, int16_t nAngSecStart, int16_t nAngSecEnd)
+{
+  gslc_DrawFillSectorBase(pGui, nQuality, nMidX, nMidY, nRad1, nRad2, cArc, cArc, false,
+    0, 0, nAngSecStart, nAngSecEnd);
+}
+
 
 // -----------------------------------------------------------------------
 // Font Functions
@@ -2685,7 +2766,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
-	  pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+    pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
 
       // Determine if redraw is needed
       gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
@@ -4479,7 +4560,7 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 
 bool gslc_SetTransparentColor(gslc_tsGui* pGui, gslc_tsColor nCol)
 {
-	pGui->sTransCol = nCol;
+  pGui->sTransCol = nCol;
   return true;
 }
 
@@ -4761,7 +4842,7 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
     // Get focus capability attribute
     bCanFocus = false;
     pElemRef = &(pCollect->asElemRef[nInd]);
-	pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
     if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
       if (pElemRef->pElem == NULL) {
         GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
