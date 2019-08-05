@@ -142,8 +142,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 ///
 /// \return none
 ///
-// TODO: Consider rename to: ElemXRingGaugeSetVal(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos)
-void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
+void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
 
 ///
 /// Defines the angular range of the gauge, including both the active
@@ -161,8 +160,11 @@ void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nStart64:    TODO
-/// \param[in]  nRange64:    TODO
+/// \param[in]  nStart64:    Define angle of start of active region (measured
+///                          in 1/64 of a degree)
+/// \param[in]  nRange64:    Define angular range from strt of active region
+///                          to end of the inactive region (measured in
+///                          1/64 of a degree).
 /// \param[in]  bClockwise:  Defines the direction in which the active
 ///                          region grows (true for clockwise)
 ///
@@ -182,8 +184,7 @@ void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t
 ///
 /// \return none
 ///
-// TODO: Consider rename to gslc_ElemXRingGaugeSetValRange()
-void gslc_ElemXRingGaugeSetRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax);
+void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax);
 
 
 /// Defines the thickness of the ring arcs. More specifically, it defines the reduction
@@ -221,8 +222,7 @@ void gslc_ElemXRingGaugeSetQuality(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
 ///
 /// \return none
 ///
-// TODO: Consider rename to gslc_ElemXRingGaugeSetColorInactive()
-void gslc_ElemXRingGaugeSetRingColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive);
+void gslc_ElemXRingGaugeSetColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive);
 
 /// Defines the color of the active region to be a flat (constant) color.
 ///
@@ -232,8 +232,7 @@ void gslc_ElemXRingGaugeSetRingColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* p
 ///
 /// \return none
 ///
-// TODO: Consider rename to ElemXRingGaugeSetColorActiveFlat()
-void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive);
+void gslc_ElemXRingGaugeSetColorActiveFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive);
 
 /// Defines the color of the active region to be a gradient using two color stops. The
 /// active region will be filled according to the proportion between nMin and nMax.
@@ -246,19 +245,7 @@ void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElem
 ///
 /// \return none
 ///
-// TODO: Consider rename to gslc_ElemXRingGaugeSetColorActiveGradient()
-void gslc_ElemXRingGaugeSetRingColorGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd);
-
-/// Defines the color of the background behind the gauge.
-/// This color is used when redrawing / updating the inner text field via ElemSetTxtStr().
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  colBkgnd:    Color of background
-///
-/// \return none
-///
-// TODO: Add gslc_ElemXRingGaugeSetColorBackground(colBkgnd)
+void gslc_ElemXRingGaugeSetColorActiveGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd);
 
 // ============================================================================
 

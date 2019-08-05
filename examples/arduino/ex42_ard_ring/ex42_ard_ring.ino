@@ -126,13 +126,13 @@ void setup()
   static char m_str10[10] = "";
   pElemRef = gslc_ElemXRingGaugeCreate(&m_gui, E_ELEM_XRING, E_PG_MAIN, &m_sXRingGauge,
     (gslc_tsRect) { 80, 80, 100, 100 }, m_str10, 10, E_FONT_DIAL);
-  gslc_ElemXRingGaugeSetRange(&m_gui, pElemRef, 0, 100);
-  gslc_ElemXRingGaugeSetPos(&m_gui, pElemRef, 60); // Set initial value
+  gslc_ElemXRingGaugeSetValRange(&m_gui, pElemRef, 0, 100);
+  gslc_ElemXRingGaugeSetVal(&m_gui, pElemRef, 60); // Set initial value
   // The following are some additional config options available
   //gslc_ElemXRingGaugeSetThickness(&m_gui,pElemRef, 15);
   //gslc_ElemXRingGaugeSetQuality(&m_gui,pElemRef, 72);
-  //gslc_ElemXRingGaugeSetRingColorFlat(&m_gui,pElemRef, GSLC_COL_ORANGE);
-  //gslc_ElemXRingGaugeSetRingColorGradient(&m_gui, pElemRef, GSLC_COL_BLUE_LT4, GSLC_COL_RED);
+  //gslc_ElemXRingGaugeSetColorActiveFlat(&m_gui,pElemRef, GSLC_COL_ORANGE);
+  //gslc_ElemXRingGaugeSetColorActiveGradient(&m_gui, pElemRef, GSLC_COL_BLUE_LT4, GSLC_COL_RED);
   m_pElemXRingGauge = pElemRef; // Save for quick access
 
    // Create slider
@@ -187,7 +187,7 @@ void loop()
   // No filtering enabled -- update the XRingGauge immediately
 
   // Update the XRingGauge position with the slider position
-  gslc_ElemXRingGaugeSetPos(&m_gui, m_pElemXRingGauge, m_nSliderPos);
+  gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge, m_nSliderPos);
 
   // Update the XRingGauge text string with a percentage
   snprintf(acStr, 10, "%d%%", m_nSliderPos);
@@ -213,7 +213,7 @@ void loop()
   // Do we want to update the XRingGauge?
   if (bDoUpdate) {
     // Update the XRingGauge position with the slider position
-    gslc_ElemXRingGaugeSetPos(&m_gui, m_pElemXRingGauge, m_nSliderPos);
+    gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge, m_nSliderPos);
 
     // Update the XRingGauge text string with a percentage
     snprintf(acStr, 10, "%d%%", m_nSliderPos);

@@ -96,7 +96,7 @@ gslc_tsElemRef* gslc_ElemXRingGaugeCreate(gslc_tsGui* pGui, int16_t nElemId, int
   pXData->nPosMax = 100;
   pXData->nThickness = 10;
 
-  pXData->nDeg64PerSeg = 5 * 64; // Defaul to 5 degree segments
+  pXData->nDeg64PerSeg = 5 * 64; // Default to 5 degree segments
   pXData->bGradient = false;
   pXData->nSegGap = 0;
   pXData->colRing1 = GSLC_COL_BLUE_LT4;
@@ -209,6 +209,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
   //GSLC_DEBUG2_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nSegStart, nSegEnd);
 
   // TODO: Consider drawing in reverse order if (nVal < nValLast)
+  //       Doing so will improve incremental redraw appearance
   for (uint16_t nSegInd = nSegStart; nSegInd < nSegEnd; nSegInd++) {
     nAng64Start = nSegInd * nStep64;
     nAng64End = nAng64Start + nStep64;
@@ -225,14 +226,14 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 
     // Adjust color depending on which segment we are rendering
     if (nSegInd < nValSegs) {
-		  if (pXRingGauge->bGradient) {
+      if (pXRingGauge->bGradient) {
         // Gradient coloring
-			  uint16_t nGradPos = 1000.0 * nSegInd / nMaxSegs;
-			  colStep = gslc_ColorBlend2(colRingActive1, colRingActive2, 500, nGradPos);
-		  } else {
+        uint16_t nGradPos = 1000.0 * nSegInd / nMaxSegs;
+        colStep = gslc_ColorBlend2(colRingActive1, colRingActive2, 500, nGradPos);
+      } else {
         // Flat coloring
-			  colStep = colRingActive1;
-		  }
+        colStep = colRingActive1;
+      }
     } else {
       colStep = colRingInactive;
     }
@@ -283,7 +284,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 
 }
 
-void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPos)
+void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPos)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -307,7 +308,7 @@ void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16
 
 }
 
-void gslc_ElemXRingGaugeSetRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax)
+void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -330,7 +331,7 @@ void gslc_ElemXRingGaugeSetThickness(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef,
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive)
+void gslc_ElemXRingGaugeSetColorActiveFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -343,7 +344,7 @@ void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElem
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXRingGaugeSetRingColorGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd)
+void gslc_ElemXRingGaugeSetColorActiveGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -357,7 +358,7 @@ void gslc_ElemXRingGaugeSetRingColorGradient(gslc_tsGui* pGui, gslc_tsElemRef* p
 }
 
 
-void gslc_ElemXRingGaugeSetRingColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive)
+void gslc_ElemXRingGaugeSetColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
