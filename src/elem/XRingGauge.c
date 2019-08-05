@@ -161,6 +161,13 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 
   int16_t nVal = pXRingGauge->nPos;
   int16_t nValLast = pXRingGauge->nPosLast;
+  int16_t nPosMin = pXRingGauge->nPosMin;
+  int16_t nPosMax = pXRingGauge->nPosMax;
+  int16_t nPosRange = nPosMax - nPosMin;
+  if (nPosRange == 0) {
+    // Safeguard against div/0
+	  nPosRange = 1;
+  }
 
   gslc_tsColor colRingActive1 = pXRingGauge->colRing1;
   gslc_tsColor colRingActive2 = pXRingGauge->colRing2;
@@ -181,13 +188,12 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
   int16_t nX, nY;
 
   // Calculate segment ranges
-  // - TODO: Handle nPosMin, nPosMax
   // - TODO: Rewrite to use nDeg64PerSeg more effectively
   // - FIXME: Handle case with nDeg64PerSeg < 64 (ie. <1 degree)
   int16_t nStep64 = pXRingGauge->nDeg64PerSeg; // Trig functions work on 1/64 degree units
   int16_t nStepAng = nStep64 / 64;
-  uint32_t nValSegs = ((uint32_t)nVal * 360 / 100) / nStepAng; // Segment index of current value
-  uint32_t nLastSegs = ((uint32_t)nValLast * 360 / 100) / nStepAng; // Segment index of previous value
+  uint32_t nValSegs = ((uint32_t)(nVal-nPosMin) * 360 / nPosRange) / nStepAng; // Segment index of current value
+  uint32_t nLastSegs = ((uint32_t)(nValLast-nPosMin) * 360 / nPosRange) / nStepAng; // Segment index of previous value
   int16_t nMaxSegs = 360 / nStepAng; // Final segment index of circle
 
   // Determine whether we should draw the full range (full redraw)
