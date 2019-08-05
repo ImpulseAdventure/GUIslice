@@ -77,7 +77,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // - Defines callback for redraw but does not track touch/click
 gslc_tsElemRef* gslc_ElemXRadialCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
   gslc_tsXRadial* pXData,gslc_tsRect rElem,
-  int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert)
+  int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXRadialCreate";
@@ -95,7 +95,6 @@ gslc_tsElemRef* gslc_ElemXRadialCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pXData->nMin            = nMin;
   pXData->nMax            = nMax;
   pXData->nVal            = nVal;
-  pXData->bVert           = bVert;
   pXData->bFlip           = false;
   pXData->colGauge        = colGauge;
   pXData->colTick         = GSLC_COL_GRAY;

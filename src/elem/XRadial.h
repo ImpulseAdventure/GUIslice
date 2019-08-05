@@ -75,7 +75,6 @@ typedef struct {
   gslc_tsColor        colTick;        ///< Color of gauge tick marks
   uint16_t            nTickCnt;       ///< Number of gauge tick marks
   uint16_t            nTickLen;       ///< Length of gauge tick marks
-  bool                bVert;          ///< Vertical if true, else Horizontal
   bool                bFlip;          ///< Reverse direction of gauge
   uint16_t            nIndicLen;      ///< Indicator length
   uint16_t            nIndicTip;      ///< Size of tip at end of indicator
@@ -98,13 +97,11 @@ typedef struct {
 /// \param[in]  nMax:        Maximum value of gauge for nVal comparison
 /// \param[in]  nVal:        Starting value of gauge
 /// \param[in]  colGauge:    Color for the gauge indicator
-/// \param[in]  bVert:       Flag to indicate vertical vs horizontal action
-///                          (true = vertical, false = horizontal)
 ///
 /// \return Pointer to Element reference or NULL if failure
 ///
 gslc_tsElemRef* gslc_ElemXRadialCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-  gslc_tsXRadial* pXData,gslc_tsRect rElem,int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert);
+  gslc_tsXRadial* pXData,gslc_tsRect rElem,int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge);
 
 
 
@@ -201,7 +198,7 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 //
 
 /// \def gslc_ElemXRadialCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,
-///      nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_)
+///      nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_)
 ///
 /// Create a Gauge Element in Flash
 ///
@@ -218,8 +215,6 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 /// \param[in]  colFrame_:   Color for the gauge frame
 /// \param[in]  colFill_:    Color for the gauge background fill
 /// \param[in]  colGauge_:   Color for the gauge indicator
-/// \param[in]  bVert_:      Flag to indicate vertical vs horizontal action
-///                          (true = vertical, false = horizontal)
 ///
 /// \return none
 ///
@@ -229,7 +224,7 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 
 
 #define gslc_ElemXRadialCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
-    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
+    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXRadial sGauge##nElemId;                           \
@@ -242,7 +237,6 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
   sGauge##nElemId.colTick = GSLC_COL_GRAY;                        \
   sGauge##nElemId.nTickCnt = 8;                                   \
   sGauge##nElemId.nTickLen = 5;                                   \
-  sGauge##nElemId.bVert = bVert_;                                 \
   sGauge##nElemId.bFlip = false;                                  \
   sGauge##nElemId.nIndicLen = 10;                                 \
   sGauge##nElemId.nIndicTip = 3;                                  \
@@ -279,7 +273,7 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 
 
 #define gslc_ElemXRadialCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
-    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
+    nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXRadial sGauge##nElemId;                           \
@@ -292,7 +286,6 @@ bool gslc_ElemXRadialDrawRadial(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
   sGauge##nElemId.colTick = GSLC_COL_GRAY;                        \
   sGauge##nElemId.nTickCnt = 8;                                   \
   sGauge##nElemId.nTickLen = 5;                                   \
-  sGauge##nElemId.bVert = bVert_;                                 \
   sGauge##nElemId.bFlip = false;                                  \
   sGauge##nElemId.nIndicLen = 10;                                 \
   sGauge##nElemId.nIndicTip = 3;                                  \
