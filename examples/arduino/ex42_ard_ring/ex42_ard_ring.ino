@@ -129,7 +129,11 @@ void setup()
   gslc_ElemXRingGaugeSetValRange(&m_gui, pElemRef, 0, 100);
   gslc_ElemXRingGaugeSetVal(&m_gui, pElemRef, 60); // Set initial value
   // The following are some additional config options available
-  //gslc_ElemXRingGaugeSetThickness(&m_gui,pElemRef, 15);
+  //gslc_ElemXRingGaugeSetAngleRange(&m_gui, pElemRef, 0, 360, true);    // Full circle 
+  //gslc_ElemXRingGaugeSetAngleRange(&m_gui, pElemRef, -90, 180, true);  // Upper Semi-circle
+  //gslc_ElemXRingGaugeSetAngleRange(&m_gui, pElemRef, 0, 90, true);     // Top-Right Quarter-circle
+  //gslc_ElemXRingGaugeSetAngleRange(&m_gui, pElemRef, -135, 270, true); // Three-Quarter circle
+  //gslc_ElemXRingGaugeSetThickness(&m_gui,pElemRef, 8);
   //gslc_ElemXRingGaugeSetQuality(&m_gui,pElemRef, 72);
   //gslc_ElemXRingGaugeSetColorActiveFlat(&m_gui,pElemRef, GSLC_COL_ORANGE);
   //gslc_ElemXRingGaugeSetColorActiveGradient(&m_gui, pElemRef, GSLC_COL_BLUE_LT4, GSLC_COL_RED);

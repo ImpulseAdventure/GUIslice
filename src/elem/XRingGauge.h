@@ -73,11 +73,14 @@ extern "C" {
 /// Extended data for XRingGauge element
 typedef struct {
   // Config
-  int16_t           nPosMin;
-  int16_t           nPosMax;
+  int16_t           nValMin;
+  int16_t           nValMax;
+
+  int16_t           nAngStart;
+  int16_t           nAngRange;
 
   // Style config
-  uint16_t          nDeg64PerSeg;
+  int16_t           nQuality;
   int8_t            nThickness;
   bool              bGradient;
   uint8_t           nSegGap;
@@ -86,8 +89,8 @@ typedef struct {
   gslc_tsColor      colRingRemain;
 
   // State
-  int16_t           nPos;           ///< Current position value
-  int16_t           nPosLast;       ///< Previous position value
+  int16_t           nVal;           ///< Current position value
+  int16_t           nValLast;       ///< Previous position value
   char              acStrLast[XRING_STR_MAX];
 
   // Callbacks
@@ -138,39 +141,37 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nPos:        New position value
+/// \param[in]  nVal:        New position value
 ///
 /// \return none
 ///
-void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
+void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal);
 
 ///
 /// Defines the angular range of the gauge, including both the active
 /// and inactive regions.
 ///
-/// - nStart64 defines the angle at the beginning of the active region.
+/// - nStart defines the angle at the beginning of the active region.
 /// - The current position marks the end of the active region and the
 ///   beginning of the inactive region.
-/// - nRange64 defines the angular range from the start of the active
+/// - nRange defines the angular range from the start of the active
 ///   region to the end of the inactive region. In most cases, a
-///   range of 360 degrees is used (nRange64 = 360*64).
-/// - All angles are measured in units of degrees / 64.
-/// - Angles are measured with 0 at the top, 90 * 64 towards the right,
-///   180 * 64 towards the bottom, 270 * 64 towards the left, etc.
+///   range of 360 degrees is used.
+/// - All angles are measured in units of degrees.
+/// - Angles are measured with 0 at the top, 90 towards the right,
+///   180 towards the bottom, 270 towards the left, etc.
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nStart64:    Define angle of start of active region (measured
-///                          in 1/64 of a degree)
-/// \param[in]  nRange64:    Define angular range from strt of active region
-///                          to end of the inactive region (measured in
-///                          1/64 of a degree).
+/// \param[in]  nStart:      Define angle of start of active region (measured in degrees)
+/// \param[in]  nRange:      Define angular range from strt of active region
+///                          to end of the inactive region (measured in degrees)
 /// \param[in]  bClockwise:  Defines the direction in which the active
-///                          region grows (true for clockwise)
+///                          region grows (true for clockwise) [FORCED TRUE, FOR FUTURE IMPLEMENTATION]
 ///
 /// \return none
 ///
-// TODO: Add gslc_ElemXRingGaugeSetAngleRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nStart64, int16_t nRange64, bool bClockwise);
+void gslc_ElemXRingGaugeSetAngleRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nStart, int16_t nRange, bool bClockwise);
 
 
 /// Defines the range of values that may be passed into SetVal(), used to
@@ -179,12 +180,12 @@ void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nPosMin:     Minimum value
-/// \param[in]  nPosMax:     Maximum value
+/// \param[in]  nValMin:     Minimum value
+/// \param[in]  nValMax:     Maximum value
 ///
 /// \return none
 ///
-void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax);
+void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nValMin, int16_t nValMax);
 
 
 /// Defines the thickness of the ring arcs. More specifically, it defines the reduction
