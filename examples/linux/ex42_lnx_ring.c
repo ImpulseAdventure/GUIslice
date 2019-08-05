@@ -138,6 +138,7 @@ bool InitOverlays()
   //gslc_ElemXRingGaugeSetAngleRange(&m_gui, pElemRef, -135, 270, true); // Three-Quarter circle
   //gslc_ElemXRingGaugeSetThickness(&m_gui,pElemRef, 8);
   //gslc_ElemXRingGaugeSetQuality(&m_gui,pElemRef, 72);
+  //gslc_ElemXRingGaugeSetColorInactive(&m_gui,pElemRef, GSLC_COL_GRAY_DK3);
   //gslc_ElemXRingGaugeSetColorActiveFlat(&m_gui,pElemRef, GSLC_COL_ORANGE);
   //gslc_ElemXRingGaugeSetColorActiveGradient(&m_gui, pElemRef, GSLC_COL_BLUE_LT4, GSLC_COL_RED);
   m_pElemXRingGauge = pElemRef; // Save for quick access
