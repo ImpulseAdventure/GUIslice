@@ -69,7 +69,10 @@
   #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
     #include <ILI9341_due.h>
     #include <SPI.h>
-    #include <SystemFont5x7.h> // FIXME: Add support for user-defined fonts
+    // Include the "SystemFont5x7" so that we can provide a
+    // suitable default in case the user doesn't load
+    // one explicitly.
+    #include <SystemFont5x7.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     #include <Adafruit_SSD1306.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
@@ -418,8 +421,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
       #if defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
         // ILI9341_DUE_MB library defaults to "solid" mode, so we
-        // initialize it to transparent mode for consistency.
+        // initialize it to transparent mode for text rendering consistency.
         m_disp.setFontMode(gTextFontModeTransparent);
+        // The ILI9341_DUE_MB library does not automatically
+        // assign a default font, so we will do that here.
+        m_disp.setFont(SystemFont5x7);
       #endif
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
@@ -693,9 +699,11 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
-  // FIXME: Add support for user defined fonts
-  m_disp.setFont(SystemFont5x7);
-
+  if (pFont->pvFont == NULL) {
+    m_disp.setFont(SystemFont5x7);
+  } else {
+    m_disp.setFont((gTextFont)(pFont->pvFont));
+  }
   nTxtScale = pFont->nSize;
   m_disp.setTextScale(nTxtScale);
 
@@ -775,8 +783,11 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
-  // FIXME: Add support for user defined fonts
-  m_disp.setFont(SystemFont5x7);
+  if (pFont->pvFont == NULL) {
+    m_disp.setFont(SystemFont5x7);
+  } else {
+    m_disp.setFont((gTextFont)(pFont->pvFont));
+  }
   m_disp.setTextColor(nColRaw);
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
@@ -846,8 +857,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       }
     #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
       // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
-	    // to control the kerning / spacing between letters in a string.
-	    // With a "letter spacing" (_letterSpacing variable in the lib) of
+      // to control the kerning / spacing between letters in a string.
+      // With a "letter spacing" (_letterSpacing variable in the lib) of
       // 0, the characters will be horizontally abutted. Therefore, a
       // small non-zero _letterSpacing is typically used (default is 2).
       //
