@@ -142,7 +142,7 @@ bool InitOverlays()
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
 
   pElemRef = gslc_ElemXRadialCreate(&m_gui, E_RADIAL, E_PG_MAIN, &m_sXRadial,
-    (gslc_tsRect) { 210, 140, 80, 80 }, 0, 100, 0, GSLC_COL_YELLOW, false);
+    (gslc_tsRect) { 210, 140, 80, 80 }, 0, 100, 0, GSLC_COL_YELLOW);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
   gslc_ElemXRadialSetIndicator(&m_gui, pElemRef, GSLC_COL_YELLOW, 30, 3, true);
   gslc_ElemXRadialSetTicks(&m_gui, pElemRef, GSLC_COL_GRAY_LT1, 8, 5);

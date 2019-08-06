@@ -92,19 +92,22 @@ gslc_tsElemRef* gslc_ElemXRingGaugeCreate(gslc_tsGui* pGui, int16_t nElemId, int
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
 
   // Provide default config
-  pXData->nPosMin = 0;
-  pXData->nPosMax = 100;
+  pXData->nValMin = 0;
+  pXData->nValMax = 100;
+  pXData->nAngStart = 0;
+  pXData->nAngRange = 360;
   pXData->nThickness = 10;
 
-  pXData->nDeg64PerSeg = 5 * 64; // Defaul to 5 degree segments
+  pXData->nQuality = 72; // 360/72=5 degree segments
+
   pXData->bGradient = false;
   pXData->nSegGap = 0;
   pXData->colRing1 = GSLC_COL_BLUE_LT4;
   pXData->colRing2 = GSLC_COL_RED;
   pXData->colRingRemain = (gslc_tsColor) { 0, 0, 48 };
 
-  pXData->nPos = 0;
-  pXData->nPosLast = 0;
+  pXData->nVal = 0;
+  pXData->nValLast = 0;
   pXData->acStrLast[0] = 0;
 
 
@@ -134,7 +137,7 @@ gslc_tsElemRef* gslc_ElemXRingGaugeCreate(gslc_tsGui* pGui, int16_t nElemId, int
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
 //   simpler callback function definition & scalability.
-bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
+bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
 {
   gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)pvElemRef;
@@ -147,26 +150,33 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
   // Init for default drawing
   // --------------------------------------------------------------------------
 
-  bool      bGlowEn,bGlowing,bGlowNow;
-  int16_t   nElemX,nElemY;
-  uint16_t  nElemW,nElemH;
+  bool      bGlowEn, bGlowing, bGlowNow;
+  int16_t   nElemX, nElemY;
+  uint16_t  nElemW, nElemH;
 
-  nElemX    = pElem->rElem.x;
-  nElemY    = pElem->rElem.y;
-  nElemW    = pElem->rElem.w;
-  nElemH    = pElem->rElem.h;
-  bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
-  bGlowing  = gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
-  bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
+  nElemX = pElem->rElem.x;
+  nElemY = pElem->rElem.y;
+  nElemW = pElem->rElem.w;
+  nElemH = pElem->rElem.h;
+  bGlowEn = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
+  bGlowing = gslc_ElemGetGlow(pGui, pElemRef); // Element should be glowing (if enabled)
+  bGlowNow = bGlowEn & bGlowing; // Element is currently glowing
 
-  int16_t nVal = pXRingGauge->nPos;
-  int16_t nValLast = pXRingGauge->nPosLast;
+  int16_t nVal = pXRingGauge->nVal;
+  int16_t nValLast = pXRingGauge->nValLast;
+  int16_t nValMin = pXRingGauge->nValMin;
+  int16_t nValMax = pXRingGauge->nValMax;
+  int16_t nValRange = (nValMax == nValMin)? 1 : (nValMax - nValMin); // Guard against div/0
+  int16_t nAngStart = pXRingGauge->nAngStart;
+  int16_t nAngRange = pXRingGauge->nAngRange;
+  //int16_t nAngEnd = nAngStart + nAngRange;
+  int16_t nQuality = pXRingGauge->nQuality;
 
   gslc_tsColor colRingActive1 = pXRingGauge->colRing1;
   gslc_tsColor colRingActive2 = pXRingGauge->colRing2;
   gslc_tsColor colRingInactive = pXRingGauge->colRingRemain;
+  bool bGradient = pXRingGauge->bGradient;
   gslc_tsColor colBg = pElem->colElemFill; // Background color used for text clearance
-  gslc_tsColor colStep;
 
   // Calculate the ring center and radius
   int16_t nMidX = nElemX + nElemW / 2;
@@ -176,72 +186,71 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 
   // --------------------------------------------------------------------------
 
-  gslc_tsPt anPts[4]; // Storage for points in segment quadrilaterla
-  int16_t nAng64Start,nAng64End;
-  int16_t nX, nY;
-
-  // Calculate segment ranges
-  // - TODO: Handle nPosMin, nPosMax
-  // - TODO: Rewrite to use nDeg64PerSeg more effectively
-  // - FIXME: Handle case with nDeg64PerSeg < 64 (ie. <1 degree)
-  int16_t nStep64 = pXRingGauge->nDeg64PerSeg; // Trig functions work on 1/64 degree units
-  int16_t nStepAng = nStep64 / 64;
-  uint32_t nValSegs = ((uint32_t)nVal * 360 / 100) / nStepAng; // Segment index of current value
-  uint32_t nLastSegs = ((uint32_t)nValLast * 360 / 100) / nStepAng; // Segment index of previous value
-  int16_t nMaxSegs = 360 / nStepAng; // Final segment index of circle
-
   // Determine whether we should draw the full range (full redraw)
   // or a smaller, updated region (incremental redraw)
   bool bInc = (eRedraw == GSLC_REDRAW_INC) ? true : false;
-  int16_t nSegStart, nSegEnd;
+
+  int16_t nDrawStart;
+  int16_t nDrawVal;
+  int16_t nDrawEnd;
+
+  bool bDrawActive = false;
+  bool bDrawInactive = false;
   if (bInc) {
     if (nVal > nValLast) {
-      nSegStart = nLastSegs;
-      nSegEnd = nValSegs;
-    } else {
-      nSegStart = nValSegs;
-      nSegEnd = nLastSegs;
+      // Incremental redraw: adding value, so draw with active color
+      bDrawActive = true;
+      nDrawStart = (int32_t)(nValLast - nValMin) * nAngRange / nValRange;
+      nDrawVal = (int32_t)(nVal - nValMin) * nAngRange / nValRange;
+    }
+    else {
+      // Incremental redraw: reducing value, so draw with inactive color
+      bDrawInactive = true;
+      nDrawVal = (int32_t)(nVal - nValMin) * nAngRange / nValRange;
+      nDrawEnd = (int32_t)(nValLast - nValMin) * nAngRange / nValRange;
     }
   } else {
-    nSegStart = 0;
-    nSegEnd = nMaxSegs;
+    // Full redraw: draw both active and inactive regions
+    bDrawActive = true;
+    bDrawInactive = true;
+    nDrawStart = 0;
+    nDrawVal = (nVal - nValMin) * nAngRange / nValRange;
+    nDrawEnd = nAngRange;
   }
-  //GSLC_DEBUG2_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nSegStart, nSegEnd);
+  //GSLC_DEBUG2_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nAngStart, nAngEnd);
 
-  // TODO: Consider drawing in reverse order if (nVal < nValLast)
-  for (uint16_t nSegInd = nSegStart; nSegInd < nSegEnd; nSegInd++) {
-    nAng64Start = nSegInd * nStep64;
-    nAng64End = nAng64Start + nStep64;
+  // Adjust for start of angular range
+  nDrawStart += nAngStart;
+  nDrawVal += nAngStart;
+  nDrawEnd += nAngStart;
 
-    // Convert polar coordinates into cartesian
-    gslc_PolarToXY(nRad1, nAng64Start, &nX, &nY);
-    anPts[0] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
-    gslc_PolarToXY(nRad2, nAng64Start, &nX, &nY);
-    anPts[1] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
-    gslc_PolarToXY(nRad2, nAng64End, &nX, &nY);
-    anPts[2] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
-    gslc_PolarToXY(nRad1, nAng64End, &nX, &nY);
-    anPts[3] = (gslc_tsPt) { nMidX + nX, nMidY + nY };
+  #if defined(DBG_REDRAW)
+  GSLC_DEBUG2_PRINT("\n\nRingDraw: Val=%d ValLast=%d PosMin=%d PosMax=%d Q=%d\n", nVal, nValLast, nValMin, nValMax, nQuality);
+  #endif
 
-    // Adjust color depending on which segment we are rendering
-    if (nSegInd < nValSegs) {
-		  if (pXRingGauge->bGradient) {
-        // Gradient coloring
-			  uint16_t nGradPos = 1000.0 * nSegInd / nMaxSegs;
-			  colStep = gslc_ColorBlend2(colRingActive1, colRingActive2, 500, nGradPos);
-		  } else {
-        // Flat coloring
-			  colStep = colRingActive1;
-		  }
+  if (bDrawActive) {
+    if (bGradient) {
+      #if defined(DBG_REDRAW)
+      GSLC_DEBUG2_PRINT("RingDraw:  ActiveG  start=%d end=%d astart=%d arange=%d\n", nDrawStart, nDrawVal,nAngStart,nAngRange);
+      #endif
+      gslc_DrawFillGradSector(pGui, nQuality, nMidX, nMidY,
+        nRad1, nRad2, colRingActive1, colRingActive2, nDrawStart, nDrawVal, nAngStart, nAngRange);
     } else {
-      colStep = colRingInactive;
+      #if defined(DBG_REDRAW)
+      GSLC_DEBUG2_PRINT("RingDraw:  Active   start=%d end=%d\n", nDrawStart, nDrawVal);
+      #endif
+      gslc_DrawFillSector(pGui, nQuality, nMidX, nMidY,
+        nRad1, nRad2, colRingActive1, nDrawStart, nDrawVal);
     }
+  }
 
-    // TODO: Support gapped regions between segments
-
-    // Draw the quadrilateral representing the circle segment
-    gslc_DrawFillQuad(pGui, anPts, colStep);
-
+  if (bDrawInactive) {
+    #if defined(DBG_REDRAW)
+    GSLC_DEBUG2_PRINT("RingDraw:  Inactive start=%d end=%d\n", nDrawEnd, nDrawVal);
+    #endif
+    // Since we are erasing, we will reverse the redraw direction (swap Val & End)
+    gslc_DrawFillSector(pGui, nQuality, nMidX, nMidY,
+      nRad1, nRad2, colRingInactive, nDrawEnd, nDrawVal);
   }
 
   // --------------------------------------------------------------------------
@@ -271,7 +280,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
   } // pStrBuf
 
   // Save the position to enable future incremental calculations
-  pXRingGauge->nPosLast = pXRingGauge->nPos;
+  pXRingGauge->nValLast = pXRingGauge->nVal;
 
 
   // --------------------------------------------------------------------------
@@ -283,23 +292,24 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 
 }
 
-void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPos)
+
+void gslc_ElemXRingGaugeSetVal(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nVal)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 
-  int16_t           nPosOld;
+  int16_t           nValOld;
 
   // Clip position
-  if (nPos < pXRingGauge->nPosMin) { nPos = pXRingGauge->nPosMin; }
-  if (nPos > pXRingGauge->nPosMax) { nPos = pXRingGauge->nPosMax; }
+  if (nVal < pXRingGauge->nValMin) { nVal = pXRingGauge->nValMin; }
+  if (nVal > pXRingGauge->nValMax) { nVal = pXRingGauge->nValMax; }
 
   // Update
-  nPosOld = pXRingGauge->nPos;
-  pXRingGauge->nPos = nPos;
+  nValOld = pXRingGauge->nVal;
+  pXRingGauge->nVal = nVal;
 
   // Only update if changed
-  if (nPos != nPosOld) {
+  if (nVal != nValOld) {
     // Mark for redraw
     // - Only need incremental redraw
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
@@ -307,13 +317,29 @@ void gslc_ElemXRingGaugeSetPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16
 
 }
 
-void gslc_ElemXRingGaugeSetRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nPosMin, int16_t nPosMax)
+void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nValMin, int16_t nValMax)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 
-  pXRingGauge->nPosMin = nPosMin;
-  pXRingGauge->nPosMax = nPosMax;
+  pXRingGauge->nValMin = nValMin;
+  pXRingGauge->nValMax = nValMax;
+
+  // Mark for full redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+void gslc_ElemXRingGaugeSetAngleRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nStart, int16_t nRange, bool bClockwise)
+{
+  gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
+  if (!pXRingGauge) return;
+
+  pXRingGauge->nAngStart = nStart;
+  pXRingGauge->nAngRange = nRange;
+
+  nRange = (nRange == 0) ? 1 : nRange; // Guard against div/0
+
+  // TODO: Support bClockwise
 
   // Mark for full redraw
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
@@ -330,7 +356,7 @@ void gslc_ElemXRingGaugeSetThickness(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef,
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive)
+void gslc_ElemXRingGaugeSetColorActiveFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colActive)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -343,7 +369,7 @@ void gslc_ElemXRingGaugeSetRingColorFlat(gslc_tsGui* pGui, gslc_tsElemRef* pElem
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXRingGaugeSetRingColorGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd)
+void gslc_ElemXRingGaugeSetColorActiveGradient(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colStart, gslc_tsColor colEnd)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -357,7 +383,7 @@ void gslc_ElemXRingGaugeSetRingColorGradient(gslc_tsGui* pGui, gslc_tsElemRef* p
 }
 
 
-void gslc_ElemXRingGaugeSetRingColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive)
+void gslc_ElemXRingGaugeSetColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsColor colInactive)
 {
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
@@ -376,9 +402,8 @@ void gslc_ElemXRingGaugeSetQuality(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 
-  // Convert from number of segments to degrees
-  uint16_t nDeg64PerSeg = 360 * 64 / nSegments;
-  pXRingGauge->nDeg64PerSeg = nDeg64PerSeg;
+  nSegments = (nSegments == 0) ? 72 : nSegments; // Guard against div/0 with default
+  pXRingGauge->nQuality = nSegments;
 
   // Mark for full redraw
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
