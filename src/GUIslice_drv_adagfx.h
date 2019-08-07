@@ -109,6 +109,24 @@ extern "C" {
 
 #define DRV_OVERRIDE_TXT_ALIGN         0 ///< Driver provides text alignment
 
+
+// -----------------------------------------------------------------------
+// Driver-specific overrides
+// - Some drivers have exceptions to the above support configuration
+// -----------------------------------------------------------------------
+#if defined(DRV_DISP_WAVESHARE_ILI9486)
+  #undef DRV_HAS_DRAW_RECT_ROUND_FRAME
+  #undef DRV_HAS_DRAW_RECT_ROUND_FILL
+  #undef DRV_HAS_DRAW_TRI_FRAME
+  #undef DRV_HAS_DRAW_TRI_FILL
+
+  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0 ///< Support gslc_DrvDrawFrameRoundRect()
+  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0 ///< Support gslc_DrvDrawFillRoundRect()
+  #define DRV_HAS_DRAW_TRI_FRAME         0 ///< Support gslc_DrvDrawFrameTriangle()
+  #define DRV_HAS_DRAW_TRI_FILL          0 ///< Support gslc_DrvDrawFillTriangle()
+#endif
+
+
 // =======================================================================
 // Driver-specific members
 // =======================================================================

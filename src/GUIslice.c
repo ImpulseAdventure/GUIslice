@@ -2766,7 +2766,7 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
     case GSLC_EVT_DRAW:
       // Fetch the parameters
       pElemRef = (gslc_tsElemRef*)(pvScope);
-    pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+      pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
 
       // Determine if redraw is needed
       gslc_teRedrawType eRedraw = gslc_ElemGetRedraw(pGui,pElemRef);
@@ -4842,7 +4842,7 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
     // Get focus capability attribute
     bCanFocus = false;
     pElemRef = &(pCollect->asElemRef[nInd]);
-  pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+    pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
     if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
       if (pElemRef->pElem == NULL) {
         GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");

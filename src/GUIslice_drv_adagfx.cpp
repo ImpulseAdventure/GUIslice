@@ -95,6 +95,10 @@
     #include <Adafruit_RA8875.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     #include <MCUFRIEND_kbv.h>
+  #elif defined(DRV_DISP_WAVESHARE_ILI9486)
+    // https://github.com/ImpulseAdventure/Waveshare_ILI9486
+    #include <Waveshare_ILI9486_GFX.h>
+    #include <SPI.h>
 
   #else
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice config"
@@ -286,6 +290,11 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
   const char* m_acDrvDisp = "ADA_MCUFRIEND";
   MCUFRIEND_kbv m_disp;
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_WAVESHARE_ILI9486)
+  const char* m_acDrvDisp = "WAVESHARE_ILI9486";
+  Waveshare_ILI9486_GFX m_disp;
 
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
@@ -490,6 +499,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.begin(identifier);
       #endif
+
+    #elif defined(DRV_DISP_WAVESHARE_ILI9486)
+      m_disp.begin();
 
     #endif
 
@@ -717,6 +729,18 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
+#elif defined(DRV_DISP_WAVESHARE_ILI9486)
+  // FIXME: Add support for user defined fonts
+  m_disp.setFont();
+
+  nTxtScale = pFont->nSize;
+  m_disp.setTextSize(nTxtScale);
+
+  // Fetch the font sizing
+  m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
+
+  return true;
+
 #else
 
   nTxtScale = pFont->nSize;
@@ -791,6 +815,12 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
+#elif defined(DRV_DISP_WAVESHARE_ILI9486)
+  // FIXME: Add support for user defined fonts
+  m_disp.setFont();
+  m_disp.setTextColor(nColRaw);
+  m_disp.setCursor(nTxtX,nTxtY);
+  m_disp.setTextSize(nTxtScale);
 #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
@@ -990,10 +1020,12 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_RECT_ROUND_FILL)
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -1038,10 +1070,12 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   m_disp.drawRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -1085,24 +1119,30 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_TRI_FRAME)
+
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#endif
   return true;
 }
 
 bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_TRI_FILL)
+
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#endif
   return true;
 }
 
@@ -2347,6 +2387,14 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDisp0W = m_disp.width();
     pGui->nDisp0H = m_disp.height();
     m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_WAVESHARE_ILI9486)
+    // No support for rotation in Waveshare_ILI9486 library
+    bSupportRotation = false;
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
 
