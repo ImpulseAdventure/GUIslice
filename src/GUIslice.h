@@ -2229,13 +2229,29 @@ void gslc_ElemSetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bVisible
 
 ///
 /// Get the visibility status for an element
+/// - Note that the visibility state is independent of
+///   whether or not the page associated with the element
+///   is actively displayed.
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
-/// \return True if element is shown, false if hidden
+/// \return True if element is marked as visible, false if hidden
 ///
 bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Determine whether an element is visible on the screen
+/// - This function takes into account both the element's
+///   "Visible" state as well as whether the element's
+///   associated page is active in the page stack.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element appears on the screen, false otherwise
+///
+bool gslc_ElemGetOnScreen(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
 
 /* UNUSED
 ///

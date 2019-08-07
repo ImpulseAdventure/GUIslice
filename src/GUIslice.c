@@ -3439,6 +3439,22 @@ bool gslc_ElemGetVisible(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_VISIBLE);
 }
 
+bool gslc_ElemGetOnScreen(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
+{
+  int16_t nElemId = gslc_ElemGetId(pGui, pElemRef);
+  for (int8_t nStackPage = 0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
+    gslc_tsPage* pStackPage = pGui->apPageStack[nStackPage];
+    if (!pStackPage) {
+      continue;
+    }
+    gslc_tsCollect* pCollect = &pStackPage->sCollect;
+    pElemRef = gslc_CollectFindElemById(pGui, pCollect, nElemId);
+    if (pElemRef) {
+      return gslc_ElemGetVisible(pGui, pElemRef);
+    }
+  }
+  return false;
+}
 
 void gslc_ElemSetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowEn)
 {
