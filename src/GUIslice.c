@@ -713,6 +713,12 @@ void gslc_Update(gslc_tsGui* pGui)
   }
   #endif
 
+  // Provide periodic yield
+  // - This instruction is important for some devices such as ESP8266
+  #if defined(ESP8266)
+    yield();
+  #endif
+
 }
 
 gslc_tsEvent  gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData)
