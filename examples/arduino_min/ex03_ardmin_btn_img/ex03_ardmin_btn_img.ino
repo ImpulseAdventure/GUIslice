@@ -5,13 +5,14 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 03 (Arduino): [minimum RAM version]
 //   - Accept touch input, graphic button
+//   - Expected behavior: Clicking on button outputs a message
+//     to the serial monitor
 //   - Demonstrates the use of ElemCreate*_P() functions.
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).
 //   - NOTE: This sketch requires the SD card support library which
 //     adds considerable Flash and RAM requirements. As a result, it
 //     is unlikely to run on basic Arduino devices (eg. ATmega328)
-//   - Expected behavior: Clicking on button terminates program
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -71,9 +72,16 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];    // References 
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+// - This function gets called when the button is pressed
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  // Determine what type of event occurred on the button
+  // - In this case we're just looking for the user releasing
+  //   a touch over the button.
   if (eTouch == GSLC_TOUCH_UP_IN) {
+    // Output a message when the button is pressed
+    Serial.println("Quit button pressed");
+    // Set a variable flag that we can use elsewhere
     m_bQuit = true;
   }
   return true;
@@ -127,14 +135,9 @@ void loop()
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
 
-  // In a real program, we would detect the button press and take an action.
-  // For this Arduino demo, we will pretend to exit by emulating it with an
-  // infinite loop. Note that interrupts are not disabled so that any debug
-  // messages via Serial have an opportunity to be transmitted.
-  if (m_bQuit) {
-    gslc_Quit(&m_gui);
-    while (1) { }
-  }
-
+  // In most programs, we would detect the button press and take an
+  // action. In this simplest of examples, the "Quit" button callback
+  // just outputs a message to the serial monitor when pressed and
+  // sets the variable m_bQuit to true but the main loop continues to run.
 }
 
