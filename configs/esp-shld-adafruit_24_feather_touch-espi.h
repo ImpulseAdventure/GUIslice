@@ -4,7 +4,7 @@
 // =============================================================================
 // GUIslice library (example user configuration #???) for:
 //   - CPU:     ESP8266 / ESP32
-//   - Display: ILI9341 (via TFT_eSPI)
+//   - Display: Defined via TFT_eSPI User_Setup
 //   - Touch:   STMPE610 (Resistive)
 //   - Wiring:  Shield
 //
@@ -72,7 +72,6 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
-  #define DRV_DISP_ADAGFX_ILI9341   // Adafruit ILI9341
   #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
 
 
@@ -118,7 +117,7 @@ extern "C" {
 
   // - Decode based on platform
 #ifdef ESP8266
-  #define ADATOUCH_PIN_CS     16
+  #define ADATOUCH_PIN_CS     16 // = D0
 #elif ESP32
   #define ADATOUCH_PIN_CS     32
 #endif
