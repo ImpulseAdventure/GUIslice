@@ -113,7 +113,8 @@ SRC =   ex01_lnx_basic.c \
 	ex22_lnx_input_key.c \
 	ex24_lnx_tabs.c \
 	ex31_lnx_listbox.c \
-	ex42_lnx_ring.c
+	ex42_lnx_ring.c \
+	ex43_lnx_glowball.c
 
 # Add simple example for specific driver modes
 ifeq (SDL1,${GSLC_DRV})
@@ -210,6 +211,10 @@ ex31_lnx_listbox: ex31_lnx_listbox.c $(GSLC_CORE) $(GSLC_SRCS)
 ex42_lnx_ring: ex42_lnx_ring.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex42_lnx_ring.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
+ex43_lnx_glowball: ex43_lnx_glowball.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex43_lnx_glowball.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
 
 
 
