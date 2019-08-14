@@ -25,6 +25,36 @@
 #include "elem/XSlider.h"
 #include "elem/XProgress.h"
 
+// ------------------------------------------------
+// Load specific fonts
+// ------------------------------------------------
+
+// To demonstrate additional fonts, uncomment the following line:
+//#define USE_EXTRA_FONTS
+
+// Different display drivers provide different fonts, so a few examples
+// have been provided and selected here. Font files are usually
+// located within the display library folder or fonts subfolder.
+#ifdef USE_EXTRA_FONTS
+  #if defined(DRV_DISP_TFT_ESPI) // TFT_eSPI
+    #include <TFT_eSPI.h>
+    #define FONT_NAME1 &FreeSansBold12pt7b
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) // Teensy
+    #include <font_Arial.h>
+    #define FONT_NAME1 &Arial_12
+    #define SET_FONT_MODE1 // Enable Teensy extra fonts
+  #else // Arduino, etc.
+    #include <Adafruit_GFX.h>
+    #include <gfxfont.h>
+    #include "Fonts/FreeSansBold12pt7b.h"
+    #define FONT_NAME1 &FreeSansBold12pt7b
+  #endif
+#else
+  // Use the default font
+  #define FONT_NAME1 NULL
+#endif
+// ------------------------------------------------
+
 // Defines for resources
 
 
@@ -176,7 +206,7 @@ void setup()
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
   // Load Fonts
-  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,FONT_NAME1,1)) { return; }
   if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create graphic elements
