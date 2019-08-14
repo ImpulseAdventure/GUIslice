@@ -5,6 +5,7 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 04 (Arduino): Dynamic content [minimum RAM version]
 //   - Demonstrates push buttons, checkboxes and slider controls
+//   - Shows callback notifications for checkboxes and radio buttons
 //   - Demonstrates the use of ElemCreate*_P() functions
 //     These RAM-reduced examples take advantage of the internal
 //     Flash storage (via PROGMEM).
@@ -22,7 +23,7 @@
 // Include any extended elements
 #include "elem/XCheckbox.h"
 #include "elem/XSlider.h"
-#include "elem/XGauge.h"
+#include "elem/XProgress.h"
 
 // Defines for resources
 
@@ -77,10 +78,14 @@ gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
+// - Detect a button press
+// - In this particular example, we are looking for the Quit button press
+//   which is used to terminate the program.
 bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
+    GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
   }
   return true;
 }
@@ -112,14 +117,14 @@ bool InitOverlays()
   // Create progress bar (horizontal)
   gslc_ElemCreateTxt_P(&m_gui,102,E_PG_MAIN,20,80,50,10,"Progress:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
-  gslc_ElemXGaugeCreate_P(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,80,80,50,10,
+  gslc_ElemXProgressCreate_P(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,80,80,50,10,
     0,100,0,GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_GREEN,false);
   m_pElemProgress = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
 
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  gslc_ElemXGaugeCreate_P(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,280,80,10,100,
+  gslc_ElemXProgressCreate_P(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,280,80,10,100,
     -25,75,-15,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_RED,true);
   m_pElemProgress1 = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);
 
@@ -196,7 +201,7 @@ void loop()
   pElemRef = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
   gslc_ElemSetTxtStr(&m_gui,pElemRef,acTxt);
 
-  gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress,((m_nCount/1)%100));
+  gslc_ElemXProgressSetVal(&m_gui,m_pElemProgress,((m_nCount/1)%100));
 
 
   // NOTE: A more efficient method is to move the following
@@ -206,7 +211,7 @@ void loop()
   snprintf(acTxt,MAX_STR,"%u",nPos);
   gslc_ElemSetTxtStr(&m_gui,m_pElemSliderTxt,acTxt);
 
-  gslc_ElemXGaugeUpdate(&m_gui,m_pElemProgress1,(nPos*80.0/100.0)-15);
+  gslc_ElemXProgressSetVal(&m_gui,m_pElemProgress1,(nPos*80.0/100.0)-15);
 
   // Periodically call GUIslice update function
   gslc_Update(&m_gui);
