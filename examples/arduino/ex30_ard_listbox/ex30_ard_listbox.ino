@@ -25,6 +25,36 @@
 // Include any extended elements
 #include "elem/XListbox.h"
 
+// ------------------------------------------------
+// Load specific fonts
+// ------------------------------------------------
+
+// To demonstrate additional fonts, uncomment the following line:
+//#define USE_EXTRA_FONTS
+
+// Different display drivers provide different fonts, so a few examples
+// have been provided and selected here. Font files are usually
+// located within the display library folder or fonts subfolder.
+#ifdef USE_EXTRA_FONTS
+  #if defined(DRV_DISP_TFT_ESPI) // TFT_eSPI
+    #include <TFT_eSPI.h>
+    #define FONT_NAME1 &FreeSans9pt7b
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) // Teensy
+    #include <font_Arial.h>
+    #define FONT_NAME1 &Arial_9
+    #define SET_FONT_MODE1 // Enable Teensy extra fonts
+  #else // Arduino, etc.
+    #include <Adafruit_GFX.h>
+    #include <gfxfont.h>
+    #include "Fonts/FreeSans9pt7b.h"
+    #define FONT_NAME1 &FreeSans9pt7b
+  #endif
+#else
+  // Use the default font
+  #define FONT_NAME1 NULL
+#endif
+// ------------------------------------------------
+
 // To demonstrate additional fonts, uncomment the following line:
 //#define USE_EXTRA_FONTS
 
@@ -176,14 +206,12 @@ void setup()
   if (!gslc_Init(&m_gui, &m_drv, m_asPage, MAX_PAGE, m_asFont, MAX_FONT)) { return; }
 
   // Load Fonts
-  #ifdef USE_EXTRA_FONTS
-    // Demonstrate the use of additional fonts (must have #include)
-    if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, &FreeSansBold9pt7b, 1)) { return; }
-  #else
-    // Use default font
-    if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, NULL, 1)) { return; }
-  #endif
+  if (!gslc_FontSet(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_PTR, FONT_NAME1, 1)) { return; }
   if (!gslc_FontSet(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+  // Some display drivers need to set a mode to use the extra fonts
+  #if defined(SET_FONT_MODE1)
+    gslc_FontSetMode(&m_gui, E_FONT_EXTRA, GSLC_FONTREF_MODE_1);
+  #endif
 
   // Create graphic elements
   InitOverlays();

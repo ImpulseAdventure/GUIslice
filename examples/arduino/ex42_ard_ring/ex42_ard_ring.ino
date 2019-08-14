@@ -23,13 +23,35 @@
 #include "elem/XSlider.h"
 #include "elem/XRingGauge.h"
 
-#define USE_EXTRA_FONTS
+// ------------------------------------------------
+// Load specific fonts
+// ------------------------------------------------
 
+// To demonstrate additional fonts, uncomment the following line:
+//#define USE_EXTRA_FONTS
+
+// Different display drivers provide different fonts, so a few examples
+// have been provided and selected here. Font files are usually
+// located within the display library folder or fonts subfolder.
 #ifdef USE_EXTRA_FONTS
-  // Note that these files are located within the Adafruit-GFX library folder:
-  #include <Adafruit_GFX.h>
-  #include "Fonts/FreeSansBold12pt7b.h"
+  #if defined(DRV_DISP_TFT_ESPI) // TFT_eSPI
+    #include <TFT_eSPI.h>
+    #define FONT_NAME1 &FreeSansBold12pt7b
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) // Teensy
+    #include <font_Arial.h>
+    #define FONT_NAME1 &Arial_12
+    #define SET_FONT_MODE1 // Enable Teensy extra fonts
+  #else // Arduino, etc.
+    #include <Adafruit_GFX.h>
+    #include <gfxfont.h>
+    #include "Fonts/FreeSansBold12pt7b.h"
+    #define FONT_NAME1 &FreeSansBold12pt7b
+  #endif
+#else
+  // Use the default font
+  #define FONT_NAME1 NULL
 #endif
+// ------------------------------------------------
 
 // To limit noisy touchscreen input, add optional filtering
 #define FILTER_UPDATES // Comment out to disable filtering
@@ -100,11 +122,11 @@ void setup()
 
   // Load Fonts
   if (!gslc_FontSet(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
-#ifdef USE_EXTRA_FONTS
-  if (!gslc_FontSet(&m_gui, E_FONT_DIAL, GSLC_FONTREF_PTR, &FreeSansBold12pt7b, 1)) { return; }
-#else
-  if (!gslc_FontSet(&m_gui, E_FONT_DIAL, GSLC_FONTREF_PTR, NULL, 2)) { return; }
-#endif
+  if (!gslc_FontSet(&m_gui, E_FONT_DIAL, GSLC_FONTREF_PTR, FONT_NAME1, 1)) { return; }
+  // Some display drivers need to set a mode to use the extra fonts
+  #if defined(SET_FONT_MODE1)
+    gslc_FontSetMode(&m_gui, E_FONT_DIAL, GSLC_FONTREF_MODE_1);
+  #endif
 
 
   // -----------------------------------
