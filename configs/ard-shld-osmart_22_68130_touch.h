@@ -165,8 +165,7 @@ extern "C" {
   #define ADATOUCH_X_MAX    187
   #define ADATOUCH_Y_MIN    950
   #define ADATOUCH_Y_MAX    202
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // Touch overlay resistance value
   // - In most cases, this value can be left as-is
@@ -190,6 +189,19 @@ extern "C" {
   //#define ADATOUCH_X_MAX    104
   //#define ADATOUCH_Y_MIN    99
   //#define ADATOUCH_Y_MAX    892
+
+  // MCUFRIEND_ID == 0x1581:
+  // - DRV_TOUCH_ADA_SIMPLE [320x480]: (MCUFRIEND ID=0x1581) (XP=6,XM=56,YP=55,YM=7) [TESTED]
+  // - mcufriend 3.5" red
+  //#define ADATOUCH_PIN_YP   A1
+  //#define ADATOUCH_PIN_XM   A2
+  //#define ADATOUCH_PIN_YM   7
+  //#define ADATOUCH_PIN_XP   6
+  //#define ADATOUCH_X_MIN    902
+  //#define ADATOUCH_X_MAX    160
+  //#define ADATOUCH_Y_MIN    956
+  //#define ADATOUCH_Y_MAX    157
+  //#define ADATOUCH_REMAP_YX 0
 
   // MCUFRIEND_ID == 0x2053:
   //#define ADATOUCH_PIN_YP   A2
@@ -279,6 +291,10 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - MIN should be less than the smallest Z value reported during calibration
+  // - MAX should be more than the largest Z value reported during calibration
   #define ADATOUCH_PRESS_MIN  10
   #define ADATOUCH_PRESS_MAX  4000
 
@@ -313,8 +329,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -355,7 +369,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

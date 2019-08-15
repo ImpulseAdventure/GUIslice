@@ -81,9 +81,9 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       21    // Display chip select
-  #define ADAGFX_PIN_DC       20    // Display SPI data/command
-  #define ADAGFX_PIN_RST      255   // Display Reset (255=UNUSED)
+  #define ADAGFX_PIN_CS       21     // Display chip select
+  #define ADAGFX_PIN_DC       20     // Display SPI data/command
+  #define ADAGFX_PIN_RST      255    // Display Reset (255=UNUSED)
 
   // Display interface type
   #define ADAGFX_SPI_HW       0	    // Display uses SPI interface: 1=hardware (default), 0=hardware (alternate)
@@ -91,9 +91,9 @@ extern "C" {
   // Display interface SPI
   // - Hardware (default) SPI: the following definitions are unused
   // - Software / Hardware (alternate) SPI: the following pins need to be defined
-  #define ADAGFX_PIN_MOSI     7
-  #define ADAGFX_PIN_MISO     12
-  #define ADAGFX_PIN_CLK      14
+  #define ADAGFX_PIN_MOSI     7  
+  #define ADAGFX_PIN_MISO     12 
+  #define ADAGFX_PIN_CLK      14 
 
   // SD Card
   #define ADAGFX_PIN_SDCS     10    // SD card chip select (if GSLC_SD_EN=1)
@@ -135,15 +135,18 @@ extern "C" {
   #define ADATOUCH_X_MAX    3837
   #define ADATOUCH_Y_MIN    3925
   #define ADATOUCH_Y_MAX    370
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN  10
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - MIN should be less than the smallest Z value reported during calibration
+  // - MAX should be more than the largest Z value reported during calibration
+  #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
@@ -177,8 +180,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
@@ -219,7 +220,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

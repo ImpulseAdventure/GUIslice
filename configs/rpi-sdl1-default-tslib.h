@@ -60,7 +60,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -68,11 +68,11 @@ extern "C" {
   #define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
@@ -82,11 +82,13 @@ extern "C" {
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -108,7 +110,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -116,14 +118,12 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -147,7 +147,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        1   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

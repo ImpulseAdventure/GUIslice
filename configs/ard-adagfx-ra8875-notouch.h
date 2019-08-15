@@ -82,6 +82,10 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_RST      9     // Display Reset
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -123,8 +127,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -165,7 +167,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
