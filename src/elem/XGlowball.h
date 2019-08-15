@@ -86,16 +86,13 @@ typedef struct {
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
-/// \param[in]  rElem:       Rectangle coordinates defining checkbox size
-/// \param[in]  nPosMin:     Minimum position value
-/// \param[in]  nPosMax:     Maximum position value
-/// \param[in]  nPos:        Starting position value
-/// \param[in]  nThumbSz:    Size of the thumb control
-/// \param[in]  bVert:       Orientation (true for vertical)
+/// \param[in]  nMidX:       Center X coordinate
+/// \param[in]  nMidY:       Center Y coordinate
+/// \param[in]  pRings:      Pointer to tsXGlowballRing structure array defining appearance
+/// \param[in]  nNumRings:   Number of rings in pRings array
 ///
 /// \return Pointer to Element reference or NULL if failure
 ///
-/// \todo doc fix
 gslc_tsElemRef* gslc_ElemXGlowballCreate(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
   gslc_tsXGlowball* pXData, int16_t nMidX, int16_t nMidY, gslc_tsXGlowballRing* pRings, uint8_t nNumRings);
 
