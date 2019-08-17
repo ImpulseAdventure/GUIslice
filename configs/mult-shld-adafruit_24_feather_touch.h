@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Multiple
 //   - Display: ILI9341
 //   - Touch:   STMPE610 (Resistive)
@@ -108,7 +108,6 @@ extern "C" {
   #define ADAGFX_PIN_MOSI     11
   #define ADAGFX_PIN_MISO     12
   #define ADAGFX_PIN_CLK      13
-
 
   // SD Card
   // - Decode based on platform

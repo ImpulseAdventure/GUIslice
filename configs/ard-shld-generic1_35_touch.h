@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: MCUFRIEND
 //   - Touch:   Simple Analog (Resistive)
@@ -79,7 +79,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     10     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -170,8 +170,8 @@ extern "C" {
   //#define ADATOUCH_Y_MAX    892
 
   // MCUFRIEND_ID == 0x1581:
-  // - DRV_TOUCH_ADA_SIMPLE [320x480]: (MCUFRIEND ID=0x1581) (XP=6,XM=56,YP=55,YM=7) [TESTED]
   // - mcufriend 3.5" red
+  // - DRV_TOUCH_ADA_SIMPLE [320x480]: (MCUFRIEND ID=0x1581) (XP=6,XM=56,YP=55,YM=7) [TESTED]
   //#define ADATOUCH_PIN_YP   A1
   //#define ADATOUCH_PIN_XM   A2
   //#define ADATOUCH_PIN_YM   7
@@ -272,8 +272,8 @@ extern "C" {
   // Define pressure threshold for detecting a touch
   // - Specifying this range helps eliminate some erroneous touch events
   //   resulting from noise in the touch overlay detection
-  // - MIN should be less than the smallest Z value reported during calibration
-  // - MAX should be more than the largest Z value reported during calibration
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
   #define ADATOUCH_PRESS_MIN  10
   #define ADATOUCH_PRESS_MAX  4000
 

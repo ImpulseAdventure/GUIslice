@@ -2,9 +2,9 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
-//   - Display: RA8875
+//   - Display: RA8875 800x480 SPI
 //   - Touch:   None
 //   - Wiring:  Custom breakout
 //              - Pinout:
@@ -73,6 +73,10 @@ extern "C" {
   #define DRV_DISP_ADAGFX_RA8875    // Adafruit RA8875
   #define DRV_TOUCH_NONE            // No touch enabled
 
+  // Select the RA8875 display resolution:
+  // - RA8875_480x272 = 480x272 (4.3" display)
+  // - RA8875_800x480 = 800x480 (5" and 7" displays)
+  #define DRV_DISP_ADAGFX_RA8875_INIT RA8875_800x480
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout

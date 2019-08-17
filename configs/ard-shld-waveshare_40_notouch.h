@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: Waveshare ILI9486
 //   - Touch:   None
@@ -80,7 +80,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     5     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     5    // SD card chip select (if GSLC_SD_EN=1)
 
 
 

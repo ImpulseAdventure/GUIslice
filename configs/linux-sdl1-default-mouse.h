@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_LINUX_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     LINUX Virtual Machine (VM)
 //   - Display: Built-in via SDL1.2
 //   - Touch:   Mouse via SDL1.2
@@ -78,9 +78,8 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // - Note that changing this value may require a change
-  //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
-  //   orientation matches the display.
+  // NOTE: The GSLC_ROTATE feature is not yet supported in SDL mode
+  //       however, the following settings are provided for future use.
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
@@ -122,6 +121,14 @@ extern "C" {
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
+
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  // - NOTE: Mode not supported in LINUX
+  #define GSLC_SD_EN    0
 
 
   // =============================================================================

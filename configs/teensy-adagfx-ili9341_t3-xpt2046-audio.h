@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Teensy 3
 //   - Display: ILI9341
 //   - Touch:   XPT2046 (Resistive)
@@ -70,10 +70,10 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX                // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9341_T3     // PaulStoffregen/ILI9341_t3 (NOTE: Requires latest from GitHub)
-	                                     // - See https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
-  #define DRV_TOUCH_XPT2046_PS           // PaulStoffregen/XPT2046_Touchscreen
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_ILI9341_T3 // PaulStoffregen/ILI9341_t3 (NOTE: Requires latest from GitHub)
+	                                // - See https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -144,8 +144,8 @@ extern "C" {
   // Define pressure threshold for detecting a touch
   // - Specifying this range helps eliminate some erroneous touch events
   //   resulting from noise in the touch overlay detection
-  // - MIN should be less than the smallest Z value reported during calibration
-  // - MAX should be more than the largest Z value reported during calibration
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
   #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
 

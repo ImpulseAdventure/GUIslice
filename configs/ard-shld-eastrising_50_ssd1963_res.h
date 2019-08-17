@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino MEGA / Due
 //   - Display: SSD1963 800x480 16-bit parallel (via UTFT)
 //   - Touch:   XPT2046 (via URTouch)

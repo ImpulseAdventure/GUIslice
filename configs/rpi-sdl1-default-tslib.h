@@ -2,8 +2,8 @@
 #define _GUISLICE_CONFIG_LINUX_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
-//   - CPU:     Raspberry Pi
+// GUIslice library (example user configuration) for:
+//   - CPU:     LINUX Raspberry Pi (RPi)
 //   - Display: PiTFT
 //   - Touch:   tslib
 //   - Wiring:  None
@@ -65,11 +65,13 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_SDL1             // LINUX SDL 1.2
-  #define DRV_TOUCH_TSLIB           // LINUX: Use tslib touch driver
+  #define DRV_TOUCH_TSLIB           // LINUX: kergoth/tslib touch driver
+
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -120,6 +122,14 @@ extern "C" {
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
+
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  // - NOTE: Mode not supported in LINUX
+  #define GSLC_SD_EN    0
 
 
   // =============================================================================

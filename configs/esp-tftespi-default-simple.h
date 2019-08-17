@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     ESP8266 / ESP32
 //   - Display: TFT_eSPI (defined by TFT_eSPI config)
 //   - Touch:   Simple Analog (Resistive)
@@ -177,8 +177,8 @@ extern "C" {
   // Define pressure threshold for detecting a touch
   // - Specifying this range helps eliminate some erroneous touch events
   //   resulting from noise in the touch overlay detection
-  // - MIN should be less than the smallest Z value reported during calibration
-  // - MAX should be more than the largest Z value reported during calibration
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
   #define ADATOUCH_PRESS_MIN  10
   #define ADATOUCH_PRESS_MAX  4000
 

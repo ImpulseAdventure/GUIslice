@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     ESP8266 / ESP32
 //   - Display: TFT_eSPI (defined by TFT_eSPI config)
 //   - Touch:   FT6206 (Capacitive)

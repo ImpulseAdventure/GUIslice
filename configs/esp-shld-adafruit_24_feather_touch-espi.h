@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     ESP8266 / ESP32
 //   - Display: Defined via TFT_eSPI User_Setup
 //   - Touch:   STMPE610 (Resistive)
@@ -135,8 +135,7 @@ extern "C" {
   #define ADATOUCH_X_MAX    235
   #define ADATOUCH_Y_MIN    191
   #define ADATOUCH_Y_MAX    3725
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
