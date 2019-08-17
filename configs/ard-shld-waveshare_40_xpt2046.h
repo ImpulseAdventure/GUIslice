@@ -69,9 +69,9 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX            // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_WAVESHARE_ILI9486 // ImpulseAdventure/Waveshare_ILI9486
-  #define DRV_TOUCH_XPT2046_PS       // PaulStoffregen/XPT2046_Touchscreen
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS    5     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     5    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -114,13 +114,12 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Calibration settings from diag_ard_touch_calib:
-  // DRV_TOUCH_XPT2046_PS [480x320]:
   #define ADATOUCH_X_MIN    234
   #define ADATOUCH_X_MAX    3968
   #define ADATOUCH_Y_MIN    171
   #define ADATOUCH_Y_MAX    3823
   #define ADATOUCH_REMAP_YX 1    // Some touch controllers may swap X & Y coords
-  #define GSLC_ROTATE_SPECIAL 3 // No Rotation supported
+  #define GSLC_ROTATE_SPECIAL 3  // No Rotation supported
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
@@ -131,9 +130,8 @@ extern "C" {
   //   resulting from noise in the touch overlay detection
   // - For config details, please see:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
-  #define ADATOUCH_PRESS_MIN  10
+  #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
-
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -148,7 +146,7 @@ extern "C" {
   //   - DEBUG_ERR 2 = Enable verbose error messaging (eg. bad parameters, etc.)
   // - For baseline Arduino UNO, recommended to disable this after one has
   //   confirmed basic operation of the library is successful.
-  #define DEBUG_ERR               2   // 1,2 to enable, 0 to disable
+  #define DEBUG_ERR               1   // 1,2 to enable, 0 to disable
 
   // Debug initialization message
   // - By default, GUIslice outputs a message in DEBUG_ERR mode
