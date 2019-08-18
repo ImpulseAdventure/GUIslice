@@ -64,13 +64,13 @@ GSLC_DRV := SDL1
 
 ifndef GSLC_TOUCH
   GSLC_LDLIB_EXTRA := -lm -lts
-  $(info GUIslice touch mode: tslib enabled by default)
+  $(info GUIslice touch mode: tslib enabled by default - GUIslice config should use DRV_TOUCH_TSLIB mode)
 else
   ifeq (TSLIB,${GSLC_TOUCH})
-    $(info GUIslice touch mode: tslib enabled)
+    $(info GUIslice touch mode: tslib enabled - GUIslice config should use DRV_TOUCH_TSLIB mode)
     GSLC_LDLIB_EXTRA := -lm -lts
   else
-    $(info GUIslice touch mode: tslib not enabled)
+    $(info GUIslice touch mode: tslib not enabled - GUIslice config should use DRV_TOUCH_SDL mode)
     GSLC_LDLIB_EXTRA := -lm
   endif
 endif
