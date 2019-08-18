@@ -11,3 +11,7 @@ The binary installation executables for the Builder are attached to the latest G
 (see the dropdown under "Assets"):
 - https://github.com/ImpulseAdventure/GUIslice/releases/
 
+## Source Code
+The source code for the GUIslice Builder is maintained in the following repository:
+- https://github.com/ImpulseAdventure/GUIslice-Builder-source
+
