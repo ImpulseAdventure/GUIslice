@@ -24,7 +24,7 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_ELEM_PROGRESS,E_ELEM_PROGRESS1,
       E_ELEM_CHECK1,E_ELEM_RADIO1,E_ELEM_RADIO2,E_ELEM_SLIDER,E_ELEM_TXT_SLIDER};
-enum {E_FONT_BTN,E_FONT_TXT,MAX_FONT};
+enum {E_FONT_BTN,E_FONT_TXT,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 enum {E_GROUP1};
 
 bool        m_bQuit = false;
@@ -33,8 +33,10 @@ bool        m_bQuit = false;
 unsigned    m_nCount = 0;
 
 // Instantiate the GUI
-#define MAX_PAGE            1
-#define MAX_ELEM_PG_MAIN    21
+#define MAX_PAGE                1
+
+// Define the maximum number of elements per page
+#define MAX_ELEM_PG_MAIN          21
 
 gslc_tsGui                  m_gui;
 gslc_tsDriver               m_drv;
@@ -49,9 +51,13 @@ gslc_tsXSlider              m_sXSlider;
 
 #define MAX_STR             100
 
-// Enable frame/update rate reporting? (1 to enable, 0 to disable)
-#define TEST_UPDATE_RATE     0
-
+  // Save some element references for quick access
+  gslc_tsElemRef*  m_pElemCnt        = NULL;
+  gslc_tsElemRef*  m_pElemProgress   = NULL;
+  gslc_tsElemRef*  m_pElemProgress1  = NULL;
+  gslc_tsElemRef*  m_pElemSlider     = NULL;
+  gslc_tsElemRef*  m_pElemSliderTxt  = NULL;
+  
 // Configure environment variables suitable for display
 // - These may need modification to match your system
 //   environment and display type
@@ -83,8 +89,17 @@ static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)pvElemRef;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
+    GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
+	
+    // Change the button text
+    gslc_ElemSetTxtStr(pGui, pElemRef, (char*)"STOP");
+    // Change the button color
+    gslc_ElemSetCol(pGui, pElemRef, GSLC_COL_RED_LT4, GSLC_COL_RED, GSLC_COL_RED_LT2);
+	
   }
   return true;
 }
@@ -105,10 +120,10 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-
-  // Create Quit button with text label
+  // Create Quit button with modifiable text label
+  static char mstr_quit[8] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){160,80,80,40},"Quit",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){160,80,80,40},mstr_quit,sizeof(mstr_quit),E_FONT_BTN,&CbBtnQuit);
 
   // Create counter
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
@@ -116,18 +131,21 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,50,10},
     "",0,E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_YELLOW);
+  m_pElemCnt = pElemRef; // Save for quick access
 
   // Create progress bar (horizontal)
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     "Progress:",0,E_FONT_TXT);
   pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXProgress,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
+  m_pElemProgress = pElemRef; // Save for quick access
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
   pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXProgress1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  m_pElemProgress1 = pElemRef; // Save for quick access
 
   // Create checkbox 1
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,100,20,20},
@@ -154,8 +172,10 @@ bool InitOverlays()
     (gslc_tsRect){160,140,100,20},0,100,60,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
+  m_pElemSlider = pElemRef; // Save for quick access
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
     "Slider: ???",0,E_FONT_TXT);
+  m_pElemSliderTxt = pElemRef; // Save for quick access
 
   return true;
 }
@@ -183,21 +203,8 @@ int main( int argc, char* args[] )
   // Start up display on main page
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
 
-  // Save some element references for quick access
-  gslc_tsElemRef*  pElemCnt        = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_COUNT);
-  gslc_tsElemRef*  pElemProgress   = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS);
-  gslc_tsElemRef*  pElemProgress1  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_PROGRESS1);
-  gslc_tsElemRef*  pElemSlider     = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_SLIDER);
-  gslc_tsElemRef*  pElemSliderTxt  = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER);
-
   // -----------------------------------
   // Main event loop
-
-  #if (TEST_UPDATE_RATE)
-  uint32_t  nNumUpdates = 0;
-  clock_t   sClkStart,sClkEnd;
-  sClkStart = clock();
-  #endif
 
   m_bQuit = false;
   while (!m_bQuit) {
@@ -209,34 +216,22 @@ int main( int argc, char* args[] )
 
     // Update elements on active page
     snprintf(acTxt,MAX_STR,"%u",m_nCount);
-    gslc_ElemSetTxtStr(&m_gui,pElemCnt,acTxt);
+    gslc_ElemSetTxtStr(&m_gui,m_pElemCnt,acTxt);
 
-    gslc_ElemXProgressSetVal(&m_gui,pElemProgress,((m_nCount/200)%100));
+    gslc_ElemXProgressSetVal(&m_gui,m_pElemProgress,((m_nCount/200)%100));
 
     // NOTE: A more efficient method is to move the following
     //       code into the slider position callback function.
     //       Please see example 07.
-    int nPos = gslc_ElemXSliderGetPos(&m_gui,pElemSlider);
+    int nPos = gslc_ElemXSliderGetPos(&m_gui,m_pElemSlider);
     snprintf(acTxt,MAX_STR,"Slider: %u",nPos);
-    gslc_ElemSetTxtStr(&m_gui,pElemSliderTxt,acTxt);
+    gslc_ElemSetTxtStr(&m_gui,m_pElemSliderTxt,acTxt);
 
-    gslc_ElemXProgressSetVal(&m_gui,pElemProgress1,(nPos*80.0/100.0)-15);
+    gslc_ElemXProgressSetVal(&m_gui,m_pElemProgress1,(nPos*80.0/100.0)-15);
 
     // Periodically call GUIslice update function
     gslc_Update(&m_gui);
 
-    // Simple update rate reporting
-    #if (TEST_UPDATE_RATE)
-    nNumUpdates++;
-    sClkEnd = clock();
-    if ((sClkEnd - sClkStart) > 10*1000000) {
-      // Reached end of interval, report average
-      printf("DBG: Update rate = [%6u per 10 sec]\n",nNumUpdates);
-      // Reset interval
-      nNumUpdates = 0;
-      sClkStart = sClkEnd;
-    }
-    #endif
 
   } // bQuit
 
