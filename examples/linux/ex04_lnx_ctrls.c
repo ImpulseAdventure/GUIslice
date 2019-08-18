@@ -5,6 +5,7 @@
 // - https://github.com/ImpulseAdventure/GUIslice
 // - Example 04 (LINUX): Dynamic content
 //     Demonstrates push buttons, checkboxes and slider controls
+//   - Shows callback notifications for checkboxes and radio buttons
 //
 
 #include "GUIslice.h"
@@ -89,8 +90,9 @@ static int16_t DebugOut(char ch) { fputc(ch,stderr); return 0; }
 // Button callbacks
 bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
-  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
-  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)pvElemRef;
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
     GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
@@ -101,6 +103,42 @@ bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_
     gslc_ElemSetCol(pGui, pElemRef, GSLC_COL_RED_LT4, GSLC_COL_RED, GSLC_COL_RED_LT2);
 	
   }
+  return true;
+}
+
+// Checkbox / radio callbacks
+// - Creating a callback function is optional, but doing so enables you to
+//   detect changes in the state of the elements.
+bool CbCheckbox(void* pvGui, void* pvElemRef, int16_t nSelId, bool bChecked)
+{
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElemRef == NULL) {
+    return false;
+  }
+
+  // Determine which element issued the callback
+  switch (pElem->nId) {
+    case E_ELEM_CHECK1:
+      GSLC_DEBUG_PRINT("Callback: Check[ID=%d] state=%u\n", pElem->nId,bChecked);
+      break;
+    case E_ELEM_RADIO1:
+    case E_ELEM_RADIO2:
+      // For the radio buttons, determine which ID is currently selected (nSelId)
+      // - Note that this may not always be the same as the element that
+      //   issued the callback (pElem->nId)
+      // - A return value of GSLC_ID_NONE indicates that no radio buttons
+      //   in the group are currently selected
+      if (nSelId == GSLC_ID_NONE) {
+        GSLC_DEBUG_PRINT("Callback: Radio[ID=NONE] selected\n", "");
+      } else {
+        GSLC_DEBUG_PRINT("Callback: Radio[ID=%d] selected\n", nSelId);
+      }
+      break;
+    default:
+      break;
+  } // switch
   return true;
 }
 
@@ -152,6 +190,7 @@ bool InitOverlays()
     "Check1:",0,E_FONT_TXT);
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create radio 1
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
@@ -159,6 +198,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
     (gslc_tsRect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create radio 2
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
@@ -166,6 +206,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create slider
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
@@ -234,12 +275,6 @@ int main( int argc, char* args[] )
 
 
   } // bQuit
-
-  // Read checkbox state
-  // - Either read individual checkboxes
-  //   bool bCheck = gslc_ElemXCheckboxGetState(&m_gui,E_ELEM_CHECK1);
-  // - Or find one in the group that was checked (eg. for radio buttons)
-  //   gslc_tsElem* pElem = gslc_ElemXCheckboxFindChecked(&m_gui,GSLC_GROUP_ID_NONE);
 
   // -----------------------------------
   // Close down display
