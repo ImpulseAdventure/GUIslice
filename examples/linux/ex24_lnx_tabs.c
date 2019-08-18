@@ -20,7 +20,7 @@
 
 // Defines for resources
 #define MAX_PATH  255
-#define FONT1 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+#define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 
 // Enumerations for pages, elements, fonts, images
 enum { E_PG_BASE, E_PG_MAIN, E_PG_CONFIG, E_PG_ALERT  };
