@@ -10,7 +10,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
-![GUIslice Builder](https://user-images.githubusercontent.com/8510097/48395316-c739be80-e6cb-11e8-9dd6-33336f1fca06.PNG)
+![GUIslice Builder](https://user-images.githubusercontent.com/8510097/63221174-14126000-c14a-11e9-93aa-20806f5627e0.png)
 
 - Extensive [Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki) guides available
 - [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
@@ -18,17 +18,18 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
 - [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
 - **Support email**: guislice@gmail.com
+- GUIslice by Calvin Hass and [GitHub contributors](https://github.com/ImpulseAdventure/GUIslice/graphs/contributors), Builder by Paul Conti
 
 ## Features ##
 - Pure C library, no dynamic memory allocation
 - *Widgets*:
   - text, images, buttons, checkboxes, radio buttons, sliders, keypad, listbox,
   radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
-- Cross-platform **GUIslice Builder** (beta) desktop application to generate layouts
+- Cross-platform **GUIslice Builder** (beta) application to generate layouts
 - *Platform-independent* GUI core currently supports:
   - Adafruit-GFX, TFT_eSPI, mcufriend, UTFT, SDL1.2, SDL2.0
 - *Devices*:
-  - Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32
+  - Raspberry Pi, Arduino, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
 - *Typical displays*:
   - PiTFT, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", FeatherWing TFT, OLED 0.96", mcufriend, BuyDisplay / EastRising 4.3" 5" 7", Waveshare, 4D Cape
 - *Display drivers include*:
@@ -45,6 +46,6 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 ![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
 
 ## GUIslice Builder ##
-- Includes cross-platform (Windows & LINUX) desktop application (beta) to generate GUIslice layouts
+- Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
 - Please refer to [GUIslice Builder wiki](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder) for documentation
 
