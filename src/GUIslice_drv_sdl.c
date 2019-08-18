@@ -536,7 +536,7 @@ const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRe
 {
   // UNIX/SDL mode currently only supports font definitions from files
   if (eFontRefType != GSLC_FONTREF_FNAME) {
-    GSLC_DEBUG2_PRINT("ERROR: DrvFontAdd(%s) failed - SDL mode only supports file-based fonts\n","");
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed - SDL mode only supports file-based fonts\n","");
     return NULL;
   }
   TTF_Font*   pFont;
@@ -544,7 +544,7 @@ const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRe
   // file path to the font file
   pFont = TTF_OpenFont((const char*)pvFontRef,nFontSz);
   if (pFont == NULL) {
-    GSLC_DEBUG2_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont\n",pvFontRef);
+    GSLC_DEBUG_PRINT("ERROR: DrvFontAdd(%s) failed in TTF_OpenFont\n",pvFontRef);
     return NULL;
   }
   return (const void*)pFont;
@@ -571,6 +571,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   // NOTE: Shouldn't need to process eTxtFlags
   int32_t nTxtSzW,nTxtSzH;
   TTF_Font* pDrvFont = (TTF_Font*)(pFont->pvFont);
+  if (!pDrvFont) { return false; }
   if ((eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8) {
     TTF_SizeUTF8(pDrvFont,pStr,&nTxtSzW,&nTxtSzH);
   } else {
@@ -603,6 +604,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   gslc_tsDriver*  pDriver   = (gslc_tsDriver*)(pGui->pvDriver);
   SDL_Surface*    pSurfTxt  = NULL;
   TTF_Font*       pDrvFont  = (TTF_Font*)(pFont->pvFont);
+  if (!pDrvFont) { return false; }
   if ((eTxtFlags & GSLC_TXT_ENC) == GSLC_TXT_ENC_UTF8) {
     pSurfTxt = TTF_RenderUTF8_Blended(pDrvFont,pStr,gslc_DrvAdaptColor(colTxt));
   } else {
