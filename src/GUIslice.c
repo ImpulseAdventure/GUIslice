@@ -1262,7 +1262,8 @@ void gslc_DrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,
   // Call optimized driver implementation
   gslc_DrvDrawFrameRoundRect(pGui,rRect,nRadius,nCol);
 #else
-  // TODO
+  // TODO: Add emulation of rounded rects. For now fallback to square corners
+  gslc_DrvDrawFrameRect(pGui,rRect,nCol);
 #endif
 
   gslc_PageFlipSet(pGui,true);
@@ -1303,7 +1304,8 @@ void gslc_DrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,g
   // Call optimized driver implementation
   gslc_DrvDrawFillRoundRect(pGui,rRect,nRadius,nCol);
 #else
-  // TODO
+  // TODO: Add emulation of rounded rects. For now fallback to square corners
+  gslc_DrvDrawFillRect(pGui,rRect,nCol);
 #endif
 
   gslc_PageFlipSet(pGui,true);
