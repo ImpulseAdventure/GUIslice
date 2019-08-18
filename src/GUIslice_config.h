@@ -49,6 +49,13 @@ extern "C" {
 //   which is selected at the bottom of this file
 // - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
 //   to help identify a suitable config for your MCU shield / display
+// - Multiple configurations can be supported using the method described here:
+//   https://github.com/ImpulseAdventure/GUIslice/wiki/Arduino-Multiple-Configs
+// =========================================================================================
+
+// =========================================================================================
+// IMPORTANT: Ensure you backup any custom config files before updating GUIslice!
+//            The Arduino IDE deletes all files within the library when updating
 // =========================================================================================
 
   // ---------------------------------------------------------------------------------------
