@@ -108,11 +108,11 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 // - Detect a button press
 // - In this particular example, we are looking for the Quit button press
 //   which is used to terminate the program.
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
-  //gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
-  //gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)pvElemRef;
-  
+  //gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  //gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
     GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
@@ -176,6 +176,7 @@ bool InitOverlays()
   static char mstr_quit[8] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){160,80,80,40},mstr_quit,sizeof(mstr_quit),E_FONT_BTN,&CbBtnQuit);
+  gslc_ElemSetRoundEn(&m_gui,pElemRef,true);
 
   // Create counter
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
