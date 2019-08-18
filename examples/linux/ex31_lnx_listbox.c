@@ -19,8 +19,12 @@
 // Defines for resources
 // ------------------------------------------------
 #define FONT1 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
-#define FONT2 "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf"
-#define FONT3 "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
+// NOTE: The "NotoMono-Regular" font was selected because it is
+//       generally available in most systems. Change the following
+//       to match your preferred font selection.
+//       Available fonts can usually be reported by the "fc-list" command.
+#define FONT2 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
+#define FONT3 "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf"
 
 // ------------------------------------------------
 // Enumerations for pages, elements, fonts, images
