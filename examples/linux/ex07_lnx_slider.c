@@ -262,7 +262,7 @@ int main( int argc, char* args[] )
   if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
   bOk = gslc_FontSet(&m_gui,E_FONT_HEAD,GSLC_FONTREF_FNAME,FONT1,14);
   if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
-  bOk = gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,36);
+  bOk = gslc_FontSet(&m_gui,E_FONT_TITLE,GSLC_FONTREF_FNAME,FONT1,32);
   if (!bOk) { fprintf(stderr,"ERROR: FontSet failed\n"); exit(1); }
 
   // -----------------------------------
