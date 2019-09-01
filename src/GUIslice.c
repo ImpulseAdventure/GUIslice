@@ -3395,12 +3395,14 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  // FIXME: Should also check for change in bGlowEn
-  bool bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
-  gslc_SetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_GLOWING,(bGlowing)?GSLC_ELEMREF_GLOWING:0);
+  // Only change glow state if enabled
+  if (gslc_ElemGetGlowEn(pGui, pElemRef)) {
+    bool bGlowingOld = gslc_ElemGetGlow(pGui, pElemRef);
+    gslc_SetElemRefFlag(pGui, pElemRef, GSLC_ELEMREF_GLOWING, (bGlowing) ? GSLC_ELEMREF_GLOWING : 0);
 
-  if (bGlowing != bGlowingOld) {
-    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+    if (bGlowing != bGlowingOld) {
+      gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_INC);
+    }
   }
 }
 
