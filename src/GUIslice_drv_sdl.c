@@ -44,6 +44,9 @@
 
 #include <stdio.h>
 
+// ------------------------------------------------------------------------
+// Load display & touch drivers
+// ------------------------------------------------------------------------
 
 // Optionally enable SDL clean start VT workaround
 #if (DRV_SDL_FIX_START)

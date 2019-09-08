@@ -378,8 +378,7 @@ extern "C" {
 
 bool gslc_DrvInit(gslc_tsGui* pGui)
 {
-
-  // Report any debug info if enabled
+  // Report any debug info (before init) if enabled
   #if defined(DBG_DRIVER)
   // TODO
   #endif
@@ -576,6 +575,7 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
     gslc_DrvImageDestruct(pGui->sImgRefBkgnd.pvImgRaw);
     pGui->sImgRefBkgnd = gslc_ResetImage();
   }
+
   pGui->sImgRefBkgnd = sImgRef;
   pGui->sImgRefBkgnd.pvImgRaw = gslc_DrvLoadImage(pGui,sImgRef);
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
@@ -1076,6 +1076,7 @@ bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadi
 {
 #if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
+
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   m_disp.drawRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
@@ -2427,6 +2428,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Now update the touch remapping
   #if !defined(DRV_TOUCH_NONE)
+    // Correct touch mapping according to current rotation mode
     pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
     pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
     pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);

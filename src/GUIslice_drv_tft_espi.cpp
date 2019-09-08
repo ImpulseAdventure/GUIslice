@@ -518,6 +518,10 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 // Graphics Primitives Functions
 // -----------------------------------------------------------------------
 
+inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
+{
+  m_disp.drawPixel(nX,nY,nColRaw);
+}
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
@@ -528,7 +532,7 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.drawPixel(nX,nY,nColRaw);
+  gslc_DrvDrawPoint_base(nX, nY, nColRaw);
   return true;
 }
 
@@ -553,10 +557,12 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_RECT_ROUND_FILL)
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -601,10 +607,12 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   m_disp.drawRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -628,8 +636,10 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawCircle(nMidX,nMidY,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -639,8 +649,10 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FILL)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillCircle(nMidX,nMidY,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -648,24 +660,30 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_TRI_FRAME)
+
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#endif
   return true;
 }
 
 bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_TRI_FILL)
+
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#endif
   return true;
 }
 
@@ -740,9 +758,9 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
       if (bProgMem) {
         //To read from Flash Memory, pgm_read_XXX is required.
         //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
       } else {
-        m_disp.drawPixel(nDstX+col, nDstY+row, *(pImage++));
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
       }
     } // end pixel
   }
@@ -879,7 +897,7 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
             gslc_tsColor nCol = (gslc_tsColor){r,g,b};
             bool bDrawBit = true;
             if (GSLC_BMP_TRANS_EN) {
-				      gslc_tsColor nColTrans = pGui->sTransCol;
+              gslc_tsColor nColTrans = pGui->sTransCol;
               if ((nCol.r == nColTrans.r) && (nCol.g == nColTrans.g) && (nCol.b == nColTrans.b)) {
                 bDrawBit = false;
               }
@@ -910,7 +928,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   #if defined(DBG_DRIVER)
   char addr[6];
   GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
-  sprintf(addr,"%04X",sImgRef.pImgBuf);
+  sprintf(addr,"%04X",(unsigned int)sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
@@ -1538,7 +1556,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     return true;
   #else
     // ERROR: Unsupported driver mode
-    GSLC_DEBUG2_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
+    GSLC_DEBUG_PRINT("ERROR: TDrvInitTouch() driver not supported yet\n",0);
     return false;
   #endif
 
@@ -1947,8 +1965,10 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
-    GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
-      pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #if defined(DRV_TOUCH_TYPE_RES)
+      GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
+        pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
+    #endif // DRV_TOUCH_TYPE_RES
     #endif // DBG_TOUCH
 
     // Perform remapping due to current orientation
