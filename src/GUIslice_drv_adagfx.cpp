@@ -990,6 +990,12 @@ inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
   m_disp.drawPixel(nX,nY,nColRaw);
 }
 
+inline void gslc_DrvDrawLine_base(int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int16_t nColRaw)
+{
+  m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
+}
+
+
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
 #if (GSLC_CLIP_EN)
@@ -1047,25 +1053,25 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   nY0 = rRect.y;
   nX1 = rRect.x + rRect.w - 1;
   nY1 = nY0;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Bottom
   nX0 = rRect.x;
   nY0 = rRect.y + rRect.h - 1;
   nX1 = rRect.x + rRect.w - 1;
   nY1 = nY0;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Left
   nX0 = rRect.x;
   nY0 = rRect.y;
   nX1 = nX0;
   nY1 = rRect.y + rRect.h - 1;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Right
   nX0 = rRect.x + rRect.w - 1;
   nY0 = rRect.y;
   nX1 = nX0;
   nY1 = rRect.y + rRect.h - 1;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1, nColRaw); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
 #else
   m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
 #endif
@@ -1094,7 +1100,7 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
+  gslc_DrvDrawLine_base(nX0,nY0,nX1,nY1,nColRaw);
   return true;
 }
 
