@@ -985,6 +985,10 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 // Graphics Primitives Functions
 // -----------------------------------------------------------------------
 
+inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
+{
+  m_disp.drawPixel(nX,nY,nColRaw);
+}
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
@@ -995,7 +999,7 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.drawPixel(nX,nY,nColRaw);
+  gslc_DrvDrawPoint_base(nX, nY, nColRaw);
   return true;
 }
 
@@ -1231,9 +1235,9 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
       if (bProgMem) {
         //To read from Flash Memory, pgm_read_XXX is required.
         //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        m_disp.drawPixel(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
       } else {
-        m_disp.drawPixel(nDstX+col, nDstY+row, *(pImage++));
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
       }
     } // end pixel
   }
