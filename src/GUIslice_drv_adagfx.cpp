@@ -524,7 +524,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
 void* gslc_DrvGetDriverDisp(gslc_tsGui* pGui)
 {
-	return (void*)(&m_disp);
+  return (void*)(&m_disp);
 }
 
 void gslc_DrvDestruct(gslc_tsGui* pGui)
@@ -1099,8 +1099,10 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawCircle(nMidX,nMidY,nRadius,nColRaw);
+#endif
   return true;
 }
 
@@ -1110,8 +1112,10 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FILL)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillCircle(nMidX,nMidY,nRadius,nColRaw);
+#endif
   return true;
 }
 
