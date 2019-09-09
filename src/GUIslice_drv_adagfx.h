@@ -120,10 +120,25 @@ extern "C" {
   #undef DRV_HAS_DRAW_TRI_FRAME
   #undef DRV_HAS_DRAW_TRI_FILL
 
-  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0 ///< Support gslc_DrvDrawFrameRoundRect()
-  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0 ///< Support gslc_DrvDrawFillRoundRect()
-  #define DRV_HAS_DRAW_TRI_FRAME         0 ///< Support gslc_DrvDrawFrameTriangle()
-  #define DRV_HAS_DRAW_TRI_FILL          0 ///< Support gslc_DrvDrawFillTriangle()
+  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
+  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
+  #define DRV_HAS_DRAW_TRI_FRAME         0
+  #define DRV_HAS_DRAW_TRI_FILL          0
+
+#elif defined(DRV_DISP_LCDGFX)
+  #undef DRV_HAS_DRAW_RECT_ROUND_FRAME
+  #undef DRV_HAS_DRAW_RECT_ROUND_FILL
+  #undef DRV_HAS_DRAW_CIRCLE_FRAME
+  #undef DRV_HAS_DRAW_CIRCLE_FILL
+  #undef DRV_HAS_DRAW_TRI_FRAME
+  #undef DRV_HAS_DRAW_TRI_FILL
+
+  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
+  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
+  #define DRV_HAS_DRAW_CIRCLE_FRAME      0
+  #define DRV_HAS_DRAW_CIRCLE_FILL       0
+  #define DRV_HAS_DRAW_TRI_FRAME         0
+  #define DRV_HAS_DRAW_TRI_FILL          0
 #endif
 
 

@@ -95,6 +95,8 @@
     #include <Adafruit_RA8875.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     #include <MCUFRIEND_kbv.h>
+  #elif defined(DRV_DISP_LCDGFX)
+    #include <lcdgfx.h>
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     // https://github.com/ImpulseAdventure/Waveshare_ILI9486
     #include <Waveshare_ILI9486_GFX.h>
@@ -290,6 +292,65 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
   const char* m_acDrvDisp = "ADA_MCUFRIEND";
   MCUFRIEND_kbv m_disp;
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_LCDGFX)
+
+  // Support selection between multiple LCDGFX constructors
+  #if defined(DRV_DISP_LCDGFX_SH1106_128x64_I2C)
+  const char* m_acDrvDisp = "LCDGFX (SH1106_128x64_I2C)";
+  DisplaySH1106_128x64_I2C m_disp(-1);
+  #elif defined(DRV_DISP_LCDGFX_SH1106_128x64_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SH1106_128x64_SPI)";
+  DisplaySH1106_128x64_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1306_128x64_I2C)
+  const char* m_acDrvDisp = "LCDGFX (SSD1306_128x64_I2C)";
+  DisplaySSD1306_128x64_I2C m_disp(-1);
+  #elif defined(DRV_DISP_LCDGFX_SSD1306_128x64_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1306_128x64_SPI)";
+  DisplaySSD1306_128x64_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1306_128x32_I2C)
+  const char* m_acDrvDisp = "LCDGFX (SSD1306_128x32_I2C)";
+  DisplaySSD1306_128x32_I2C m_disp(-1);
+  #elif defined(DRV_DISP_LCDGFX_SSD1306_128x32_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1306_128x32_SPI)";
+  DisplaySSD1306_128x32_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1325_128x64_I2C)
+  const char* m_acDrvDisp = "LCDGFX (SSD1325_128x64_I2C)";
+  DisplaySSD1325_128x64_I2C m_disp(-1);
+  #elif defined(DRV_DISP_LCDGFX_SSD1325_128x64_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1325_128x64_SPI)";
+  DisplaySSD1325_128x64_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1327_128x128_I2C)
+  const char* m_acDrvDisp = "LCDGFX (SSD1327_128x128_I2C)";
+  DisplaySSD1327_128x128_I2C m_disp(-1);
+  #elif defined(DRV_DISP_LCDGFX_SSD1327_128x128_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1327_128x128_SPI)";
+  DisplaySSD1327_128x128_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1331_96x64x8_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1331_96x64x8_SPI)";
+  DisplaySSD1331_96x64x8_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1331_96x64x16_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1331_96x64x16_SPI)";
+  DisplaySSD1331_96x64x16_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_SSD1351_128x128_SPI)
+  const char* m_acDrvDisp = "LCDGFX (SSD1351_128x128x16_SPI)";
+  DisplaySSD1351_128x128x16_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_ILI9163_128x128_SPI)
+  const char* m_acDrvDisp = "LCDGFX (ILI9163_128x128x16_SPI)";
+  DisplayIL9163_128x128x16_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_ST7735_128x160_SPI)
+  const char* m_acDrvDisp = "LCDGFX (ST7735_128x160x16_SPI)";
+  DisplayST7735_128x160x16_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_ILI9341_240x320_SPI)
+  const char* m_acDrvDisp = "LCDGFX (ILI9341_240x32x16_SPI)";
+  DisplayILI9341_240x320x16_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #elif defined(DRV_DISP_LCDGFX_PCD8544_84x48_SPI)
+  const char* m_acDrvDisp = "LCDGFX (PCD8544_84x48_SPI)";
+  DisplayPCD8544_84x48_SPI m_disp(ADAGFX_PIN_RST, { -1,ADAGFX_PIN_CS,ADAGFX_PIN_DC,0,-1,-1 });
+  #else
+  #error "ERROR: LCDGFX driver: no display option (DRV_DISP_LCDGFX_*) selected in config"
+  #endif
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
@@ -498,6 +559,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.begin(identifier);
       #endif
+
+    #elif defined(DRV_DISP_LCDGFX)
+      m_disp.begin();
+      // Establish default font
+      m_disp.setFixedFont(ssd1306xled_font6x8);
 
     #elif defined(DRV_DISP_WAVESHARE_ILI9486)
       m_disp.begin();
@@ -741,6 +807,18 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
+#elif defined(DRV_DISP_LCDGFX)
+  // TODO: Add support for user defined fonts
+  m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
+
+  *pnTxtSzW = m_disp.getFont().getTextSize(pStr,pnTxtSzH);
+
+  // No baseline info
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
+  return true;
+
 #else
 
   nTxtScale = pFont->nSize;
@@ -816,11 +894,21 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
-  // FIXME: Add support for user defined fonts
+  // TODO: Add support for user defined fonts
   m_disp.setFont();
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
+#elif defined(DRV_DISP_LCDGFX)
+  // TODO: Add support for user defined fonts
+  m_disp.setFixedFont(ssd1306xled_font6x8);
+  m_disp.setColor(nColRaw);
+  // As LCDGFX doesn't support a setCursor() API to update the text
+  // coordinates, we will retain a static variable here.
+  static int16_t m_nTxtX; // Text cursor coordinate (X)
+  static int16_t m_nTxtY; // Text cursor coordinate (Y)
+  m_nTxtX = nTxtX;
+  m_nTxtY = nTxtY;
 #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
@@ -912,6 +1000,15 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       nCurPosX += m_disp.getTextLetterSpacing() * nTxtScale;
       m_disp.cursorToXY(nCurPosX,nCurPosY);
 
+    #elif defined(DRV_DISP_LCDGFX)
+      // Create dummy string for character render
+      char chStr[2];
+      chStr[0] = ch;
+      chStr[1] = 0;
+      m_disp.printFixed(m_nTxtX, m_nTxtY, chStr, STYLE_NORMAL);
+      // Advance the text cursor
+	  m_nTxtX += m_disp.getFont().getTextSize(chStr, NULL);
+
     #else
       // Call Adafruit-GFX for rendering
       // NOTE: This should automatically advance the "cursor" (current text position)
@@ -923,18 +1020,24 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     // the Y cursor but reset the X cursor to 0. Therefore we need to
     // readjust the X cursor to our aligned bounding box.
     if (ch == '\n') {
+
       #if defined(DRV_DISP_ADAGFX_RA8875)
-      nCurPosY = m_disp.getCursorY();
-      if (bInternal8875Font) {
-        // TODO: Is getCursorY() supported in RA8875 mode?
-        m_disp.textSetCursor(nTxtX, nCurPosY);
-      }
+        nCurPosY = m_disp.getCursorY();
+        if (bInternal8875Font) {
+          // TODO: Is getCursorY() supported in RA8875 mode?
+          m_disp.textSetCursor(nTxtX, nCurPosY);
+        }
+
       #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
-      nTxtY += m_disp.getFontHeight();
-      m_disp.cursorToXY(nTxtX,nTxtY);
+        nTxtY += m_disp.getFontHeight();
+        m_disp.cursorToXY(nTxtX,nTxtY);
+
+      #elif defined(DRV_DISP_LCDGFX)
+	    m_nTxtY += m_disp.getFont().getHeader().height;
+
       #else
-      nCurPosY = m_disp.getCursorY();
-      m_disp.setCursor(nTxtX,nCurPosY);
+        nCurPosY = m_disp.getCursorY();
+        m_disp.setCursor(nTxtX,nCurPosY);
       #endif
     }
 
@@ -953,6 +1056,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // TODO
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  // TODO
+#elif defined(DRV_DISP_LCDGFX)
   // TODO
 #else
   m_disp.setFont();
@@ -987,12 +1092,24 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 
 inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
 {
-  m_disp.drawPixel(nX,nY,nColRaw);
+  #if defined(DRV_DISP_LCDGFX)
+    NanoPoint p;
+    p.setPoint(nX, nY);
+    m_disp.setColor(nColRaw);
+    m_disp.putPixel(nX,nY);
+  #else
+    m_disp.drawPixel(nX,nY,nColRaw);
+  #endif
 }
 
 inline void gslc_DrvDrawLine_base(int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int16_t nColRaw)
 {
-  m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
+  #if defined(DRV_DISP_LCDGFX)
+    m_disp.setColor(nColRaw);
+    m_disp.drawLine(nX0,nY0,nX1,nY1);
+  #else
+    m_disp.drawLine(nX0,nY0,nX1,nY1,nColRaw);
+  #endif	
 }
 
 
@@ -1024,7 +1141,14 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #if defined(DRV_DISP_LCDGFX)
+    NanoRect r;
+    r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
+    m_disp.setColor(nColRaw);
+	  m_disp.fillRect(r);
+  #else
+    m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #endif
   return true;
 }
 
@@ -1073,7 +1197,14 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   nY1 = rRect.y + rRect.h - 1;
   if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
 #else
-  m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #if defined(DRV_DISP_LCDGFX)
+    NanoRect r;
+    r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
+    m_disp.setColor(nColRaw);
+	  m_disp.drawRect(r);
+  #else
+    m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+  #endif
 #endif
   return true;
 }
@@ -2402,6 +2533,15 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDisp0W = m_disp.width();
     pGui->nDisp0H = m_disp.height();
     m_disp.setRotation(pGui->nRotation);
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_LCDGFX)
+    m_disp.getInterface().setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    // It appears that LCDGFX rotation is 180 degrees offset from other libraries
+    m_disp.getInterface().setRotation((pGui->nRotation + 2) & 0x3);
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
 
