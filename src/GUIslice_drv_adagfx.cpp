@@ -2546,10 +2546,12 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = m_disp.height();
 
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
-    // No support for rotation in Waveshare_ILI9486 library
-    bSupportRotation = false;
-    pGui->nDisp0W = m_disp.width();
-    pGui->nDisp0H = m_disp.height();
+    // As the Waveshare display driver has a lengthy delay in its LCD_Reset()
+    // call, we have skipped the initial setRotation(0) stage and instead
+    // hardcoded the default dimensions according to the library.
+    pGui->nDisp0W = 320;
+    pGui->nDisp0H = 480;
+    m_disp.setRotation(pGui->nRotation);
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
 
