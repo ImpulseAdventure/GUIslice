@@ -1496,7 +1496,10 @@ void gslc_DrawFillQuad(gslc_tsGui* pGui,gslc_tsPt* psPt,gslc_tsColor nCol);
 ///                            The higher the value, the smoother the resulting
 ///                            arcs. A value of 72 provides 360/72=5 degrees per
 ///                            segment which is a reasonable compromise between
-///                            smoothness and performance.
+///                            smoothness and performance. Note that 360/nQuality
+///                            should be an integer result, thus the allowable
+///                            quality settings are: 360 (max quality), 180, 120,
+///                            90, 72, 60, 45, 40, 36 (low quality), etc. 
 /// \param[in]  nMidX:         Midpoint X coordinate of circle
 /// \param[in]  nMidY:         Midpoint Y coordinate of circle
 /// \param[in]  nRad1:         Inner sector radius (0 for sector / pie, non-zero for ring)

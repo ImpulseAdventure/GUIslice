@@ -208,6 +208,9 @@ void gslc_ElemXRingGaugeSetThickness(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef,
 /// \param[in]  pElemRef:    Pointer to Element reference
 /// \param[in]  nSegments:   Number of arc segments to render a complete circle. The
 ///                          higher the value, the smoother the ring.
+///                          Note that 360/nSegments should be an integer result,
+///                          thus the allowable quality settings are: 360 (max quality),
+///                          180, 120, 90, 72, 60, 45, 40, 36 (low quality), etc. 
 ///
 /// \return none
 ///

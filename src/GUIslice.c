@@ -1720,12 +1720,12 @@ void gslc_DrawFillSectorBase(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, 
   int16_t nSegStart, nSegEnd;
   gslc_tsColor colSeg;
 
-  nSegStart = nAngSecStart * nQuality / 360;
-  nSegEnd = nAngSecEnd * nQuality / 360;
+  nSegStart = nAngSecStart * (int32_t)nQuality / 360;
+  nSegEnd = nAngSecEnd * (int32_t)nQuality / 360;
 
   int16_t nSegGradStart, nSegGradRange;
-  nSegGradStart = nAngGradStart * nQuality / 360;
-  nSegGradRange = nAngGradRange * nQuality / 360;
+  nSegGradStart = nAngGradStart * (int32_t)nQuality / 360;
+  nSegGradRange = nAngGradRange * (int32_t)nQuality / 360;
   nSegGradRange = (nSegGradRange == 0) ? 1 : nSegGradRange; // Guard against div/0
 
   bool bClockwise;
@@ -1739,13 +1739,19 @@ void gslc_DrawFillSectorBase(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, 
     bClockwise = false;
   }
 
+  #if defined(DBG_REDRAW)
+  //GSLC_DEBUG_PRINT("FillSector: AngSecStart=%d AngSecEnd=%d SegStart=%d SegEnd=%d StepCnt=%d CW=%d\n",
+  //  nAngSecStart,nAngSecEnd,nSegStart,nSegEnd,nStepCnt,bClockwise);
+  #endif
+
   for (int16_t nStepInd = 0; nStepInd < nStepCnt; nStepInd++) {
     // Remap from the step to the segment index, depending on direction
     nSegInd = (bClockwise)? (nSegStart + nStepInd) : (nSegStart - nStepInd - 1);
 
-    nAng64 = (nSegInd * nStep64) % (360 * 64);
+    nAng64 = (int32_t)(nSegInd * nStep64) % (int32_t)(360 * 64);
+	
     #if defined(DBG_REDRAW)
-    GSLC_DEBUG2_PRINT("FillSector: StepInd=%d SegInd=%d (%d..%d)\n", nStepInd, nSegInd, nSegStart, nSegEnd);
+    GSLC_DEBUG2_PRINT("FillSector:  StepInd=%d SegInd=%d (%d..%d) Ang64=%d\n", nStepInd, nSegInd, nSegStart, nSegEnd, nAng64);
     #endif
 
     gslc_PolarToXY(nRad1, nAng64, &nX, &nY);
@@ -1761,7 +1767,7 @@ void gslc_DrawFillSectorBase(gslc_tsGui* pGui, int16_t nQuality, int16_t nMidX, 
       // Gradient coloring
       int16_t nGradPos = 1000 * (int32_t)(nSegInd-nSegGradStart) / nSegGradRange;
       #if defined(DBG_REDRAW)
-      GSLC_DEBUG2_PRINT("FillSector:  GradPos=%d\n", nGradPos);
+      GSLC_DEBUG2_PRINT("FillSector:   GradPos=%d\n", nGradPos);
       #endif
       colSeg = gslc_ColorBlend2(cArcStart, cArcEnd, 500, nGradPos);
     } else {
