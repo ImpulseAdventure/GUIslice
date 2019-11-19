@@ -388,7 +388,6 @@ void gslc_ElemXRingGaugeSetColorInactive(gslc_tsGui* pGui, gslc_tsElemRef* pElem
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 
-  pXRingGauge->bGradient = true;
   pXRingGauge->colRingRemain = colInactive;
 
   // Mark for full redraw
