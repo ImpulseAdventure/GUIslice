@@ -214,30 +214,31 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
     bDrawActive = true;
     bDrawInactive = true;
     nDrawStart = 0;
-    nDrawVal = (nVal - nValMin) * nAngRange / nValRange;
+    nDrawVal = (int32_t)(nVal - nValMin) * nAngRange / nValRange;
     nDrawEnd = nAngRange;
   }
-  //GSLC_DEBUG2_PRINT("DBG: redraw inc=%d last=%d cur=%d segs %d..%d\n", bInc,nValLast,nVal,nAngStart, nAngEnd);
+  
+  #if defined(DBG_REDRAW)
+  GSLC_DEBUG2_PRINT("\n\nRingDraw: Val=%d ValLast=%d ValRange=%d PosMin=%d PosMax=%d Q=%d\n", nVal, nValLast, nValRange, nValMin, nValMax, nQuality);
+  GSLC_DEBUG2_PRINT("RingDraw:  Inc=%d ValLast=%d Val=%d Ang=%d..%d (Range=%d)\n", bInc,nValLast,nVal,nAngStart, nAngStart+nAngRange,nAngRange); //CAL!
+  GSLC_DEBUG2_PRINT("RingDraw:  DrawActive=%d DrawInactive=%d DrawStart=%d DrawVal=%d DrawEnd=%d\n",bDrawActive,bDrawInactive,nDrawStart,nDrawVal,nDrawEnd);//CAL!
+  #endif
 
   // Adjust for start of angular range
   nDrawStart += nAngStart;
   nDrawVal += nAngStart;
   nDrawEnd += nAngStart;
 
-  #if defined(DBG_REDRAW)
-  GSLC_DEBUG2_PRINT("\n\nRingDraw: Val=%d ValLast=%d PosMin=%d PosMax=%d Q=%d\n", nVal, nValLast, nValMin, nValMax, nQuality);
-  #endif
-
   if (bDrawActive) {
     if (bGradient) {
       #if defined(DBG_REDRAW)
-      GSLC_DEBUG2_PRINT("RingDraw:  ActiveG  start=%d end=%d astart=%d arange=%d\n", nDrawStart, nDrawVal,nAngStart,nAngRange);
+      GSLC_DEBUG2_PRINT("RingDraw:   ActiveG  start=%d end=%d astart=%d arange=%d\n", nDrawStart, nDrawVal,nAngStart,nAngRange);
       #endif
       gslc_DrawFillGradSector(pGui, nQuality, nMidX, nMidY,
         nRad1, nRad2, colRingActive1, colRingActive2, nDrawStart, nDrawVal, nAngStart, nAngRange);
     } else {
       #if defined(DBG_REDRAW)
-      GSLC_DEBUG2_PRINT("RingDraw:  Active   start=%d end=%d\n", nDrawStart, nDrawVal);
+      GSLC_DEBUG2_PRINT("RingDraw:   Active   start=%d end=%d\n", nDrawStart, nDrawVal);
       #endif
       gslc_DrawFillSector(pGui, nQuality, nMidX, nMidY,
         nRad1, nRad2, colRingActive1, nDrawStart, nDrawVal);
@@ -246,7 +247,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
 
   if (bDrawInactive) {
     #if defined(DBG_REDRAW)
-    GSLC_DEBUG2_PRINT("RingDraw:  Inactive start=%d end=%d\n", nDrawEnd, nDrawVal);
+    GSLC_DEBUG2_PRINT("RingDraw:   Inactive start=%d end=%d\n", nDrawEnd, nDrawVal);
     #endif
     // Since we are erasing, we will reverse the redraw direction (swap Val & End)
     gslc_DrawFillSector(pGui, nQuality, nMidX, nMidY,
