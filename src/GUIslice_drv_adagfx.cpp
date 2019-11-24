@@ -795,18 +795,6 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
-#elif defined(DRV_DISP_WAVESHARE_ILI9486)
-  // FIXME: Add support for user defined fonts
-  m_disp.setFont((sFONT*)(pFont->pvFont));
-
-  nTxtScale = pFont->nSize;
-  m_disp.setTextSize(nTxtScale);
-
-  // Fetch the font sizing
-  m_disp.getTextBounds((char*)pStr,0,0,pnTxtX,pnTxtY,pnTxtSzW,pnTxtSzH);
-
-  return true;
-
 #elif defined(DRV_DISP_LCDGFX)
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
@@ -821,8 +809,14 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 #else
 
+  #if defined(DRV_DISP_WAVESHARE_ILI9486)
+    // Waveshare_ILI9486 uses a different font structure
+    m_disp.setFont((sFONT*)(pFont->pvFont));
+  #else
+    m_disp.setFont((const GFXfont *)pFont->pvFont);
+  #endif
+
   nTxtScale = pFont->nSize;
-  m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextSize(nTxtScale);
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
