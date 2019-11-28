@@ -196,7 +196,7 @@ void gslc_ElemXCheckboxSetStateFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, 
 // Helper routine for gslc_ElemXCheckboxSetState()
 // - Updates the checkbox/radio control's state but does
 //   not touch any other controls in the group
-void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked)
+void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bChecked,bool bDoCb)
 {
   gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
   if (!pCheckbox) return;
@@ -211,6 +211,16 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
   if (bChecked != bCheckedOld) {
     // Only need an incremental redraw
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+  } else {
+    // Same state as before
+    // - No need to do anything further since we don't need to
+    //   trigger any callbacks or redraw
+    return;
+  }
+
+  // If no callbacks requested, exit now
+  if (!bDoCb) {
+    return;
   }
 
   // If any state callback is defined, call it now
@@ -262,14 +272,9 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
   gslc_tsXCheckbox* pCheckbox = (gslc_tsXCheckbox*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_CHECKBOX, __LINE__);
   if (!pCheckbox) return;
 
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
-  // Operate on current page
-  // TODO: Support other page layers
-  gslc_tsPage* pPage = pGui->apPageStack[GSLC_STACK_CUR];
-  if (pPage == NULL) {
-    return; // No page added yet
-  }
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsPage* pPage = NULL;
 
   bool                bRadio    = pCheckbox->bRadio;
   int16_t             nGroup    = pElem->nGroup;
@@ -299,45 +304,54 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     int16_t           nCurGroup;
 
     // We use the GUI pointer for access to other elements
-    // NOTE: There is an assumption that we are calling ElemXCheckboxSetState
-    //       on a checkbox on the current page.
 
-    gslc_tsCollect* pCollect = &pPage->sCollect;
-    for (nCurInd=0;nCurInd<pCollect->nElemRefCnt;nCurInd++) {
-      // Fetch extended data
-      pCurElemRef   = &pCollect->asElemRef[nCurInd];
-      pCurElem      = gslc_GetElemFromRef(pGui,pCurElemRef);
-
-      // FIXME: Handle pCurElemRef->eElemFlags
-      nCurId        = pCurElem->nId;
-      nCurType      = pCurElem->nType;
-
-      // Only want to proceed if it is a checkbox
-      if (nCurType != GSLC_TYPEX_CHECKBOX) {
+    // Check all pages in case we are affecting radio buttons on other pages
+    for (int8_t nPageInd=0;nPageInd<pGui->nPageCnt;nPageInd++) {
+      pPage = &pGui->asPage[nPageInd];
+      if (!pPage) {
+        // If this stack page is not enabled, skip to next stack page
         continue;
       }
 
-      nCurGroup     = pCurElem->nGroup;
+      gslc_tsCollect* pCollect = &pPage->sCollect;
+      for (nCurInd=0;nCurInd<pCollect->nElemRefCnt;nCurInd++) {
+        // Fetch extended data
+        pCurElemRef   = &pCollect->asElemRef[nCurInd];
+        pCurElem      = gslc_GetElemFromRef(pGui,pCurElemRef);
 
-      // If this is in a different group, ignore it
-      if (nCurGroup != nGroup) {
-        continue;
-      }
+        // FIXME: Handle pCurElemRef->eElemFlags
+        nCurId        = pCurElem->nId;
+        nCurType      = pCurElem->nType;
 
-      // Is this our element? If so, ignore the deselect operation
-      if (nCurId == nElemId) {
-        continue;
-      }
+        // Only want to proceed if it is a checkbox
+        if (nCurType != GSLC_TYPEX_CHECKBOX) {
+          continue;
+        }
 
-      // Deselect all other elements
-      gslc_ElemXCheckboxSetStateHelp(pGui,pCurElemRef,false);
+        nCurGroup     = pCurElem->nGroup;
 
-    } // nInd
+        // If this is in a different group, ignore it
+        if (nCurGroup != nGroup) {
+          continue;
+        }
+
+        // Is this our element? If so, ignore the deselect operation
+        if (nCurId == nElemId) {
+          continue;
+        }
+
+        // Deselect all other elements
+        // - But don't trigger any callbacks
+        gslc_ElemXCheckboxSetStateHelp(pGui,pCurElemRef,false,false);
+
+      } // nInd
+    } // nStackPage
 
   } // bRadio
 
   // Set the state of the current element
-  gslc_ElemXCheckboxSetStateHelp(pGui,pElemRef,bChecked);
+  // - Trigger callback if enabled
+  gslc_ElemXCheckboxSetStateHelp(pGui,pElemRef,bChecked,true);
 }
 
 // Toggle the checkbox control's state
