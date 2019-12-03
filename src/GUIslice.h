@@ -499,6 +499,9 @@ typedef bool (*GSLC_CB_DRAW)(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 /// Callback function for element touch tracking
 typedef bool (*GSLC_CB_TOUCH)(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY);
 
+/// Callback function for element touch trigger
+typedef bool (*GSLC_CB_TOUCH_TRIG)(void* pvGui);
+
 /// Callback function for element tick
 typedef bool (*GSLC_CB_TICK)(void* pvGui,void* pvElemRef);
 
@@ -791,8 +794,9 @@ typedef struct {
   gslc_tsRect         rInvalidateRect;   ///< The rect region that has been invalidated
 
   // Callback functions
-  //GSLC_CB_EVENT       pfuncXEvent;      ///< UNUSED: Callback func ptr for events
-  GSLC_CB_PIN_POLL    pfuncPinPoll;     ///< Callback func ptr for pin polling
+  //GSLC_CB_EVENT       pfuncXEvent;     ///< UNUSED: Callback func ptr for events
+  GSLC_CB_PIN_POLL    pfuncPinPoll;      ///< Callback func ptr for pin polling
+  GSLC_CB_TOUCH_TRIG  pfuncTouchTrig;    ///< Callback func ptr for touch trigger
 
 
   // Key/pin input control mapping
@@ -2395,6 +2399,17 @@ void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint
 /// \return none
 ///
 void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap);
+
+///
+/// Configure touchscreen trigger callback function
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  funcCb:      Function pointer to touch trigger routine (or NULL for none))
+///
+/// \return none
+///
+void gslc_SetTouchTrigFunc(gslc_tsGui* pGui, GSLC_CB_TOUCH_TRIG funcCb);
+
 
 #endif // !DRV_TOUCH_NONE
 

@@ -207,6 +207,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   //pGui->pfuncXEvent           = NULL; // UNUSED
   pGui->pfuncPinPoll          = NULL;
+  pGui->pfuncTouchTrig        = NULL;
 
   pGui->asInputMap            = NULL;
   pGui->nInputMapMax          = 0;
@@ -675,6 +676,17 @@ void gslc_Update(gslc_tsGui* pGui)
       }
 
       nNumEvts++;
+    }
+
+    if (bEvent) {
+      // If user has requested a wake-up upon touch, call it now
+      GSLC_CB_TOUCH_TRIG pfuncTouchTrig = pGui->pfuncTouchTrig;
+      if (pfuncTouchTrig != NULL) {
+        // Clear the wakeup trigger
+        pGui->pfuncTouchTrig = NULL;
+        // Invoke the callback
+        (*pfuncTouchTrig)((void*)pGui);
+      }
     }
 
     // Should we stop handling events?
@@ -4206,6 +4218,15 @@ void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap)
   pGui->bTouchRemapYX = bSwap;
 }
 
+void gslc_SetTouchTrigFunc(gslc_tsGui* pGui, GSLC_CB_TOUCH_TRIG funcCb)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetTouchTrigFunc";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->pfuncTouchTrig = funcCb;
+}
 
 #endif // !DRV_TOUCH_NONE
 
