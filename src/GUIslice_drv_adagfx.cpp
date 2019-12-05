@@ -851,7 +851,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     nTxtScale = 1;
   }
   m_disp.selectInternalFont((enum FontSize) nFontSel);
-  m_disp.setTextScale(1);
+  m_disp.setTextScale(nTxtScale);
 
   *pnTxtSzW = strlen(pStr) * nTxtScale * ((nFontSel+2)*4);
   *pnTxtSzH =                nTxtScale * ((nFontSel+2)*8);
