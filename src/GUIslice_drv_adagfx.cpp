@@ -1215,6 +1215,9 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.fillRect(r);
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    // xlatb/RA8876 uses a non-standard fillRect() API
+    m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
@@ -1271,6 +1274,8 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.drawRect(r);
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
