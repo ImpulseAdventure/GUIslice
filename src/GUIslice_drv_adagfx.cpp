@@ -753,6 +753,57 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
+// Centralized code for driver-specific font initiailization
+// Font init is often reused by both DrvGetTxtSize() and DrvDrawTxt()
+// hence there is value in centralizing the initialization.
+bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
+{
+  uint16_t  nTxtScale = 0;
+
+#if defined(DRV_DISP_ADAGFX_RA8876)
+
+  // TODO: Add support for user defined fonts
+  // TODO: Support FLASH strings, custom font dimensions
+  // - For now, hardcode assumption of 8x16 built-in "embedded" font
+  int16_t nFontSel = RA8876_FONT_SIZE_16;
+
+  nTxtScale = pFont->nSize;
+  if ((nTxtScale >= 1) && (nTxtScale <= 3)) {
+    // Convert text scale into embedded font
+    nFontSel = RA8876_FONT_SIZE_16 + (nTxtScale-1);
+    nTxtScale = 1;
+  }
+
+  uint8_t nFontModeRom;
+  uint8_t nFontModeFamily;
+  int16_t nFontRefMode = 0;
+  if (pFont->eFontRefMode == GSLC_FONTREF_MODE_DEFAULT) {
+    // Default to internal ROM font
+    m_disp.selectInternalFont((enum FontSize) nFontSel);
+  } else if (pFont->eFontRefMode == GSLC_FONTREF_MODE_1) {
+    // Reserved for rendered fonts (not yet supported in RA8876 lib)
+  } else {-
+    // All other encodings represent an external ROM font
+    // - These values are packed into the integer value as follows:
+    //    [1:0] GSLC_FONTREF_MODE_2  (==2)
+    //    [3:2] RA8876_FONT_FAMILY_x (0..3 defined)
+    //    [7:4] RA8876_FONT_ROM_x    (0..6 defined)
+    // - GSLC_FONTREF_MODE_2 + RA8876_FONT_ROM_x << 4 + RA8876_FONT_FAMILY_x << 2
+    nFontRefMode = (int16_t)(pFont->eFontRefMode);
+    nFontModeRom = (nFontRefMode >> 4) & 0xF;
+    nFontModeFamily = (nFontRefMode >> 2) & 0x3;
+    m_disp.initExternalFontRom(0, (enum ExternalFontRom)nFontModeRom);
+    m_disp.selectExternalFont((enum ExternalFontFamily)nFontModeFamily, (enum FontSize)nFontSel, RA8876_FONT_ENCODING_ASCII); //xxx
+  }
+
+  m_disp.setTextScale(nTxtScale);
+
+  return true;
+
+#endif // DRV_DISP_*
+
+}
+
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
@@ -839,22 +890,23 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 #elif defined(DRV_DISP_ADAGFX_RA8876)
 
-  // TODO: Add support for user defined fonts
-  // TODO: Support FLASH strings, custom font dimensions
-  // - For now, hardcode assumption of 8x16 built-in "embedded" font
-  int16_t nFontSel = RA8876_FONT_SIZE_16;
+  // Initialize the current font mode & size
+  gslc_DrvFontSetHelp(pGui,pFont);
+
+  // Estimate the string sizing
 
   nTxtScale = pFont->nSize;
-  if ((nTxtScale >= 1) && (nTxtScale <= 3)) {
-    // Convert text scale into embedded font
-    nFontSel = RA8876_FONT_SIZE_16 + (nTxtScale-1);
-    nTxtScale = 1;
-  }
-  m_disp.selectInternalFont((enum FontSize) nFontSel);
-  m_disp.setTextScale(nTxtScale);
 
-  *pnTxtSzW = strlen(pStr) * nTxtScale * ((nFontSel+2)*4);
-  *pnTxtSzH =                nTxtScale * ((nFontSel+2)*8);
+  // NOTE: The following accurately defines the dimensions
+  //        of the fixed fonts. Proportional fonts (eg. from
+  //        external ROM font chips) will not be accurately
+  //        measured as the underlying RA8876 library doesn't
+  //        currently support an API to retrieve the character width.
+
+  // TODO: Add support for FLASH-based strings
+  // TODO: Add support for custom fonts
+  *pnTxtSzW = strlen(pStr) * (nTxtScale+1)*4;
+  *pnTxtSzH =                (nTxtScale+1)*8;
 
   // No baseline info
   *pnTxtX = 0;
@@ -959,16 +1011,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_nTxtX = nTxtX;
   m_nTxtY = nTxtY;
 #elif defined(DRV_DISP_ADAGFX_RA8876)
-  // TODO: Add support for user defined fonts
-  // - For now, select between 3 embedded fonts using text scale param
-  int16_t nFontSel = RA8876_FONT_SIZE_16;
-  if ((nTxtScale >= 1) && (nTxtScale <= 3)) {
-    // Convert text scale into embedded font
-    nFontSel = RA8876_FONT_SIZE_16 + (nTxtScale-1);
-    nTxtScale = 1;
-  }
-  m_disp.selectInternalFont((enum FontSize) nFontSel);
-  m_disp.setTextScale(nTxtScale);
+
+  // Initialize the current font mode & size
+  gslc_DrvFontSetHelp(pGui,pFont);
+
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextColor(nColRaw);
 
