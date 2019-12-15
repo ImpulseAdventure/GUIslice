@@ -78,8 +78,8 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_RST      9     // Display Reset
+  #define ADAGFX_PIN_CS       11    // Display chip select
+  #define ADAGFX_PIN_RST      0     // Display Reset
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
