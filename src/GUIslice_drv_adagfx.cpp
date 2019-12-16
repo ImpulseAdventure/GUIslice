@@ -782,7 +782,7 @@ bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
     m_disp.selectInternalFont((enum FontSize) nFontSel);
   } else if (pFont->eFontRefMode == GSLC_FONTREF_MODE_1) {
     // Reserved for rendered fonts (not yet supported in RA8876 lib)
-  } else {-
+  } else {
     // All other encodings represent an external ROM font
     // - These values are packed into the integer value as follows:
     //    [1:0] GSLC_FONTREF_MODE_2  (==2)
