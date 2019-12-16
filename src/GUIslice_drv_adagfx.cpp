@@ -58,15 +58,18 @@
 
   // Now configure specific display driver for Adafruit-GFX
   #if defined(DRV_DISP_ADAGFX_ILI9341)
+    // https://github.com/adafruit/Adafruit_ILI9341
     #include <Adafruit_ILI9341.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
     #include <Adafruit_TFTLCD.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    // https://github.com/PaulStoffregen/ILI9341_t3
     #include <ILI9341_t3.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    // https://github.com/marekburiak/ILI9341_due
     #include <ILI9341_due.h>
     #include <SPI.h>
     // Include the "SystemFont5x7" so that we can provide a
@@ -74,28 +77,39 @@
     // one explicitly.
     #include <SystemFont5x7.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
+    // https://github.com/adafruit/Adafruit_SSD1306
     #include <Adafruit_SSD1306.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
     #include <SPI.h>
     #include <Wire.h>
   #elif defined(DRV_DISP_ADAGFX_ST7735)
+    // https://github.com/adafruit/Adafruit-ST7735-Library
     #include <Adafruit_ST7735.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8347)
+    // https://github.com/prenticedavid/HX8347D_kbv
     #include <HX8347D_kbv.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_HX8357)
+    // https://github.com/adafruit/Adafruit_HX8357_Library
     #include <Adafruit_HX8357.h>
     // TODO: Select either SPI or I2C. For now, assume SPI
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_PCD8544)
+    // https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library
     #include <Adafruit_PCD8544.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_RA8875)
+    // https://github.com/adafruit/Adafruit_RA8875
     #include <Adafruit_RA8875.h>
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    // https://github.com/xlatb/ra8876
+    #include <RA8876.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
+    // https://github.com/prenticedavid/MCUFRIEND_kbv
     #include <MCUFRIEND_kbv.h>
   #elif defined(DRV_DISP_LCDGFX)
+    // https://github.com/lexus2k/lcdgfx
     #include <lcdgfx.h>
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     // https://github.com/ImpulseAdventure/Waveshare_ILI9486
@@ -153,13 +167,16 @@
 // Load touch drivers
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
+  // https://github.com/adafruit/Adafruit_STMPE610
   #include <SPI.h>
   #include <Wire.h>
   #include "Adafruit_STMPE610.h"
 #elif defined(DRV_TOUCH_ADA_FT6206)
+  // https://github.com/adafruit/Adafruit_FT6206_Library
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
+  // https://github.com/adafruit/Adafruit_TouchScreen
   #include <stdint.h>
   #include <TouchScreen.h>
 #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -167,6 +184,7 @@
   //       Arduino_STM32/STM32F1/libraries/Serasidis_XPT2046_touch/src/XPT2046_touch.h
   #include <XPT2046_touch.h>
 #elif defined(DRV_TOUCH_XPT2046_PS)
+  // https://github.com/PaulStoffregen/XPT2046_Touchscreen
   #include <XPT2046_Touchscreen.h>
 #elif defined(DRV_TOUCH_URTOUCH)
   #if defined(DRV_TOUCH_URTOUCH_OLD)
@@ -287,6 +305,11 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_RA8875)
   const char* m_acDrvDisp = "ADA_RA8875(SPI-HW)";
   Adafruit_RA8875 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_RA8876)
+  const char* m_acDrvDisp = "ADA_RA8876(SPI-HW)";
+  RA8876 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
@@ -548,6 +571,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.PWM1out(255);
       m_disp.graphicsMode(); // Go back to graphics mode
 
+    #elif defined(DRV_DISP_ADAGFX_RA8876)
+      m_disp.init();
+      //pinMode(RA8876_BACKLIGHT, OUTPUT);  // Set backlight pin to OUTPUT mode
+      //digitalWrite(RA8876_BACKLIGHT, HIGH);  // Turn on backlight
+      m_disp.clearScreen(0);
+
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
       uint16_t identifier = m_disp.readID();
       // Support override for MCUFRIEND ID auto-detection
@@ -724,6 +753,57 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
   // Nothing to deallocate
 }
 
+// Centralized code for driver-specific font initiailization
+// Font init is often reused by both DrvGetTxtSize() and DrvDrawTxt()
+// hence there is value in centralizing the initialization.
+bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
+{
+  uint16_t  nTxtScale = 0;
+
+#if defined(DRV_DISP_ADAGFX_RA8876)
+
+  // TODO: Add support for user defined fonts
+  // TODO: Support FLASH strings, custom font dimensions
+  // - For now, hardcode assumption of 8x16 built-in "embedded" font
+  int16_t nFontSel = RA8876_FONT_SIZE_16;
+
+  nTxtScale = pFont->nSize;
+  if ((nTxtScale >= 1) && (nTxtScale <= 3)) {
+    // Convert text scale into embedded font
+    nFontSel = RA8876_FONT_SIZE_16 + (nTxtScale-1);
+    nTxtScale = 1;
+  }
+
+  uint8_t nFontModeRom;
+  uint8_t nFontModeFamily;
+  int16_t nFontRefMode = 0;
+  if (pFont->eFontRefMode == GSLC_FONTREF_MODE_DEFAULT) {
+    // Default to internal ROM font
+    m_disp.selectInternalFont((enum FontSize) nFontSel);
+  } else if (pFont->eFontRefMode == GSLC_FONTREF_MODE_1) {
+    // Reserved for rendered fonts (not yet supported in RA8876 lib)
+  } else {
+    // All other encodings represent an external ROM font
+    // - These values are packed into the integer value as follows:
+    //    [1:0] GSLC_FONTREF_MODE_2  (==2)
+    //    [3:2] RA8876_FONT_FAMILY_x (0..3 defined)
+    //    [7:4] RA8876_FONT_ROM_x    (0..6 defined)
+    // - GSLC_FONTREF_MODE_2 + RA8876_FONT_ROM_x << 4 + RA8876_FONT_FAMILY_x << 2
+    nFontRefMode = (int16_t)(pFont->eFontRefMode);
+    nFontModeRom = (nFontRefMode >> 4) & 0xF;
+    nFontModeFamily = (nFontRefMode >> 2) & 0x3;
+    m_disp.initExternalFontRom(0, (enum ExternalFontRom)nFontModeRom);
+    m_disp.selectExternalFont((enum ExternalFontFamily)nFontModeFamily, (enum FontSize)nFontSel, RA8876_FONT_ENCODING_ASCII); //xxx
+  }
+
+  m_disp.setTextScale(nTxtScale);
+
+  return true;
+
+#endif // DRV_DISP_*
+
+}
+
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
@@ -800,6 +880,33 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
 
   *pnTxtSzW = m_disp.getFont().getTextSize(pStr,pnTxtSzH);
+  // FIXME: Add *pnTxtSzH
+
+  // No baseline info
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
+  return true;
+
+#elif defined(DRV_DISP_ADAGFX_RA8876)
+
+  // Initialize the current font mode & size
+  gslc_DrvFontSetHelp(pGui,pFont);
+
+  // Estimate the string sizing
+
+  nTxtScale = pFont->nSize;
+
+  // NOTE: The following accurately defines the dimensions
+  //        of the fixed fonts. Proportional fonts (eg. from
+  //        external ROM font chips) will not be accurately
+  //        measured as the underlying RA8876 library doesn't
+  //        currently support an API to retrieve the character width.
+
+  // TODO: Add support for FLASH-based strings
+  // TODO: Add support for custom fonts
+  *pnTxtSzW = strlen(pStr) * (nTxtScale+1)*4;
+  *pnTxtSzH =                (nTxtScale+1)*8;
 
   // No baseline info
   *pnTxtX = 0;
@@ -903,6 +1010,14 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   static int16_t m_nTxtY; // Text cursor coordinate (Y)
   m_nTxtX = nTxtX;
   m_nTxtY = nTxtY;
+#elif defined(DRV_DISP_ADAGFX_RA8876)
+
+  // Initialize the current font mode & size
+  gslc_DrvFontSetHelp(pGui,pFont);
+
+  m_disp.setCursor(nTxtX,nTxtY);
+  m_disp.setTextColor(nColRaw);
+
 #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
@@ -967,6 +1082,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
         //   in a way that is not compatible with the Adafruit-GFX font rendering.
         m_disp.Adafruit_GFX::write(ch);
       }
+
+    #elif defined(DRV_DISP_ADAGFX_RA8876)
+      m_disp.putChar(ch);
+
     #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
       // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
       // to control the kerning / spacing between letters in a string.
@@ -1001,7 +1120,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       chStr[1] = 0;
       m_disp.printFixed(m_nTxtX, m_nTxtY, chStr, STYLE_NORMAL);
       // Advance the text cursor
-	  m_nTxtX += m_disp.getFont().getTextSize(chStr, NULL);
+	    m_nTxtX += m_disp.getFont().getTextSize(chStr, NULL);
 
     #else
       // Call Adafruit-GFX for rendering
@@ -1052,6 +1171,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
   // TODO
 #elif defined(DRV_DISP_LCDGFX)
+  // TODO
+#elif defined(DRV_DISP_ADAGFX_RA8876)
   // TODO
 #else
   m_disp.setFont();
@@ -1140,6 +1261,9 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.fillRect(r);
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    // xlatb/RA8876 uses a non-standard fillRect() API
+    m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
@@ -1196,6 +1320,8 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.drawRect(r);
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
@@ -2521,6 +2647,14 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDisp0H = m_disp.height();
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_ADAGFX_RA8876)
+    // No support for rotation in xlatb/RA8875 library
+    bSupportRotation = false;
+    pGui->nDisp0W = m_disp.getWidth();
+    pGui->nDisp0H = m_disp.getHeight();
+    pGui->nDispW = m_disp.getWidth();
+    pGui->nDispH = m_disp.getHeight();
 
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     m_disp.setRotation(0);

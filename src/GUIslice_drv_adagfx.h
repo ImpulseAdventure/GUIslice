@@ -139,6 +139,13 @@ extern "C" {
   #define DRV_HAS_DRAW_CIRCLE_FILL       0
   #define DRV_HAS_DRAW_TRI_FRAME         0
   #define DRV_HAS_DRAW_TRI_FILL          0
+
+#elif defined(DRV_DISP_ADAGFX_RA8876)
+  #undef DRV_HAS_DRAW_RECT_ROUND_FRAME
+  #undef DRV_HAS_DRAW_RECT_ROUND_FILL
+
+  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
+  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
 #endif
 
 
