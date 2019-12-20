@@ -69,20 +69,6 @@
   #include <GUIslice_th.h>
 #endif
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-
-  // Define display driver naming
-  const char* m_acDrvDisp = "TFT_eSPI";
-
-// ------------------------------------------------------------------------
-// Use default pin settings as defined in TFT_eSPI/User_Setup.h
-TFT_eSPI m_disp = TFT_eSPI();
-
-
 // ------------------------------------------------------------------------
 // Load storage drivers
 // - Support SD card interface
@@ -100,6 +86,18 @@ TFT_eSPI m_disp = TFT_eSPI();
   #endif
 #endif
  
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+
+  // Define display driver naming
+  const char* m_acDrvDisp = "TFT_eSPI";
+
+// ------------------------------------------------------------------------
+// Use default pin settings as defined in TFT_eSPI/User_Setup.h
+TFT_eSPI m_disp = TFT_eSPI();
 
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
