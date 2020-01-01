@@ -78,11 +78,12 @@ extern "C" {
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       11    // Display chip select
-  #define ADAGFX_PIN_RST      0     // Display Reset
+  // These values were defined to match an Arduino Zero config
+  #define ADAGFX_PIN_CS       42    // Display chip select
+  #define ADAGFX_PIN_RST      -1    // Display Reset
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     12     // SD card chip select (if GSLC_SD_EN=1)
 
 
 
