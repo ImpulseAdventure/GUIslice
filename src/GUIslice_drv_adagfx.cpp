@@ -49,12 +49,18 @@
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX)
 
-  // Almost all GFX-compatible libraries depend on Adafruit-GFX
-  // There are a couple exceptions that do not require it
-  #if !defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // Most GFX-compatible libraries depend on Adafruit-GFX
+  // Define drivers that do not require it:
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    #define DRV_DISP_GFX_SKIP
+  #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+    #define DRV_DISP_GFX_SKIP
+  #endif
+
+  #if !defined(DRV_DISP_GFX_SKIP)
     #include <Adafruit_GFX.h>
     #include <gfxfont.h>
-  #endif // ILI9341_T3
+  #endif
 
   // Now configure specific display driver for Adafruit-GFX
   #if defined(DRV_DISP_ADAGFX_ILI9341)
@@ -76,6 +82,10 @@
     // suitable default in case the user doesn't load
     // one explicitly.
     #include <SystemFont5x7.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+    // https://github.com/Nkawu/TFT_22_ILI9225
+    #include <TFT_22_ILI9225.h>
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     // https://github.com/adafruit/Adafruit_SSD1306
     #include <Adafruit_SSD1306.h>
@@ -251,6 +261,11 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
   const char* m_acDrvDisp = "ADA_ILI9341_DUE_MB(SPI-HW)";
   ILI9341_due m_disp = ILI9341_due(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+  const char* m_acDrvDisp = "ADA_ILI9225_NK(SPI-HW)";
+  TFT_22_ILI9225 m_disp = TFT_22_ILI9225(ADAGFX_PIN_RST, ADAGFX_PIN_RS, ADAGFX_PIN_CS, ADAGFX_PIN_LED, DISP_BRIGHTNESS);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -540,6 +555,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #else
         m_disp.initR(DRV_DISP_ADAGFX_ST7735_INIT);
       #endif
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+      m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_HX8347)
       m_disp.begin();
@@ -875,6 +893,43 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
+#elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+    if (pFont->pvFont == NULL) {
+      m_disp.setFont(Terminal6x8);
+    } else {
+      m_disp.setFont((uint8_t*)(pFont->pvFont));
+    }
+    break;
+  case GSLC_FONTREF_MODE_1:
+    m_disp.setGFXFont((GFXfont*)(pFont->pvFont));
+    break;
+  }
+  nTxtScale = pFont->nSize; // UNUSED
+
+  int16_t nTxtSzWi = 0;
+  int16_t nTxtSzHi = 0;
+
+  // Fetch the font sizing
+  #if defined(USE_STRING_CLASS)
+    //#error ILI9225_NK USE_STRING_CLASS not yet tested
+    // Convert to STRING
+    STRING str;
+    str = String(pStr);
+    m_disp.getGFXTextExtent(str,0,0,&nTxtSzWi,&nTxtSzHi);
+  #else
+    m_disp.getGFXTextExtent(pStr,0,0,&nTxtSzWi,&nTxtSzHi);
+  #endif // USE_STRING_CLASS
+  *pnTxtSzW = (uint16_t)nTxtSzWi;
+  *pnTxtSzH = (uint16_t)nTxtSzHi;
+
+  // No baseline info
+  *pnTxtX = 0;
+  *pnTxtY = 0;
+
+  return true;
+
 #elif defined(DRV_DISP_LCDGFX)
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
@@ -994,6 +1049,27 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
+#elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+  switch (pFont->eFontRefMode) {
+  case GSLC_FONTREF_MODE_DEFAULT:
+    if (pFont->pvFont == NULL) {
+      m_disp.setFont(Terminal6x8);
+    } else {
+      m_disp.setFont((uint8_t*)(pFont->pvFont));
+    }
+    break;
+  case GSLC_FONTREF_MODE_1:
+    m_disp.setGFXFont((GFXfont*)(pFont->pvFont));
+    break;
+  }
+  // As ILI9225_NK doesn't support a setCursor() API to update the text
+  // coordinates or color, we will retain a static variable here.
+  static int16_t m_nTxtX; // Text cursor coordinate (X)
+  static int16_t m_nTxtY; // Text cursor coordinate (Y)
+  static uint16_t m_nTxtCol; // Text color
+  m_nTxtX = nTxtX;
+  m_nTxtY = nTxtY;
+  m_nTxtCol = nColRaw;
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
   // TODO: Add support for user defined fonts
   m_disp.setFont((sFONT*)(pFont->pvFont));
@@ -1113,6 +1189,37 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       nCurPosX += m_disp.getTextLetterSpacing() * nTxtScale;
       m_disp.cursorToXY(nCurPosX,nCurPosY);
 
+    #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+      switch (pFont->eFontRefMode) {
+      case GSLC_FONTREF_MODE_DEFAULT:
+        m_disp.drawChar(m_nTxtX, m_nTxtY, ch, m_nTxtCol);
+        // Determine character width
+        // Advance the text cursor
+	      m_nTxtX += m_disp.getCharWidth(ch);
+        break;
+      case GSLC_FONTREF_MODE_1:
+        m_disp.drawGFXChar(m_nTxtX, m_nTxtY, ch, m_nTxtCol);
+
+        // Determine character width
+        STRING strCh;
+        int16_t nChW = 0;
+        int16_t nChH = 0;
+        #if defined(USE_STRING_CLASS)
+          //#error ILI9225_NK USE_STRING_CLASS not yet tested
+          strCh = String(ch);
+        #else
+          char acStr[2];
+          acStr[0] = ch;
+          acStr[1] = 0;
+          strCh = (STRING)acStr;
+        #endif // USE_STRING_CLASS
+        m_disp.getGFXTextExtent(strCh,0,0,&nChW,&nChH);
+
+        // Advance the text cursor
+	      m_nTxtX += nChW;
+        break;
+      }
+
     #elif defined(DRV_DISP_LCDGFX)
       // Create dummy string for character render
       char chStr[2];
@@ -1140,6 +1247,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
           // TODO: Is getCursorY() supported in RA8875 mode?
           m_disp.textSetCursor(nTxtX, nCurPosY);
         }
+
+      #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+        // FIXME: Need to determine character height to advance nTxtY position
+        // For now, don't support newline character
 
       #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
         nTxtY += m_disp.getFontHeight();
@@ -1169,6 +1280,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // TODO
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  // TODO
+#elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
   // TODO
 #elif defined(DRV_DISP_LCDGFX)
   // TODO
@@ -1264,6 +1377,8 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   #elif defined(DRV_DISP_ADAGFX_RA8876)
     // xlatb/RA8876 uses a non-standard fillRect() API
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
+  #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+    m_disp.fillRectangle(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
@@ -1321,7 +1436,10 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     m_disp.setColor(nColRaw);
 	  m_disp.drawRect(r);
   #elif defined(DRV_DISP_ADAGFX_RA8876)
+    // FIXME: This should be frameRect!
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
+  #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+    m_disp.drawRectangle(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
@@ -2594,6 +2712,13 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
       pGui->nDispW = ILI9341_TFTHEIGHT;
       pGui->nDispH = ILI9341_TFTWIDTH;
     }
+
+  #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+    // No support for rotation in ILI9225_NK library
+    pGui->nDisp0W = ILI9225_LCD_HEIGHT;
+    pGui->nDisp0H = ILI9225_LCD_WIDTH;
+    pGui->nDispW = ILI9225_LCD_HEIGHT;
+    pGui->nDispH = ILI9225_LCD_WIDTH;
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     // No support for rotation in SSD1306 library

@@ -89,6 +89,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
   //#include "../configs/ard-adagfx-hx8357-simple.h"
   //#include "../configs/ard-adagfx-hx8357-stmpe610.h"
+  //#include "../configs/ard-adagfx-ili9225-notouch.h"
   //#include "../configs/ard-adagfx-ili9341-ft6206.h"
   //#include "../configs/ard-adagfx-ili9341-input.h"
   //#include "../configs/ard-adagfx-ili9341-notouch.h"
