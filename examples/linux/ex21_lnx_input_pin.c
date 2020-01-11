@@ -119,9 +119,9 @@ void ScanButton(int nButton)
 bool CbPinPoll(void* pvGui, int16_t* pnPinInd, int16_t* pnPinVal)
 {
   // Sample GPIOs
-  ScanButton(PIN_PREV);
-  ScanButton(PIN_SEL);
-  ScanButton(PIN_NEXT);
+  ScanButton(0);
+  ScanButton(1);
+  ScanButton(2);
 
   // Determine if any pin edge events occur
   // - If multiple pin events occur, they will be handled in consecutive CbPinPoll() calls

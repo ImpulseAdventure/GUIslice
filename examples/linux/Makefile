@@ -110,6 +110,7 @@ SRC =   ex01_lnx_basic.c \
 	ex11_lnx_graph.c \
 	ex15_lnx_foreign.c \
 	ex18_lnx_compound.c \
+	ex21_lnx_input_pin.c \
 	ex22_lnx_input_key.c \
 	ex24_lnx_tabs.c \
 	ex31_lnx_listbox.c \
@@ -195,6 +196,10 @@ ex15_lnx_foreign: ex15_lnx_foreign.c $(GSLC_CORE) $(GSLC_SRCS)
 ex18_lnx_compound: ex18_lnx_compound.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex18_lnx_compound.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
+ex21_lnx_input_pin: ex21_lnx_input_pin.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex21_lnx_input_pin.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -lwiringPi -lwiringPiDev -I . -I ../../src
 
 ex22_lnx_input_key: ex22_lnx_input_key.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
