@@ -16,8 +16,6 @@
 #include "elem/XProgress.h"
 #include "elem/XSlider.h"
 
-#include <time.h> // For clock() (frame rate reporting)
-
 #include <wiringPi.h> // For GPIO
 
 // Defines for resources
@@ -53,16 +51,16 @@ gslc_tsXSlider              m_sXSlider;
 #define MAX_INPUT_MAP       3
 gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 
-#define PIN_PREV  2
-#define PIN_SEL   3
-#define PIN_NEXT  4
-int m_asOutputs[3] = { 0,0,0 }; // Current GPIO pin state
+#define PIN_PREV  2 // RPI GPIO2: GUI "Previous" element
+#define PIN_SEL   3 // RPI GPIO3: GUI "Select" element
+#define PIN_NEXT  4 // RPI GPIO4: GUI "Next" element
+
+int m_asPinCur[3] = { 0,0,0 }; // Current GPIO pin state
+int m_asPinOld[3] = { 0,0,0 }; // Previous GPIO pin state
+int m_asPinEvt[3] = { 0,0,0 }; // Current GPIO pin event
 
 
 #define MAX_STR             100
-
-// Enable frame/update rate reporting? (1 to enable, 0 to disable)
-#define TEST_UPDATE_RATE     0
 
 // Configure environment variables suitable for display
 // - These may need modification to match your system
@@ -101,16 +99,25 @@ bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_
   return true;
 }
 
-// The following code was based on Gordon Henderson's WiringPi example:
-// - WiringPi/examples/PiFace/motor.c
-void ScanButton(int nButton)
+void ReadButton(int nIndex,int nPin)
 {
-  if (digitalRead(nButton) == LOW) {
-    m_asOutputs[nButton] ^= 1 ;
-    digitalWrite(nButton, m_asOutputs[nButton]);
-  }
-  while (digitalRead(nButton) == LOW) {
-    delay(1);
+  // Save old value
+  m_asPinOld[nIndex] = m_asPinCur[nIndex];
+  // Load current value
+  m_asPinCur[nIndex] = digitalRead(nPin);
+
+  // Look for transition
+  if ((m_asPinOld[nIndex] != LOW) && (m_asPinCur[nIndex] == LOW)) {
+    // Asserted
+    //GSLC_DEBUG_PRINT("ReadButton(%d) asserted\n",nIndex);
+  } else if ((m_asPinOld[nIndex] == LOW) && (m_asPinCur[nIndex] != LOW)) {
+    // Deasserted
+    m_asPinEvt[nIndex] = 1; // Only mark event on deassertion of button
+    //GSLC_DEBUG_PRINT("ReadButton(%d) deasserted\n",nIndex);
+    delay(5); // Simple debounce delay
+  } else {
+    // No change in state, so clear event
+    m_asPinEvt[nIndex] = 0;
   }
 }
 
@@ -119,15 +126,15 @@ void ScanButton(int nButton)
 bool CbPinPoll(void* pvGui, int16_t* pnPinInd, int16_t* pnPinVal)
 {
   // Sample GPIOs
-  ScanButton(0);
-  ScanButton(1);
-  ScanButton(2);
+  ReadButton(0,PIN_PREV);
+  ReadButton(1,PIN_SEL);
+  ReadButton(2,PIN_NEXT);
 
   // Determine if any pin edge events occur
   // - If multiple pin events occur, they will be handled in consecutive CbPinPoll() calls
-  if      (m_asOutputs[0]) { *pnPinInd = PIN_PREV; *pnPinVal = 1; }
-  else if (m_asOutputs[1]) { *pnPinInd = PIN_SEL;  *pnPinVal = 1; }
-  else if (m_asOutputs[2]) { *pnPinInd = PIN_NEXT; *pnPinVal = 1; }
+  if      (m_asPinEvt[0]) { *pnPinInd = PIN_PREV; *pnPinVal = 1; }
+  else if (m_asPinEvt[1]) { *pnPinInd = PIN_SEL;  *pnPinVal = 1; }
+  else if (m_asPinEvt[2]) { *pnPinInd = PIN_NEXT; *pnPinVal = 1; }
   else return false; // No pin event detected
 
   // If we reach here, then an pin event was detected
@@ -219,24 +226,12 @@ int main( int argc, char* args[] )
   gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_FNAME,FONT1,12);
   gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_FNAME,FONT1,10);
 
-/*
-  // Set up keyboard controls
-  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
-  gslc_InitInputMap(&m_gui,m_asInputMap,MAX_INPUT_MAP);
-  gslc_InputMapAdd(&m_gui,GSLC_INPUT_KEY_DOWN,SDLK_UP,   GSLC_ACTION_FOCUS_PREV,0);
-  gslc_InputMapAdd(&m_gui,GSLC_INPUT_KEY_DOWN,SDLK_DOWN, GSLC_ACTION_FOCUS_NEXT,0);
-  gslc_InputMapAdd(&m_gui,GSLC_INPUT_KEY_DOWN,SDLK_SPACE,GSLC_ACTION_SELECT,0);
-  gslc_InputMapAdd(&m_gui,GSLC_INPUT_KEY_DOWN,SDLK_RIGHT,GSLC_ACTION_SET_REL,+10);
-  gslc_InputMapAdd(&m_gui,GSLC_INPUT_KEY_DOWN,SDLK_LEFT, GSLC_ACTION_SET_REL,-10);
-  */
-
   // Initialize GPIOs via WiringPi
-  wiringPiSetupPhys();
+  wiringPiSetupGpio();
   // Enable pullups
   pullUpDnControl(PIN_NEXT, PUD_UP);
   pullUpDnControl(PIN_SEL, PUD_UP);
   pullUpDnControl(PIN_PREV, PUD_UP);
-
 
   // Set the pin poll callback function
   gslc_SetPinPollFunc(&m_gui, CbPinPoll);
@@ -264,12 +259,6 @@ int main( int argc, char* args[] )
   // -----------------------------------
   // Main event loop
 
-  #if (TEST_UPDATE_RATE)
-  uint32_t  nNumUpdates = 0;
-  clock_t   sClkStart,sClkEnd;
-  sClkStart = clock();
-  #endif
-
   m_bQuit = false;
   while (!m_bQuit) {
 
@@ -295,19 +284,6 @@ int main( int argc, char* args[] )
 
     // Periodically call GUIslice update function
     gslc_Update(&m_gui);
-
-    // Simple update rate reporting
-    #if (TEST_UPDATE_RATE)
-    nNumUpdates++;
-    sClkEnd = clock();
-    if ((sClkEnd - sClkStart) > 10*1000000) {
-      // Reached end of interval, report average
-      printf("DBG: Update rate = [%6u per 10 sec]\n",nNumUpdates);
-      // Reset interval
-      nNumUpdates = 0;
-      sClkStart = sClkEnd;
-    }
-    #endif
 
   } // bQuit
 
