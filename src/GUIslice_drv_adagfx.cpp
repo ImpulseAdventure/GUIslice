@@ -1321,7 +1321,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     m_disp.setColor(nColRaw);
 	  m_disp.drawRect(r);
   #elif defined(DRV_DISP_ADAGFX_RA8876)
-    m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
+    m_disp.drawRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
