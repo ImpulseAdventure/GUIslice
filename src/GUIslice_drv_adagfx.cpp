@@ -2714,11 +2714,16 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     }
 
   #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
-    // No support for rotation in ILI9225_NK library
-    pGui->nDisp0W = ILI9225_LCD_HEIGHT;
-    pGui->nDisp0H = ILI9225_LCD_WIDTH;
-    pGui->nDispW = ILI9225_LCD_HEIGHT;
-    pGui->nDispH = ILI9225_LCD_WIDTH;
+    pGui->nDisp0W = ILI9225_LCD_WIDTH;
+    pGui->nDisp0H = ILI9225_LCD_HEIGHT;
+    m_disp.setOrientation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9225_LCD_WIDTH;
+      pGui->nDispH = ILI9225_LCD_HEIGHT;
+    } else {
+      pGui->nDispW = ILI9225_LCD_HEIGHT;
+      pGui->nDispH = ILI9225_LCD_WIDTH;
+    }
 
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     // No support for rotation in SSD1306 library
