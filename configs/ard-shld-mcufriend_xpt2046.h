@@ -70,6 +70,7 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
+  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9481 // MCUFRIEND write-only displays may need to force an ID value
   #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
