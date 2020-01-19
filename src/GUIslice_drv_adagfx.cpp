@@ -214,6 +214,7 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_ILI9341(SPI-SW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
+  #define OFFSCREEN_SUPPORTED
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
@@ -261,6 +262,7 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
+  #define OFFSCREEN_SUPPORTED
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
@@ -271,6 +273,7 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_ST7735(SPI-SW)";
     Adafruit_ST7735 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST);
   #endif
+  #define OFFSCREEN_SUPPORTED
 
   #ifdef DRV_DISP_ADAGFX_SEESAW_18
     Adafruit_TFTShield18 m_seesaw;
@@ -290,6 +293,7 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_HX8357(SPI-SW)";
     Adafruit_HX8357 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RESET);
   #endif
+  #define OFFSCREEN_SUPPORTED
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_PCD8544)
@@ -300,11 +304,13 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_PCD8544(SPI-SW)";
     Adafruit_PCD8544 m_disp(ADAGFX_PIN_CLK, ADAGFX_PIN_MOSI, ADAGFX_PIN_DC, ADAGFX_PIN_CS, ADAGFX_PIN_RST);
   #endif
+  #define OFFSCREEN_SUPPORTED
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_RA8875)
   const char* m_acDrvDisp = "ADA_RA8875(SPI-HW)";
   Adafruit_RA8875 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+  #define OFFSCREEN_SUPPORTED
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_RA8876)
@@ -383,6 +389,26 @@ extern "C" {
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
 
+// ------------------------------------------------------------------------
+// Support for offscreen bitmaps
+#if defined(DRV_DISP_OFFSCREEN)
+  #if defined(OFFSCREEN_SUPPORTED)
+    // Check offscreen configuration
+    #if (DRV_DISP_OFFSCREEN_DEPTH == 1)
+      #define OFFSCREEN_MODULE GFXcanvas1
+      #define OFFSCREEN_AVAIL
+    #elif (DRV_DISP_OFFSCREEN_DEPTH == 8)
+      #define OFFSCREEN_MODULE GFXcanvas8
+    #elif (DRV_DISP_OFFSCREEN_DEPTH == 16)
+      #define OFFSCREEN_MODULE GFXcanvas16
+    #endif
+
+    // Instantiate the offscreen bitmap
+    #if defined(OFFSCREEN_AVAIL)
+      OFFSCREEN_MODULE m_offscreen(DRV_DISP_OFFSCREEN_W,DRV_DISP_OFFSCREEN_H);
+    #endif
+  #endif
+#endif
 
 
 // ------------------------------------------------------------------------
@@ -1019,10 +1045,24 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
 
 #else
+  #if defined(OFFSCREEN_AVAIL)
+  if (pGui->bDrawOffscreen) {
+    m_offscreen.setFont((const GFXfont *)pFont->pvFont);
+    m_offscreen.setTextColor(nColRaw);
+    m_offscreen.setCursor(nTxtX-(pGui->nDrawOffscreenX),nTxtY-(pGui->nDrawOffscreenY));
+    m_offscreen.setTextSize(nTxtScale);
+  } else {
+    m_disp.setFont((const GFXfont *)pFont->pvFont);
+    m_disp.setTextColor(nColRaw);
+    m_disp.setCursor(nTxtX,nTxtY);
+    m_disp.setTextSize(nTxtScale);
+  }
+  #else
   m_disp.setFont((const GFXfont *)pFont->pvFont);
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
+  #endif // OFFSCREEN_AVAIL
 #endif
 
   // Driver-specific overrides
@@ -1125,7 +1165,15 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     #else
       // Call Adafruit-GFX for rendering
       // NOTE: This should automatically advance the "cursor" (current text position)
+      #if defined(OFFSCREEN_AVAIL)
+      if (pGui->bDrawOffscreen) {
+        m_offscreen.print(ch);
+      } else {
+        m_disp.print(ch);
+      }
+      #else
       m_disp.print(ch);
+      #endif // OFFSCREEN_AVAIL
     #endif
 
     // Handle multi-line text:
@@ -1265,7 +1313,15 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     // xlatb/RA8876 uses a non-standard fillRect() API
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
+    #if defined(OFFSCREEN_AVAIL)
+    if (pGui->bDrawOffscreen) {
+      m_offscreen.fillRect(rRect.x-(pGui->nDrawOffscreenX),rRect.y-(pGui->nDrawOffscreenY),rRect.w,rRect.h,nColRaw);
+    } else {
+      m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+    }
+    #else
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
+    #endif // OFFSCREEN_AVAIL
   #endif
   return true;
 }
@@ -1413,8 +1469,17 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 }
 
 
+void gslc_DrvCopyFromOffscreen(gslc_tsGui* pGui,gslc_tsRect rWindow,gslc_tsColor nColFg,gslc_tsColor nColBg)
+{
+  #if defined(DRV_DISP_OFFSCREEN)
+  // Draw without transparency
+  gslc_DrvDrawMonoFromMem_base(pGui, rWindow.x,rWindow.y,m_offscreen.getBuffer(),
+    DRV_DISP_OFFSCREEN_W,rWindow.w,rWindow.h,nColFg,nColBg,false,false);
+  #endif
+}
 
 // ----- REFERENCE CODE begin
+
 // The following code was based upon the following reference code but modified to
 // adapt for use in GUIslice.
 //
@@ -1425,6 +1490,34 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer using the foreground color defined in the
 // header (unset bits are transparent).
+void gslc_DrvDrawMonoFromMem_base(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
+ const unsigned char *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
+ bool bTransparent,bool bProgMem)
+ {
+  const unsigned char*  bmap_base = pBitmap;
+
+  int16_t i, j, byteWidth = (nMemW + 7) / 8;
+  uint8_t nByte = 0;
+
+  for(j=0; j<nH; j++) {
+    for(i=0; i<nW; i++) {
+      if(i & 7) nByte <<= 1;
+      else {
+        if (bProgMem) {
+          nByte = pgm_read_byte(bmap_base + j * byteWidth + i / 8);
+        } else {
+          nByte = bmap_base[j * byteWidth + i / 8];
+        }
+      }
+      if(nByte & 0x80) {
+        gslc_DrvDrawPoint(pGui,nDstX+i,nDstY+j,nCol);
+      } else if (!bTransparent) {
+        gslc_DrvDrawPoint(pGui,nDstX+i,nDstY+j,nColBg);
+      }
+    }
+  }
+}
+
 
 // GUIslice modified the raw memory format to add a header:
 // Image array format:
@@ -1451,24 +1544,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   nCol.b  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   bmap_base++;
 
-  int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t nByte = 0;
-
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++) {
-      if(i & 7) nByte <<= 1;
-      else {
-        if (bProgMem) {
-          nByte = pgm_read_byte(bmap_base + j * byteWidth + i / 8);
-        } else {
-          nByte = bmap_base[j * byteWidth + i / 8];
-        }
-      }
-      if(nByte & 0x80) {
-        gslc_DrvDrawPoint(pGui,nDstX+i,nDstY+j,nCol);
-      }
-    }
-  }
+  gslc_DrvDrawMonoFromMem_base(pGui,nDstX,nDstY,bmap_base,w,w,h,nCol,GSLC_COL_BLACK,true,bProgMem);
 }
 // ----- REFERENCE CODE end
 

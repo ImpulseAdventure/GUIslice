@@ -132,6 +132,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nDispW          = 0;
   pGui->nDispH          = 0;
   pGui->nDispDepth      = 0;
+  pGui->bDrawOffscreen  = false;
+  pGui->nDrawOffscreenX = 0;
+  pGui->nDrawOffscreenY = 0;
 
   #if defined(DRV_DISP_ADAGFX) || defined(DRV_DISP_ADAGFX_AS) || defined(DRV_DISP_TFT_ESPI) || defined(DRV_DISP_M5STACK)
 
@@ -3014,6 +3017,48 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   }
 
   // --------------------------------------------------------------------------
+  // Determine if offscreen bitmap can be used
+  // --------------------------------------------------------------------------
+  bool bUseOffscreen = false;
+  // Check for feature enabled & supported
+  #if defined(DRV_DISP_OFFSCREEN)
+
+  // For now, only enable for TXT?
+  if (pElem->nType == GSLC_TYPE_TXT) {
+    bUseOffscreen = true;
+  }
+
+  // Check for color depth
+  // - If we support elements other than TEXT, we will
+  //   need to compare DRV_DISP_OFFSCREEN_DEPTH to see if
+  //   it is suitable for the object type.
+  // - Need to consider if we are exceeding depth of offscreen:
+  //   colBg, colElemFill/colElemFillGlow, colElemFrame/colElemFrameGlow, colFill/colFillGlow
+
+  // Check for dimensions
+  if ((bUseOffscreen) && ((pElem->rElem.w > DRV_DISP_OFFSCREEN_W) || (pElem->rElem.h > DRV_DISP_OFFSCREEN_H))) {
+    // Region too large for offscreen bitmap
+    bUseOffscreen = false;
+  }
+  
+  // Check for memory availability
+
+  // Default to onscreen
+  pGui->bDrawOffscreen = false;
+
+  // Allocate m_disp_offscreen
+  // - GFXcanvas1 m_disp_offscreen(W,H)
+  // - Indicate to driver that it should use offscreen bitmap
+  if (bUseOffscreen) {
+    pGui->bDrawOffscreen = true;
+    // Save relative coordinates
+    pGui->nDrawOffscreenX = pElem->rElem.x;
+    pGui->nDrawOffscreenY = pElem->rElem.y;
+  }
+
+  #endif // DRV_DISP_OFFSCREEN
+
+  // --------------------------------------------------------------------------
   // Init for default drawing
   // --------------------------------------------------------------------------
 
@@ -3051,6 +3096,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     } else {
       colBg = pElem->colElemFill;
     }
+
+    // NOTE: If we are using offscreen bitmaps, we want to ensure the
+    // background erase is done in the offscreen bitmap only to avoid
+    // redraw flicker.
+
     if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
       gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
     } else {
@@ -3113,7 +3163,18 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
       pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
+
+    // --------------------------------------------------------------------------
+    // Copy offscreen bitmap (if active)
+    // --------------------------------------------------------------------------
+    if (bUseOffscreen) {
+      gslc_DrvCopyFromOffscreen(pGui,pElem->rElem,colTxt,colBg);
+    }
+
   }
+
+  // Revert to onscreen
+  pGui->bDrawOffscreen = false;
 
   // --------------------------------------------------------------------------
 

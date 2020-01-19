@@ -765,6 +765,9 @@ typedef struct {
                                         ///< If false, entire page is redrawn when any
                                         ///< element has been updated prior to next
                                         ///< page redraw command.
+  bool                bDrawOffscreen;   ///< Driver is to write to offscreen bitmap
+  int16_t             nDrawOffscreenX;  ///< X offset for offscreen bitmap
+  int16_t             nDrawOffscreenY;  ///< Y offset for offscreen bitmap
 
   // Primary surface definitions
   gslc_tsImgRef       sImgRefBkgnd;     ///< Image reference for background
