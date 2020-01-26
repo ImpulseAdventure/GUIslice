@@ -399,8 +399,10 @@ extern "C" {
       #define OFFSCREEN_AVAIL
     #elif (DRV_DISP_OFFSCREEN_DEPTH == 8)
       #define OFFSCREEN_MODULE GFXcanvas8
+      #define OFFSCREEN_AVAIL
     #elif (DRV_DISP_OFFSCREEN_DEPTH == 16)
       #define OFFSCREEN_MODULE GFXcanvas16
+      #define OFFSCREEN_AVAIL
     #endif
 
     // Instantiate the offscreen bitmap
@@ -1472,10 +1474,32 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 void gslc_DrvCopyFromOffscreen(gslc_tsGui* pGui,gslc_tsRect rWindow,gslc_tsColor nColFg,gslc_tsColor nColBg)
 {
   #if defined(DRV_DISP_OFFSCREEN)
-  // Draw without transparency
-  gslc_DrvDrawMonoFromMem_base(pGui, rWindow.x,rWindow.y,m_offscreen.getBuffer(),
-    DRV_DISP_OFFSCREEN_W,rWindow.w,rWindow.h,nColFg,nColBg,false,false);
+    // Draw without transparency
+    #if (DRV_DISP_OFFSCREEN_DEPTH == 1)
+      gslc_DrvDrawMonoFromMem_base(pGui, rWindow.x,rWindow.y,m_offscreen.getBuffer(),
+        DRV_DISP_OFFSCREEN_W,rWindow.w,rWindow.h,nColFg,nColBg,false,false);
+    #elif (DRV_DISP_OFFSCREEN_DEPTH == 16)
+      gslc_DrvDraw16bFromMem_base(pGui, rWindow.x,rWindow.y,m_offscreen.getBuffer(),
+        DRV_DISP_OFFSCREEN_W,rWindow.w,rWindow.h,nColFg,nColBg,false,false);
+    #endif
   #endif
+}
+
+// FIXME: nCol, nColBg, bTransparent unused
+void gslc_DrvDraw16bFromMem_base(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
+ const uint16_t *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
+ bool bTransparent,bool bProgMem)
+{
+  int16_t nSrcX,nSrcY;
+  int16_t nColRaw;
+  m_disp.startWrite();
+  for (nSrcY=0;nSrcY<nH;nSrcY++) {
+    for (nSrcX=0;nSrcX<nW;nSrcX++) {
+      nColRaw = pBitmap[nSrcY*nMemW + nSrcX];
+      gslc_DrvDrawPoint_base(nDstX+nSrcX,nDstY+nSrcY,nColRaw);
+    }
+  }
+  m_disp.endWrite();
 }
 
 // ----- REFERENCE CODE begin
@@ -1491,7 +1515,7 @@ void gslc_DrvCopyFromOffscreen(gslc_tsGui* pGui,gslc_tsRect rWindow,gslc_tsColor
 // provided bitmap buffer using the foreground color defined in the
 // header (unset bits are transparent).
 void gslc_DrvDrawMonoFromMem_base(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
- const unsigned char *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
+ const uint8_t *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
  bool bTransparent,bool bProgMem)
  {
   const unsigned char*  bmap_base = pBitmap;

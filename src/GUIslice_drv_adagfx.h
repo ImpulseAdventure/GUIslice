@@ -596,8 +596,14 @@ void gslc_DrvCopyFromOffscreen(gslc_tsGui* pGui,gslc_tsRect rWindow,gslc_tsColor
 
 /// \todo Doc
 void gslc_DrvDrawMonoFromMem_base(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
- const unsigned char *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
+ const uint8_t *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
  bool bTransparent,bool bProgMem);
+
+/// \todo Doc
+void gslc_DrvDraw16bFromMem_base(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
+ const uint16_t *pBitmap,int16_t nMemW,int16_t nW,int16_t nH,gslc_tsColor nCol,gslc_tsColor nColBg,
+ bool bTransparent,bool bProgMem);
+
 
 ///
 /// Draw a monochrome bitmap from a memory array
