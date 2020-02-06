@@ -894,6 +894,17 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_ILI9225_NK)
+  nTxtScale = pFont->nSize; // UNUSED
+
+  int16_t nTxtSzWi = 0;
+  int16_t nTxtSzHi = 0;
+
+  #if defined(USE_STRING_CLASS)
+    //#error ILI9225_NK USE_STRING_CLASS not yet tested
+    // Convert to STRING
+    STRING str;
+  #endif // USE_STRING_CLASS
+
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
     if (pFont->pvFont == NULL) {
@@ -901,26 +912,33 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     } else {
       m_disp.setFont((uint8_t*)(pFont->pvFont));
     }
+    // Fetch the font sizing (width)
+    #if defined(USE_STRING_CLASS)
+      // Convert to STRING
+      str = String(pStr);
+      nTxtSzWi = m_disp.getTextWidth(str);
+    #else
+      nTxtSzWi = m_disp.getTextWidth(pStr);
+    #endif
+    // Fetch the font sizing (height)
+    nTxtSzHi = (m_disp.getFont()).height;
     break;
+
   case GSLC_FONTREF_MODE_1:
     m_disp.setGFXFont((GFXfont*)(pFont->pvFont));
+    // Fetch the font sizing
+    #if defined(USE_STRING_CLASS)
+      //#error ILI9225_NK USE_STRING_CLASS not yet tested
+      // Convert to STRING
+      str = String(pStr);
+      m_disp.getGFXTextExtent(str,0,0,&nTxtSzWi,&nTxtSzHi);
+    #else
+      m_disp.getGFXTextExtent(pStr,0,0,&nTxtSzWi,&nTxtSzHi);
+    #endif // USE_STRING_CLASS
     break;
+
   }
-  nTxtScale = pFont->nSize; // UNUSED
 
-  int16_t nTxtSzWi = 0;
-  int16_t nTxtSzHi = 0;
-
-  // Fetch the font sizing
-  #if defined(USE_STRING_CLASS)
-    //#error ILI9225_NK USE_STRING_CLASS not yet tested
-    // Convert to STRING
-    STRING str;
-    str = String(pStr);
-    m_disp.getGFXTextExtent(str,0,0,&nTxtSzWi,&nTxtSzHi);
-  #else
-    m_disp.getGFXTextExtent(pStr,0,0,&nTxtSzWi,&nTxtSzHi);
-  #endif // USE_STRING_CLASS
   *pnTxtSzW = (uint16_t)nTxtSzWi;
   *pnTxtSzH = (uint16_t)nTxtSzHi;
 
