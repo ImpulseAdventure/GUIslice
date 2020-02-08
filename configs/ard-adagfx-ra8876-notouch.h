@@ -82,7 +82,7 @@ extern "C" {
   #define ADAGFX_PIN_RST      0     // Display Reset
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     12    // SD card chip select (if GSLC_SD_EN=1)
 
 
 

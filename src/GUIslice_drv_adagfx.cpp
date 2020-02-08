@@ -2091,11 +2091,9 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       //uint8_t nTemp2 = m_touch.getTSflag(anRegs);
 
       // Only accept the first touch
-      m_nLastRawX = anCoords[0][0];
-      m_nLastRawY = anCoords[0][1];
-      // If the FT5206 has flipped axes, we should adjust them here
-      //m_nLastRawX = nDispOutMaxX-anCoords[0][0];
-      //m_nLastRawY = nDispOutMaxY-anCoords[0][1];
+      // - As the FT5206 has flipped axes, we adjust them here
+      m_nLastRawX = nDispOutMaxX-anCoords[0][0];
+      m_nLastRawY = nDispOutMaxY-anCoords[0][1];
 
       m_nLastRawPress = 255;  // Select arbitrary non-zero value
       m_bLastTouched = true;
