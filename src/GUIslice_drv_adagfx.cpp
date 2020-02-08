@@ -1088,6 +1088,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_nTxtX = nTxtX;
   m_nTxtY = nTxtY;
   m_nTxtCol = nColRaw;
+  // Since ILI9225_NK automatically redraws the background,
+  // we need to set it here
+  uint16_t  nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
+  m_disp.setBackgroundColor(nColBgRaw);
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
   // TODO: Add support for user defined fonts
   m_disp.setFont((sFONT*)(pFont->pvFont));
