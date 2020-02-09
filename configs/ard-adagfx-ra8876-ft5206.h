@@ -5,7 +5,7 @@
 // GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: RA8876 1024x600 SPI
-//   - Touch:   None
+//   - Touch:   FT5206 (Capacitive)
 //   - Wiring:  Custom breakout
 //              - Pinout:
 //
@@ -71,13 +71,14 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_RA8876    // xlatb/ra8876 library
-  #define DRV_TOUCH_NONE            // No touch enabled
+  #define DRV_TOUCH_ADA_FT5206      // sumotoy/FT5206 library
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
+  // These values were defined to match an Arduino Zero config
   #define ADAGFX_PIN_CS       11    // Display chip select
   #define ADAGFX_PIN_RST      0     // Display Reset
 
@@ -93,6 +94,19 @@ extern "C" {
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
+
+  // -----------------------------------------------------------------------------
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
+  // -----------------------------------------------------------------------------
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4A: Update your pin connections here
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Touch bus & pinout
+  #define ADATOUCH_PIN_INT     10
 
 
   // -----------------------------------------------------------------------------

@@ -177,6 +177,9 @@
   // https://github.com/adafruit/Adafruit_FT6206_Library
   #include <Wire.h>
   #include "Adafruit_FT6206.h"
+#elif defined(DRV_TOUCH_ADA_FT5206)
+  // https://github.com/sumotoy/FT5206
+  #include <FT5206.h>
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   // https://github.com/adafruit/Adafruit_TouchScreen
   #include <stdint.h>
@@ -407,6 +410,12 @@ extern "C" {
   const char* m_acDrvTouch = "FT6206(I2C)";
   // Always use I2C
   Adafruit_FT6206 m_touch = Adafruit_FT6206();
+  #define DRV_TOUCH_INSTANCE
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_FT5206)
+  const char* m_acDrvTouch = "FT5206(I2C)";
+  // Always use I2C
+  FT5206 m_touch = FT5206(ADATOUCH_PIN_INT);
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
@@ -1929,6 +1938,10 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
+  #elif defined(DRV_TOUCH_ADA_FT5206)
+    m_touch.begin();
+    m_touch.setTouchLimit(1);
+    return true;
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
     return true;
   #elif defined(DRV_TOUCH_XPT2046_STM)
@@ -2061,6 +2074,48 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       m_bLastTouched = false;
       bValid = true;
     }
+  }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_FT5206)
+
+  if (m_touch.touched()) {
+
+    uint8_t anRegs[FT5206_REGISTERS];
+    uint16_t anCoords[5][2];
+    m_touch.getTSregisters(anRegs);
+    uint8_t nCurTouches = m_touch.getTScoordinates(anCoords,anRegs);
+
+    if (nCurTouches >= 1) {
+      // Only accept the first touch
+
+      // Additional unused touch info
+      //uint8_t nTemp1 = m_touch.getGesture(anRegs);
+      //uint8_t nTemp2 = m_touch.getTSflag(anRegs);
+
+      // As the FT5206 has flipped axes, we adjust them here
+      m_nLastRawX = nDispOutMaxX-anCoords[0][0];
+      m_nLastRawY = nDispOutMaxY-anCoords[0][1];
+
+      m_nLastRawPress = 255;  // Select arbitrary non-zero value
+      m_bLastTouched = true;
+      bValid = true;
+
+    } else {
+	  // No touches detected, so treat as release event
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  } else {
+    // Interrupt didn't occur, so no change in events
   }
 
   // ----------------------------------------------------------------

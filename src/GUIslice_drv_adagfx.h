@@ -59,6 +59,9 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_FT6206)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_CAP         // Capacitive
+#elif defined(DRV_TOUCH_ADA_FT5206)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_CAP         // Capacitive
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive
