@@ -2085,13 +2085,13 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     uint8_t nCurTouches = m_touch.getTScoordinates(anCoords,anRegs);
 
     if (nCurTouches >= 1) {
+      // Only accept the first touch
 
       // Additional unused touch info
       //uint8_t nTemp1 = m_touch.getGesture(anRegs);
       //uint8_t nTemp2 = m_touch.getTSflag(anRegs);
 
-      // Only accept the first touch
-      // - As the FT5206 has flipped axes, we adjust them here
+      // As the FT5206 has flipped axes, we adjust them here
       m_nLastRawX = nDispOutMaxX-anCoords[0][0];
       m_nLastRawY = nDispOutMaxY-anCoords[0][1];
 
@@ -2099,18 +2099,21 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       m_bLastTouched = true;
       bValid = true;
 
+    } else {
+	  // No touches detected, so treat as release event
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
     }
 
   } else {
-    if (!m_bLastTouched) {
-      // Wasn't touched before; do nothing
-    } else {
-      // Touch release
-      // Indicate old coordinate but with pressure=0
-      m_nLastRawPress = 0;
-      m_bLastTouched = false;
-      bValid = true;
-    }
+    // Interrupt didn't occur, so no change in events
   }
 
   // ----------------------------------------------------------------
