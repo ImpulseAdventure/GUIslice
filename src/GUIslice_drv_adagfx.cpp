@@ -72,7 +72,7 @@
       #include <SD.h>   // Include support for SD card access
     #endif
     #include <SPI.h>
-  #elif defined(DRV_DISP_ILI9488_JB)
+  #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
     #include <ILI9488.h>
     #if (GSLC_SD_EN)
       #include <SD.h>   // Include support for SD card access
@@ -209,7 +209,7 @@ extern "C" {
   #endif
 
 // ------------------------------------------------------------------------
-#elif defined(DRV_DISP_ILI9488_JB)
+#elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     const char* m_acDrvDisp = "ILI9348_JB(SPI-HW)";
     ILI9488 m_disp = ILI9488(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -401,7 +401,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
       m_disp.begin();
 
-    #elif defined(DRV_DISP_ILI9488_JB)
+    #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
       m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
@@ -2109,7 +2109,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
       pGui->nDispH = ILI9341_TFTWIDTH;
     }
 
-  #elif defined(DRV_DISP_ILI9488_JB)
+  #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
     pGui->nDisp0W = ILI9488_TFTWIDTH;
     pGui->nDisp0H = ILI9488_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);

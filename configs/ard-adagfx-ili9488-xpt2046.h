@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: ILI9488
 //   - Touch:   XPT2046 (Resistive)
@@ -69,9 +69,9 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ILI9488_JB       // jarretburkett/ILI9488
-  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
+  #define DRV_DISP_ADAGFX             // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_ILI9488_JB  // jarretburkett/ILI9488
+  #define DRV_TOUCH_XPT2046_PS        // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -133,15 +133,18 @@ extern "C" {
   #define ADATOUCH_X_MAX    3837
   #define ADATOUCH_Y_MIN    3925
   #define ADATOUCH_Y_MAX    370
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN  10
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
+  #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
@@ -175,8 +178,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -217,7 +218,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
