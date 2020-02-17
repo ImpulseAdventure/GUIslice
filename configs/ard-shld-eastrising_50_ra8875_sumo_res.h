@@ -5,19 +5,18 @@
 // GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: RA8875 800x480 SPI
-//   - Touch:   None
-//   - Wiring:  Custom breakout
-//              - Pinout:
+//   - Touch:   RA8875 integrated resistive controller
+//   - Wiring:  EastRising Arduino shield (ER-AS-RA8875)
 //
 //   - Example display:
-//     -
+//     - EastRising 5.0" TFT Arduino Touch Shield w/ RA8875 for Mega/Due/UNO (ER-TFTM050-3-4125)
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a breakout board, customization
-//   of the Pinout in SECTION 2 will be required to match your display.
+// - As this config file is designed for a shield, no additional
+//   wiring is required to support the GUI operation
 //
 // =============================================================================
 // - Calvin Hass
@@ -70,21 +69,27 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_RA8875    // Adafruit RA8875
-  #define DRV_TOUCH_NONE            // No touch enabled
+  #define DRV_DISP_SUMO_RA8875    // Adafruit RA8875
+  //#define DRV_TOUCH_ADA_RA8875      // Integrated RA8875 touch driver
+  #define DRV_TOUCH_NONE          // Start off without Touch
 
   // Select the RA8875 display resolution:
   // - RA8875_480x272 = 480x272 (4.3" display)
   // - RA8875_800x480 = 800x480 (5" and 7" displays)
-  #define DRV_DISP_ADAGFX_RA8875_INIT RA8875_800x480
+  //   RA8875_800x480ALT
+  // - Adafruit_480x272
+  // - Adafruit_800x480
+
+  // - 
+  #define DRV_DISP_SUMO_RA8875_INIT RA8875_800x480
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  #define ADAGFX_PIN_CS       9//10    // Display chip select
-  #define ADAGFX_PIN_RST      //9     // Display Reset
+  #define ADAGFX_PIN_CS       9    // Display chip select
+  #define ADAGFX_PIN_RST      8     // Display Reset
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
@@ -99,6 +104,38 @@ extern "C" {
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
 
+  // -----------------------------------------------------------------------------
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
+  // -----------------------------------------------------------------------------
+
+
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4B: Update your calibration settings here
+  // - These values should come from the diag_ard_touch_calib sketch output
+  // - Please update the values to the right of ADATOUCH_X/Y_MIN/MAX_* accordingly
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Calibration settings from diag_ard_touch_calib:
+  #define ADATOUCH_X_MIN    963
+  #define ADATOUCH_X_MAX    66
+  #define ADATOUCH_Y_MIN    923
+  #define ADATOUCH_Y_MAX    88
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
+
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  // SECTION 4D: Additional touch configuration
+  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+  // Define pressure threshold for detecting a touch
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
+  #define ADATOUCH_PRESS_MIN  10
+  #define ADATOUCH_PRESS_MAX  4000
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics

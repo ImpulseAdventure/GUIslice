@@ -104,6 +104,10 @@
   #elif defined(DRV_DISP_ADAGFX_RA8875)
     // https://github.com/adafruit/Adafruit_RA8875
     #include <Adafruit_RA8875.h>
+  #elif defined(DRV_DISP_SUMO_RA8875)
+    // https://github.com/adafruit/Adafruit_RA8875
+    #include <SPI.h>
+    #include <RA8875.h>
   #elif defined(DRV_DISP_ADAGFX_RA8876)
     // https://github.com/xlatb/ra8876
     #include <RA8876.h>
@@ -310,6 +314,11 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_RA8875)
   const char* m_acDrvDisp = "ADA_RA8875(SPI-HW)";
   Adafruit_RA8875 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_SUMO_RA8875)
+  const char* m_acDrvDisp = "SUMO_RA8875(SPI-HW)";
+  RA8875 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_RA8876)
@@ -581,6 +590,17 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
       m_disp.PWM1out(255);
       m_disp.graphicsMode(); // Go back to graphics mode
+    
+    #elif defined(DRV_DISP_SUMO_RA8875)
+      // RA8875 requires additional initialization depending on
+      // display type. Enable the user to specify the
+      // configuration via DRV_DISP_ADAGFX_RA8875_INIT.
+      #ifndef DRV_DISP_SUMO_RA8875_INIT
+        m_disp.begin(RA8875_800x480);  // Default to 800x480
+      #else
+        m_disp.begin(DRV_DISP_SUMO_RA8875_INIT);
+      #endif
+      m_disp.fillWindow(0);        
 
     #elif defined(DRV_DISP_ADAGFX_RA8876)
       m_disp.init();
@@ -769,9 +789,9 @@ void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 // hence there is value in centralizing the initialization.
 bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
 {
+#if defined(DRV_DISP_ADAGFX_RA8876)
   uint16_t  nTxtScale = 0;
 
-#if defined(DRV_DISP_ADAGFX_RA8876)
 
   // TODO: Add support for user defined fonts
   // TODO: Support FLASH strings, custom font dimensions
@@ -810,7 +830,8 @@ bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
   m_disp.setTextScale(nTxtScale);
 
   return true;
-
+#else
+  return true;
 #endif // DRV_DISP_*
 
 }
@@ -1055,6 +1076,9 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.textSetCursor(nTxtX, nTxtY);
     }
   #endif // DRV_DISP_*
+  #if defined(DRV_DISP_SUMO_RA8875)
+    bool bInternal8875Font = false;
+  #endif
 
   // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
   bool bProg = false;
@@ -1094,6 +1118,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
         m_disp.Adafruit_GFX::write(ch);
       }
 
+    #elif defined(DRV_DISP_SUMO_RA8875)
+      m_disp.write((const char *)&ch, 1);
     #elif defined(DRV_DISP_ADAGFX_RA8876)
       m_disp.putChar(ch);
 
@@ -1150,6 +1176,12 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
         if (bInternal8875Font) {
           // TODO: Is getCursorY() supported in RA8875 mode?
           m_disp.textSetCursor(nTxtX, nCurPosY);
+        }
+      #elif defined(DRV_DISP_SUMO_RA8875)
+        nCurPosY = m_disp.getCursorY();
+        if (bInternal8875Font) {
+          // TODO: Is getCursorY() supported in RA8875 mode?
+          m_disp.setCursor(nTxtX, nCurPosY);
         }
 
       #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
@@ -2698,6 +2730,14 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = LCDHEIGHT;
 
   #elif defined(DRV_DISP_ADAGFX_RA8875)
+    // No support for rotation in Adafruit_RA8875 library
+    bSupportRotation = false;
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
+    pGui->nDispW = m_disp.width();
+    pGui->nDispH = m_disp.height();
+
+  #elif defined(DRV_DISP_SUMO_RA8875)
     // No support for rotation in Adafruit_RA8875 library
     bSupportRotation = false;
     pGui->nDisp0W = m_disp.width();
