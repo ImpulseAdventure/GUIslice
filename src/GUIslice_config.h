@@ -96,7 +96,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ili9341-stmpe610.h"
   //#include "../configs/ard-adagfx-ili9341-xpt2046.h"
   //#include "../configs/ard-adagfx-pcd8544-notouch.h"
-  //#include "../configs/ard-adagfx-ra8875-notouch.h"
+  #include "../configs/ard-adagfx-ra8875-notouch.h"
   //#include "../configs/ard-adagfx-ra8876-notouch.h"
   //#include "../configs/ard-adagfx-ra8876-ft5206.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
@@ -144,6 +144,7 @@ extern "C" {
 // =========================================================================================
 
 // Detect device platform
+#warning Detect
 #if defined(__linux__)
   #define GSLC_CFG_LINUX
 #elif defined(__AVR__) && !defined(TEENSYDUINO)
@@ -176,10 +177,11 @@ extern "C" {
   #define GSLC_CFG_ARD
   #define GSLC_DEV_TEENSY_3_5
 #elif defined(__MK66FX1M0__) // Teensy 3.6
+  #warning Teensy36
   #define GSLC_CFG_ARD
   #define GSLC_DEV_TEENSY_3_6
 #else
-#warning Unknown
+  #warning Unknown
   #error "Unknown device platform"
 #endif
 
@@ -194,6 +196,7 @@ extern "C" {
   #include "GUIslice_config_linux.h"
 #elif defined(GSLC_CFG_ARD)
   #include "GUIslice_config_ard.h"
+  #warning CONFIGARDDDDD
 #endif
 
 // -----------------------------------------------------------------------------------------

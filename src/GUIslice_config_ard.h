@@ -2,6 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 #warning No config selected in GUIslice_config.h - resorting to defaults.
+#warning HELLOHELLOHELLO
 
 // =============================================================================
 // GUIslice library (user configuration) for:
@@ -85,7 +86,7 @@ extern "C" {
   // - Uncomment one of the following touchscreen drivers DRV_TOUCH_*
   //   applicable to the controller chip in use
 
-      #define DRV_TOUCH_NONE            // No touchscreen support & no input (GPIO / keyboard)
+  //    #define DRV_TOUCH_NONE            // No touchscreen support & no input (GPIO / keyboard)
   //  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
   //  #define DRV_TOUCH_ADA_FT6206      // Adafruit FT6206 touch driver
   //  #define DRV_TOUCH_ADA_SIMPLE      // Adafruit Touchscreen
@@ -94,8 +95,8 @@ extern "C" {
   //  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
   //  #define DRV_TOUCH_XPT2046_STM     // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
   //  #define DRV_TOUCH_INPUT           // No touchscreen support, but input only (GPIO / keyboard)
-  //  #define DRV_TOUCH_HANDLER         // touch handler class
-
+    #define DRV_TOUCH_HANDLER         // touch handler class
+    #warning drvTouchHandlerrrrrrrrrrr
 
 // =============================================================================
 // DISPLAY CONFIGURATION - DETAILS
@@ -108,8 +109,9 @@ extern "C" {
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
-  #define DRV_DISP_ADAGFX_ILI9341         // Adafruit ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9341         // Adafruit ILI9341
   //#define DRV_DISP_ADAGFX_ILI9341_8BIT  // Adafruit ILI9341 (8-bit interface)
+  #define DRV_DISP_ADAGFX_RA8875
   //#define DRV_DISP_ADAGFX_ST7735        // Adafruit ST7735
   //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
   //#define DRV_DISP_ADAGFX_HX8347        // prenticedavid/HX8347D_kbv
@@ -119,9 +121,9 @@ extern "C" {
   // For Adafruit-GFX drivers, define pin connections
   // - Define general pins (modify these example pin assignments to match your board)
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
-  #define ADAGFX_PIN_CS    10   // Display chip select
-  #define ADAGFX_PIN_DC     9   // Display SPI data/command
-  #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
+  #define ADAGFX_PIN_CS    14   // Display chip select
+  #define ADAGFX_PIN_DC     11   // Display SPI data/command
+  #define ADAGFX_PIN_RST    35   // Display Reset (some displays could use pin 11)
   #define ADAGFX_PIN_SDCS   4   // SD card chip select
   #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
   #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)

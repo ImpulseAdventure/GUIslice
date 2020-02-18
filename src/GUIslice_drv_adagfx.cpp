@@ -459,6 +459,8 @@ extern "C" {
 #elif defined(DRV_TOUCH_NONE)
   const char* m_acDrvTouch = "NONE";
 // ------------------------------------------------------------------------
+#else
+  const char* m_acDrvTouch = "UNDEFINED";
 #endif // DRV_TOUCH_*
 
 
