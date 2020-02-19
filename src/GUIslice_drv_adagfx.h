@@ -1,7 +1,6 @@
 #ifndef _GUISLICE_DRV_ADAGFX_H_
 #define _GUISLICE_DRV_ADAGFX_H_
 
-#warning ADAGFX
 
 // =======================================================================
 // GUIslice library (driver layer for Adafruit-GFX)
@@ -84,7 +83,6 @@ extern "C" {
 #elif defined(DRV_TOUCH_INPUT)
   #define DRV_TOUCH_TYPE_EXTERNAL
 #elif defined(DRV_TOUCH_HANDLER)
-  #warning DRVTOUCHEXTTTTTTTTT
     #define DRV_TOUCH_TYPE_EXTERNAL
 #elif defined(DRV_TOUCH_NONE)
 #endif // DRV_TOUCH_*
@@ -683,7 +681,6 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   #error "NOTE: DRV_TOUCH_XPT2046 has been renamed to DRV_TOUCH_XPT2046_STM. Please update your config."
 #endif
 
-#warning ifdefDrvTouchhhhhhhhhhhhhhhhhhhhhhhhhh
 #if defined(DRV_TOUCH_TYPE_EXTERNAL)
 ///
 /// Perform any touchscreen-specific initialization
@@ -709,7 +706,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev);
 ///
 /// \return true if an event was detected or false otherwise
 ///
-#warning createGetTouch
+
 bool gslc_TDrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPress, gslc_teInputRawEvent* peInputEvent, int16_t* pnInputVal);
 
 #endif // DRV_TOUCH_*

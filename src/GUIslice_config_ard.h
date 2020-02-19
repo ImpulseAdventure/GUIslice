@@ -2,7 +2,6 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 #warning No config selected in GUIslice_config.h - resorting to defaults.
-#warning HELLOHELLOHELLO
 
 // =============================================================================
 // GUIslice library (user configuration) for:
@@ -96,7 +95,6 @@ extern "C" {
   //  #define DRV_TOUCH_XPT2046_STM     // Arduino_STM32/Serasidis_XPT2046_touch (XPT2046_touch.h)
   //  #define DRV_TOUCH_INPUT           // No touchscreen support, but input only (GPIO / keyboard)
     #define DRV_TOUCH_HANDLER         // touch handler class
-    #warning drvTouchHandlerrrrrrrrrrr
 
 // =============================================================================
 // DISPLAY CONFIGURATION - DETAILS
@@ -143,7 +141,7 @@ extern "C" {
 
   // Set Default rotation
   // you can specify values 0,1,2,3, rotation is clockwise
-  #define GSLC_ROTATE     1
+  #define GSLC_ROTATE     2
 
 
 #elif defined(DRV_DISP_ADAGFX_AS)
@@ -452,7 +450,7 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
 
-  #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
+  #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
   #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color

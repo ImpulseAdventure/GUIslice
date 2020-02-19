@@ -22,9 +22,9 @@ class TouchHandler_GSL1680: public TouchHandler {
 
         TouchHandler_GSL1680() : touchDriver(GSL1680()) {
             //empirical calibration values, can be updated by calling setCalibration in the user program
-            setCalibration(398,3877,280,3805);
+            setCalibration(0,800,0,480);
             //swapping and flipping to adopt to default GUIslice orientation
-            setSwapFlip(true,false,true);
+            setSwapFlip(true,true,true);
         }
         //begin is called by gslc_InitTouchHandler
         void begin(void) {
@@ -48,7 +48,7 @@ class TouchHandler_GSL1680: public TouchHandler {
             // read in X and Y values, set pressure to max as captouch has no pressure
             THPoint ps = THPoint(touchDriver.readFingerX(0), touchDriver.readFingerY(0), 255);
 
-            //Serial.print("ps= ");Serial.print(ps.x);Serial.print(",");Serial.print(ps.y);Serial.print(",");Serial.println(ps.z);
+            Serial.print("ps= ");Serial.print(ps.x);Serial.print(",");Serial.print(ps.y);Serial.print(",");Serial.println(ps.z);
 
             return ps;
         };
