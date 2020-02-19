@@ -1,3 +1,8 @@
+** This fork/repo in it's current state is configured to work with the following touchscreen:
+https://www.buydisplay.com/5-inch-tft-lcd-display-capacitive-touchscreen-ra8875-controller-800x480
+
+GFX driver is RA8876, touchscreen driver is GSL1680.  This repo contains a new driver (GUIslice_th_GSL1680.h) to support it.
+
 # GUIslice library #
 [![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
 [![GitHub Issues](https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg)](https://github.com/ImpulseAdventure/GUIslice/issues)
