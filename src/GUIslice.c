@@ -2941,8 +2941,10 @@ void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf,gslc_tsRect rTxt,gslc_tsFo
     //       within the aligned text block. In order to support per-line
     //       horizontal justification, a pre-scan and alignment calculation
     //       for each text row would need to be performed.
-    int16_t       nTxtOffsetX,nTxtOffsetY;
-    uint16_t      nTxtSzW,nTxtSzH;
+    int16_t       nTxtOffsetX=0;
+    int16_t       nTxtOffsetY=0;
+    uint16_t      nTxtSzW=0;
+    uint16_t      nTxtSzH=0;
     gslc_DrvGetTxtSize(pGui,pTxtFont,pStrBuf,eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
 
     // Calculate the text alignment

@@ -68,10 +68,10 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_SUMO_RA8875    // Adafruit RA8875
-  //#define DRV_TOUCH_ADA_RA8875      // Integrated RA8875 touch driver
-  #define DRV_TOUCH_NONE          // Start off without Touch
+  #define DRV_DISP_ADAGFX              // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX_RA8875_SUMO  // mjs513/RA8875 (fork: RA8875_t4)
+  //#define DRV_TOUCH_ADA_RA8875       // Integrated RA8875 touch driver
+  #define DRV_TOUCH_NONE               // Start off without Touch
 
   // Select the RA8875 display resolution:
   // - RA8875_480x272 = 480x272 (4.3" display)
@@ -81,7 +81,7 @@ extern "C" {
   // - Adafruit_800x480
 
   // - 
-  #define DRV_DISP_SUMO_RA8875_INIT RA8875_800x480
+  #define DRV_DISP_ADAGFX_RA8875_SUMO_INIT RA8875_800x480
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
