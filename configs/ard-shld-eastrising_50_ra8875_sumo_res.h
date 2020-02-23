@@ -102,7 +102,7 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_ROTATE     1
+  #define GSLC_ROTATE     0
 
   // -----------------------------------------------------------------------------
   // SECTION 4: Touch Handling

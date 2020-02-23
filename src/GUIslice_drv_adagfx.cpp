@@ -2801,12 +2801,17 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = m_disp.height();
 
   #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
-    // No support for rotation in Adafruit_RA8875 library
-    bSupportRotation = false;
+    m_disp.setRotation(0);
     pGui->nDisp0W = m_disp.width();
     pGui->nDisp0H = m_disp.height();
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+    } else {
+      pGui->nDispW = m_disp.height();
+      pGui->nDispH = m_disp.width();
+    }
 
   #elif defined(DRV_DISP_ADAGFX_RA8876)
     // No support for rotation in xlatb/RA8875 library
