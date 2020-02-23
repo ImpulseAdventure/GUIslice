@@ -73,6 +73,7 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
   //#include "../configs/ard-shld-eastrising_50_ra8875_res.h"
+  //#include "../configs/ard-shld-eastrising_50_ra8875_sumo_res.h"
   //#include "../configs/ard-shld-eastrising_50_ssd1963_res.h"  
   //#include "../configs/ard-shld-elegoo_28_res.h"
   //#include "../configs/ard-shld-generic1_35_touch.h"
@@ -178,6 +179,12 @@ extern "C" {
 #elif defined(__MK66FX1M0__) // Teensy 3.6
   #define GSLC_CFG_ARD
   #define GSLC_DEV_TEENSY_3_6
+#elif defined(__MK66FX1M0__) // Teensy 3.6
+  #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY_3_6
+#elif defined(__IMXRT1062__)
+  #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY_4_0
 #else
 #warning Unknown
   #error "Unknown device platform"
