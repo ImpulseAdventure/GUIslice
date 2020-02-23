@@ -73,7 +73,7 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
   //#include "../configs/ard-shld-eastrising_50_ra8875_res.h"
-  #include "../configs/ard-shld-eastrising_50_ra8875_sumo_res.h"
+  //#include "../configs/ard-shld-eastrising_50_ra8875_sumo_res.h"
   //#include "../configs/ard-shld-eastrising_50_ssd1963_res.h"  
   //#include "../configs/ard-shld-elegoo_28_res.h"
   //#include "../configs/ard-shld-generic1_35_touch.h"
