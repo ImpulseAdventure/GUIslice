@@ -99,7 +99,6 @@ extern "C" {
 #define DRV_HAS_DRAW_POINT             1 ///< Support gslc_DrvDrawPoint()
 
 #define DRV_HAS_DRAW_POINTS            0 ///< Support gslc_DrvDrawPoints()
-#define DRV_HAS_DRAW_BMP_MEM           1 ///< Support gslc_DrvDrawBmp24FromMem()
 #define DRV_HAS_DRAW_LINE              1 ///< Support gslc_DrvDrawLine()
 #define DRV_HAS_DRAW_RECT_FRAME        1 ///< Support gslc_DrvDrawFrameRect()
 #define DRV_HAS_DRAW_RECT_FILL         1 ///< Support gslc_DrvDrawFillRect()
@@ -110,6 +109,7 @@ extern "C" {
 #define DRV_HAS_DRAW_TRI_FRAME         1 ///< Support gslc_DrvDrawFrameTriangle()
 #define DRV_HAS_DRAW_TRI_FILL          1 ///< Support gslc_DrvDrawFillTriangle()
 #define DRV_HAS_DRAW_TEXT              1 ///< Support gslc_DrvDrawTxt()
+#define DRV_HAS_DRAW_BMP_MEM           0 ///< Support gslc_DrvDrawBmp24FromMem()
 
 #define DRV_OVERRIDE_TXT_ALIGN         0 ///< Driver provides text alignment
 
@@ -150,6 +150,11 @@ extern "C" {
 
   #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
   #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
+
+#elif defined(DRV_DISP_ADAGFX_ILI9341)
+  // BLIT support in library
+  #undef  DRV_HAS_DRAW_BMP_MEM
+  #define DRV_HAS_DRAW_BMP_MEM           1
 #endif
 
 
