@@ -531,7 +531,12 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
       nTxtPixX = pElem->rElem.x + pBox->nMarginX + 0 * pBox->nChSizeX;
       nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
+#if (DRV_OVERRIDE_TXT_ALIGN)
+      gslc_DrvDrawTxtAlign(pGui,nTxtPixX,nTxtPixY,nTxtPixX,nTxtPixY,GSLC_ALIGN_TOP_LEFT,pElem->pTxtFont,
+            (char*)&(pBox->pBuf[nBufPos]),pElem->eTxtFlags,colTxt,colBg);
+#else
       gslc_DrvDrawTxt(pGui, nTxtPixX, nTxtPixY, pElem->pTxtFont, (char*)&(pBox->pBuf[nBufPos]), pElem->eTxtFlags, colTxt, colBg);
+#endif
     }
 
     nCurY++;
@@ -618,8 +623,12 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
           acChToDraw[1] = 0;
           nTxtPixX = pElem->rElem.x + pBox->nMarginX + nCurX * pBox->nChSizeX;
           nTxtPixY = pElem->rElem.y + pBox->nMarginY + nCurY * pBox->nChSizeY;
+#if (DRV_OVERRIDE_TXT_ALIGN)
+          gslc_DrvDrawTxtAlign(pGui,nTxtPixX,nTxtPixY,nTxtPixX,nTxtPixY,GSLC_ALIGN_TOP_LEFT,pElem->pTxtFont,
+            (char*)&acChToDraw,pElem->eTxtFlags,colTxt,colBg);
+#else
           gslc_DrvDrawTxt(pGui,nTxtPixX,nTxtPixY,pElem->pTxtFont,(char*)&acChToDraw,pElem->eTxtFlags,colTxt,colBg);
-
+#endif
           nCurX++;
 
         }
