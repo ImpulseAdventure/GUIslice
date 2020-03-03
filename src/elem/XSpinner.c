@@ -119,6 +119,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   pXData->nMax = nMax;
   pXData->nIncr = nIncr;
   pXData->pfuncXInput = cbInput;
+  
 
   // Initialize the collection of sub-elements within the compound element
   // - XSELNUM_COMP_CNT defines the maximum number of sub-elements we have allocated space for
@@ -159,22 +160,24 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   int16_t nOffsetY = rElem.y;
 
   gslc_tsRect rSubElem;
-
+  
   // Create button sub-element
+  strcpy(pXData->acIncr,"\030");
   rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW, nBtnPosY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_INC, GSLC_PAGE_NONE,
-    rSubElem, "\030", 0, nFontId, &gslc_ElemXSpinnerClick);
+    rSubElem, pXData->acIncr, 2, nFontId, &gslc_ElemXSpinnerClick);
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
   gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
   gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 
   // Create button sub-element
+  strcpy(pXData->acDecr,"\031");
   rSubElem = (gslc_tsRect) { nOffsetX+nTxtBoxW+nButtonSz, nBtnPosY, nButtonSz, nButtonSz };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, SPINNER_ID_BTN_DEC, GSLC_PAGE_NONE,
-    rSubElem, "\031", 0, nFontId, &gslc_ElemXSpinnerClick);
+    rSubElem, pXData->acDecr, 2, nFontId, &gslc_ElemXSpinnerClick);
   gslc_ElemSetCol(pGui, pElemRefTmp, (gslc_tsColor) { 0, 0, 192 }, (gslc_tsColor) { 0, 0, 128 }, (gslc_tsColor) { 0, 0, 224 });
   gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
   pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
@@ -220,6 +223,24 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 
   }
 
+}
+
+bool gslc_ElemXSpinnerSetChars(void* pvGui,gslc_tsElemRef* pElemRef,uint8_t cIncr, uint8_t cDecr)
+{
+  gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+  gslc_tsXSpinner* pSpinner = (gslc_tsXSpinner*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_SPINNER, __LINE__);
+  if (!pSpinner) return false;
+
+  char acIncr[2] = { cIncr, '\0'};
+  char acDecr[2] = { cDecr, '\0'};
+  gslc_tsElemRef* pElemRefUp = gslc_CollectFindElemById(pGui,&pSpinner->sCollect,SPINNER_ID_BTN_INC);
+  gslc_ElemSetTxtStr(pGui,pElemRefUp,acIncr);        
+  gslc_tsElemRef* pElemRefDown = gslc_CollectFindElemById(pGui,&pSpinner->sCollect,SPINNER_ID_BTN_DEC);
+  gslc_ElemSetTxtStr(pGui,pElemRefDown,acDecr);
+  
+  return true;  
 }
 
 
