@@ -85,6 +85,8 @@ typedef struct {
   // Provide storage for any dynamic text elements
   // Simple example here uses fixed-length character array
   char                acElemTxt[1][XSPINNER_STR_LEN]; ///< Storage for strings
+  char                acIncr[2];       ///< Increment character string
+  char                acDecr[2];       ///< Decrement character string
 
 } gslc_tsXSpinner;
 
@@ -115,6 +117,20 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 
 
 ///
+/// Set Up and Down characters for the Spinner element
+/// - Called during redraw
+///
+/// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
+/// \param[in]  pElemRef:    ptr to ElementRef
+/// \param[in]  cIncrement:  Character to use to indicate incrementing the spinner
+/// \param[in]  cDecrement:  Character to use to indicate decrementing the spinner
+///
+/// \return true if success, false otherwise
+///
+bool gslc_ElemXSpinnerSetChars(void* pvGui,gslc_tsElemRef* pElemRef,uint8_t cIncr, uint8_t cDecr);
+
+
+///
 /// Draw a Spinner element on the screen
 /// - Called during redraw
 ///
@@ -125,7 +141,6 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXSpinnerDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
-
 
 ///
 /// Get the current counter associated with Spinner
