@@ -461,7 +461,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
   // Clear the background (inset from frame)
   // - Only do this if we need to redraw all rows
-  if (pBox->nRedrawRow == XTEXTBOX_REDRAW_ALL) {
+  if ((eRedraw == GSLC_REDRAW_FULL) || (pBox->nRedrawRow == XTEXTBOX_REDRAW_ALL)) {
     gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem, -1, -1);
     colBg = (bGlow) ? pElem->colElemFillGlow : pElem->colElemFill;
     gslc_DrawFillRect(pGui, rInner, colBg);
