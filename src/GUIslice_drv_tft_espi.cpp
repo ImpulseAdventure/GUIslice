@@ -46,6 +46,11 @@
 
 #include <TFT_eSPI.h>
 
+#if (GSLC_SPIFFS_EN)
+// https://github.com/Bodmer/TFT_eFEX
+#include <TFT_eFEX.h>              // Include the extension graphics functions library
+#endif
+
 #include <SPI.h>
 
 
@@ -98,6 +103,9 @@ extern "C" {
 // ------------------------------------------------------------------------
 // Use default pin settings as defined in TFT_eSPI/User_Setup.h
 TFT_eSPI m_disp = TFT_eSPI();
+#if (GSLC_SPIFFS_EN)
+TFT_eFEX  fex = TFT_eFEX(&m_disp);    // Create TFT_eFEX object "efx" with pointer to "m_disp" object
+#endif
 
 // ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_ADA_STMPE610)
@@ -199,8 +207,16 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
         GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n", 0);
         return false;
       }
+//      GSLC_DEBUG_PRINT("- Init SD File System OK\n", 0);
     #endif
 
+    #if (GSLC_SPIFFS_EN)
+      // Initialize SPIFFS file system
+      if (!SPIFFS.begin()) {
+        GSLC_DEBUG_PRINT("ERROR: DrvInit() SPIFFS init failed\n", 0);
+      }
+//      GSLC_DEBUG_PRINT("- Init SPIFFS File System OK\n", 0);
+    #endif    
   }
   return true;
 }
@@ -944,9 +960,20 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   if (sImgRef.eImgFlags == GSLC_IMGREF_NONE) {
     return true;  // Nothing to do
 
+#if (GSLC_SPIFFS_EN)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
-    return false; // Not supported
-
+    if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_JPG) {
+      // Draw Jpeg from SPIFFS file system
+      gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
+      return true;
+    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+      // Draw Bitmap from SPIFFS file system
+      gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
+      return true;
+    } else {
+      return false; // TODO: not yet supported
+    }
+#endif // end GSLC_SPIFFS_EN
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from SRAM
@@ -1000,6 +1027,34 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   }
 }
 
+#if (GSLC_SPIFFS_EN)
+bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
+{
+  const char* pStrFname = sImgRef.pFname;
+
+  // Load Bmp image from file system
+  fex.drawBmp(pStrFname, nDstX, nDstY);
+
+  return true;
+}
+
+bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
+{
+  const char* pStrFname = sImgRef.pFname;
+
+  // Load Jpeg image from SPIFFS file system
+
+#if defined(ESP32)
+  // use optimized ESP32 native decoder
+  fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
+#else 
+  // use library decoder
+  fex.drawJpeg(pStrFname, nDstX, nDstY);
+#endif
+
+  return true;
+}
+#endif // end GSLC_SPIFFS_EN
 
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {

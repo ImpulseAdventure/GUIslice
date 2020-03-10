@@ -604,6 +604,34 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 ///
 void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem);
 
+#if (GSLC_SPIFFS_EN)
+///
+/// This routine uses TFT_eFEX library to draw a BMP file stored in SPIFFS file system
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nDstX:       Destination X coord for copy
+/// \param[in]  nDstY:       Destination Y coord for copy
+/// \param[in]  sImgRef:     Image reference
+///
+/// \return true if success, false if fail
+///
+bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef);
+
+
+///
+/// This routine uses TFT_eFEX library to draw a JPEG file stored in SPIFFS file system
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nDstX:       Destination X coord for copy
+/// \param[in]  nDstY:       Destination Y coord for copy
+/// \param[in]  sImgRef:     Image reference
+///
+/// \return true if success, false if fail
+///
+bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef);
+
+#endif // end GSLC_SPIFFS_EN
+
 ///
 /// Copy the background image to destination screen
 ///

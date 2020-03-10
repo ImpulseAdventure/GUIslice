@@ -444,6 +444,7 @@ typedef enum {
   GSLC_IMGREF_FMT_BMP24   = (1<<4),   ///< Image format is BMP (24-bit)
   GSLC_IMGREF_FMT_BMP16   = (2<<4),   ///< Image format is BMP (16-bit RGB565)
   GSLC_IMGREF_FMT_RAW1    = (3<<4),   ///< Image format is raw monochrome (1-bit)
+  GSLC_IMGREF_FMT_JPG     = (4<<4),   ///< Image format is JPG (ESP32/ESP8366)
 
   // Mask values for bitfield comparisons
   GSLC_IMGREF_SRC         = (7<<0),   ///< Mask for Source flags
