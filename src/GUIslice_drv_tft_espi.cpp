@@ -1018,7 +1018,6 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
-      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN must be set to 1 to access SD Card\n", 0);
       return false;
     #endif
 
