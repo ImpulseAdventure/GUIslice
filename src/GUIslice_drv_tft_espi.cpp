@@ -957,7 +957,6 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   // we to handle the loading now (when rendering).
   if (sImgRef.eImgFlags == GSLC_IMGREF_NONE) {
     return true;  // Nothing to do
-
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
     // Load image from SPIFFS
     #if (GSLC_SPIFFS_EN)
@@ -973,7 +972,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
         return false; // TODO: not yet supported
       }
     #else
-      GSLC_DEBUG_PRINT("ERROR: GetImageFromSD() not supported as Config:GSLC_SPIFFS_EN=0", 0);
+      GSLC_DEBUG_PRINT("ERROR: GetImageFromFile() not supported as Config:GSLC_SPIFFS_EN=0", 0);
       return false; // TODO: not yet supported
     #endif // end GSLC_SPIFFS_EN
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
