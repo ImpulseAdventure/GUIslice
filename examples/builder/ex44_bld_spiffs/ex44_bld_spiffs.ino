@@ -8,10 +8,33 @@
 // https://github.com/ImpulseAdventure/GUIslice
 //
 //<File !End!>
+// GUIslice Builder Examples
+// - Paul Conti
+// - Example 44 SPIFFS (ESP8266/ESP32):
+//   - Access Jpeg Images and Icons from SPIFFS file system.
+//     A Popup page with a text, text button, and a text box is 
+//     also demonstrated when the QUIT button is touched.
 //
-// ARDUINO NOTES:
-// - GUIslice_config.h must be edited to match the pinout connections
-//   between the Arduino CPU and the display controller (see ADAGFX_PIN_*).
+//   - NOTE: This Example demonstrates access with the TFT_eSPI, TFT_eFEX,
+//     and JPEGDecoder libraries.
+//
+//     Instructions using Arduino IDE:
+//       ---
+//       You must start by uploading the images inside the folder 
+//       GUIslice\examples\builder\ex44_bld_spiffs\data to your
+//       SPIFFS data partition.  They take up only about 82.2kb.
+//       ---
+//       You use the "Tools"  "ESP32" (or ESP8266) "Sketch Data Upload"  
+//       menu option in the IDE.
+//       ---
+//       To add this option follow instructions here for the ESP8266:
+//       https://github.com/esp8266/arduino-esp8266fs-plugin
+//       or for the ESP32:
+//       https://github.com/me-no-dev/arduino-esp32fs-plugin
+//       Close the IDE and open again to see the new menu option.
+//       ---
+//       Now you may upload the images and icons to SPIFFS using the
+//       "Sketch Data Upload" menu option in the IDE.
 //
 
 // ------------------------------------------------
