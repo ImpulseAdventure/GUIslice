@@ -207,7 +207,6 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
         GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n", 0);
         return false;
       }
-//      GSLC_DEBUG_PRINT("- Init SD File System OK\n", 0);
     #endif
 
     #if (GSLC_SPIFFS_EN)
@@ -215,7 +214,6 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       if (!SPIFFS.begin()) {
         GSLC_DEBUG_PRINT("ERROR: DrvInit() SPIFFS init failed\n", 0);
       }
-//      GSLC_DEBUG_PRINT("- Init SPIFFS File System OK\n", 0);
     #endif    
   }
   return true;
@@ -960,20 +958,24 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
   if (sImgRef.eImgFlags == GSLC_IMGREF_NONE) {
     return true;  // Nothing to do
 
-#if (GSLC_SPIFFS_EN)
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FILE) {
-    if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_JPG) {
-      // Draw Jpeg from SPIFFS file system
-      gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
-      return true;
-    } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
-      // Draw Bitmap from SPIFFS file system
-      gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
-      return true;
-    } else {
+    // Load image from SPIFFS
+    #if (GSLC_SPIFFS_EN)
+      if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_JPG) {
+        // Draw Jpeg from SPIFFS file system
+        gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
+        return true;
+      } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
+        // Draw Bitmap from SPIFFS file system
+        gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
+        return true;
+      } else {
+        return false; // TODO: not yet supported
+      }
+    #else
+      GSLC_DEBUG_PRINT("ERROR: GetImageFromSD() not supported as Config:GSLC_SPIFFS_EN=0", 0);
       return false; // TODO: not yet supported
-    }
-#endif // end GSLC_SPIFFS_EN
+    #endif // end GSLC_SPIFFS_EN
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from SRAM
@@ -1017,12 +1019,13 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN must be set to 1 to access SD Card\n", 0);
       return false;
     #endif
 
   } else {
     // Unsupported source
-    GSLC_DEBUG2_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
+    GSLC_DEBUG_PRINT("DBG: DrvDrawImage() unsupported source eImgFlags=%d\n", sImgRef.eImgFlags);
     return false;
   }
 }
@@ -1042,8 +1045,7 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
 {
   const char* pStrFname = sImgRef.pFname;
 
-  // Load Jpeg image from SPIFFS file system
-
+  // Load Jpeg image from file system
 #if defined(ESP32)
   // use optimized ESP32 native decoder
   fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
