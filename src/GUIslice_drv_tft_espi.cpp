@@ -46,9 +46,10 @@
 
 #include <TFT_eSPI.h>
 
+// Optional SPIFFS support
 #if (GSLC_SPIFFS_EN)
-// https://github.com/Bodmer/TFT_eFEX
-#include <TFT_eFEX.h>              // Include the extension graphics functions library
+  // https://github.com/Bodmer/TFT_eFEX
+  #include <TFT_eFEX.h> // Include the extension graphics functions library
 #endif
 
 #include <SPI.h>
@@ -104,7 +105,8 @@ extern "C" {
 // Use default pin settings as defined in TFT_eSPI/User_Setup.h
 TFT_eSPI m_disp = TFT_eSPI();
 #if (GSLC_SPIFFS_EN)
-TFT_eFEX  fex = TFT_eFEX(&m_disp);    // Create TFT_eFEX object "efx" with pointer to "m_disp" object
+  // Create TFT_eFEX object "fex" with pointer to "m_disp" object
+  TFT_eFEX fex = TFT_eFEX(&m_disp);
 #endif
 
 // ------------------------------------------------------------------------
@@ -972,9 +974,9 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
         return false; // TODO: not yet supported
       }
     #else
-      GSLC_DEBUG_PRINT("ERROR: GetImageFromFile() not supported as Config:GSLC_SPIFFS_EN=0", 0);
+      GSLC_DEBUG_PRINT("ERROR: GetImageFromFile() not supported as Config:GSLC_SPIFFS_EN=0\n", 0);
       return false; // TODO: not yet supported
-    #endif // end GSLC_SPIFFS_EN
+    #endif // GSLC_SPIFFS_EN
   } else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_RAM) {
     if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_RAW1) {
       // Draw a monochrome bitmap from SRAM
@@ -1033,7 +1035,7 @@ bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_t
 {
   const char* pStrFname = sImgRef.pFname;
 
-  // Load Bmp image from file system
+  // Load BMP image from file system
   fex.drawBmp(pStrFname, nDstX, nDstY);
 
   return true;
@@ -1043,7 +1045,7 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
 {
   const char* pStrFname = sImgRef.pFname;
 
-  // Load Jpeg image from file system
+  // Load JPEG image from file system
 #if defined(ESP32)
   // use optimized ESP32 native decoder
   fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
@@ -1054,7 +1056,7 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
 
   return true;
 }
-#endif // end GSLC_SPIFFS_EN
+#endif // GSLC_SPIFFS_EN
 
 void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 {

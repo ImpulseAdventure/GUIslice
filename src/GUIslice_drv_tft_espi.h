@@ -79,6 +79,12 @@ extern "C" {
 #elif defined(DRV_TOUCH_NONE)
 #endif // DRV_TOUCH_*
 
+// Additional defines
+// - Provide default if not in config file
+#if !defined(GSLC_SPIFFS_EN)
+  #define GSLC_SPIFFS_EN 0
+#endif // GSLC_SPIFFS_EN
+
 
 // =======================================================================
 // API support definitions
