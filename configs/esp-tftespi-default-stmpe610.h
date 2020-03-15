@@ -200,6 +200,11 @@ extern "C" {
   //   with limited resources.
   #define GSLC_SD_EN    0
 
+  // Enable support for SPIFFS File System access
+  // - Set to 1 to enable, 0 to disable
+  // - Note that this requires the inclusion of TFT_eFEX library
+  #define GSLC_SPIFFS_EN               0 
+
 
   // =============================================================================
   // SECTION 10: INTERNAL CONFIGURATION
