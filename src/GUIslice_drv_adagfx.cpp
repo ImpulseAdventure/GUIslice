@@ -1593,7 +1593,7 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   #if defined(DBG_DRIVER)
   GSLC_DEBUG_PRINT("DBG: DrvDrawBmp24FromMem() w=%d h=%d\n", w, h);
   #endif
-  #if defined(DRV_HAS_DRAW_BMP_MEM)
+  #if (DRV_HAS_DRAW_BMP_MEM)
   if (!bProgMem) {
     m_disp.drawRGBBitmap(nDstX, nDstY, (uint16_t*) pImage,w, h); 
     return;
