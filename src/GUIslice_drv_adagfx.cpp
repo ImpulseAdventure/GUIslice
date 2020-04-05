@@ -51,10 +51,12 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if !defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876)
+    // No need to import Adafruit_GFX
+  #else
     #include <Adafruit_GFX.h>
     #include <gfxfont.h>
-  #endif // ILI9341_T3
+  #endif
 
   // Now configure specific display driver for Adafruit-GFX
   #if defined(DRV_DISP_ADAGFX_ILI9341)
