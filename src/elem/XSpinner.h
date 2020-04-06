@@ -121,9 +121,9 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
 /// - Called during redraw
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pElemRef:    ptr to ElementRef
-/// \param[in]  cIncrement:  Character to use to indicate incrementing the spinner
-/// \param[in]  cDecrement:  Character to use to indicate decrementing the spinner
+/// \param[in]  pElemRef:    Ptr to ElementRef
+/// \param[in]  cIncr:       Character to use to indicate incrementing the spinner
+/// \param[in]  cDecr:       Character to use to indicate decrementing the spinner
 ///
 /// \return true if success, false otherwise
 ///
@@ -135,7 +135,7 @@ bool gslc_ElemXSpinnerSetChars(void* pvGui,gslc_tsElemRef* pElemRef,uint8_t cInc
 /// - Called during redraw
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -170,7 +170,7 @@ void gslc_ElemXSpinnerSetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner,int1
 /// - This is called internally by the Spinner touch handler
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef    Void ptr to Element ref (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nX:          Touch X coord
 /// \param[in]  nY:          Touch Y coord
@@ -184,7 +184,7 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element

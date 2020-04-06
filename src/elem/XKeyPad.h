@@ -177,7 +177,9 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \param[in]  nX0:         X KeyPad Starting Coordinate 
   /// \param[in]  nY0:         Y KeyPad Starting Coordinate 
   /// \param[in]  nFontId:     Font ID to use for drawing the element
-  /// \param[in]  sConfig:     Config options
+  /// \param[in]  pConfig:     Ptr to Config options
+  /// \param[in]  pfuncCreate: Ptr to callback function for creation
+  /// \param[in]  pfuncLookup: Ptr to callback function for button lookups
   ///
   /// \return Pointer to Element or NULL if failure
   ///
@@ -207,7 +209,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///
   /// \param[in]  pGui:       Pointer to GUI
   /// \param[in]  pElemRef:   Ptr to KeyPad Element reference
-  /// \param[in]  nTargetId:  Element enum ID for target of KeyPad value
+  /// \param[in]  nId:        Element enum ID for target of KeyPad value
   ///
   /// \return none
   ///
@@ -252,7 +254,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// - Called during redraw
   ///
   /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-  /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+  /// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
   /// \param[in]  eRedraw:     Redraw mode
   ///
   /// \return true if success, false otherwise
@@ -264,7 +266,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// - This is called internally by the KeyPad touch handler
   ///
   /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-  /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+  /// \param[in]  pvElemRef:   Void ptr to Element Ref (typecast to gslc_tsElemRef*)
   /// \param[in]  eTouch:      Touch event type
   /// \param[in]  nX:          Touch X coord
   /// \param[in]  nY:          Touch Y coord
@@ -278,7 +280,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// - Called from gslc_ElemSendEventTouch()
   ///
   /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-  /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+  /// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
   /// \param[in]  eTouch:      Touch event type
   /// \param[in]  nRelX:       Touch X coord relative to element
   /// \param[in]  nRelY:       Touch Y coord relative to element
@@ -303,7 +305,6 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// Update the KeyPad configuration to enable floating point numbers
   /// - Effectively disables/enables the decimal point button & handling
   ///
-  /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
   /// \param[in]  bEn:         Enable flag (true if floating point enabled)
   ///
@@ -315,7 +316,6 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// Update the KeyPad configuration to enable negative numbers
   /// - Effectively disables/enables the sign button & handling
   ///
-  /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
   /// \param[in]  bEn:         Enable flag (true if negative numbers enabled)
   ///
@@ -326,7 +326,6 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///
   /// Update the KeyPad configuration to enable rounded button corners
   ///
-  /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
   /// \param[in]  bEn:         Enable rounded corners
   ///
@@ -337,7 +336,6 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///
   /// Update the KeyPad configuration to define the KeyPad button sizing
   ///
-  /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
   /// \param[in]  nButtonSzW:  Width of buttons in pixels
   /// \param[in]  nButtonSzH:  Width of buttons in pixels
