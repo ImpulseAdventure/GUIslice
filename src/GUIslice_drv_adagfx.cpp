@@ -1937,7 +1937,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
   // Disable certain workarounds for Adafruit_TouchScreen in STM32 mode
   // as we haven't implemented the equivalent pin save/restore code yet.
-  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
+  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(ARDUINO_SAMD_NANO_33_IOT)
     #undef FIX_4WIRE_PIN_STATE
   #endif
 
