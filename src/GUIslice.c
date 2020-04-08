@@ -4433,14 +4433,16 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   //   not discard/reuse the pointer. It should be defined as a static
   //   variable.
 
-  #if defined(DBG_LOG)
-  GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
-          pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
-  #endif
-
   uint16_t nElemInd;
   uint16_t nElemRefInd;
+  gslc_tsElem* pElemRam = NULL; // Local element in RAM
+
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
+
+    #if defined(DBG_LOG)
+    GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
+            pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
+    #endif
 
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
@@ -4468,6 +4470,18 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   } else {
     // External reference
     // - Pointer (pElem) links to an element stored in FLASH (must be declared statically)
+
+    // Fetch a RAM copy of the FLASH element
+    pElemRam = pElem;
+    #if (GSLC_USE_PROGMEM)
+    memcpy_P(&pGui->sElemTmpProg,pElem,sizeof(gslc_tsElem));
+    pElemRam = &pGui->sElemTmpProg;
+    #endif
+
+    #if defined(DBG_LOG)
+    GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u (FLASH)\n",
+            pCollect->nElemCnt+1,pCollect->nElemMax,pElemRam->nId);
+    #endif
 
     // Add a reference
     nElemRefInd = pCollect->nElemRefCnt;
@@ -4541,8 +4555,13 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
   gslc_tsCollect* pCollect = &pPage->sCollect;
   gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
 
+  // Fetch access to the element from the reference
+  // - This also handles the case with elements in FLASH
+  gslc_tsElem* pElemLocal = NULL;
+  pElemLocal = gslc_GetElemFromRef(pGui,pElemRefAdd);
+
   // Update the page's bounding rect
-  gslc_UnionRect(&(pPage->rBounds), pElem->rElem);
+  gslc_UnionRect(&(pPage->rBounds), pElemLocal->rElem);
 
   return pElemRefAdd;
 }
