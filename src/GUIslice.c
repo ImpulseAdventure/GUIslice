@@ -4444,7 +4444,7 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
 
   uint16_t nElemInd;
   uint16_t nElemRefInd;
-  gslc_tsElem* pElemRam = NULL; // Local element in RAM
+  const gslc_tsElem* pElemRam = NULL; // Local element in RAM
 
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
 
