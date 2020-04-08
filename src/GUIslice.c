@@ -1384,6 +1384,9 @@ void gslc_UnionRect(gslc_tsRect* pRect,gslc_tsRect rAddRect)
 
 void gslc_InvalidateRgnReset(gslc_tsGui* pGui)
 {
+#if defined(DBG_REDRAW)
+  GSLC_DEBUG_PRINT("DBG: InvRgnReset\n", "");
+#endif
   pGui->bInvalidateEn = false;
   pGui->rInvalidateRect = (gslc_tsRect) { 0, 0, 1, 1 };
 }
@@ -3337,12 +3340,18 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     case GSLC_REDRAW_FULL:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_FULL;
       // Mark the region as invalidated
-      gslc_InvalidateRgnAdd(pGui, pElem->rElem);
+      // - Only invalidate if the element is visible on the screen
+      if (gslc_ElemGetOnScreen(pGui,pElemRef)) {
+        gslc_InvalidateRgnAdd(pGui, pElem->rElem);
+      }
       break;
     case GSLC_REDRAW_INC:
       eFlags = (eFlags & ~GSLC_ELEMREF_REDRAW_MASK) | GSLC_ELEMREF_REDRAW_INC;
       // Mark the region as invalidated
-      gslc_InvalidateRgnAdd(pGui, pElem->rElem);
+      // - Only invalidate if the element is visible on the screen
+      if (gslc_ElemGetOnScreen(pGui,pElemRef)) {
+        gslc_InvalidateRgnAdd(pGui, pElem->rElem);
+      }
       break;
   }
 
