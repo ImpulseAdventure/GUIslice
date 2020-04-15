@@ -2553,7 +2553,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 /// \param[in]  bFillEn:    True if filled, false otherwise
 ///
 
-/// \def gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn)
+/// \def gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick)
 ///
 /// Create a read-write text element (element in Flash, string in RAM)
 /// with extended customization options.
@@ -2577,6 +2577,8 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 /// \param[in]  nMarginY:   Text margin (Y offset)
 /// \param[in]  bFrameEn:   True if framed, false otherwise
 /// \param[in]  bFillEn:    True if filled, false otherwise
+/// \param[in]  bClickEn:   True if accept click events, false otherwise
+/// \param[in]  bGlowEn:    True if supports glow state, false otherwise
 /// \param[in]  pfuncXEvent:  Callback function ptr for Event
 /// \param[in]  pfuncXDraw:   Callback function ptr for Redraw
 /// \param[in]  pfuncXTouch:  Callback function ptr for Touch
@@ -2709,9 +2711,9 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
-#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
+#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
-    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
@@ -2732,7 +2734,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       nMarginY,                                                   \
       pFont,                                                      \
       NULL,                                                       \
-      pfuncXDraw,                                                 \
+      pfuncXEvent,                                                \
       pfuncXDraw,                                                 \
       pfuncXTouch,                                                \
       pfuncXTick,                                                 \
@@ -2936,9 +2938,9 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
-#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
+#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
   static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
-    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
@@ -2959,7 +2961,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       nMarginY,                                                   \
       pFont,                                                      \
       NULL,                                                       \
-      pfuncXDraw,                                                 \
+      pfuncXEvent,                                                \
       pfuncXDraw,                                                 \
       pfuncXTouch,                                                \
       pfuncXTick,                                                 \
