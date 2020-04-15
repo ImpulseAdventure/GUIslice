@@ -134,7 +134,7 @@ static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); els
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
   if ( eTouch == GSLC_TOUCH_UP_IN ) {
     // From the element's ID we can determine which button was pressed.
@@ -171,7 +171,7 @@ bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = pElemRef->pElem;
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Create shorthand variables for the origin
   int16_t  nX = pElem->rElem.x;
@@ -215,9 +215,9 @@ bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
 bool CbTickScanner(void* pvGui,void* pvScope)
 {
-  gslc_tsGui*   pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvScope);
-  gslc_tsElem*    pElem     = pElemRef->pElem;
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
 
   m_fCoordX = 50+25.0*(sin(m_nCount/2.5));
   m_fCoordY = 50+15.0*(cos(m_nCount/1.75));

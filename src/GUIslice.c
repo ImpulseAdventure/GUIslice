@@ -2483,7 +2483,13 @@ gslc_tsElem* gslc_GetElemFromRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
     return NULL;
   }
   gslc_teElemRefFlags eFlags  = pElemRef->eElemFlags;
-  gslc_tsElem*        pElem   = pElemRef->pElem;
+  gslc_tsElem*        pElem   = pElemRef->pElem; // NOTE below
+
+  // NOTE: The pElem assignment above is not applicable for
+  //       PROGMEM-based elements. For these elements, we
+  //       need to access the structure through the FLASH APIs,
+  //       hence the default assignment above will be overwritten
+  //       below.
 
   // If the element is in FLASH and requires PROGMEM to access
   // then cache it locally and return a pointer to the global
@@ -3407,7 +3413,7 @@ gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
 void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
 {
-  if ((pElemRef == NULL) || (pElemRef->pElem == NULL)) {
+  if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetGlow";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
@@ -4906,7 +4912,7 @@ bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bN
     pElemRef = &(pCollect->asElemRef[nInd]);
     pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
     if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
-      if (pElemRef->pElem == NULL) {
+      if (pElem == NULL) {
         GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
         exit(1); // FATAL
       } else {

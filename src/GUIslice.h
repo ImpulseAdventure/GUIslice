@@ -2553,6 +2553,37 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 /// \param[in]  bFillEn:    True if filled, false otherwise
 ///
 
+/// \def gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick)
+///
+/// Create a read-write text element (element in Flash, string in RAM)
+/// with extended customization options.
+///
+/// \param[in]  pGui:       Pointer to GUI
+/// \param[in]  nElemId:    Unique element ID to assign
+/// \param[in]  nPage:      Page ID to attach element to
+/// \param[in]  nX:         X coordinate of element
+/// \param[in]  nY:         Y coordinate of element
+/// \param[in]  nW:         Width of element
+/// \param[in]  nH:         Height of element
+/// \param[in]  strTxt:     Text string to display
+/// \param[in]  strLength:  Length of text string
+/// \param[in]  pFont:      Pointer to font resource
+/// \param[in]  colTxt:     Color for the text
+/// \param[in]  colTxtGlow: Color for the text when glowing
+/// \param[in]  colFrame:   Color for the frame
+/// \param[in]  colFill:    Color for the fill
+/// \param[in]  nAlignTxt:  Text alignment
+/// \param[in]  nMarginX:   Text margin (X offset)
+/// \param[in]  nMarginY:   Text margin (Y offset)
+/// \param[in]  bFrameEn:   True if framed, false otherwise
+/// \param[in]  bFillEn:    True if filled, false otherwise
+/// \param[in]  bClickEn:   True if accept click events, false otherwise
+/// \param[in]  bGlowEn:    True if supports glow state, false otherwise
+/// \param[in]  pfuncXEvent:  Callback function ptr for Event
+/// \param[in]  pfuncXDraw:   Callback function ptr for Redraw
+/// \param[in]  pfuncXTouch:  Callback function ptr for Touch
+/// \param[in]  pfuncXTick:   Callback function ptr for Timer tick
+///
 
 /// \def gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick)
 ///
@@ -2679,6 +2710,38 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
+
+#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
+  static const gslc_tsElem sElem##nElemId PROGMEM = {             \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_TXT,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)strTxt,                                              \
+      strLength,                                                  \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),   \
+      colTxt,                                                     \
+      colTxtGlow,                                                 \
+      nAlignTxt,                                                  \
+      nMarginX,                                                   \
+      nMarginY,                                                   \
+      pFont,                                                      \
+      NULL,                                                       \
+      pfuncXEvent,                                                \
+      pfuncXDraw,                                                 \
+      pfuncXTouch,                                                \
+      pfuncXTick,                                                 \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
+
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
@@ -2871,6 +2934,37 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
       NULL,                                                       \
       NULL,                                                       \
       NULL,                                                       \
+  };                                                              \
+  gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
+    (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
+
+#define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
+  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+    (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
+  static const gslc_tsElem sElem##nElemId = {                     \
+      nElemId,                                                    \
+      nFeatures##nElemId,                                         \
+      GSLC_TYPE_TXT,                                              \
+      (gslc_tsRect){nX,nY,nW,nH},                                 \
+      GSLC_GROUP_ID_NONE,                                         \
+      colFrame,colFill,GSLC_COL_BLACK,GSLC_COL_BLACK,             \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      NULL,                                                       \
+      (char*)strTxt,                                              \
+      strLength,                                                  \
+      (gslc_teTxtFlags)(GSLC_TXT_MEM_RAM | GSLC_TXT_ALLOC_EXT),   \
+      colTxt,                                                     \
+      colTxtGlow,                                                 \
+      nAlignTxt,                                                  \
+      nMarginX,                                                   \
+      nMarginY,                                                   \
+      pFont,                                                      \
+      NULL,                                                       \
+      pfuncXEvent,                                                \
+      pfuncXDraw,                                                 \
+      pfuncXTouch,                                                \
+      pfuncXTick,                                                 \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
