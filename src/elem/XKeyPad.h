@@ -368,6 +368,30 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   ///
   void gslc_ElemXKeyPadSetSignEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn);
 
+  ///
+  /// Trigger a KeyPad popup and associate it with a text element
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pKeyPadRef:  Pointer to KeyPad element reference
+  /// \param[in]  nPgPopup:    Page enum that contains the popup to show
+  /// \param[in]  pTxTRef:     Pointer to associated text field element reference
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadInputAsk(gslc_tsGui* pGui, gslc_tsElemRef* pKeyPadRef, int16_t nPgPopup, gslc_tsElemRef* pTxtRef);
+
+  ///
+  /// Complete a KeyPad popup by retrieving the input data and storing it in the text element
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pTxTRef:     Pointer to associated text field element reference
+  /// \param[in]  pvCbData:    Void pointer to callback function's pvData
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData);
+
+
   #endif // GSLC_FEATURE_COMPOUND
 
 // ============================================================================
