@@ -136,7 +136,7 @@ static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); els
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
   if ( eTouch == GSLC_TOUCH_UP_IN ) {
     // From the element's ID we can determine which button was pressed.

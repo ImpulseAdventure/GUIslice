@@ -144,7 +144,7 @@ static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); els
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
   if ( eTouch == GSLC_TOUCH_UP_IN ) {
     // From the element's ID we can determine which button was pressed.
@@ -177,8 +177,8 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 bool CbSpinner(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
   gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   char acTxtNum[4];
 

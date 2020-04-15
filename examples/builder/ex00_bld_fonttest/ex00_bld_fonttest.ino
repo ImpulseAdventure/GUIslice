@@ -1,5 +1,5 @@
 //<File !Start!>
-// FILE: [ex11_bld_graph.ino]
+// FILE: [ex00_bld_fonttest.ino]
 // Created by GUIslice Builder version: [0.13.0]
 //
 // GUIslice Builder Generated File
@@ -22,9 +22,6 @@
 
 // Include any extended elements
 //<Includes !Start!>
-// Include extended elements
-#include "elem/XGraph.h"
-#include "elem/XSlider.h"
 //<Includes !End!>
 
 // ------------------------------------------------
@@ -34,6 +31,8 @@
 //<Fonts !Start!>
 #include <Adafruit_GFX.h>
 // Note that these files are located within the Adafruit-GFX library folder:
+#include "Fonts/FreeMono12pt7b.h"
+#include "Fonts/FreeMono9pt7b.h"
 #include "Fonts/FreeSans12pt7b.h"
 #include "Fonts/FreeSans9pt7b.h"
 //<Fonts !End!>
@@ -49,10 +48,11 @@
 // ------------------------------------------------
 //<Enum !Start!>
 enum {E_PG_MAIN};
-enum {E_ELEM_BOX2,E_ELEM_BTN_QUIT,E_ELEM_GRAPH1,E_ELEM_TXT_COUNT
-      ,E_LBL_TITLE,E_SCROLLBAR,E_SLIDER,E_WRAP_GRAPH};
+enum {E_ELEM_TEXT1,E_ELEM_TEXT2,E_ELEM_TEXT3,E_ELEM_TEXT4,E_ELEM_TEXT5
+      ,E_ELEM_TEXT6,E_ELEM_TEXT7,E_SCAN1};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_SANS12,E_FONT_SANS9,E_FONT_TXT5,MAX_FONT};
+enum {E_FONT_MONO12,E_FONT_MONO9,E_FONT_SANS12,E_FONT_SANS9
+      ,E_FONT_TXT10,E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -80,10 +80,6 @@ gslc_tsPage                     m_asPage[MAX_PAGE];
 //<GUI_Extra_Elements !Start!>
 gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
-gslc_tsXSlider                  m_sXSlider1;
-gslc_tsXGraph                   m_sGraph1;
-int16_t                         m_anGraphBuf1[200]; // NRows=200
-gslc_tsXSlider                  m_sXSlider2;
 
 #define MAX_STR                 100
 
@@ -92,21 +88,9 @@ gslc_tsXSlider                  m_sXSlider2;
 // ------------------------------------------------
 // Program Globals
 // ------------------------------------------------
-bool      m_bQuit = false;
-
-// Free-running counter for display
-unsigned  m_nCount = 0;
-
-#define GRAPH_ROWS          200
-int16_t                     m_anGraphBuf[GRAPH_ROWS];
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemCnt        = NULL;
-gslc_tsElemRef*  m_pElemGraph1     = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemSlider1    = NULL;
-gslc_tsElemRef*  m_pElemSlider2    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -125,14 +109,12 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     // From the element's ID we can determine which button was pressed.
     switch (pElem->nId) {
 //<Button Enums !Start!>
-      case E_ELEM_BTN_QUIT:
-        m_bQuit = true;
-        gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
-        gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
+      case E_SCAN1:
+        //TODO- Replace with button handling code
         break;
 
 //<Button Enums !End!>
-      default:
+        default:
         break;
     }
   }
@@ -146,45 +128,75 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 //<Spinner Callback !End!>
 //<Listbox Callback !Start!>
 //<Listbox Callback !End!>
-//<Draw Callback !Start!>
-//<Draw Callback !End!>
+ 
+void drawGrid(int w, int h) {
+  int x, y;
+  int minor = 10;
+  int major = 50;
+  gslc_tsColor minorCol = GSLC_COL_GRAY;
+  gslc_tsColor majorCol = GSLC_COL_BLACK;
+  gslc_tsColor lineCol;
+  
+  // draw X axis
+  for (x=0; x<w; x+=minor) {
+    if (x%major == 0) {
+      lineCol = majorCol;
+    } else {
+      lineCol = minorCol;
+    }
+    gslc_DrawLine(&m_gui, x, 0, x, h, lineCol);
+    
+  }
+  // draw Y axis  
+  for (y=0; y<h; y+=minor) {
+    if (y%major==0) {
+      lineCol = majorCol;
+    } else {
+      lineCol = minorCol;
+    }
+    gslc_DrawLine(&m_gui, 0, y, w, y, lineCol);
+  }
+}
 
-// Callback function for when a slider's position has been updated
-bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
+// Scanner drawing callback function
+// - This is called when E_ELEM_SCAN is being rendered
+bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  int nInd;
+
+  // Typecast the parameters to match the GUI and element types
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-  int16_t         nVal;
-  char            acTxt[20];
 
-  // From the element's ID we can determine which slider was updated.
-  switch (pElem->nId) {
-//<Slider Enums !Start!>
+  // Create shorthand variables for the origin
+  int16_t  nX = pElem->rElem.x;
+  int16_t  nY = pElem->rElem.y;
 
-    case E_SLIDER:
-      // Fetch the slider position
-      nVal = gslc_ElemXSliderGetPos(pGui,m_pElemSlider1);
-      // Link slider to the numerical display
-      snprintf(acTxt,6,"%u",nVal);
-      gslc_ElemSetTxtStr(pGui,m_pElemCnt,acTxt);
+  // Draw the background
+  gslc_tsRect rInside = pElem->rElem;
+  rInside = gslc_ExpandRect(rInside,-1,-1);
+  gslc_DrawFillRect(pGui,rInside,pElem->colElemFill);
 
-      // Link slider to insertion of values into graph
-      gslc_ElemXGraphAdd(pGui,m_pElemGraph1,nVal);
-      break;
-    case E_SCROLLBAR:
-      // Fetch the slider position
-      nVal = gslc_ElemXSliderGetPos(pGui,m_pElemSlider2);
-      // Update the graph scroll position
-      gslc_ElemXGraphScrollSet(pGui,m_pElemGraph1,nVal,100);
-      break;
-//<Slider Enums !End!>
-    default:
-      break;
-  }
+  // Enable localized clipping
+  gslc_SetClipRect(pGui,&rInside);
+
+  //TODO - Add your drawing graphic primitives
+  drawGrid(rInside.w, rInside.h);
+
+  // Disable clipping region
+  gslc_SetClipRect(pGui,NULL);
+
+  // Draw the frame
+  gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
+
+  // Clear the redraw flag
+  gslc_ElemSetRedraw(&m_gui,pElemRef,GSLC_REDRAW_NONE);
 
   return true;
 }
+//<Slider Callback !Start!>
+//<Slider Callback !End!>
 //<Tick Callback !Start!>
 //<Tick Callback !End!>
 
@@ -202,60 +214,47 @@ bool InitGUI()
   //       ensure that the main page is the correct page no matter the add order.
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
-  // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  // Background flat color
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
   
    
-  // Create E_ELEM_BOX2 box
-  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX2,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  // Create E_SCAN1 box
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_SCAN1,E_PG_MAIN,(gslc_tsRect){0,0,320,240});
+  gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
+  // Set the callback function to handle all drawing for the element
+  gslc_ElemSetDrawFunc(&m_gui,pElemRef,&CbDrawScanner);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_WHITE,GSLC_COL_BLACK);
   
-  // Create E_LBL_TITLE text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){127,5,65,29},
-    (char*)"Graph",0,E_FONT_SANS12);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){128,128,240});
-
-  // Create slider E_SLIDER 
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SLIDER,E_PG_MAIN,&m_sXSlider1,
-          (gslc_tsRect){20,60,140,20},0,100,50,5,false);
-  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_DK2);
-  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
-  m_pElemSlider1 = pElemRef;
+  // Create E_ELEM_TEXT1 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT1,E_PG_MAIN,(gslc_tsRect){10,10,74,12},
+    (char*)"TEXT 5X8PT7B",0,E_FONT_TXT5);
   
-  // Create E_ELEM_TXT_COUNT runtime modifiable text
-  static char m_sDisplayText2[6] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,65,23},
-    (char*)m_sDisplayText2,6,E_FONT_SANS9);
-  m_pElemCnt = pElemRef;
-   
-  // Create E_WRAP_GRAPH box
-  pElemRef = gslc_ElemCreateBox(&m_gui,E_WRAP_GRAPH,E_PG_MAIN,(gslc_tsRect){18,83,183,143});
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK4,GSLC_COL_BLACK,GSLC_COL_BLACK);
-
-  // Create graph E_ELEM_GRAPH1
-  pElemRef = gslc_ElemXGraphCreate(&m_gui,E_ELEM_GRAPH1,E_PG_MAIN,
-    &m_sGraph1,(gslc_tsRect){20,85,180,120},E_FONT_TXT5,(int16_t*)&m_anGraphBuf1,
-        200,(gslc_tsColor){255,200,0});
-  gslc_ElemXGraphSetStyle(&m_gui,pElemRef, GSLCX_GRAPH_STYLE_DOT, 5);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2,GSLC_COL_BLACK,GSLC_COL_GRAY_DK3);
-  m_pElemGraph1 = pElemRef;
-
-  // Create slider E_SCROLLBAR 
-  pElemRef = gslc_ElemXSliderCreate(&m_gui,E_SCROLLBAR,E_PG_MAIN,&m_sXSlider2,
-          (gslc_tsRect){20,205,180,20},0,100,100,5,false);
-  gslc_ElemXSliderSetStyle(&m_gui,pElemRef,false,GSLC_COL_BLUE,10,5,GSLC_COL_BLUE);
-  gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
-  m_pElemSlider2 = pElemRef;
+  // Create E_ELEM_TEXT2 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT2,E_PG_MAIN,(gslc_tsRect){10,30,170,20},
+    (char*)"TEXT 10X16pt7b",0,E_FONT_TXT10);
   
-  // Create E_ELEM_BTN_QUIT button with modifiable text label
-  static char m_strbtn1[7] = "Quit";
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){250,60,50,30},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
-  m_pElemQuit = pElemRef;
+  // Create E_ELEM_TEXT3 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT3,E_PG_MAIN,(gslc_tsRect){10,70,254,28},
+    (char*)"TEST 15x24pt7b",0,E_FONT_TXT15);
+  
+  // Create E_ELEM_TEXT4 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT4,E_PG_MAIN,(gslc_tsRect){10,120,93,25},
+    (char*)"MONO 9pt",0,E_FONT_MONO9);
+  
+  // Create E_ELEM_TEXT5 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT5,E_PG_MAIN,(gslc_tsRect){10,170,84,23},
+    (char*)"SANS 9pt",0,E_FONT_SANS9);
+  
+  // Create E_ELEM_TEXT6 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT6,E_PG_MAIN,(gslc_tsRect){150,120,131,33},
+    (char*)"MONO 12pt",0,E_FONT_MONO12);
+  
+  // Create E_ELEM_TEXT7 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT7,E_PG_MAIN,(gslc_tsRect){150,170,123,29},
+    (char*)"SANS 12pt",0,E_FONT_SANS12);
 //<InitGUI !End!>
 
   return true;
@@ -278,8 +277,12 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
+    if (!gslc_FontSet(&m_gui,E_FONT_MONO12,GSLC_FONTREF_PTR,&FreeMono12pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FONT_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
     if (!gslc_FontSet(&m_gui,E_FONT_SANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
     if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FONT_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FONT_TXT15,GSLC_FONTREF_PTR,NULL,3)) { return; }
     if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
@@ -303,26 +306,12 @@ void loop()
   // Update GUI Elements
   // ------------------------------------------------
   
-  m_nCount++;
-  if ((m_nCount % 500) == 0) {
-    gslc_ElemXGraphAdd(&m_gui,m_pElemGraph1,(m_nCount/250)%100);
-  }
+  //TODO - Add update code for any text, gauges, or sliders
   
   // ------------------------------------------------
   // Periodically call GUIslice update function
   // ------------------------------------------------
   gslc_Update(&m_gui);
     
-  // Slow down updates
-  delay(2);
-
-  // In a real program, we would detect the button press and take an action.
-  // For this Arduino demo, we will pretend to exit by emulating it with an
-  // infinite loop. Note that interrupts are not disabled so that any debug
-  // messages via Serial have an opportunity to be transmitted.
-  if (m_bQuit) {
-    gslc_Quit(&m_gui);
-    while (1) { }
-  }
-    
 }
+

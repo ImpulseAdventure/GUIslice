@@ -145,7 +145,7 @@ void ListboxLoad(gslc_tsElemRef* pElemRef)
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
   if ( eTouch == GSLC_TOUCH_UP_IN ) {
     // From the element's ID we can determine which button was pressed.
@@ -185,7 +185,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 {
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = pElemRef->pElem;
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   int16_t         nVal;
   gslc_tsElemRef* pElemRefTmp = NULL;
 

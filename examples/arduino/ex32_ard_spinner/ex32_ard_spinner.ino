@@ -92,7 +92,7 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
   int16_t nElemId = pElem->nId;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     if (nElemId == E_ELEM_BTN_QUIT) {
@@ -110,7 +110,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 bool CbInputCommon(void* pvGui,void *pvElemRef, int16_t nState, void* pvData)
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = pElemRef->pElem;
+  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
   
   char acTxtNum[4];
 

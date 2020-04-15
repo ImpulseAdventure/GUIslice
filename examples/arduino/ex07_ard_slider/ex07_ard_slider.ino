@@ -81,7 +81,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 {
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem     = pElemRef->pElem;
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   //gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);
 
   // Fetch the new RGB component from the slider
