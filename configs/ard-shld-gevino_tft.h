@@ -4,7 +4,7 @@
 // =============================================================================
 // GUIslice library (example user configuration) for:
 //   - CPU:     Arduino Zero
-//   - Display: RA8876 1024x600 SPI
+//   - Display: RA8876 1024x600 SPI (EastRising TFTM070-6)
 //   - Touch:   FT5206 (Capacitive)
 //   - Wiring:  GEVINO TFT
 //
@@ -76,8 +76,8 @@ extern "C" {
 
   // For shields, the following pinouts are typically hardcoded
   // These values were defined to match an Arduino Zero config
-  #define ADAGFX_PIN_CS       11    // Display chip select
-  #define ADAGFX_PIN_RST      0     // Display Reset
+  #define ADAGFX_PIN_CS       42    // Display chip select
+  #define ADAGFX_PIN_RST      -1    // Display Reset
 
   // SD Card
   #define ADAGFX_PIN_SDCS     12    // SD card chip select (if GSLC_SD_EN=1)
