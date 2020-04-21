@@ -374,7 +374,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pKeyPadRef:  Pointer to KeyPad element reference
   /// \param[in]  nPgPopup:    Page enum that contains the popup to show
-  /// \param[in]  pTxTRef:     Pointer to associated text field element reference
+  /// \param[in]  pTxtRef:     Pointer to associated text field element reference
   ///
   /// \return none
   ///
@@ -384,7 +384,7 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// Complete a KeyPad popup by retrieving the input data and storing it in the text element
   ///
   /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  pTxTRef:     Pointer to associated text field element reference
+  /// \param[in]  pTxtRef:     Pointer to associated text field element reference
   /// \param[in]  pvCbData:    Void pointer to callback function's pvData
   ///
   /// \return none
