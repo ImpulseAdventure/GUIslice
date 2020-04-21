@@ -151,6 +151,14 @@ extern "C" {
   #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
   #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
 
+#elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+  #undef DRV_HAS_DRAW_RECT_ROUND_FRAME
+  #undef DRV_HAS_DRAW_RECT_ROUND_FILL
+
+  #define DRV_HAS_DRAW_RECT_ROUND_FRAME  0
+  #define DRV_HAS_DRAW_RECT_ROUND_FILL   0
+
+
 #elif defined(DRV_DISP_ADAGFX_ILI9341)
   // BLIT support in library
   #undef  DRV_HAS_DRAW_BMP_MEM
