@@ -51,7 +51,7 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876)
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
     // No need to import Adafruit_GFX
   #else
     #include <Adafruit_GFX.h>
@@ -118,6 +118,9 @@
   #elif defined(DRV_DISP_ADAGFX_RA8876)
     // https://github.com/xlatb/ra8876
     #include <RA8876.h>
+  #elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+    // GEVINO RA8876 based on https://github.com/xlatb/ra8876 + RAIO vendor libs
+    #include <gevinoTFT_RA8876.h>
   #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
     // https://github.com/prenticedavid/MCUFRIEND_kbv
     #include <MCUFRIEND_kbv.h>
@@ -330,6 +333,11 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_RA8876)
   const char* m_acDrvDisp = "ADA_RA8876(SPI-HW)";
+  RA8876 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+  const char* m_acDrvDisp = "ADA_RA8876_GV(SPI-HW)";
   RA8876 m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
@@ -617,6 +625,10 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.init();
       //pinMode(RA8876_BACKLIGHT, OUTPUT);  // Set backlight pin to OUTPUT mode
       //digitalWrite(RA8876_BACKLIGHT, HIGH);  // Turn on backlight
+      m_disp.clearScreen(0);
+
+    #elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+      m_disp.init();
       m_disp.clearScreen(0);
 
     #elif defined(DRV_DISP_ADAGFX_MCUFRIEND)
@@ -993,15 +1005,28 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 #else
 
+  // Support library-specific font exceptions
   #if defined(DRV_DISP_WAVESHARE_ILI9486)
     // Waveshare_ILI9486 uses a different font structure
     m_disp.setFont((sFONT*)(pFont->pvFont));
+  #elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+    if (pFont->pvFont == NULL) {
+      // Internal ROM font
+      m_disp.selectInternalFont(RA8876_FONT_SIZE_16);
+    } else {
+      // Custom font
+      m_disp.setFont((const FONT_INFO *)pFont->pvFont);
+    }
   #else
     m_disp.setFont((const GFXfont *)pFont->pvFont);
   #endif
 
   nTxtScale = pFont->nSize;
-  m_disp.setTextSize(nTxtScale);
+  #if defined(DRV_DISP_ADAGFX_RA8876_GV)
+    m_disp.setTextScale(nTxtScale); // TODO: Test this
+  #else
+    m_disp.setTextSize(nTxtScale);
+  #endif
 
   if ((eTxtFlags & GSLC_TXT_MEM) == GSLC_TXT_MEM_RAM) {
     // Fetch the text bounds
@@ -1029,7 +1054,11 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
     #endif
   }
 
-  m_disp.setFont();
+  #if defined(DRV_DISP_ADAGFX_RA8876_GV)
+    // TODO: Add default font
+  #else
+    m_disp.setFont();
+  #endif
   return true;
 
 #endif // DRV_DISP_*
@@ -1040,7 +1069,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 {
   uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
-  int16_t   nCurPosX = 0;
   int16_t   nCurPosY = 0;
   char      ch;
 
@@ -1114,10 +1142,24 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #else
-  m_disp.setFont((const GFXfont *)pFont->pvFont);
+  #if defined(DRV_DISP_ADAGFX_RA8876_GV)
+    if (pFont->pvFont == NULL) {
+      // Internal ROM font
+      m_disp.selectInternalFont(RA8876_FONT_SIZE_16);
+    } else {
+      // Custom font
+      m_disp.setFont((const FONT_INFO *)pFont->pvFont);
+    }
+  #else
+    m_disp.setFont((const GFXfont *)pFont->pvFont);
+  #endif
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
-  m_disp.setTextSize(nTxtScale);
+  #if defined(DRV_DISP_ADAGFX_RA8876_GV)
+    m_disp.setTextScale(nTxtScale); // TODO: Support scaling
+  #else
+    m_disp.setTextSize(nTxtScale);
+  #endif
 #endif
 
   // Driver-specific overrides
@@ -1148,7 +1190,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     bProg = true;
   }
 
-  bool bFirstChar = true;
   while (1) {
     // Fetch the next character
     if (!bProg) {
@@ -1208,6 +1249,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.print(ch);
 
       // Now account for the _letterSpacing
+      int16_t nCurPosX = 0;
       nCurPosY = m_disp.getCursorY();
       nCurPosX = m_disp.getCursorX();
       nCurPosX += m_disp.getTextLetterSpacing() * nTxtScale;
@@ -1260,8 +1302,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       #endif
     }
 
-    bFirstChar = false;
-
   } // while(1)
 
   #if defined(DRV_DISP_ADAGFX_RA8875)
@@ -1279,6 +1319,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 #elif defined(DRV_DISP_LCDGFX)
   // TODO
 #elif defined(DRV_DISP_ADAGFX_RA8876)
+  // TODO
+#elif defined(DRV_DISP_ADAGFX_RA8876_GV)
   // TODO
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
   // TODO
@@ -1369,7 +1411,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.fillRect(r);
-  #elif defined(DRV_DISP_ADAGFX_RA8876)
+  #elif defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
     // xlatb/RA8876 uses a non-standard fillRect() API
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
@@ -1428,7 +1470,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
 	  m_disp.drawRect(r);
-  #elif defined(DRV_DISP_ADAGFX_RA8876)
+  #elif defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
     m_disp.drawRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
     m_disp.drawRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
@@ -2823,6 +2865,14 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   #elif defined(DRV_DISP_ADAGFX_RA8876)
     // No support for rotation in xlatb/RA8875 library
+    bSupportRotation = false;
+    pGui->nDisp0W = m_disp.getWidth();
+    pGui->nDisp0H = m_disp.getHeight();
+    pGui->nDispW = m_disp.getWidth();
+    pGui->nDispH = m_disp.getHeight();
+
+  #elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+    // No support for rotation in GEVINO RA8875 library
     bSupportRotation = false;
     pGui->nDisp0W = m_disp.getWidth();
     pGui->nDisp0H = m_disp.getHeight();
