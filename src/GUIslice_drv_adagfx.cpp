@@ -129,8 +129,13 @@
     #include <lcdgfx.h>
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     // https://github.com/ImpulseAdventure/Waveshare_ILI9486
-    #include <Waveshare_ILI9486_GFX.h>
+    #include <Waveshare_ILI9486.h>
     #include <SPI.h>
+    // Ensure we are using recent API
+    #if !defined(_WAVESHARE_ILI9486_h)
+      #error "Need to update Waveshare_ILI9486 library (>= v2.0)"
+    #endif
+
 
   #else
     #error "CONFIG: Need to enable a supported DRV_DISP_ADAGFX_* option in GUIslice config"
@@ -407,7 +412,7 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
   const char* m_acDrvDisp = "WAVESHARE_ILI9486";
-  Waveshare_ILI9486_GFX m_disp;
+  Waveshare_ILI9486 m_disp;
 
 // ------------------------------------------------------------------------
 #endif // DRV_DISP_ADAGFX_*
@@ -649,6 +654,7 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.setFixedFont(ssd1306xled_font6x8);
 
     #elif defined(DRV_DISP_WAVESHARE_ILI9486)
+      SPI.begin();
       m_disp.begin();
 
     #endif
@@ -1006,10 +1012,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 #else
 
   // Support library-specific font exceptions
-  #if defined(DRV_DISP_WAVESHARE_ILI9486)
-    // Waveshare_ILI9486 uses a different font structure
-    m_disp.setFont((sFONT*)(pFont->pvFont));
-  #elif defined(DRV_DISP_ADAGFX_RA8876_GV)
+  #if defined(DRV_DISP_ADAGFX_RA8876_GV)
     if (pFont->pvFont == NULL) {
       // Internal ROM font
       m_disp.selectInternalFont(RA8876_FONT_SIZE_16);
@@ -1099,12 +1102,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
-#elif defined(DRV_DISP_WAVESHARE_ILI9486)
-  // TODO: Add support for user defined fonts
-  m_disp.setFont((sFONT*)(pFont->pvFont));
-  m_disp.setTextColor(nColRaw);
-  m_disp.setCursor(nTxtX,nTxtY);
-  m_disp.setTextSize(nTxtScale);
 #elif defined(DRV_DISP_LCDGFX)
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8);
@@ -2897,11 +2894,9 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = m_disp.height();
 
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
-    // As the Waveshare display driver has a lengthy delay in its LCD_Reset()
-    // call, we have skipped the initial setRotation(0) stage and instead
-    // hardcoded the default dimensions according to the library.
-    pGui->nDisp0W = 320;
-    pGui->nDisp0H = 480;
+    m_disp.setRotation(0);
+    pGui->nDisp0W = m_disp.width();
+    pGui->nDisp0H = m_disp.height();
     m_disp.setRotation(pGui->nRotation);
     pGui->nDispW = m_disp.width();
     pGui->nDispH = m_disp.height();
