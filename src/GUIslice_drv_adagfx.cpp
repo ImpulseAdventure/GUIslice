@@ -1976,7 +1976,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
   // Disable certain workarounds for Adafruit_TouchScreen in STM32 & SAMD mode
   // as we haven't implemented the equivalent pin save/restore code yet.
-  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_ARCH_SAM)
+  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(ARDUINO_SAMD_NANO_33_IOT)
     #undef FIX_4WIRE_PIN_STATE
   #endif
 
@@ -2002,6 +2002,11 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   /// Return the current pinMode() for a pin
   int gslc_TDrvGetPinMode(uint8_t nPin)
   {
+    #if defined(ARDUINO_ARCH_SAM)
+    // Not supported
+    return -1;
+
+    #else
     if (nPin >= NUM_DIGITAL_PINS) {
       return (-1);
     }
@@ -2017,20 +2022,36 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     // Determine if port is an input and whether pullup is active
     volatile  uint8_t *nOut = portOutputRegister(nPort);
     return ((*nOut & nBit) ? INPUT_PULLUP : INPUT);
+
+    #endif
   }
 
   /// Fetch the current pin mode and level
   inline void gslc_TDrvSavePinState(int nPin, gslc_tsPinState &sPinState)
   {
+    #if defined(ARDUINO_ARCH_SAM)
+      // Not supported
+      return;
+    #else
+
     sPinState.nMode = gslc_TDrvGetPinMode(nPin);
     sPinState.bIsHigh = digitalRead(nPin);
+
+    #endif
   }
 
   /// Restore the pin mode and level
   inline void gslc_TDrvRestorePinState(int nPin,gslc_tsPinState sPinState)
   {
+    #if defined(ARDUINO_ARCH_SAM)
+      // Not supported
+      return;
+    #else
+
     pinMode(nPin,sPinState.nMode);
     if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
+
+    #endif
   }
 
   #endif // FIX_4WIRE_PIN_STATE
@@ -2273,10 +2294,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // As Adafruit_TouchScreen polling will alter the pin state and some
     // of these pins may be shared with the display, we need to save and
     // then later restore the pin state.
+    #if defined(ARDUINO_ARCH_SAM)
+      // For Arduino Due, we don't attempt to record state
+    #else
     gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
+    #endif
   #endif // FIX_4WIRE_PIN_STATE
   
   // Perform the polling of touch coordinate & pressure
@@ -2377,11 +2402,19 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   #if defined(FIX_4WIRE_PIN_STATE)
     // Now that we have completed our polling into Adafruit_TouchScreen,
     // we need to restore the original pin state.
-    gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
-    gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
-    gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
-    gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
+    #if defined(ARDUINO_ARCH_SAM)
+      // For Arduino Due, we simply force output state
+      pinMode(ADATOUCH_PIN_XM,OUTPUT);
+      pinMode(ADATOUCH_PIN_YP,OUTPUT);
+      pinMode(ADATOUCH_PIN_YM,OUTPUT);
+    #else
+      gslc_TDrvRestorePinState(ADATOUCH_PIN_XP, sPinStateXP);
+      gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
+      gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
+      gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
+    #endif
   #endif // FIX_4WIRE_PIN_STATE
+
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_XPT2046_STM)
