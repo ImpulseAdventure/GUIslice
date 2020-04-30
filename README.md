@@ -49,3 +49,5 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
 - Please refer to [GUIslice Builder wiki](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder) for documentation
 
+## Disclaimer ##
+The Software is not designed for use in devices or situations where there may be physical injury if the Software has errors.
