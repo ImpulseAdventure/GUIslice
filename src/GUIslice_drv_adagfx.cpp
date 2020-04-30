@@ -210,6 +210,9 @@
 #elif defined(DRV_TOUCH_XPT2046_PS)
   // https://github.com/PaulStoffregen/XPT2046_Touchscreen
   #include <XPT2046_Touchscreen.h>
+#elif defined(DRV_TOUCH_GSL1680)
+  // https://github.com/insolace/GSL1680
+  #include <GSL1680.h>
 #elif defined(DRV_TOUCH_URTOUCH)
   #if defined(DRV_TOUCH_URTOUCH_OLD)
     #include <UTouch.h> // Select old version of URTouch
@@ -471,6 +474,11 @@ extern "C" {
   const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
   // Use SPI, no IRQs
   XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #define DRV_TOUCH_INSTANCE
+// ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_GSL1680)
+  const char* m_acDrvTouch = "GSL1680(I2C)";
+  GSL1680 m_touch; // No config required
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_URTOUCH)
@@ -2132,6 +2140,14 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #elif defined(DRV_TOUCH_ADA_RA8875)
     m_disp.touchEnable(true);
     return true;
+  #elif defined(DRV_TOUCH_GSL1680)
+    m_touch.begin(DRV_TOUCH_WAKE, DRV_TOUCH_INT);
+    // Empirical calibration values, can be updated by calling
+    // setCalibration in the user program
+    //m_touch.setCalibration(0,800,0,480); // TODO
+    // Swapping and flipping to adopt to default GUIslice orientation
+    //m_touch.setSwapFlip(true,true,true);
+
   #elif defined(DRV_TOUCH_URTOUCH)
     m_touch.InitTouch();
     m_touch.setPrecision(PREC_MEDIUM);
@@ -2527,6 +2543,39 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
         bValid = true;
       }
     }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_GSL1680)
+
+  if (digitalRead(DRV_TOUCH_INT) == LOW) {
+    // Interrupt flag is low, so treat as if no touch is active
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+    }
+  } else {
+    // Interrupt was set, so track activity
+
+    // Read data from touchscreen over I2C
+    // - Returns how many fingers are touching (up to 10)
+    uint8_t nFingers = m_touch.dataread();
+
+    // Update from finger #0
+    uint8_t nFingerId = m_touch.readFingerID(0);
+
+    // Read in X & Y coordinates
+
+    m_nLastRawX = m_touch.readFingerX(0);
+    m_nLastRawY = m_touch.readFingerY(0);
+    m_nLastRawPress = 255;  // Select arbitrary non-zero value
+    m_bLastTouched = true;
+    bValid = true;
+  }
 
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_HANDLER)
