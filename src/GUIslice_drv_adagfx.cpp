@@ -1367,7 +1367,7 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 // Graphics Primitives Functions
 // -----------------------------------------------------------------------
 
-inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
+inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, uint16_t nColRaw)
 {
   #if defined(DRV_DISP_LCDGFX)
     NanoPoint p;
@@ -1379,7 +1379,7 @@ inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
   #endif
 }
 
-inline void gslc_DrvDrawLine_base(int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int16_t nColRaw)
+inline void gslc_DrvDrawLine_base(int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,uint16_t nColRaw)
 {
   #if defined(DRV_DISP_LCDGFX)
     m_disp.setColor(nColRaw);
@@ -1637,7 +1637,7 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
 void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem)
 {
   // AdaFruit GFX doesn't have a routine for this so we output pixel by pixel
-  const int16_t* pImage = (const int16_t*)pBitmap;
+  const uint16_t* pImage = (const uint16_t*)pBitmap;
   int16_t h, w;
   if (bProgMem) {
     h = pgm_read_word(pImage++);
