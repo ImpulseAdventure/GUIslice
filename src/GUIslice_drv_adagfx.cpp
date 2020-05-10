@@ -2141,7 +2141,7 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     m_disp.touchEnable(true);
     return true;
   #elif defined(DRV_TOUCH_GSL1680)
-    m_touch.begin(DRV_TOUCH_WAKE, DRV_TOUCH_INT);
+    m_touch.begin(ADATOUCH_PIN_WAKE, ADATOUCH_PIN_INT);
     // Empirical calibration values, can be updated by calling
     // setCalibration in the user program
     //m_touch.setCalibration(0,800,0,480); // TODO
@@ -2547,7 +2547,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_GSL1680)
 
-  if (digitalRead(DRV_TOUCH_INT) == LOW) {
+  if (digitalRead(ADATOUCH_PIN_INT) == LOW) {
     // Interrupt flag is low, so treat as if no touch is active
     if (!m_bLastTouched) {
       // Wasn't touched before; do nothing
