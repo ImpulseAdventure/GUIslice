@@ -38,8 +38,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-//#include "elem/XSeekbar.h"
-#include "XSeekbar.h"
+#include "elem/XSeekbar.h"
 
 #include <stdio.h>
 
