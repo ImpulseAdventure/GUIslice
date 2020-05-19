@@ -29,13 +29,10 @@ before_install:
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
   - echo "Removing Arduino IDE ver $ARD_VER tar that was downloaded..."
   - rm arduino-$ARD_VER-linux64.tar.xz
-  - # Updating dependencies for Arduino CLI build
-  - cat misc/library.properties.travis >> library.properties
-  - cat library.properties
 
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/GUIslice
-  - arduino --install-library "Adafruit GFX Library,Adafruit ILI9341,Adafruit STMPE610"
+  - arduino --install-library "Adafruit GFX Library,Adafruit ILI9341,Adafruit STMPE610,Adafruit BusIO"
 script:
   - arduino --verify --board arduino:avr:uno $PWD/examples/arduino_min/ex07_ardmin_slider/ex07_ardmin_slider.ino
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/examples/arduino/ex07_ard_slider/ex07_ard_slider.ino
