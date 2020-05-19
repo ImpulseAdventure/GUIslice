@@ -393,7 +393,7 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
                 nX0+nTickOffset+nMargin,nYMid+(nTickLen/2),colTick);
       } else {
         gslc_DrawLine(pGui,nXMid+(nTickLen/2),nY0+nTickOffset+nMargin,nXMid-(nTickLen/2),
-                nY0+nTickOffset+nMargin,GSLC_COL_BLACK);
+                nY0+nTickOffset+nMargin,colTick);
       }
     }
   }
