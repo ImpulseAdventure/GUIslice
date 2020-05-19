@@ -321,10 +321,6 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   //         track / ticks from flickering needlessly. A full redraw would
   //         be required if it was first draw action.
   gslc_DrawFillRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFillGlow:pElem->colElemFill);
-
-//  gslc_DrawFillRect(pGui,rThumb,pElem->colElemFill); //clear thumb
-//*** GSLC_DEBUG_PRINT("rThumb.x: %d r.y: %d r.w: %d r.h: %d\n", rThumb.x, rThumb.y, rThumb.w, rThumb.h);
-//  gslc_DrawFrameRect(pGui,rThumb,GSLC_COL_BLACK);
   
   // Draw the progress part of track
   if (!bVert) {
@@ -334,7 +330,6 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
       nCtrlPos,
       nProgressW
     };
-//***    GSLC_DEBUG_PRINT("rTrack.x: %d r.y: %d r.w: %d r.h: %d\n", rTrack.x, rTrack.y, rTrack.w, rTrack.h);
     gslc_DrawFillRect(pGui,rTrack,colProgress);
   } else {
     gslc_tsRect rTrack = {
@@ -343,14 +338,8 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
       nProgressW,
       nCtrlPos
     };
-//*** GSLC_DEBUG_PRINT("rTrack.x: %d r.y: %d r.w: %d r.h: %d\n", rTrack.x, rTrack.y, rTrack.w, rTrack.h);
     gslc_DrawFillRect(pGui,rTrack,colProgress);
   }
-
-
-  
-//***  GSLC_DEBUG_PRINT("nX0: %d nY0: %d nCtrlPos: %d nLeftX: %d nLeftY: %d nThumbSz: %d\n", 
-//***    nX0,nY0, nCtrlPos,nLeftX, nLeftY, nThumbSz);
 
   // test for thumb trim color
   if (bTrimThumb) {
@@ -376,10 +365,8 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
         nX1 - (nX0 + nCtrlPos+ nMargin*2) +1,
         nRemainW
       };
-//***  GSLC_DEBUG_PRINT("rRemain.x: %d r.y: %d r.w: %d r.h: %d\n", rRemain.x, rRemain.y, rRemain.w, rRemain.h);
       gslc_DrawFillRect(pGui,rRemain,colRemain);
     }
-//***  gslc_DrawLine(pGui,nX0+nMargin+nCtrlPos,nYMid-(nThumbSz),nX0+nCtrlPos+nMargin,nYMid+(nThumbSz),GSLC_COL_BLACK);
   } else {
     if (nRemainW == 1) {
       gslc_DrawLine(pGui,nXMid,nY0+nMargin,nXMid,nY1-nMargin,colRemain);
@@ -390,12 +377,8 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
         nRemainW,
         (nY1-nMargin)-(nY0+nMargin+nCtrlPos)
       };
-//***  GSLC_DEBUG_PRINT("vert rRemain.x: %d r.y: %d r.w: %d r.h: %d\n", rRemain.x, rRemain.y, rRemain.w, rRemain.h);
-//***  GSLC_DEBUG_PRINT("BLACK nXMid: %d nY0+nMargin: %d nXMid: %d nY1-nMargin: %d\n", 
-//***     nXMid, nY0+nMargin, nXMid, nY1-nMargin);
       gslc_DrawFillRect(pGui,rRemain,colRemain);
     }
-//*** gslc_DrawLine(pGui,nXMid+(nThumbSz),nY0+nCtrlPos+nMargin,nXMid-(nThumbSz),nY0+nCtrlPos+nMargin,GSLC_COL_BLACK);
   }
 
   // Draw any ticks - we need to do this last or the ticks get over written
@@ -408,13 +391,9 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
       if (!bVert) {
         gslc_DrawLine(pGui,nX0+nMargin+nTickOffset,nYMid-(nTickLen/2),
                 nX0+nTickOffset+nMargin,nYMid+(nTickLen/2),colTick);
-//        gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
-//                nX0+nMargin + nTickOffset,nYMid+nTickLen,colTick);
       } else {
         gslc_DrawLine(pGui,nXMid+(nTickLen/2),nY0+nTickOffset+nMargin,nXMid-(nTickLen/2),
                 nY0+nTickOffset+nMargin,GSLC_COL_BLACK);
-//        gslc_DrawLine(pGui,nXMid,nY0+nMargin+ nTickOffset,
-//                nXMid+nTickLen,nY0+nMargin + nTickOffset,colTick);
       }
     }
   }
