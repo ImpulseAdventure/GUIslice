@@ -55,7 +55,6 @@
     // No need to import Adafruit_GFX
   #else
     #include <Adafruit_GFX.h>
-    #include <gfxfont.h>
   #endif
 
   // Now configure specific display driver for Adafruit-GFX

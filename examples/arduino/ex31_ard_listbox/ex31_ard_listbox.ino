@@ -52,7 +52,6 @@
     #define SET_FONT_MODE1 // Enable Teensy extra fonts
   #else // Arduino, etc.
     #include <Adafruit_GFX.h>
-    #include <gfxfont.h>
     #include "Fonts/FreeSansBold12pt7b.h"
     #include "Fonts/FreeSans9pt7b.h"
     #include "Fonts/FreeMono9pt7b.h"
