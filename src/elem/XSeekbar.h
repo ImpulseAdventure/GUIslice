@@ -1,5 +1,5 @@
-#ifndef _GUISLICE_EX_XSLIDER_H_
-#define _GUISLICE_EX_XSLIDER_H_
+#ifndef _GUISLICE_EX_XSEEKBAR_H_
+#define _GUISLICE_EX_XSEEKBAR_H_
 
 #include "GUIslice.h"
 
