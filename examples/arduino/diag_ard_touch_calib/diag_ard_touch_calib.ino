@@ -32,6 +32,7 @@
 #if   defined(DRV_TOUCH_ADA_STMPE610)
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
 #elif defined(DRV_TOUCH_ADA_RA8875)
+#elif defined(DRV_TOUCH_ADA_RA8875_SUMO)
 #elif defined(DRV_TOUCH_XPT2046_STM)
 #elif defined(DRV_TOUCH_XPT2046_PS)
 #elif defined(DRV_TOUCH_TFT_ESPI)

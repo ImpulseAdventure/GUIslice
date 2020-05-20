@@ -69,6 +69,9 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_RA8875)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_ADA_RA8875_SUMO)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
 #elif defined(DRV_TOUCH_XPT2046_STM)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive

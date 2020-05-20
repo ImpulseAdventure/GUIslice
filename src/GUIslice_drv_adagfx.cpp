@@ -458,6 +458,9 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_RA8875)
   const char* m_acDrvTouch = "RA8875(internal)";
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_RA8875_SUMO)
+  const char* m_acDrvTouch = "RA8875_SUMO(internal)";
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046_STM)
   const char* m_acDrvTouch = "XPT2046_STM(SPI-HW)";
   // Create an SPI class for XPT2046 access
@@ -2131,6 +2134,9 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
   #elif defined(DRV_TOUCH_ADA_RA8875)
     m_disp.touchEnable(true);
     return true;
+  #elif defined(DRV_TOUCH_ADA_RA8875_SUMO)
+    m_disp.touchEnable(true);
+    return true;
   #elif defined(DRV_TOUCH_URTOUCH)
     m_touch.InitTouch();
     m_touch.setPrecision(PREC_MEDIUM);
@@ -2498,6 +2504,42 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // Use Adafruit_RA8875 display driver for touch
     // Note that it doesn't support a "pressure" reading
     if (m_disp.touched()) {
+      m_disp.touchRead(&nRawX,&nRawY);
+
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = 255;  // Select arbitrary non-zero value
+      m_bLastTouched = true;
+      bValid = true;
+
+      // The Adafruit_RA8875 touched() implementation relies on reading
+      // the status of the Touch Panel interrupt register bit. The touchRead()
+      // call clears the status of the interrupt. It appears that the
+      // interrupt requires moderate time to propagate (so that it can be
+      // available for the next call to touched). Therefore, a 1ms delay
+      // is inserted here. Note that a similar delay can be found in
+      // the Adafruit example code.
+      delay(1);
+
+    } else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      } else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_RA8875_SUMO)
+    uint16_t  nRawX,nRawY;
+
+    // Use Adafruit_RA8875 display driver for touch
+    // Note that it doesn't support a "pressure" reading
+    if (m_disp.touched()) {
       m_disp.touchReadAdc(&nRawX,&nRawY);
 
       m_nLastRawX = nRawX;
@@ -2506,6 +2548,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       m_bLastTouched = true;
       bValid = true;
 
+      // NOTE: The following comments were based on Adafruit_RA8875
+      //       and have not been updated to reflect sumotoy/RA8875
       // The Adafruit_RA8875 touched() implementation relies on reading
       // the status of the Touch Panel interrupt register bit. The touchRead()
       // call clears the status of the interrupt. It appears that the
