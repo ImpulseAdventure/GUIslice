@@ -2499,7 +2499,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // Use Adafruit_RA8875 display driver for touch
     // Note that it doesn't support a "pressure" reading
     if (m_disp.touched()) {
-      m_disp.touchRead(&nRawX,&nRawY);
+      m_disp.touchReadAdc(&nRawX,&nRawY);
 
       m_nLastRawX = nRawX;
       m_nLastRawY = nRawY;
