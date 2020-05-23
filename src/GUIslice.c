@@ -2080,9 +2080,12 @@ void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
     gslc_SetStackState(pGui, GSLC_STACK_BASE, false, false);
   }
   else {
-    // Modeless: activate other pages but disable redraw
-    gslc_SetStackState(pGui, GSLC_STACK_CUR, true, false);
-    gslc_SetStackState(pGui, GSLC_STACK_BASE, true, false);
+    // Modeless: activate other pages and enable background redraw
+    // NOTE: If a popup overlaps controls that continue to be updated
+    //       in the background, then extra redraws will occur. In that
+    //       case, it may be preferrable to set redraw to false.
+    gslc_SetStackState(pGui, GSLC_STACK_CUR, true, true);
+    gslc_SetStackState(pGui, GSLC_STACK_BASE, true, true);
   }
 }
 
