@@ -85,7 +85,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16
   gslc_tsElem     sElem;
   gslc_tsElemRef* pElemRef = NULL;
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_TOGGLEBTN,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
