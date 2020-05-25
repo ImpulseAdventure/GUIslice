@@ -191,17 +191,42 @@ void gslc_ElemXListboxReset(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
 bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const char* pStrItem);
 
 ///
+/// Insert an item in the listbox at a specific position
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Ptr to Element Reference to update
+/// \param[in]  nInsertPos:    Insertion position
+/// \param[in]  pStrItem:      String to use when creating the listbox item
+///
+/// \return true if OK, false if fail (eg. insufficient buffer storage)
+///
+bool gslc_ElemXListboxInsertItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nInsertPos, 
+  const char* pStrItem);
+
+///
+/// Insert an item in the listbox at a specific position
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Ptr to Element Reference to update
+/// \param[in]  nDeletePos:    Position to delete
+///
+/// \return true if OK, false if fail
+///
+bool gslc_ElemXListboxDeleteItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nDeletePos);
+
+///
 /// Get the indexed listbox item
 ///
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pElemRef:      Ptr to Element Reference to update
-/// \param[in]  nItemCurSel:      Item index to fetch
+/// \param[in]  nItemCurSel:   Item index to fetch
 /// \param[out] pStrItem:      Ptr to the string buffer to receive the item
 /// \param[in]  nStrItemLen:   Maximum buffer length of pStrItem
 ///
 /// \return true if success, false if fail (eg. can't locate item)
 ///
-bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel, char* pStrItem, uint8_t nStrItemLen);
+bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel, 
+  char* pStrItem, uint8_t nStrItemLen);
 
 
 ///

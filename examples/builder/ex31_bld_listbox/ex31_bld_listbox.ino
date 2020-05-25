@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex31_bld_listbox.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.14.b005]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -11,6 +11,7 @@
 //
 // - Example 31 (Arduino): Listbox + Scrollbar
 //   - Demonstrates Listbox control (single-column) with scrollbar
+//     Usage of InsertItemAt and DeleteItemAt for List.
 //   - Shows callback notifications for Listbox
 //   - Provide example of additional Adafruit-GFX fonts
 //     (see USE_EXTRA_FONTS)
@@ -43,6 +44,9 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Builder config "Edit->Options->General->Target Platform" should be "arduino TFT_eSPI"
+#endif 
 #include <Adafruit_GFX.h>
 // Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeMono9pt7b.h"
@@ -59,11 +63,12 @@
 // Enumerations for pages, elements, fonts, images
 // ------------------------------------------------
 //<Enum !Start!>
-enum {E_PG_MAIN};
-enum {E_BTN_OK,E_LBL_COUNTRYCD,E_LBL_TITLE,E_LISTBOX,E_LISTSCROLL1
+enum {E_PG_MAIN,E_PG_WARNING};
+enum {E_BTN_ADD,E_BTN_DEL,E_BTN_OK,E_ELEM_BOX1,E_ELEM_TEXT4
+      ,E_ELEM_TEXT5,E_LBL_COUNTRYCD,E_LBL_TITLE,E_LISTBOX,E_LISTSCROLL1
       ,E_TXT_COUNTRY_CODE};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_MONO9,E_FONT_SANS9,MAX_FONT};
+enum {E_BUILTIN_TXT10,E_BUILTIN_TXT5,E_FREE_MONO9,E_FREE_SANS9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -74,10 +79,13 @@ enum {E_FONT_MONO9,E_FONT_SANS9,MAX_FONT};
 // Define the maximum number of elements and pages
 // ------------------------------------------------
 //<ElementDefines !Start!>
-#define MAX_PAGE                1
+#define MAX_PAGE                2
 
-#define MAX_ELEM_PG_MAIN 7                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 8 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
+
+#define MAX_ELEM_PG_WARNING 4 // # Elems total on page
+#define MAX_ELEM_PG_WARNING_RAM MAX_ELEM_PG_WARNING // # Elems in RAM
 //<ElementDefines !End!>
 
 // ------------------------------------------------
@@ -91,12 +99,14 @@ gslc_tsPage                     m_asPage[MAX_PAGE];
 //<GUI_Extra_Elements !Start!>
 gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
+gslc_tsElem                     m_asPopup1Elem[MAX_ELEM_PG_WARNING_RAM];
+gslc_tsElemRef                  m_asPopup1ElemRef[MAX_ELEM_PG_WARNING];
 gslc_tsXListbox                 m_sListbox1;
 // - Note that XLISTBOX_BUF_OH_R is extra required per item
-char                            m_acListboxBuf1[81 + XLISTBOX_BUF_OH_R];
+char                            m_acListboxBuf1[100 + XLISTBOX_BUF_OH_R];
 gslc_tsXSlider                  m_sListScroll1;
 
-#define MAX_STR                 100
+#define MAX_STR                 20
 
 //<GUI_Extra_Elements !End!>
 
@@ -104,9 +114,16 @@ gslc_tsXSlider                  m_sListScroll1;
 // Program Globals
 // ------------------------------------------------
 bool      m_bQuit = false;
+char      m_EmptyStr[] = "\0";
+char*     m_pEmptyStr = (char*)&m_EmptyStr;
+char      m_NewCountry[] = "New Country";
+char*     m_pNewCountry = (char*)&m_NewCountry;
+int16_t   m_nNumNewCountry = 0;
+char      m_NewCode[10];
 
-#define COUNTRY_CNT  12
-char m_astrCountryCodes[COUNTRY_CNT][3] = {
+#define COUNTRY_CNT  13
+
+char m_CountryCodes[COUNTRY_CNT][4] = {
   "US",
   "BR",
   "CA",
@@ -118,16 +135,48 @@ char m_astrCountryCodes[COUNTRY_CNT][3] = {
   "MX",
   "PE",
   "UK",
-  "VN"
+  "VN",
+  "NEW"
 };
+
+char m_CountryNames[COUNTRY_CNT][15] = {
+  "USA",
+  "Brazil",
+  "Canada",
+  "Denmark",
+  "Germany",
+  "France",
+  "India",
+  "Japan",
+  "Mexico",
+  "Peru",
+  "England",
+  "Vietnam",
+  "New Country"
+};
+
+
+char* searchCountryCode(char* countryName) {
+   
+   for(int i=0; i<COUNTRY_CNT-1; i++) {
+      if (strcmp(countryName,(char*)&m_CountryNames[i]) == 0) {
+         return m_CountryCodes[i];
+      }
+   }
+   // take care of case where we have "New Country1", "NewCountry2" and so on...
+   if (strncmp(countryName,m_pNewCountry,11) == 0) {
+     sprintf(m_NewCode,"%s%s","NEW",(char*)&countryName[11]);
+     return m_NewCode;
+   }
+   return m_pEmptyStr;
+}
 
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemListbox    = NULL;
-gslc_tsElemRef*  m_pElemOK         = NULL;
-gslc_tsElemRef*  m_pElemSel        = NULL;
-gslc_tsElemRef*  m_pListSlider1    = NULL;
+gslc_tsElemRef* m_pElemListbox    = NULL;
+gslc_tsElemRef* m_pElemSel        = NULL;
+gslc_tsElemRef* m_pListSlider1    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -142,15 +191,35 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
+  char    acTxt[MAX_STR+1];
+  int16_t nSelId;
+  
   if ( eTouch == GSLC_TOUCH_UP_IN ) {
     // From the element's ID we can determine which button was pressed.
     switch (pElem->nId) {
 //<Button Enums !Start!>
-
+      case E_BTN_ADD:
+        sprintf(acTxt,"%s%d",m_pNewCountry,m_nNumNewCountry+1);
+        if (gslc_ElemXListboxInsertItemAt(&m_gui,m_pElemListbox,0,acTxt)) {
+          // successfully added new country
+          m_nNumNewCountry++;
+          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, searchCountryCode(acTxt));
+        } else {
+          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
+          gslc_PopupShow(&m_gui, E_PG_WARNING, true);
+        }
+        break;
+      case E_BTN_DEL:
+        nSelId = gslc_ElemXListboxGetSel(&m_gui, m_pElemListbox);
+        if (nSelId != XLISTBOX_SEL_NONE) {
+          gslc_ElemXListboxDeleteItemAt(&m_gui,m_pElemListbox,nSelId);
+          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
+        } else {
+          Serial.println("No country selected for deletion");
+        }
+        break;
       case E_BTN_OK:
-        m_bQuit = true;
-        gslc_ElemSetTxtStr(&m_gui,m_pElemOK,"DONE");
-        gslc_ElemSetCol(&m_gui,m_pElemOK,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
+        gslc_PopupHide(&m_gui);
         break;
 //<Button Enums !End!>
       default:
@@ -170,7 +239,7 @@ bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
   gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
-  char            acTxt[MAX_STR + 1];
+  char            acTxt[MAX_STR+1];
   
   if (pElemRef == NULL) {
     return false;
@@ -182,8 +251,10 @@ bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
     case E_LISTBOX:
       // Update the status message with the selection
       if (nSelId != XLISTBOX_SEL_NONE) {
-        strncpy(acTxt, m_astrCountryCodes[nSelId], 5);
-        gslc_ElemSetTxtStr(&m_gui, m_pElemSel, acTxt);
+        gslc_ElemXListboxGetItem(&m_gui,m_pElemListbox,nSelId,acTxt,sizeof(acTxt));
+        gslc_ElemSetTxtStr(&m_gui, m_pElemSel, searchCountryCode(acTxt));
+      } else {
+        gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
       }
       break;
 
@@ -232,26 +303,27 @@ bool InitGUI()
 
 //<InitGUI !Start!>
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPage1Elem,MAX_ELEM_PG_MAIN_RAM,m_asPage1ElemRef,MAX_ELEM_PG_MAIN);
+  gslc_PageAdd(&m_gui,E_PG_WARNING,m_asPopup1Elem,MAX_ELEM_PG_WARNING_RAM,m_asPopup1ElemRef,MAX_ELEM_PG_WARNING);
 
   // NOTE: The current page defaults to the first page added. Here we explicitly
   //       ensure that the main page is the correct page no matter the add order.
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
   
    
   // Create wrapping box for listbox E_LISTBOX and scrollbar
-  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){17,75,200,100});
+  pElemRef = gslc_ElemCreateBox(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,75,200,100});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2);
   
   // Create listbox
   pElemRef = gslc_ElemXListboxCreate(&m_gui,E_LISTBOX,E_PG_MAIN,&m_sListbox1,
-    (gslc_tsRect){17+2,75+4,200-23,100-7},E_FONT_MONO9,
-    (char*)&m_acListboxBuf1,sizeof(m_acListboxBuf1),0);
+    (gslc_tsRect){20+2,75+4,200-23,100-7},E_FREE_MONO9,
+    (uint8_t*)&m_acListboxBuf1,sizeof(m_acListboxBuf1),0);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 5, 1); // 5 rows, 1 columns
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
   gslc_ElemSetTxtMarginXY(&m_gui, pElemRef, 5, 0);
@@ -275,37 +347,61 @@ bool InitGUI()
 
   // Create vertical scrollbar for listbox
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_LISTSCROLL1,E_PG_MAIN,&m_sListScroll1,
-          (gslc_tsRect){17+200-21,75+4,20,100-8},0,12,0,5,true);
+          (gslc_tsRect){20+200-21,75+4,20,100-8},0,100,0,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT1,GSLC_COL_BLACK,GSLC_COL_BLUE_LT1);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
   m_pListSlider1 = pElemRef;
   
   // Create E_TXT_COUNTRY_CODE runtime modifiable text
   static char m_sDisplayText2[6] = "US";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_COUNTRY_CODE,E_PG_MAIN,(gslc_tsRect){125,45,105,23},
-    (char*)m_sDisplayText2,6,E_FONT_SANS9);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_COUNTRY_CODE,E_PG_MAIN,(gslc_tsRect){130,45,90,23},
+    (char*)m_sDisplayText2,6,E_FREE_SANS9);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   m_pElemSel = pElemRef;
   
   // Create E_LBL_COUNTRYCD text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNTRYCD,E_PG_MAIN,(gslc_tsRect){14,45,121,23},
-    (char*)"Country Code:",0,E_FONT_SANS9);
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNTRYCD,E_PG_MAIN,(gslc_tsRect){10,45,121,23},
+    (char*)"Country Code:",0,E_FREE_SANS9);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){49,20,141,23},
-    (char*)"Country Chooser",0,E_FONT_SANS9);
+    (char*)"Country Chooser",0,E_FREE_SANS9);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
-  // Create E_BTN_OK button with modifiable text label
-  static char m_strbtn1[7] = "OK";
-  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_OK,E_PG_MAIN,
-    (gslc_tsRect){157,190,60,30},
-    (char*)m_strbtn1,7,E_FONT_SANS9,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+  // create E_BTN_ADD button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_ADD,E_PG_MAIN,
+    (gslc_tsRect){140,190,80,30},(char*)"Insert New",0,E_BUILTIN_TXT5,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN_DK2,GSLC_COL_GREEN_DK4,GSLC_COL_GREEN_DK1);
-  m_pElemOK = pElemRef;
+  
+  // create E_BTN_DEL button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_DEL,E_PG_MAIN,
+    (gslc_tsRect){20,190,80,30},(char*)"Delete",0,E_BUILTIN_TXT5,&CbBtnCommon);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN_DK2,GSLC_COL_GREEN_DK4,GSLC_COL_GREEN_DK1);
+
+  // -----------------------------------
+  // PAGE: E_PG_WARNING
+  
+   
+  // Create E_ELEM_BOX1 box
+  pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX1,E_PG_WARNING,(gslc_tsRect){50,50,250,150});
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_LT3,GSLC_COL_GRAY_LT3);
+  
+  // Create E_ELEM_TEXT4 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT4,E_PG_WARNING,(gslc_tsRect){60,70,100,25},
+    (char*)"WARNING:",0,E_BUILTIN_TXT10);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED);
+  
+  // Create E_ELEM_TEXT5 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT5,E_PG_WARNING,(gslc_tsRect){60,120,228,10},
+    (char*)"Buffer too small to add more  entries.",0,E_BUILTIN_TXT5);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_LT3,GSLC_COL_GRAY_LT3);
+  
+  // create E_BTN_OK button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_OK,E_PG_WARNING,
+    (gslc_tsRect){250,150,40,40},(char*)"OK",0,E_BUILTIN_TXT5,&CbBtnCommon);
 //<InitGUI !End!>
 
   return true;
@@ -328,8 +424,10 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREE_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREE_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------
