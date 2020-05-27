@@ -114,14 +114,10 @@ gslc_tsXSlider                  m_sListScroll1;
 // Program Globals
 // ------------------------------------------------
 bool      m_bQuit = false;
-char      m_EmptyStr[] = "\0";
-char*     m_pEmptyStr = (char*)&m_EmptyStr;
-char      m_NewCountry[] = "New Country";
-char*     m_pNewCountry = (char*)&m_NewCountry;
-int16_t   m_nNumNewCountry = 0;
-char      m_NewCode[10];
+int16_t   m_nNumNewCountry = 0; // Counter for New Countries
+char      m_acNewCode[6];
 
-#define COUNTRY_CNT  13
+#define COUNTRY_CNT  12
 
 char m_CountryCodes[COUNTRY_CNT][4] = {
   "US",
@@ -136,10 +132,9 @@ char m_CountryCodes[COUNTRY_CNT][4] = {
   "PE",
   "UK",
   "VN",
-  "NEW"
 };
 
-char m_CountryNames[COUNTRY_CNT][15] = {
+char m_CountryNames[COUNTRY_CNT][10] = {
   "USA",
   "Brazil",
   "Canada",
@@ -152,23 +147,31 @@ char m_CountryNames[COUNTRY_CNT][15] = {
   "Peru",
   "England",
   "Vietnam",
-  "New Country"
 };
 
+// This is a basic example demonstrating a conversion
+// from full country name to a shortened country
+// code. In addition to the built-in country code
+// list, it fakes out codes for "New Country" entries.
+char* searchCountryCode(char* countryName)
+{
+  // Look through built-in list of countries
+  for(int i=0; i<COUNTRY_CNT; i++) {
+    if (strcmp(countryName,(char*)&m_CountryNames[i]) == 0) {
+      return m_CountryCodes[i];
+    }
+  }
 
-char* searchCountryCode(char* countryName) {
-   
-   for(int i=0; i<COUNTRY_CNT-1; i++) {
-      if (strcmp(countryName,(char*)&m_CountryNames[i]) == 0) {
-         return m_CountryCodes[i];
-      }
-   }
-   // take care of case where we have "New Country1", "NewCountry2" and so on...
-   if (strncmp(countryName,m_pNewCountry,11) == 0) {
-     sprintf(m_NewCode,"%s%s","NEW",(char*)&countryName[11]);
-     return m_NewCode;
-   }
-   return m_pEmptyStr;
+  // In this simplistic example, when dealing with "New Country##" entries,
+  // we just extract the country index from the name, ie:
+  //   "New Country5" -> "NEW5"
+  if (strncmp(countryName,"New Country",11) == 0) {
+    sprintf(m_acNewCode,"NEW%s",(char*)&countryName[11]);
+    return m_acNewCode;
+  }
+  
+  // If no matches, return empty string
+  return (char*)("");
 }
 
 
@@ -199,13 +202,13 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     switch (pElem->nId) {
 //<Button Enums !Start!>
       case E_BTN_ADD:
-        sprintf(acTxt,"%s%d",m_pNewCountry,m_nNumNewCountry+1);
+        sprintf(acTxt,"New Country%d",m_nNumNewCountry+1);
         if (gslc_ElemXListboxInsertItemAt(&m_gui,m_pElemListbox,0,acTxt)) {
           // successfully added new country
           m_nNumNewCountry++;
           gslc_ElemSetTxtStr(&m_gui, m_pElemSel, searchCountryCode(acTxt));
         } else {
-          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
+          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, "");
           gslc_PopupShow(&m_gui, E_PG_WARNING, true);
         }
         break;
@@ -213,7 +216,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         nSelId = gslc_ElemXListboxGetSel(&m_gui, m_pElemListbox);
         if (nSelId != XLISTBOX_SEL_NONE) {
           gslc_ElemXListboxDeleteItemAt(&m_gui,m_pElemListbox,nSelId);
-          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
+          gslc_ElemSetTxtStr(&m_gui, m_pElemSel, "");
         } else {
           Serial.println("No country selected for deletion");
         }
@@ -254,7 +257,7 @@ bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
         gslc_ElemXListboxGetItem(&m_gui,m_pElemListbox,nSelId,acTxt,sizeof(acTxt));
         gslc_ElemSetTxtStr(&m_gui, m_pElemSel, searchCountryCode(acTxt));
       } else {
-        gslc_ElemSetTxtStr(&m_gui, m_pElemSel, m_pEmptyStr);
+        gslc_ElemSetTxtStr(&m_gui, m_pElemSel, "");
       }
       break;
 
@@ -299,6 +302,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 // ------------------------------------------------
 bool InitGUI()
 {
+  int8_t nInd;  
   gslc_tsElemRef* pElemRef = NULL;
 
 //<InitGUI !Start!>
@@ -330,24 +334,16 @@ bool InitGUI()
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2);
   gslc_ElemXListboxSetSelFunc(&m_gui, pElemRef, &CbListbox);
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "USA");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Brazil");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Canada");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Denmark");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Germany");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "France");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "India");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Japan");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Mexico");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Peru");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "England");
-  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Vietnam");
+  // Populate the listbox with countries
+  for (nInd=0;nInd<COUNTRY_CNT;nInd++) {
+    gslc_ElemXListboxAddItem(&m_gui, pElemRef, m_CountryNames[nInd]);  
+  }
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   m_pElemListbox = pElemRef;
 
   // Create vertical scrollbar for listbox
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_LISTSCROLL1,E_PG_MAIN,&m_sListScroll1,
-          (gslc_tsRect){20+200-21,75+4,20,100-8},0,100,0,5,true);
+          (gslc_tsRect){20+200-21,75+4,20,100-8},0,20,0,5,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT1,GSLC_COL_BLACK,GSLC_COL_BLUE_LT1);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
   m_pListSlider1 = pElemRef;
@@ -357,18 +353,15 @@ bool InitGUI()
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_COUNTRY_CODE,E_PG_MAIN,(gslc_tsRect){130,45,90,23},
     (char*)m_sDisplayText2,6,E_FREE_SANS9);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   m_pElemSel = pElemRef;
   
   // Create E_LBL_COUNTRYCD text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNTRYCD,E_PG_MAIN,(gslc_tsRect){10,45,121,23},
     (char*)"Country Code:",0,E_FREE_SANS9);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){49,20,141,23},
     (char*)"Country Chooser",0,E_FREE_SANS9);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
   // create E_BTN_ADD button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_ADD,E_PG_MAIN,
