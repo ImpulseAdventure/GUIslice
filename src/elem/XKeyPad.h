@@ -387,9 +387,9 @@ void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId,
   /// \param[in]  pTxtRef:     Pointer to associated text field element reference
   /// \param[in]  pvCbData:    Void pointer to callback function's pvData
   ///
-  /// \return none
+  /// \return The text string that was fetched from the KeyPad
   ///
-  void gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData);
+  char* gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData);
 
 
   #endif // GSLC_FEATURE_COMPOUND

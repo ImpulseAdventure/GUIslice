@@ -677,28 +677,34 @@ void gslc_ElemXKeyPadSetSignEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool 
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-  void gslc_ElemXKeyPadInputAsk(gslc_tsGui* pGui, gslc_tsElemRef* pKeyPadRef, int16_t nPgPopup, gslc_tsElemRef* pTxtRef)
-  {
-    // Fetch the Element ID from the text element
-    gslc_tsElem* pTxtElem = gslc_GetElemFromRefD(pGui,pTxtRef,__LINE__);
-    if (!pTxtElem) return;
-    int16_t nTxtElemId = pTxtElem->nId;
+void gslc_ElemXKeyPadInputAsk(gslc_tsGui* pGui, gslc_tsElemRef* pKeyPadRef, int16_t nPgPopup, gslc_tsElemRef* pTxtRef)
+{
+  // Fetch the Element ID from the text element
+  gslc_tsElem* pTxtElem = gslc_GetElemFromRefD(pGui,pTxtRef,__LINE__);
+  if (!pTxtElem) return;
+  int16_t nTxtElemId = pTxtElem->nId;
 
-    // Associate the keypad with the text field
-    gslc_ElemXKeyPadTargetIdSet(pGui, pKeyPadRef, nTxtElemId);
-    // Show a popup box for the keypad
-    gslc_PopupShow(pGui, nPgPopup, true);
-    // Preload text field with current value
-    gslc_ElemXKeyPadValSet(pGui, pKeyPadRef, gslc_ElemGetTxtStr(pGui, pTxtRef));
-  }
+  // Associate the keypad with the text field
+  gslc_ElemXKeyPadTargetIdSet(pGui, pKeyPadRef, nTxtElemId);
+  // Show a popup box for the keypad
+  gslc_PopupShow(pGui, nPgPopup, true);
+  // Preload text field with current value
+  gslc_ElemXKeyPadValSet(pGui, pKeyPadRef, gslc_ElemGetTxtStr(pGui, pTxtRef));
+}
 
-  void gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData)
-  {
-    // Fetch the current value of the keypad popup
-    gslc_ElemSetTxtStr(pGui, pTxtRef, gslc_ElemXKeyPadDataValGet(pGui, pvCbData));
-    // Hide the popup
-    gslc_PopupHide(pGui);
-  }
+char* gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData)
+{
+  char* pStr = NULL;
+  // Fetch the current value of the keypad popup
+  pStr = gslc_ElemXKeyPadDataValGet(pGui, pvCbData);
+  // Update the linked text item
+  gslc_ElemSetTxtStr(pGui, pTxtRef, gslc_ElemXKeyPadDataValGet(pGui, pvCbData));
+  // Hide the popup
+  gslc_PopupHide(pGui);
+
+  // Return the text string in case the user wants it
+  return pStr;
+}
 
 
 
