@@ -4429,13 +4429,12 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   }
 
   if (pCollect->nElemRefCnt+1 > (pCollect->nElemRefMax)) {
-    GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many element references (max=%u) on ElemId=%u\n",
-            pCollect->nElemRefMax,pElem->nId);
-    // TODO: Implement a function that returns the current page's ID so that
-    //       users can more easily identify the problematic page.
+    GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many element references (%d/%d)\n",
+            pCollect->nElemRefCnt+1,pCollect->nElemRefMax);
     return NULL;
   }
 
+  // TODO: Determine way of reporting compound elements in debug messages
 
   // If the element is stored in RAM:
   // - Copy the element into the internal RAM element array (asElem)
@@ -4458,14 +4457,14 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
 
     #if defined(DBG_LOG)
-    GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u\n",
-            pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
+    GSLC_DEBUG_PRINT("INFO:   Add elem to collection: ElemRef=%d/%d, ElemRAM=%d/%d, ElemId=%u (RAM)\n",
+            pCollect->nElemRefCnt+1,pCollect->nElemRefMax,pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
     #endif
 
     // Ensure we have enough space in internal element array
     if (pCollect->nElemCnt+1 > (pCollect->nElemMax)) {
-      GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many RAM elements (max=%u) on ElemId=%u\n",
-              pCollect->nElemMax,pElem->nId);
+      GSLC_DEBUG2_PRINT("ERROR: CollectElemAdd() too many RAM elements (%d/%d), ElemID=%d\n",
+              pCollect->nElemCnt+1,pCollect->nElemMax,pElem->nId);
       // TODO: Implement a function that returns the current page's ID so that
       //       users can more easily identify the problematic page.
       return NULL;
@@ -4497,8 +4496,8 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
     #endif
 
     #if defined(DBG_LOG)
-    GSLC_DEBUG_PRINT("INFO: Added %u elements to current page (max=%u), ElemId=%u (FLASH)\n",
-            pCollect->nElemCnt+1,pCollect->nElemMax,pElemRam->nId);
+    GSLC_DEBUG_PRINT("INFO:   Add elem to collection: ElemRef=%d/%d, ElemId=%u (FLASH)\n",
+            pCollect->nElemRefCnt+1,pCollect->nElemRefMax,pElemRam->nId);
     #endif
 
     // Add a reference
@@ -4569,6 +4568,12 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
     GSLC_DEBUG2_PRINT("ERROR: ElemAdd() page (ID=%d) was not found\n",nPageId);
     return NULL;
   }
+
+  #if defined(DBG_LOG)
+  // TODO: Determine way of reporting compound elements in debug messages
+  GSLC_DEBUG_PRINT("INFO: Add elem to PageID=%d: ElemID=%d Rect=(X=%d,Y=%d,W=%d,H=%d)\n",
+    nPageId,pElem->nId,pElem->rElem.x,pElem->rElem.y,pElem->rElem.w,pElem->rElem.h);
+  #endif
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
   gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
