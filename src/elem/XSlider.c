@@ -176,7 +176,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
   int16_t           nPosOld;
   // Clip position
   if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
-  if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }
+  else if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }
   // Update
   nPosOld = pSlider->nPos;
   pSlider->nPos = nPos;
@@ -248,7 +248,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
-  if (nPos > nPosMax) { nPos = nPosMax; }
+  else if (nPos > nPosMax) { nPos = nPosMax; }
 
   int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
   nX0 = pElem->rElem.x;
