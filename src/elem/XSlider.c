@@ -288,7 +288,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (nTickDiv>=1) {
     uint16_t  nTickInd;
     int16_t   nTickOffset;
-    for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
+    for (nTickInd=0;nTickInd<=nTickDiv;++nTickInd) {
       nTickOffset = nTickInd * nCtrlRng / nTickDiv;
       if (!bVert) {
         gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
