@@ -272,8 +272,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   } else {
     nCtrlRng = (nY1-nMargin)-(nY0+nMargin);
   }
-  int16_t nCtrlPos  = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
 
+  int16_t nCtrlPos  = (int16_t)((int32_t)nPosOffset * (int32_t)nCtrlRng / (int32_t)nPosRng) + nMargin;
 
   // Draw the background
   // - TODO: To reduce flicker on unbuffered displays, one could consider
@@ -289,7 +289,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
     uint16_t  nTickInd;
     int16_t   nTickOffset;
     for (nTickInd=0;nTickInd<=nTickDiv;++nTickInd) {
-      nTickOffset = nTickInd * nCtrlRng / nTickDiv;
+      nTickOffset = (int16_t)((int32_t)nTickInd * (int32_t)nCtrlRng / (int32_t)nTickDiv);
       if (!bVert) {
         gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
                 nX0+nMargin + nTickOffset,nYMid+nTickLen,colTick);
@@ -457,9 +457,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
       if (!pSlider->bVert) {
-        nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelX * (int32_t)nPosRng / (int32_t)pElem->rElem.w) + pSlider->nPosMin;
       } else {
-        nPos = (nRelY * nPosRng / pElem->rElem.h) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelY * (int32_t)nPosRng / (int32_t)pElem->rElem.h) + pSlider->nPosMin;
       }
     }
     // Update the slider
