@@ -264,6 +264,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t nPosOffset = nPos-nPosMin;
 
   // Provide some margin so thumb doesn't exceed control bounds
+  // TODO: Handle nCtrlRng <= 0
   int16_t nMargin   = nThumbSz;
   int16_t nCtrlRng;
   if (!bVert) {
