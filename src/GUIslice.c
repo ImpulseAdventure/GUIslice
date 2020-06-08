@@ -592,7 +592,7 @@ void gslc_Update(gslc_tsGui* pGui)
   //   finger events may have occurred. If we only handle a single
   //   motion event per display update, then we may experience very
   //   lagging responsiveness from the controls.
-  // - Instead, we drain the even queue before proceeding on to the
+  // - Instead, we drain the event queue before proceeding on to the
   //   display update, giving rise to a much more responsive GUI.
   //   The maximum number of touch events that can be handled per
   //   main loop is defined by the GSLC_TOUCH_MAX_EVT config param.

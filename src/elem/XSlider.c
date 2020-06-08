@@ -176,7 +176,7 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
   int16_t           nPosOld;
   // Clip position
   if (nPos < pSlider->nPosMin) { nPos = pSlider->nPosMin; }
-  if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }
+  else if (nPos > pSlider->nPosMax) { nPos = pSlider->nPosMax; }
   // Update
   nPosOld = pSlider->nPos;
   pSlider->nPos = nPos;
@@ -248,7 +248,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
-  if (nPos > nPosMax) { nPos = nPosMax; }
+  else if (nPos > nPosMax) { nPos = nPosMax; }
 
   int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
   nX0 = pElem->rElem.x;
@@ -264,6 +264,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t nPosOffset = nPos-nPosMin;
 
   // Provide some margin so thumb doesn't exceed control bounds
+  // TODO: Handle nCtrlRng <= 0
   int16_t nMargin   = nThumbSz;
   int16_t nCtrlRng;
   if (!bVert) {
@@ -271,8 +272,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   } else {
     nCtrlRng = (nY1-nMargin)-(nY0+nMargin);
   }
-  int16_t nCtrlPos  = (nPosOffset*nCtrlRng/nPosRng)+nMargin;
 
+  int16_t nCtrlPos  = (int16_t)((int32_t)nPosOffset * (int32_t)nCtrlRng / (int32_t)nPosRng) + nMargin;
 
   // Draw the background
   // - TODO: To reduce flicker on unbuffered displays, one could consider
@@ -287,8 +288,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (nTickDiv>=1) {
     uint16_t  nTickInd;
     int16_t   nTickOffset;
-    for (nTickInd=0;nTickInd<=nTickDiv;nTickInd++) {
-      nTickOffset = nTickInd * nCtrlRng / nTickDiv;
+    for (nTickInd=0;nTickInd<=nTickDiv;++nTickInd) {
+      nTickOffset = (int16_t)((int32_t)nTickInd * (int32_t)nCtrlRng / (int32_t)nTickDiv);
       if (!bVert) {
         gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
                 nX0+nMargin + nTickOffset,nYMid+nTickLen,colTick);
@@ -456,9 +457,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
       if (!pSlider->bVert) {
-        nPos = (nRelX * nPosRng / pElem->rElem.w) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelX * (int32_t)nPosRng / (int32_t)pElem->rElem.w) + pSlider->nPosMin;
       } else {
-        nPos = (nRelY * nPosRng / pElem->rElem.h) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelY * (int32_t)nPosRng / (int32_t)pElem->rElem.h) + pSlider->nPosMin;
       }
     }
     // Update the slider
