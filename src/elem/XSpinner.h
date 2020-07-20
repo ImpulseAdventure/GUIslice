@@ -58,7 +58,7 @@ extern "C" {
 #define XSPINNER_COMP_CNT 3
 
 // Define the max string length to allocate for dynamic text elements
-#define XSPINNER_STR_LEN  6
+#define XSPINNER_STR_LEN  8
 
 // Define the status for GSLC_CB_INPUT callback
 #define XSPINNER_CB_STATE_UPDATE 3
