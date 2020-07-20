@@ -377,7 +377,6 @@ bool gslc_ElemXListboxDeleteItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   int8_t      nStrItemLen;
   char*       pBuf = NULL;
   uint16_t    nBufItemsPos = pListbox->nBufItemsPos;
-  uint16_t    nBufItemsMax = pListbox->nBufItemsMax;
 
 //  GSLC_DEBUG2_PRINT("Xlistbox:DeleteAt: %d\n", nDeletePos);
 //  debug_ElemXListboxDump(pGui, pElemRef);

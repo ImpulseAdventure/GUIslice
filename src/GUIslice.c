@@ -4452,7 +4452,6 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
 
   uint16_t nElemInd;
   uint16_t nElemRefInd;
-  const gslc_tsElem* pElemRam = NULL; // Local element in RAM
 
   if ((eFlags & GSLC_ELEMREF_SRC) == GSLC_ELEMREF_SRC_RAM) {
 
@@ -4489,7 +4488,10 @@ gslc_tsElemRef* gslc_CollectElemAdd(gslc_tsGui* pGui,gslc_tsCollect* pCollect,co
     // - Pointer (pElem) links to an element stored in FLASH (must be declared statically)
 
     // Fetch a RAM copy of the FLASH element
-    pElemRam = pElem;
+    #if (GSLC_USE_PROGMEM) || defined(DBG_LOG) // Avoid unused variable warning
+    const gslc_tsElem* pElemRam = pElem; // Local element in RAM
+    #endif
+
     #if (GSLC_USE_PROGMEM)
     memcpy_P(&pGui->sElemTmpProg,pElem,sizeof(gslc_tsElem));
     pElemRam = &pGui->sElemTmpProg;

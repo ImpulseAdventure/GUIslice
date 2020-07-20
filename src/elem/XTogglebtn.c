@@ -141,8 +141,6 @@ void gslc_ElemXTogglebtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,b
   gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
   if (!pTogglebtn) return;
 
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-
   // Update our data element
   bool  bStateOld = pTogglebtn->bOn;
   pTogglebtn->bOn = bOn;
@@ -257,12 +255,6 @@ void gslc_ElemXTogglebtnDrawCircularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,gsl
 
   // Work out the sizes of the inner rectangles 
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  gslc_tsRect rText = {
-    rInner.x,
-    rInner.y,
-    rInner.w - rInner.h,
-    rInner.h
-  };
 
   // work out our circle positions
   uint16_t nRadius  = rInner.h / 2;
@@ -305,12 +297,6 @@ void gslc_ElemXTogglebtnDrawRectangularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,
     pElem->rElem.h
   };
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  gslc_tsRect rText = {
-    rInner.x,
-    rInner.y,
-    rInner.w - rInner.h,
-    rInner.h
-  };
 
   if (pTogglebtn->bOn) {
     gslc_DrawFillRect(pGui,rInner,pTogglebtn->colOnState);
