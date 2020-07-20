@@ -141,8 +141,6 @@ void gslc_ElemXTogglebtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,b
   gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
   if (!pTogglebtn) return;
 
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-
   // Update our data element
   bool  bStateOld = pTogglebtn->bOn;
   pTogglebtn->bOn = bOn;
@@ -186,7 +184,6 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
     gslc_tsElemRef*   pCurElemRef = NULL;
-    int16_t           nCurType;
     int16_t           nCurGroup;
 
     /* 
@@ -211,7 +208,6 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
       // NOTE: Sorry but I have no idea what this FIXME is talking about - p conti
       // FIXME: Handle pCurElemRef->eElemFlags 
       nCurId        = pCurElem->nId;
-      nCurType      = pCurElem->nType;
 
       nCurGroup     = pCurElem->nGroup;
 
@@ -257,12 +253,6 @@ void gslc_ElemXTogglebtnDrawCircularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,gsl
 
   // Work out the sizes of the inner rectangles 
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  gslc_tsRect rText = {
-    rInner.x,
-    rInner.y,
-    rInner.w - rInner.h,
-    rInner.h
-  };
 
   // work out our circle positions
   uint16_t nRadius  = rInner.h / 2;
@@ -305,12 +295,6 @@ void gslc_ElemXTogglebtnDrawRectangularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,
     pElem->rElem.h
   };
   gslc_tsRect rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  gslc_tsRect rText = {
-    rInner.x,
-    rInner.y,
-    rInner.w - rInner.h,
-    rInner.h
-  };
 
   if (pTogglebtn->bOn) {
     gslc_DrawFillRect(pGui,rInner,pTogglebtn->colOnState);
@@ -389,7 +373,6 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 
   //gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
   bool  bStateOld = pTogglebtn->bOn;
-  bool  bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
 
   switch(eTouch) {
 
