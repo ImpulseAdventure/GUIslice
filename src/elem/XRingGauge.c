@@ -190,9 +190,9 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
   // or a smaller, updated region (incremental redraw)
   bool bInc = (eRedraw == GSLC_REDRAW_INC) ? true : false;
 
-  int16_t nDrawStart;
-  int16_t nDrawVal;
-  int16_t nDrawEnd;
+  int16_t nDrawStart = 0;
+  int16_t nDrawVal = 0;
+  int16_t nDrawEnd = 0;
 
   bool bDrawActive = false;
   bool bDrawInactive = false;
