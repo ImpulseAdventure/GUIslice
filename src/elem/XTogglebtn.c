@@ -184,7 +184,6 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
     gslc_tsElemRef*   pCurElemRef = NULL;
-    int16_t           nCurType;
     int16_t           nCurGroup;
 
     /* 
@@ -209,7 +208,6 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
       // NOTE: Sorry but I have no idea what this FIXME is talking about - p conti
       // FIXME: Handle pCurElemRef->eElemFlags 
       nCurId        = pCurElem->nId;
-      nCurType      = pCurElem->nType;
 
       nCurGroup     = pCurElem->nGroup;
 
@@ -375,7 +373,6 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 
   //gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
   bool  bStateOld = pTogglebtn->bOn;
-  bool  bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
 
   switch(eTouch) {
 
