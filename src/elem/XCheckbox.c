@@ -204,7 +204,7 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Update our data element
-  bool  bCheckedOld = pCheckbox->bChecked;
+  bool const bCheckedOld = pCheckbox->bChecked;
   pCheckbox->bChecked = bChecked;
 
   // Element needs redraw
