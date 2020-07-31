@@ -3188,10 +3188,14 @@ void gslc_ElemSetCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colF
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
-  pElem->colElemFrame     = colFrame;
-  pElem->colElemFill      = colFill;
-  pElem->colElemFillGlow  = colFillGlow;
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  if (!gslc_ColorEqual(pElem->colElemFrame, colFrame) ||
+      !gslc_ColorEqual(pElem->colElemFill, colFill) ||
+      !gslc_ColorEqual(pElem->colElemFillGlow, colFillGlow)) {
+    pElem->colElemFrame     = colFrame;
+    pElem->colElemFill      = colFill;
+    pElem->colElemFillGlow  = colFillGlow;
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  }
 }
 
 void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colFrameGlow,gslc_tsColor colFillGlow,gslc_tsColor colTxtGlow)
@@ -3199,10 +3203,14 @@ void gslc_ElemSetGlowCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor 
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
-  pElem->colElemFrameGlow   = colFrameGlow;
-  pElem->colElemFillGlow    = colFillGlow;
-  pElem->colElemTextGlow    = colTxtGlow;
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  if (!gslc_ColorEqual(pElem->colElemFrameGlow, colFrameGlow) ||
+      !gslc_ColorEqual(pElem->colElemFillGlow, colFillGlow) ||
+      !gslc_ColorEqual(pElem->colElemTextGlow, colTxtGlow)) {
+    pElem->colElemFrameGlow   = colFrameGlow;
+    pElem->colElemFillGlow    = colFillGlow;
+    pElem->colElemTextGlow    = colTxtGlow;
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  }
 }
 
 void gslc_ElemSetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nGroupId)
