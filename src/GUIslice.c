@@ -3238,6 +3238,7 @@ void gslc_ElemSetRect(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsRect rEle
   gslc_InvalidateRgnAdd(pGui, pElem->rElem); // Old region
   gslc_InvalidateRgnAdd(pGui, rElem); // New region
   // Force a page redraw within the scope defined by the invalidation region
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   gslc_PageRedrawSet(pGui,true);
 
   // Update element
