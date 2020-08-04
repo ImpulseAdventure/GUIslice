@@ -2011,6 +2011,31 @@ void gslc_ElemSetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int nGroupId);
 int gslc_ElemGetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 
+///
+/// Set the position and size for an element
+/// - This updates the element's rectangular region, which can be used
+///   to relocate or resize an element at runtime
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  rElem:       Rect region (top-left coord, width, height)
+///
+/// \return none
+///
+void gslc_ElemSetRect(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsRect rElem);
+
+
+///
+/// Get the rectangular region for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return Rect region of an element
+///
+gslc_tsRect gslc_ElemGetRect(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+
 /// Set the alignment of a textual element (horizontal and vertical)
 ///
 /// \param[in]  pGui:        Pointer to GUI

@@ -3229,6 +3229,32 @@ int gslc_ElemGetGroup(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
   return pElem->nGroup;
 }
 
+void gslc_ElemSetRect(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsRect rElem)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return;
+
+  // Invalidate region including both rects from before & after
+  gslc_InvalidateRgnAdd(pGui, pElem->rElem); // Old region
+  gslc_InvalidateRgnAdd(pGui, rElem); // New region
+  // Force a page redraw within the scope defined by the invalidation region
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  gslc_PageRedrawSet(pGui,true);
+
+  // Update element
+  pElem->rElem           = rElem;
+
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+gslc_tsRect gslc_ElemGetRect(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return (gslc_tsRect){0,0,0,0};
+
+  return pElem->rElem;
+}
+
 
 void gslc_ElemSetTxtAlign(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nAlign)
 {
