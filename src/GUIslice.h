@@ -317,7 +317,7 @@ typedef enum {
   GSLC_TOUCH_DOWN_OUT     = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
   GSLC_TOUCH_UP           = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
   GSLC_TOUCH_UP_IN        = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
-  GSLC_TOUCH_UP_OUT       = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up inside tracked element)
+  GSLC_TOUCH_UP_OUT       = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up outside tracked element)
   GSLC_TOUCH_MOVE         = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
   GSLC_TOUCH_MOVE_IN      = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
   GSLC_TOUCH_MOVE_OUT     = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)

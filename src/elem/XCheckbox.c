@@ -204,7 +204,7 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
   // Update our data element
-  bool  bCheckedOld = pCheckbox->bChecked;
+  bool const bCheckedOld = pCheckbox->bChecked;
   pCheckbox->bChecked = bChecked;
 
   // Element needs redraw
@@ -227,7 +227,7 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
   // - In all cases, return the ElementRef of the element that issued the callback
   //
   // For checkbox:
-  // - If not selected:  return ID_NONE     and state=false
+  // - If not selected:  return current ID  and state=false
   // - If     selected:  return current ID  and state=true
   // For radio button:
   // - If none selected: return ID_NONE     and state=false
@@ -238,11 +238,7 @@ void gslc_ElemXCheckboxSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bo
     int16_t nSelId = GSLC_ID_NONE;
     if (!pCheckbox->bRadio) {
       // Checkbox
-      if (bChecked) {
-        nSelId = pElem->nId;
-      } else {
-        nSelId = GSLC_ID_NONE;
-      }
+      nSelId = pElem->nId;
     } else {
       // Radio button
       // - Determine the group that the radio button belongs to
