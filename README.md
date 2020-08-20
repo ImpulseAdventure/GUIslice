@@ -10,7 +10,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
-![GUIslice Builder](https://user-images.githubusercontent.com/8510097/63221174-14126000-c14a-11e9-93aa-20806f5627e0.png)
+![GUIslice Builder](https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png)
 
 - Extensive [Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki) guides available
 - [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
