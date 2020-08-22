@@ -207,25 +207,25 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 ///
 /// Create a Seekbar Element in Flash
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Unique element ID to assign
-/// \param[in]  nPage:       Page ID to attach element to
-/// \param[in]  nX:          X coordinate of element
-/// \param[in]  nY:          Y coordinate of element
-/// \param[in]  nW:          Width of element
-/// \param[in]  nH:          Height of element
-/// \param[in]  nPosMin_:    Minimum position value
-/// \param[in]  nPosMax_:    Maximum position value
-/// \param[in]  nPos_:       Starting position value
-/// \param[in]  nProgressW:  Width of progress track
-/// \param[in]  nRemainW:    Width of  remaining track
-/// \param[in]  nThumbSz_:   Size of the thumb control
-/// \param[in]  colProgress: Color of progress fill bar
-/// \param[in]  colRemain:   Color remaining fill bar
-/// \param[in]  colThumb:    Color for the thumb indicator
-/// \param[in]  bVert_:      Orientation (true for vertical)
-/// \param[in]  colFrame_:   Color of the element frame
-/// \param[in]  colFill_:    Color of the element fill
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nElemId:      Unique element ID to assign
+/// \param[in]  nPage:        Page ID to attach element to
+/// \param[in]  nX:           X coordinate of element
+/// \param[in]  nY:           Y coordinate of element
+/// \param[in]  nW:           Width of element
+/// \param[in]  nH:           Height of element
+/// \param[in]  nPosMin_:     Minimum position value
+/// \param[in]  nPosMax_:     Maximum position value
+/// \param[in]  nPos_:        Starting position value
+/// \param[in]  nProgressW_:  Width of progress track
+/// \param[in]  nRemainW_:    Width of  remaining track
+/// \param[in]  nThumbSz_:    Size of the thumb control
+/// \param[in]  colProgress_: Color of progress fill bar
+/// \param[in]  colRemain_:   Color remaining fill bar
+/// \param[in]  colThumb_:    Color for the thumb indicator
+/// \param[in]  bVert_:       Orientation (true for vertical)
+/// \param[in]  colFrame_:    Color of the element frame
+/// \param[in]  colFill_:     Color of the element fill
 ///
 /// \return none
 ///
