@@ -2132,8 +2132,8 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
   #if !defined(DRV_TOUCH_NONE)
     // Correct touch mapping according to current rotation mode
     pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
-    pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
-    pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
+    pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation) | ADATOUCH_FLIP_X;
+    pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation) | ADATOUCH_FLIP_Y;
   #endif // !DRV_TOUCH_NONE
 
   // Mark the current page ask requiring redraw
