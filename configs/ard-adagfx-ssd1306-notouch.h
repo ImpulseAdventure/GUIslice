@@ -89,8 +89,18 @@ extern "C" {
   #define ADAGFX_PIN_DC       9     // Display SPI data/command
   #define ADAGFX_PIN_RST      0     // Display Reset
 
-  // Display interface type
-  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
+  // Display interface type: set one of the following to 1, others to 0
+  #define ADAGFX_I2C_HW 0  // Display controller via hardware I2C (uses ???_I2C_ADDR)
+  #define ADAGFX_SPI_HW 1  // Display controller via hardware SPI (uses ADAGFX_PIN_*)
+  #define ADAGFX_SPI_SW 0  // Display controller via software SPI [not yet supported]
+
+  // Display initialization
+  // - Width,Height:
+  // -   128,64  128,32  96,16
+  #define DRV_DISP_ADAGFX_SSD1306_INIT 128,32
+
+  // Display interface I2C
+  #define ADAGFX_I2C_ADDR   0x3D  // Display device I2C address (for ADAGFX_I2C_HW=1)
 
   // Display interface software SPI
   // - Hardware SPI: the following definitions are unused

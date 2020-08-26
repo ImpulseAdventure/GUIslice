@@ -277,10 +277,22 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306)
-  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+  #ifndef DRV_DISP_ADAGFX_SSD1306_INIT
+    // Provide backward compatibility in case user config
+    // doesn't provide initialization options
+    #define DRV_DISP_ADAGFX_SSD1306_INIT 128,32
+  #endif
+  #if (ADAGFX_I2C_HW) // Use I2C
+    const char* m_acDrvDisp = "ADA_SSD1306(I2C-HW)";
+    Adafruit_SSD1306 m_disp(DRV_DISP_ADAGFX_SSD1306_INIT, &Wire, ADAGFX_PIN_RST);
+  #elif (ADAGFX_SPI_HW) // Use hardware SPI
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-HW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
-  #else
+  #elif (ADAGFX_SPI_SW) // Use software SPI (with custom pins)
+    const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
+    Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
+  #else // Use software SPI (with custom pins)
+    // This clause provided for backward config compatibility
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
@@ -577,7 +589,16 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       m_disp.begin();
 
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
-      m_disp.begin(SSD1306_SWITCHCAPVCC);
+      bool bInitOk = true;
+      #if (ADAGFX_I2C_HW) // Use I2C
+        bInitOk = m_disp.begin(SSD1306_SWITCHCAPVCC, ADAGFX_I2C_ADDR);
+      #else // Use SPI
+        bInitOk = m_disp.begin(SSD1306_SWITCHCAPVCC);
+      #endif
+      if (!bInitOk) {
+        GSLC_DEBUG_PRINT("ERROR: SSD1306 init failed\n", "");
+        return false;
+      }
 
     #elif defined(DRV_DISP_ADAGFX_ST7735)
 
