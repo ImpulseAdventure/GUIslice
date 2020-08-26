@@ -774,18 +774,10 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   const uint16_t* pImage = (const uint16_t*)pBitmap;
   int16_t h = *(pImage++);
   int16_t w = *(pImage++);
-  int row, col;
-  for (row=0; row<h; row++) { // For each scanline...
-    for (col=0; col<w; col++) { // For each pixel...
-      if (bProgMem) {
-        //To read from Flash Memory, pgm_read_XXX is required.
-        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
-      } else {
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
-      }
-    } // end pixel
-  }
+
+  // Swap the colour byte order when rendering
+  m_disp.setSwapBytes(true); 
+  m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
 }
 
 #if (GSLC_SD_EN)
