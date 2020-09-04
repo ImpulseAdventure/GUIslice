@@ -4,7 +4,11 @@
 // Dimensions    : 200x40 pixels
 // Size          : 16,000 Bytes
 
-#include <avr/pgmspace.h>
+  #if defined(__AVR__)
+    #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 
 const unsigned short logo1_24[0x1F40+2] PROGMEM ={
 40,
