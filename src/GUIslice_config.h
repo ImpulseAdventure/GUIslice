@@ -167,25 +167,30 @@ extern "C" {
 #elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
   #define GSLC_CFG_ARD
 #elif defined(__AVR__) && defined(TEENSYDUINO) // Teensy 2
-  #define GSLC_DEV_TEENSY_2
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
+  #define GSLC_DEV_TEENSY_2
 #elif defined(__MKL26Z64__) // Teensy LC
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_LC
 #elif defined(__MK20DX256__) // Teensy 3.2
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_2
 #elif defined(__MK64FX512__) // Teensy 3.5
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_5
 #elif defined(__MK66FX1M0__) // Teensy 3.6
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_6
-#elif defined(__MK66FX1M0__) // Teensy 3.6
+#elif defined(__IMXRT1062__) // Teensy 4.0
+  //#elif defined(ARDUINO_TEENSY40)
+  //#elif defined(ARDUINO_TEENSY41)
   #define GSLC_CFG_ARD
-  #define GSLC_DEV_TEENSY_3_6
-#elif defined(__IMXRT1062__)
-  #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_4_0
 #else
 #warning Unknown
