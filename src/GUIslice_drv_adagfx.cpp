@@ -1650,14 +1650,31 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   }
   #endif
   int row, col;
+  uint16_t nColRaw;
   for (row=0; row<h; row++) { // For each scanline...
     for (col=0; col<w; col++) { // For each pixel...
+
+      // Fetch the requested pixel value
       if (bProgMem) {
-        //To read from Flash Memory, pgm_read_XXX is required.
-        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
+        // To read from Flash Memory, pgm_read_XXX is required.
+        // Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
+        nColRaw = pgm_read_word(pImage++);
       } else {
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
+        nColRaw = *(pImage++);
+      }
+
+      // If transparency is enabled, check to see if pixel should be masked
+      bool bDrawBit = true;
+      if (GSLC_BMP_TRANS_EN) {
+        uint16_t nTransRaw = gslc_DrvAdaptColorToRaw(pGui->sTransCol);
+        if (nColRaw == nTransRaw) {
+          bDrawBit = false;
+        }
+      }
+
+      // Draw the pixel if not masked
+      if (bDrawBit) {
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, nColRaw);
       }
     } // end pixel
   }
