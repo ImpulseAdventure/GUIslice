@@ -949,8 +949,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
 
-  *pnTxtSzW = m_disp.getFont().getTextSize(pStr,pnTxtSzH);
-  // FIXME: Add *pnTxtSzH
+  unsigned int nTxtSzH; // LCDGFX expects 2nd param lcduint_t (unsigned int)
+  *pnTxtSzW = m_disp.getFont().getTextSize(pStr,&nTxtSzH);
+  *pnTxtSzH = (uint16_t)nTxtSzH;
 
   // No baseline info
   *pnTxtX = 0;
@@ -2968,13 +2969,33 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = m_disp.height();
 
   #elif defined(DRV_DISP_LCDGFX)
-    m_disp.getInterface().setRotation(0);
-    pGui->nDisp0W = m_disp.width();
-    pGui->nDisp0H = m_disp.height();
-    // It appears that LCDGFX rotation is 180 degrees offset from other libraries
-    m_disp.getInterface().setRotation((pGui->nRotation + 2) & 0x3);
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
+    // LCDGFX supports a number of displays
+    // - Some of the display interfaces do not support the setRotation() API.
+    // - As LCDGFX doesn't provide a consistent interface per display, we have
+    //   to check for specific displays here to provide backward-compatibility.
+    #if defined(DRV_DISP_LCDGFX_ILI9341_240x320_SPI) || defined(DRV_DISP_LCDGFX_SSD1351_128x128_SPI) || \
+        defined(DRV_DISP_LCDGFX_SSD1331_96x64x8_SPI) || defined(DRV_DISP_LCDGFX_SSD1331_96x64x16_SPI) || \
+        defined(DRV_DISP_LCDGFX_ILI9163_128x128_SPI)
+
+      // API supports setRotation()
+      m_disp.getInterface().setRotation(0);
+      pGui->nDisp0W = m_disp.width();
+      pGui->nDisp0H = m_disp.height();
+      // It appears that LCDGFX rotation is 180 degrees offset from other libraries
+      m_disp.getInterface().setRotation((pGui->nRotation + 2) & 0x3);
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+
+    #else
+
+      // API doesn't support setRotation()
+      bSupportRotation = false;
+      pGui->nDisp0W = m_disp.width();
+      pGui->nDisp0H = m_disp.height();
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+
+    #endif
 
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     m_disp.setRotation(0);
