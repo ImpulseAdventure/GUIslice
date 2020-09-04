@@ -87,6 +87,8 @@ extern "C" {
   //#include "../configs/ard-shld-waveshare_28_touch.h"
   //#include "../configs/ard-shld-waveshare_40_notouch.h"
   //#include "../configs/ard-shld-waveshare_40_xpt2046.h"
+  //#include "../configs/ard-lcdgfx-notouch.h"
+  //#include "../configs/ard-lcdgfx-stmpe610.h"
   //#include "../configs/ard-adagfx-hx8347-xpt2046.h"
   //#include "../configs/ard-adagfx-hx8357-ft6206.h"
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
