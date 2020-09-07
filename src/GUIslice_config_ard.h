@@ -18,7 +18,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 // THE SOFTWARE.
 //
 // =============================================================================
-// \file GUIslice_config_ard.h
+// file GUIslice_config_ard.h
 
 // =============================================================================
 // User Configuration
@@ -108,7 +108,11 @@ extern "C" {
   // The Adafruit-GFX library supports a number of displays
   // - Select a display sub-type by uncommenting one of the
   //   following DRV_DISP_ADAGFX_* lines
-  #define DRV_DISP_ADAGFX_ILI9341         // Adafruit ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9225        // Adafruit ILI9225
+  #define DRV_DISP_ADAGFX_ILI9225_DUE   // Adafruit ILI9225 Due
+  //#define DRV_DISP_ADAGFX_ILI9341       // Adafruit ILI9341
+  //#define DRV_DISP_ADAGFX_ILI9341_DUE_MB // Adafruit ILI9341 DUE
+  //#define DRV_DISP_ADAGFX_ILI9341_T3    // Adafruit ILI9341 T3
   //#define DRV_DISP_ADAGFX_ILI9341_8BIT  // Adafruit ILI9341 (8-bit interface)
   //#define DRV_DISP_ADAGFX_ST7735        // Adafruit ST7735
   //#define DRV_DISP_ADAGFX_SSD1306       // Adafruit SSD1306
@@ -121,10 +125,10 @@ extern "C" {
   // - Please refer to "docs/GUIslice_config_guide.xlsx" for detailed examples
   #define ADAGFX_PIN_CS    10   // Display chip select
   #define ADAGFX_PIN_DC     9   // Display SPI data/command
-  #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
-  #define ADAGFX_PIN_SDCS   4   // SD card chip select
-  #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
-  #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
+  #define ADAGFX_PIN_RST   12   // Display Reset (some displays could use pin 11)
+  #define ADAGFX_PIN_SDCS   //4   // SD card chip select
+  #define ADAGFX_PIN_WR    //A1   // Display write pin (for parallel displays)
+  #define ADAGFX_PIN_RD    //A0   // Display read pin (for parallel displays)
 
   // Use hardware SPI interface?
   // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
@@ -135,9 +139,9 @@ extern "C" {
 
   // Define custom SPI pin connections used in software SPI mode (ADAGFX_SPI_HW=0)
   // - These definitions can be left blank in hardware mode (ADAGFX_SPI_HW=1)
-  #define ADAGFX_PIN_MOSI
+  #define ADAGFX_PIN_MOSI  11
   #define ADAGFX_PIN_MISO
-  #define ADAGFX_PIN_CLK
+  #define ADAGFX_PIN_CLK   13
 
   // Set Default rotation
   // you can specify values 0,1,2,3, rotation is clockwise
@@ -178,10 +182,19 @@ extern "C" {
     // NOTE: Using Arduino pin notation
     #define ADAGFX_PIN_CS    10   // Display chip select
     #define ADAGFX_PIN_DC     9   // Display SPI data/command
-    #define ADAGFX_PIN_RST    0   // Display Reset (some displays could use pin 11)
-    #define ADAGFX_PIN_SDCS   4   // SD card chip select
-    #define ADAGFX_PIN_WR    A1   // Display write pin (for parallel displays)
-    #define ADAGFX_PIN_RD    A0   // Display read pin (for parallel displays)
+    #define ADAGFX_PIN_RST   12   // Display Reset (some displays could use pin 11)
+    #define ADAGFX_PIN_SDCS  // 4   // SD card chip select
+    #define ADAGFX_PIN_WR    //A1   // Display write pin (for parallel displays)
+    #define ADAGFX_PIN_RD    //A1   // Display read pin (for parallel displays)
+
+
+    //#define ADAGFX_PIN_CS    10   // Display chip select
+    //#define ADAGFX_PIN_DC     9   // Display SPI data/command
+    //#define ADAGFX_PIN_RST   12   // Display Reset (some displays could use pin 11)
+    //#define ADAGFX_PIN_MOSI  11
+    //#define ADAGFX_PIN_MISO
+    //#define ADAGFX_PIN_CLK   13
+	
   #endif
 
   // Use hardware SPI interface?
@@ -193,14 +206,14 @@ extern "C" {
 
   // Define custom SPI pin connections used in software SPI mode (ADAGFX_SPI_HW=0)
   // - These definitions can be left blank in hardware mode (ADAGFX_SPI_HW=1)
-  #define ADAGFX_PIN_MOSI
+  #define ADAGFX_PIN_MOSI  11
   #define ADAGFX_PIN_MISO
-  #define ADAGFX_PIN_CLK
+  #define ADAGFX_PIN_CLK   13
 
 
   // Set Default rotation
   // you can specify values 0,1,2,3, rotation is clockwise
-  #define GSLC_ROTATE     1
+  #define GSLC_ROTATE     3
 
 // -----------------------------------------------------------------------------
 #elif defined(DRV_DISP_TFT_ESPI)
