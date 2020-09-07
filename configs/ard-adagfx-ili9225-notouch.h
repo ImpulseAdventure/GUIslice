@@ -26,7 +26,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@
 extern "C" {
 #endif // __cplusplus
 
+  #define DRV_DISP_ADAGFX_ILI9225        // Adafruit ILI9225
 
   // =============================================================================
   // USER DEFINED CONFIGURATION
@@ -69,9 +70,10 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX             // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_ILI9225_NK  // https://github.com/Nkawu/TFT_22_ILI9225
-  #define DRV_TOUCH_NONE              // No touch enabled
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
+  //#define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
+  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9225 // RM68130 requires mcufriend ID override
+  #define DRV_TOUCH_NONE            // No touch enabled
 
 
   // -----------------------------------------------------------------------------
@@ -80,11 +82,9 @@ extern "C" {
 
   // For shields, the following pinouts are typically hardcoded
   #define ADAGFX_PIN_CS       10    // Display chip select
-  #define ADAGFX_PIN_RST      8     // Display Reset
-
-  #define ADAGFX_PIN_RS       9     // Display SPI data/command
-  #define ADAGFX_PIN_LED      3     // LED
-  #define DISP_BRIGHTNESS     200   // Initial brightness of backlight
+  #define ADAGFX_PIN_DC       9     // Display SPI data/command
+  //#define ADAGFX_PIN_RST      0     // Display Reset
+  #define ADAGFX_PIN_RST     12 
 
   // Display interface type
   #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
@@ -93,11 +93,23 @@ extern "C" {
   // - Hardware SPI: the following definitions are unused
   // - Software SPI: the following pins need to be defined
   #define ADAGFX_PIN_MOSI     11
-  #define ADAGFX_PIN_MISO     12
+  //#define ADAGFX_PIN_MISO     12
+  #define ADAGFX_PIN_MISO     //MISO is not requiered on ILI9225
   #define ADAGFX_PIN_CLK      13
 
   // SD Card
   #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+  // Use hardware SPI interface?
+  // - Set to 1 to enable hardware SPI interface, 0 to use software SPI
+  // - Software SPI may support the use of custom pin selection (via ADAGFX_PIN_MOSI,
+  //   ADAGFX_PIN_MISO, ADAGFX_PIN_CLK). These pin definitions can be left blank in
+  //   hardware SPI mode.
+  #define ADAGFX_SPI_HW     1
+
+
+
+
 
 
 
@@ -107,8 +119,8 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  #define GSLC_ROTATE     1
-
+  //#define GSLC_ROTATE     1
+  #define GSLC_ROTATE     3     //If vertical screen
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
