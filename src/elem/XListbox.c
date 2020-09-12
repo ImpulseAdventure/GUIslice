@@ -949,7 +949,7 @@ bool gslc_ElemXListboxSetScrollPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   if (!pListbox) return false;
 
   bool bOk = false;
-  if ((nScrollPos >= 0) && (nScrollPos < pListbox->nItemCnt)) {
+  if (nScrollPos < pListbox->nItemCnt) {
     bOk = true;
   }
 
