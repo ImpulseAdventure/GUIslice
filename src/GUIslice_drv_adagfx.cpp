@@ -126,6 +126,10 @@
   #elif defined(DRV_DISP_LCDGFX)
     // https://github.com/lexus2k/lcdgfx
     #include <lcdgfx.h>
+    #if defined(DRV_DISP_LCDGFX_SSD1306_128x64_I2C) || defined(DRV_DISP_LCDGFX_SSD1306_128x64_SPI) || \
+        defined(DRV_DISP_LCDGFX_SSD1306_128x32_I2C) || defined(DRV_DISP_LCDGFX_SSD1306_128x32_SPI)
+      #define DRV_COLORMODE_MONO // Monochrome display
+    #endif    
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     // https://github.com/ImpulseAdventure/Waveshare_ILI9486
     #include <Waveshare_ILI9486.h>
