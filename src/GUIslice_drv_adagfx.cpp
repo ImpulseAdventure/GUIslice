@@ -881,9 +881,10 @@ bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtScale = 0;
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  uint16_t  nTxtScale = 0;
+
   // Use PaulStoffregen/ILI9341_t3
   //
   // - IMPORTANT NOTE: Recent version of ILI9341_t3 library is required
@@ -931,6 +932,8 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  uint16_t  nTxtScale = 0;
+
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
   } else {
@@ -964,6 +967,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_RA8876)
+  uint16_t  nTxtScale = 0;
 
   // Initialize the current font mode & size
   gslc_DrvFontSetHelp(pGui,pFont);
@@ -990,6 +994,8 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  uint16_t  nTxtScale = 0;
+
   // Use mjs513/RA8875: branch "RA8875_t4"
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
@@ -1024,6 +1030,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #else
+  uint16_t  nTxtScale = 0;
 
   // Support library-specific font exceptions
   #if defined(DRV_DISP_ADAGFX_RA8876_GV)
@@ -1084,13 +1091,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
-  uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
-  int16_t   nCurPosY = 0;
   char      ch;
 
   // Initialize the font and positioning
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
@@ -1108,6 +1114,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+  uint16_t  nTxtScale = pFont->nSize;
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
   } else {
@@ -1135,6 +1142,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
@@ -1153,6 +1161,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #else
+  uint16_t  nTxtScale = pFont->nSize;
   #if defined(DRV_DISP_ADAGFX_RA8876_GV)
     if (pFont->pvFont == NULL) {
       // Internal ROM font
@@ -1239,6 +1248,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.putChar(ch);
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+      int16_t   nCurPosY = 0;
       // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
       // to control the kerning / spacing between letters in a string.
       // With a "letter spacing" (_letterSpacing variable in the lib) of
@@ -1288,12 +1298,14 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     if (ch == '\n') {
 
       #if defined(DRV_DISP_ADAGFX_RA8875)
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         if (bInternal8875Font) {
           // TODO: Is getCursorY() supported in RA8875 mode?
           m_disp.textSetCursor(nTxtX, nCurPosY);
         }
       #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         if (bInternal8875Font) {
           // TODO: Is getCursorY() supported in RA8875 mode?
@@ -1308,6 +1320,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 	    m_nTxtY += m_disp.getFont().getHeader().height;
 
       #else
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         m_disp.setCursor(nTxtX,nCurPosY);
       #endif
