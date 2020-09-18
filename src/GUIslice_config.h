@@ -94,7 +94,6 @@ extern "C" {
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
   //#include "../configs/ard-adagfx-hx8357-simple.h"
   //#include "../configs/ard-adagfx-hx8357-stmpe610.h"
-  //#include "../configs/ard-adagfx-ili9225-notouch.h"
   //#include "../configs/ard-adagfx-ili9341-ft6206.h"
   //#include "../configs/ard-adagfx-ili9341-input.h"
   //#include "../configs/ard-adagfx-ili9341-notouch.h"
@@ -107,6 +106,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ra8876-ft5206.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
+  //#include "../configs/due-adagfx-ili9225-notouch.h"
   //#include "../configs/due-adagfx-ili9341-ft6206.h"
   //#include "../configs/due-adagfx-ili9341-urtouch.h"
 
