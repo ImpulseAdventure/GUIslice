@@ -59,7 +59,6 @@
 extern "C" {
 #endif // __cplusplus
 
-  #define DRV_DISP_ADAGFX_ILI9225_DUE        // Adafruit ILI9225
 
   // =============================================================================
   // USER DEFINED CONFIGURATION
@@ -71,8 +70,7 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  //#define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
-  //#define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9225 // RM68130 requires mcufriend ID override
+  #define DRV_DISP_ADAGFX_ILI9225_DUE // martinzw/ILI9225_Due
   #define DRV_TOUCH_NONE            // No touch enabled
 
 
@@ -106,12 +104,6 @@ extern "C" {
   //   ADAGFX_PIN_MISO, ADAGFX_PIN_CLK). These pin definitions can be left blank in
   //   hardware SPI mode.
   #define ADAGFX_SPI_HW     1
-
-
-
-
-
-
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
