@@ -51,14 +51,19 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
     // No need to import Adafruit_GFX
   #else
     #include <Adafruit_GFX.h>
   #endif
 
   // Now configure specific display driver for Adafruit-GFX
-  #if defined(DRV_DISP_ADAGFX_ILI9341)
+  #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    // https://github.com/martinzw/ILI9225_Due
+    #include "SPI.h"
+    #include "ILI9225_due.h"
+    #include <SystemFont5x7.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341)
     // https://github.com/adafruit/Adafruit_ILI9341
     #include <Adafruit_ILI9341.h>
     #include <SPI.h>
@@ -233,7 +238,11 @@ extern "C" {
 
 
 // ------------------------------------------------------------------------
-#if defined(DRV_DISP_ADAGFX_ILI9341)
+#if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    const char* m_acDrvDisp = "ADA_ILI9225_DUE(SPI-HW)";
+    ILI9225_due m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     const char* m_acDrvDisp = "ADA_ILI9341(SPI-HW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -546,7 +555,28 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #endif
 
     // Perform any display initialization
-    #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+      #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
+        // TODO: Consider check for GSLC_DEV_TEENSY
+        // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
+        // This may be required for certain pinouts with Teensy 3 devices.
+        // If enabled, it must be done ahead of m_disp.begin()
+        SPI.setMOSI(ADAGFX_PIN_MOSI);
+        SPI.setSCK(ADAGFX_PIN_CLK);
+      #endif
+
+      m_disp.begin();
+
+
+      // ILI9225_DUE library defaults to "solid" mode, so we
+      // initialize it to transparent mode for text rendering consistency.
+      m_disp.setFontMode(gTextFontModeTransparent);
+
+      // The ILI9225_DUE library does not automatically
+      // assign a default font, so we will do that here.
+      m_disp.setFont(SystemFont5x7);
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) 
 
       #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
         // TODO: Consider check for GSLC_DEV_TEENSY
@@ -931,7 +961,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
-#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)  || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
   uint16_t  nTxtScale = 0;
 
   if (pFont->pvFont == NULL) {
@@ -1113,7 +1143,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
-#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
   uint16_t  nTxtScale = pFont->nSize;
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
@@ -1247,7 +1277,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     #elif defined(DRV_DISP_ADAGFX_RA8876)
       m_disp.putChar(ch);
 
-    #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
       int16_t   nCurPosY = 0;
       // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
       // to control the kerning / spacing between letters in a string.
@@ -1312,7 +1342,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
           m_disp.setCursor(nTxtX, nCurPosY);
         }
 
-      #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+      #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
         nTxtY += m_disp.getFontHeight();
         m_disp.cursorToXY(nTxtX,nTxtY);
 
@@ -1338,6 +1368,13 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   // Restore the font
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // TODO
+#elif defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  // Restore the font
+  if (pFont->pvFont == NULL) {
+    m_disp.setFont(SystemFont5x7);
+  } else {
+    m_disp.setFont((uint8_t)(pFont->pvFont));
+  }
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
   // TODO
 #elif defined(DRV_DISP_LCDGFX)
@@ -1439,6 +1476,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     // xlatb/RA8876 uses a non-standard fillRect() API
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
+    //NOTE:tested for ILI9225_DUE
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
   return true;
@@ -2859,7 +2897,18 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    pGui->nDisp0W = ILI9225_TFTWIDTH;
+    pGui->nDisp0H = ILI9225_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9225_TFTWIDTH;
+      pGui->nDispH = ILI9225_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9225_TFTHEIGHT;
+      pGui->nDispH = ILI9225_TFTWIDTH;
+    }
+  #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
