@@ -3075,6 +3075,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
       gslc_DrawFillRect(pGui, rElemInner, colBg);
     }
   } else {
+    colBg = pElem->colElemText;
     // TODO: If unfilled, then we might need
     // to redraw the background layer(s)
   }
