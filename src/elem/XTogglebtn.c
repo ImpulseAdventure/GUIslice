@@ -265,13 +265,13 @@ void gslc_ElemXTogglebtnDrawCircularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,gsl
   if (pTogglebtn->bOn) {
     // draw our main body
     gslc_DrawFillRoundRect(pGui,rInner,nRadius,pTogglebtn->colOnState);
-    // place thumb on left-hand side
-    gslc_DrawFillCircle(pGui,nLeftX,nLeftY,nRadius-1,pTogglebtn->colThumb);
+    // place thumb on right-hand side
+    gslc_DrawFillCircle(pGui,nRightX-1,nRightY,nRadius-1,pTogglebtn->colThumb);
   } else {
     // draw our main body
     gslc_DrawFillRoundRect(pGui,rInner,nRadius,pTogglebtn->colOffState);
-    // place thumb on right-hand side
-    gslc_DrawFillCircle(pGui,nRightX-1,nRightY,nRadius-1,pTogglebtn->colThumb);
+    // place thumb on left-hand side
+    gslc_DrawFillCircle(pGui,nLeftX,nLeftY,nRadius-1,pTogglebtn->colThumb);
   }
 }
 
