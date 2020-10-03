@@ -332,7 +332,13 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     pDriver->rClipRect = *pRect;
   }
 
-  // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
+  // Rendering within clipping region is only available
+  // with the inclusion of https://github.com/ImpulseAdventure/TFT_eSPI/tree/add_setClipRect
+  // which may be integrated into TFT_eSPI in the future
+  #if defined(DRV_DISP_TFT_ESPI_HAS_CLIPRECT)
+    m_disp.setClipRect(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h);
+  #endif
+
   return true;
 }
 
