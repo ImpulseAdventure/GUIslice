@@ -332,11 +332,15 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     pDriver->rClipRect = *pRect;
   }
 
-  // Rendering within clipping region is only available
-  // with the inclusion of https://github.com/ImpulseAdventure/TFT_eSPI/tree/add_setClipRect
-  // which may be integrated into TFT_eSPI in the future
-  #if defined(DRV_DISP_TFT_ESPI_HAS_CLIPRECT)
-    m_disp.setClipRect(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h);
+  // Rendering within clipping regions is provided by TFT_eSPI's
+  // setViewport() API. Enabling this functionality provides
+  // greatly enhanced redraw performance when updating the
+  // entire page.
+  //
+  // NOTE: This function is only present in recent releases
+  //       of TFT_eSPI (>= v2.3.0)
+  #if defined(DRV_DISP_TFT_ESPI_HAS_SETVIEWPORT)
+    m_disp.setViewport(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h,false);
   #endif
 
   return true;

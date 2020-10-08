@@ -74,6 +74,9 @@ extern "C" {
   #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
   #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
 
+  // Recent versions of TFT_eSPI support additional functionality:
+  // - setViewport() in v2.3.0: enhanced redraw performance
+  //#define DRV_DISP_TFT_ESPI_HAS_SETVIEWPORT // Uncomment if TFT_eSPI v2.3.0 onwards
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
