@@ -2979,7 +2979,7 @@ void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf,gslc_tsRect rTxt,gslc_tsFo
     // Now correct for offset from text bounds
     // - This is used by the driver (such as Adafruit-GFX) to provide an
     //   adjustment for baseline height, etc.
-    nTxtX += nTxtOffsetX;
+    nTxtX -= nTxtOffsetX;
     nTxtY -= nTxtOffsetY;
 
     // Call the driver text rendering routine
