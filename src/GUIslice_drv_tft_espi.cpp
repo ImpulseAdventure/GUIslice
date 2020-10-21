@@ -332,7 +332,16 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     pDriver->rClipRect = *pRect;
   }
 
-  // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
+  // Rendering within clipping regions is provided by TFT_eSPI's
+  // setViewport() API. Enabling this functionality provides
+  // greatly enhanced redraw performance when updating the
+  // entire page.
+  // The setViewport() API is only available in recent versions of
+  // TFT_eSPI (v2.3.2+).
+  #if (TFT_ESPI_FEATURES & 0x0001) // Bit 0 = Viewport capability
+    m_disp.setViewport(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h,false);
+  #endif
+
   return true;
 }
 
