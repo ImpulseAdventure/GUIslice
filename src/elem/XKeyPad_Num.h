@@ -35,32 +35,30 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XKeyPad.h
+/// \file XKeyPad_Num.h
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-#if (GSLC_FEATURE_COMPOUND)
-
-// Define number of buttons & elements
-// - Refer to the definitions in the XKeyPad_*.c file
-#define XKEYPADNUM_BTN_BASIC 10
-#define XKEYPADNUM_ELEM_MAX (6 + XKEYPADNUM_BTN_BASIC)
 
 // ============================================================================
 // Extended Element: KeyPad Character entry
-// - NOTE: The XKeyPad_Alpha extends the XKeyPad base element
+// - NOTE: The XKeyPad_Num extends the XKeyPad base element
 // ============================================================================
 
-typedef struct {
-  // Base XKeyPad struct
-  // - The base type must appear at the top of the derived struct
-  gslc_tsXKeyPad      sKeyPad;                             ///< Base XKeyPad element
 
-  gslc_tsElemRef      asElemRef[XKEYPADNUM_ELEM_MAX];    ///< Storage for sub-element references
-  gslc_tsElem         asElem[XKEYPADNUM_ELEM_MAX];       ///< Storage for sub-elements
-} gslc_tsXKeyPad_Num;
+typedef struct {
+    // Common configuration
+    gslc_tsXKeyPadCfg   sBaseCfg;         ///< KeyPad base config struct
+
+    // Variant-specific configuration
+    bool                bFloatEn;         ///< Enable floating point (ie. decimal point)
+    bool                bSignEn;          ///< Enable negative numbers
+    // Variant-specific state
+    bool                bValPositive;     ///< Is the current value positive? (1=positive, 0=negative)
+    bool                bValDecimalPt;    ///< Does the current value include a decimal point?
+} gslc_tsXKeyPadCfg_Num;
 
   ///
   /// Create a KeyPad Element
@@ -77,7 +75,7 @@ typedef struct {
   /// \return Pointer to Element or NULL if failure
   ///
   gslc_tsElemRef* gslc_ElemXKeyPadCreate_Num(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
-    gslc_tsXKeyPad_Num* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg* pConfig);
+    gslc_tsXKeyPad* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg_Num* pConfig);
 
 
   ///
@@ -87,11 +85,112 @@ typedef struct {
   ///
   /// \return Initialized KeyPad config structure
   ///
-  gslc_tsXKeyPadCfg gslc_ElemXKeyPadCfgInit_Num();
+  gslc_tsXKeyPadCfg_Num gslc_ElemXKeyPadCfgInit_Num();
+
+  ///
+  /// Callback function to reset internal state
+  ///
+  /// \param[in]  pvConfig:    Void ptr to the KeyPad config
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadReset_Num(void* pvConfig);
+
+
+  ///
+  /// Callback function to update internal state whenever the text
+  /// field is manually set via gslc_ElemXKeyPadValSet().
+  /// - This is used to ensure any KeyPad variant state can be
+  ///   kept in sync with the text string.
+  /// - For example, if a numeric KeyPad is initiaized with a
+  ///   string that contains a minus sign, an internal negation
+  ///   flag might be set.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadTxtInit_Num(void* pvKeyPad);
+
+
+  ///
+  /// Callback function to retrieve the label associated with
+  /// a KeyPad button. This is called during the drawing of
+  /// the KeyPad layout.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[in]  nStrMax:     Maximum length of return string (including NULL)
+  /// \param[out] pStr:        Buffer for the returned label
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,char* pStr);
+
+
+  ///
+  /// Callback function to retrieve the style associated with
+  /// a KeyPad button. This is called during the drawing of
+  /// the KeyPad layout.
+  /// - This function is used to assign the color and visibility
+  ///   state of the keys at runtime.
+  /// - This function can also be used to change the appearance
+  ///   dynamically, according to internal state (eg. dimmed buttons).
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[out] pbVisible:   The returned visibility state
+  /// \param[out] pcolTxt:     The returned text color
+  /// \param[out] pcolFrame:   The returned key's frame color
+  /// \param[out] pcolFill:    The returned key's fill color
+  /// \param[out] pcolGlow:    The returned key's fill color when highlighted
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadStyleGet_Num(void* pvKeyPad,uint8_t nId, bool* pbVisible, gslc_tsColor* pcolTxt, gslc_tsColor* pcolFrame, gslc_tsColor* pcolFill, gslc_tsColor* pcolGlow);
+
+
+  ///
+  /// Callback function activated when a key has been pressed.
+  /// This callback is used to enable the KeyPad variant to
+  /// handle any events associated with the key press and
+  /// update any internal state.
+  /// - The callback is also used to determine whether any
+  ///   redraw actions need to be taken.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[out] psResult:    The returned state vector (including redraw)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult* psResult);
+
+  ///
+  /// Update the KeyPad configuration to enable floating point numbers
+  /// - Effectively disables/enables the decimal point button & handling
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
+  /// \param[in]  bEn:         Enable flag (true if floating point enabled)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadCfgSetFloatEn_Num(gslc_tsXKeyPadCfg_Num* pConfig,bool bEn);
+
+  ///
+  /// Update the KeyPad configuration to enable negative numbers
+  /// - Effectively disables/enables the sign button & handling
+  ///
+  /// \param[in]  pGui:        Pointer to GUI
+  /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
+  /// \param[in]  bEn:         Enable flag (true if negative numbers enabled)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadCfgSetSignEn_Num(gslc_tsXKeyPadCfg_Num* pConfig,bool bEn);
 
 // ============================================================================
-
-#endif // GSLC_FEATURE_COMPOUND
 
 #ifdef __cplusplus
 }

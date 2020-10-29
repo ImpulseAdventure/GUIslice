@@ -33,10 +33,6 @@
 // Include extended elements
 #include "elem/XKeyPad_Alpha.h"
 
-// Ensure optional features are enabled in the configuration
-#if !(GSLC_FEATURE_COMPOUND)
-  #error "Config: GSLC_FEATURE_COMPOUND required for this program but not enabled. Please update GUIslice/config."
-#endif
 //<Includes !End!>
 
 // ------------------------------------------------
@@ -92,7 +88,7 @@ gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                     m_asKeypadElem[1];
 gslc_tsElemRef                  m_asKeypadElemRef[1];
-gslc_tsXKeyPad_Alpha            m_sKeyPad;
+gslc_tsXKeyPad                  m_sKeyPad;
 
 #define MAX_STR                 100
 
@@ -128,10 +124,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
       case E_TXT_VAL1:
         //TODO- Check the code to see what else you may need to add
         // Clicked on edit field, so show popup box and associate with this text field
-        gslc_ElemXKeyPadTargetIdSet(&m_gui, m_pElemKeyPad, E_TXT_VAL1);
-        gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
-        // Preload current value
-        gslc_ElemXKeyPadValSet(&m_gui, m_pElemKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+        gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
         break;
 //<Button Enums !End!>
       default:
@@ -232,9 +225,9 @@ bool InitGUI()
   // -----------------------------------
   // PAGE: E_POP_KEYPAD
   
-  gslc_tsXKeyPadCfg sCfgTx = gslc_ElemXKeyPadCfgInit_Alpha();
-  gslc_ElemXKeyPadCfgSetButtonSz(&sCfgTx, 20, 20);
-  gslc_ElemXKeyPadCfgSetRoundEn(&sCfgTx, false);
+  static gslc_tsXKeyPadCfg_Alpha sCfgTx = gslc_ElemXKeyPadCfgInit_Alpha();
+  gslc_ElemXKeyPadCfgSetButtonSz((gslc_tsXKeyPadCfg*)&sCfgTx, 12, 20);
+  gslc_ElemXKeyPadCfgSetRoundEn((gslc_tsXKeyPadCfg*)&sCfgTx, false);
   m_pElemKeyPad = gslc_ElemXKeyPadCreate_Alpha(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
     &m_sKeyPad, 65, 80, E_FONT_TXT5, &sCfgTx);
   gslc_ElemXKeyPadValSetCb(&m_gui, m_pElemKeyPad, &CbKeypad);
