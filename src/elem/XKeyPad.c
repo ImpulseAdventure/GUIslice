@@ -48,7 +48,6 @@
   #endif
 #endif
 
-#if (GSLC_FEATURE_COMPOUND)
 // ----------------------------------------------------------------------------
 // Error Messages
 // ----------------------------------------------------------------------------
@@ -74,92 +73,210 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // - Optionally supports negative values
 // ============================================================================
 
-// Define the button labels
-// - TODO: Create more efficient storage for the labels
-//   so that it doesn't consume 4 bytes even for labels
-//   that can be generated (eg. 0..9, a--z, etc.)
-// - NOTE: Not using "const char" in order to support
-//   modification of labels by user.
+// Reset the content of the keypad
+void gslc_ElemXKeyPadReset(gslc_tsXKeyPad* pKeyPad)
+{
+  // Default to maximum buffer, but may be reduced by association with a smaller target element
+  pKeyPad->nBufferMax = XKEYPAD_BUF_MAX;
+  memset(pKeyPad->acBuffer, 0, XKEYPAD_BUF_MAX);
 
+  pKeyPad->nBufferLen = 0;
+  pKeyPad->nCursorPos = 0;
+  pKeyPad->nScrollPos = 0;
+  pKeyPad->pTargetRef = NULL;
 
-const char KEYPAD_DISP_NEGATIVE = '-';
-const char KEYPAD_DISP_DECIMAL_PT = '.';
+  // Reset any pending redraw state
+  pKeyPad->sRedraw.eRedrawState = XKEYPAD_REDRAW_NONE;
+  pKeyPad->sRedraw.nRedrawKeyId = -1;
+}
 
+// Default common base config initialization
+// - Most of these values will be overwritten by variant-specific
+//   initialization or from user configuration.
+void gslc_ElemXKeyPadCfgInit(gslc_tsXKeyPadCfg* pConfig)
+{
+  pConfig->nButtonSzW   = 25;
+  pConfig->nButtonSzH   = 25;
+  pConfig->nButtonSpaceX = 0;
+  pConfig->nButtonSpaceY = 0;
+  pConfig->bRoundEn     = false;
+  pConfig->nFontId      = GSLC_FONT_NONE;
+  pConfig->pLayout      = NULL;
+  pConfig->pLayouts     = NULL;
+  pConfig->eLayoutSel   = 0;
+  pConfig->nMaxCols     = 8;
+  pConfig->nMaxRows     = 3;
+  pConfig->nFrameMargin = 2;
 
+  // Define callback functions
+  pConfig->pfuncReset      = NULL;
+  pConfig->pfuncTxtInit    = NULL;
+  pConfig->pfuncLabelGet   = NULL;
+  pConfig->pfuncStyleGet   = NULL;
+  pConfig->pfuncBtnEvt     = NULL;
+}
 
 // --------------------------------------------------------------------------
 // Create the keypad definition
 // --------------------------------------------------------------------------
 
+// Convert between keypad ID and the index into the keypad label array
+// - This function assumes that the keypad list has been terminated with KEYPAD_ID__END
+int16_t gslc_XKeyPadLookupId(gslc_tsKey* pKeys, uint8_t nKeyId)
+{
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadLookupId KeyId=%d\n",nKeyId);
+  int16_t nKeyInd = 0;
+  bool bDone = false;
+  while (!bDone) {
+    uint8_t nId = pKeys[nKeyInd].nId;
+    if (nId == KEYPAD_ID__END) {
+      bDone = true;
+    } else if (nId == nKeyId) {
+      return nKeyInd;
+    } else {
+      nKeyInd++;
+    }
+  }
+  // None found
+  return -1;
+}
 
-void XKeyPadAddKeyElem(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, int16_t nKeyId, bool bTxtField, int16_t nRow, int16_t nCol, int8_t nRowSpan, int8_t nColSpan,
-  gslc_tsColor cColFill, gslc_tsColor cColGlow, bool bVisible)
+
+// Render the KeyPad layout
+// - cColFrame: frame on all buttons
+// - cColFill:  used for TXT field
+// - cColTxt:   text for all buttons
+// - eRedraw:   scope of redraw (FULL / INC)
+void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFrame,
+  gslc_tsColor cColFill, gslc_tsColor cColText, gslc_teRedrawType eRedraw)
+{
+  // - Draw the fields
+  gslc_tsXKeyPad* pKeypadData = (gslc_tsXKeyPad*)pXData;
+  gslc_tsXKeyPadCfg* pConfig = pKeypadData->pConfig;
+  int16_t ePendRedraw = pKeypadData->sRedraw.eRedrawState;
+  int16_t nPendRedrawId = pKeypadData->sRedraw.nRedrawKeyId;
+  
+  // Draw the buttons
+  uint8_t       nInd;
+  gslc_tsKey    sKey;
+  bool          bDone = false;
+  bool          bRedraw;
+
+  nInd = 0;
+  while (!bDone) {
+    sKey = pConfig->pLayout[nInd];
+    if (sKey.nType == E_XKEYPAD_TYPE_END) {
+      bDone = true;
+    } else {
+      bRedraw = false; // Default to no redraw
+
+      if (sKey.nType == E_XKEYPAD_TYPE_UNUSED) {
+        // Don't redraw as Row/Col not defined
+      } else if (sKey.nType == E_XKEYPAD_TYPE_BASIC) {
+        bRedraw = (ePendRedraw & RBIT_KEYALL);
+      } else if (sKey.nType == E_XKEYPAD_TYPE_SPECIAL) {
+        bRedraw = (ePendRedraw & RBIT_KEYALL);
+      } else if (sKey.nType == E_XKEYPAD_TYPE_TXT) {
+        bRedraw = (ePendRedraw & RBIT_TXT);
+      }
+
+      // Check for specific key redraw
+      if (ePendRedraw & RBIT_KEYONE) {
+        // If this is the specific key, redraw it
+        bRedraw = bRedraw || (sKey.nId == nPendRedrawId);
+      }
+
+      // Now perform the redraw
+      if (bRedraw) {
+        gslc_XKeyPadDrawKey(pGui, pKeypadData, &sKey);
+      }
+      nInd++;
+    }
+  } // bDone
+
+  // Clear the pending redraw
+  pKeypadData->sRedraw.eRedrawState = XKEYPAD_REDRAW_NONE;
+  pKeypadData->sRedraw.nRedrawKeyId = -1;
+
+}
+
+void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey)
 {
   gslc_tsXKeyPadCfg* pConfig;
   char* pKeyStr = NULL;
+  char acKeyStr[XKEYPAD_KEY_LEN] = "";
 
-  pConfig = &(pXData->sConfig);
+  // Provide default colors in case pfuncStyleGet is not called
+  gslc_tsColor colTxt = GSLC_COL_WHITE;
+  gslc_tsColor colFrame = GSLC_COL_MAGENTA;
+  gslc_tsColor colFill = GSLC_COL_MAGENTA;
+  gslc_tsColor colGlow = GSLC_COL_MAGENTA;
+  bool bVisible = true;
 
-  gslc_tsElemRef* pElemRefTmp = NULL;
-  gslc_tsElem*    pElemTmp = NULL;
+  pConfig = pXData->pConfig;
+
+  bool bFieldIsTxt = false;
+  if (pKey->nType == E_XKEYPAD_TYPE_TXT) {
+    bFieldIsTxt = true;
+  }
 
   int16_t nButtonSzW = pConfig->nButtonSzW;
   int16_t nButtonSzH = pConfig->nButtonSzH;
   int16_t nOffsetX = pConfig->nOffsetX;
   int16_t nOffsetY = pConfig->nOffsetY;
-  int8_t nFontId = pConfig->nFontId;
 
-  int16_t nButtonW = (nColSpan * nButtonSzW);
-  int16_t nButtonH = (nRowSpan * nButtonSzH);
-
+  int16_t nButtonW = (pKey->nColSpan * nButtonSzW);
+  int16_t nButtonH = (pKey->nRowSpan * nButtonSzH);
+  
   // Fetch the keypad key string
-  if (bTxtField) {
-    pKeyStr = (char*)pXData->acValStr;
+  if (bFieldIsTxt) {
+    pKeyStr = (char*)pXData->acBuffer;
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadDrawKey Called LABEL_GET [ID=%d TXT] R=%d C=%d [Str=%s]\n",pKey->nId,pKey->nRow,pKey->nCol,pKeyStr);
   } else {
-    XKEYPAD_LOOKUP pfuncLookup = pXData->pfuncLookup;
-    int16_t nKeyInd = (*pfuncLookup)(pGui, nKeyId);
-    pKeyStr = pXData->pacKeys[nKeyInd];
+    GSLC_CB_XKEYPAD_LABEL_GET  pfuncLabelGet = pConfig->pfuncLabelGet;
+    if (pfuncLabelGet != NULL) {
+      (*pfuncLabelGet)((void*)pXData,pKey->nId,XKEYPAD_KEY_LEN,acKeyStr);
+      pKeyStr = acKeyStr;
+    }
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadDrawKey Called LABEL_GET [ID=%d] R=%d C=%d [Str=%s] ptr=%d\n",pKey->nId,pKey->nRow,pKey->nCol,pKeyStr,pKeyStr);
   }
 
-  //GSLC_DEBUG2_PRINT("DBG: KeyId=%d R=%d C=%d str=[%s] SubElemMax=%d\n", nKeyId, nRow,nCol,pKeyStr,pXData->nSubElemMax);
+  // Fetch the styling
+  GSLC_CB_XKEYPAD_SYTLE_GET  pfuncStyleGet = pConfig->pfuncStyleGet;
+  if (pfuncStyleGet != NULL) {
+    (*pfuncStyleGet)((void*)pXData,pKey->nId,&bVisible,&colTxt,&colFrame,&colFill,&colGlow);
+  }
+  if (pKey->nType == E_XKEYPAD_TYPE_UNUSED) {
+    bVisible = false;
+  }
 
-  if (bTxtField) {
+  // Don't draw any hidden buttons
+  if (!bVisible) {
+    return;
+  }
+
+  gslc_tsRect rElem;
+  rElem.x = nOffsetX + (pKey->nCol*nButtonSzW);
+  rElem.y = nOffsetY + (pKey->nRow*nButtonSzH);
+  rElem.w = nButtonW - 1;
+  rElem.h = nButtonH - 1;
+
+  
+  if (bFieldIsTxt) {
     // Text field
-    pElemRefTmp = gslc_ElemCreateTxt(pGui, nKeyId, GSLC_PAGE_NONE,
-      (gslc_tsRect) { nOffsetX + (nCol*nButtonSzW), nOffsetY + (nRow*nButtonSzH), nButtonW-1, nButtonH - 1 },
-      pKeyStr, XKEYPAD_VAL_LEN, nFontId);
-    gslc_ElemSetFrameEn(pGui, pElemRefTmp, true);
-    gslc_ElemSetTxtMargin(pGui, pElemRefTmp, 5); // Apply default margin
+    gslc_XKeyPadDrawVirtualTxt(pGui,rElem,pXData,colFrame,colFill,colTxt);
   } else {
     // Text button
-    //GSLC_DEBUG2_PRINT("DrawBtn: %d [%s] @ r=%d,c=%d,width=%d\n", nKeyId, pXData->pacKeys[nKeyId], nRow, nCol, nButtonW);
-    pElemRefTmp = gslc_ElemCreateBtnTxt(pGui, nKeyId, GSLC_PAGE_NONE,
-      (gslc_tsRect) { nOffsetX + (nCol*nButtonSzW), nOffsetY + (nRow*nButtonSzH), nButtonW - 1, nButtonH - 1 },
-      pKeyStr, sizeof(pKeyStr), nFontId, &gslc_ElemXKeyPadClick);
-    // For the text buttons, optionally use rounded profile if enabled
-    gslc_ElemSetRoundEn(pGui, pElemRefTmp, pConfig->bRoundEn);
+    // - Support button spacing config
+    rElem = gslc_ExpandRect(rElem,-(pConfig->nButtonSpaceX),-(pConfig->nButtonSpaceY));
+    gslc_XKeyPadDrawVirtualBtn(pGui,rElem,pKeyStr,sizeof(pKeyStr),pConfig->nFontId,colFrame, 
+      colFill,colTxt,pConfig->bRoundEn);
   }
 
-  // Set color
-  gslc_ElemSetTxtCol(pGui, pElemRefTmp, GSLC_COL_WHITE);
-  gslc_ElemSetCol(pGui, pElemRefTmp, GSLC_COL_WHITE, cColFill, cColGlow);
-
-  // Set the visibility status
-  // FIXME: Need to fix dynamic visibility change
-  // gslc_ElemSetVisible(pGui, pElemRefTmp, bVisible);
-  if (!bVisible) {
-    // For now, skip addition of invisible buttons
-	  return;
-  }
-
-  // Add element to compound element collection
-  pElemTmp = gslc_GetElemFromRef(pGui, pElemRefTmp);
-  pElemRefTmp = gslc_CollectElemAdd(pGui, &pXData->sCollect, pElemTmp, GSLC_ELEMREF_DEFAULT);
 }
 
-gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
-  gslc_tsXKeyPad* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg* pConfig,
-  XKEYPAD_CREATE pfuncCreate, XKEYPAD_LOOKUP pfuncLookup)
+gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
+  gslc_tsXKeyPad* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg* pConfig)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXKeyPadCreate";
@@ -178,8 +295,9 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
   rElem.h = (nButtonSzH * pConfig->nMaxRows) + (2 * pConfig->nFrameMargin);
 
   gslc_tsElem sElem;
+  gslc_tsElemRef* pElemRef = NULL;
 
-  // Initialize composite element
+  // Initialize element
   sElem = gslc_ElemCreate(pGui, nElemId, nPage, GSLC_TYPEX_KEYPAD, rElem, NULL, 0, GSLC_FONT_NONE);
   sElem.nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   sElem.nFeatures |= GSLC_ELEM_FEA_FILL_EN;
@@ -187,70 +305,79 @@ gslc_tsElemRef* gslc_ElemXKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, in
   sElem.nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
   sElem.nGroup = GSLC_GROUP_ID_NONE;
 
-  gslc_CollectReset(&pXData->sCollect, pXData->psElem, pXData->nSubElemMax, pXData->psElemRef, pXData->nSubElemMax);
-
   sElem.pXData = (void*)(pXData);
   // Specify the custom drawing callback
-  sElem.pfuncXDraw = &gslc_ElemXKeyPadDraw;
+  sElem.pfuncXDraw = &gslc_XKeyPadDraw;
   // Specify the custom touch tracking callback
-  sElem.pfuncXTouch = &gslc_ElemXKeyPadTouch;
-
+  sElem.pfuncXTouch = &gslc_XKeyPadTouch;
+ 
   // shouldn't be used
-  sElem.colElemFill = GSLC_COL_BLACK;
-  sElem.colElemFillGlow = GSLC_COL_BLACK;
-  sElem.colElemFrame = GSLC_COL_BLUE;
-  sElem.colElemFrameGlow = GSLC_COL_BLUE_LT4;
-
-  // Now create the sub elements
-  gslc_tsElemRef* pElemRef = NULL;
+  sElem.colElemFill       = GSLC_COL_BLACK;
+  sElem.colElemFillGlow   = GSLC_COL_BLACK;
+  sElem.colElemFrame      = GSLC_COL_WHITE;
+  sElem.colElemFrameGlow  = GSLC_COL_WHITE;
+  sElem.colElemText       = GSLC_COL_WHITE;
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.
   int16_t nOffsetX = nX0 + pConfig->nFrameMargin;
   int16_t nOffsetY = nY0 + pConfig->nFrameMargin;
 
-  // Reset value string
-  memset(pXData->acValStr, 0, XKEYPAD_VAL_LEN);
-  pXData->nValStrPos = 0;
+  // Reset buffer and associated state
+  gslc_ElemXKeyPadReset(pXData);
 
-  pXData->pacKeys = pConfig->pacKeys;
-  pXData->pfuncCb = NULL;
-  pXData->pfuncLookup = pfuncLookup;
-  pXData->nTargetId = GSLC_ID_NONE;  // Default to no target defined
-  pXData->bValPositive = true;
-  pXData->bValDecimalPt = false;
+  pXData->pfuncCb       = NULL;
+  pXData->pTargetRef    = NULL;  // Default to no target defined
 
   // Update config with constructor settings
+  // Ensure the Font has been defined
+  gslc_tsFont* pFont = gslc_FontGet(pGui,nFontId);
+  if (pFont == NULL) {
+    GSLC_DEBUG2_PRINT("ERROR: XKeyPadCreateBase(ID=%d): Font(ID=%d) not loaded\n",nElemId,nFontId);
+    return NULL;
+  }
   pConfig->nFontId = nFontId;
   pConfig->nOffsetX = nOffsetX;
   pConfig->nOffsetY = nOffsetY;
 
+  // Save pointer to config struct
+  // - Note that this will likely be a variant config (typecast to appear as base config)
+  pXData->pConfig = pConfig;
 
-  // Copy content into local structure
-  pXData->sConfig = *pConfig;
-
-  // Create the keypad definition
-  // -- Call XKeyPadCreateKeys()
-  if (pfuncCreate != NULL) {
-    (*pfuncCreate)(pGui, pXData);
-  }
-
-  // Now proceed to add the compound element to the page
+  // Now proceed to add the element to the page
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui, nPage, &sElem, GSLC_ELEMREF_DEFAULT);
-
-    // Now propagate the parent relationship to enable a cascade
-    // of redrawing from low-level elements to the top
-    gslc_CollectSetParent(pGui, &pXData->sCollect, pElemRef);
     return pElemRef;
   }
-  else {
-    #if defined(DEBUG_LOG)
-    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadCreate(%s) Compound elements inside compound elements not supported\n", "");
-    #endif
-    return NULL;
-  }
+  return NULL;
+}
 
+void gslc_XKeyPadAdjustScroll(gslc_tsXKeyPad* pKeyPad)
+{
+  uint8_t nScrollPos = pKeyPad->nScrollPos;
+  uint8_t nCursorPos = pKeyPad->nCursorPos;
+  uint8_t nDispMax = pKeyPad->pConfig->nDispMax;
+
+  if (nCursorPos < nScrollPos) {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("DBG: AdjustScroll to show left\n","");
+    pKeyPad->nScrollPos = nCursorPos;
+  } else if (nCursorPos >= (nScrollPos + nDispMax)) {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("DBG: AdjustScroll to show right\n","");
+    pKeyPad->nScrollPos = nCursorPos - (nDispMax-1);
+  }
+}
+
+bool gslc_XKeyPadLayoutSet(gslc_tsXKeyPadCfg* pConfig,int8_t eLayoutSel)
+{
+  int8_t eLayoutCur = pConfig->eLayoutSel;
+  gslc_tsKey* pLayoutCur = pConfig->pLayouts[eLayoutCur];
+  gslc_tsKey* pLayoutSel = pConfig->pLayouts[eLayoutSel];
+  pConfig->eLayoutSel = eLayoutSel;
+  pConfig->pLayout = pLayoutSel;
+
+  // Indicate if a full layout change has occurred
+  // - This is used by the caller to see if the entire control should be redrawn
+  return (pLayoutCur != pLayoutSel);
 }
 
 void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const char* pStrBuf)
@@ -258,54 +385,63 @@ void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const ch
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return;
 
-  // Copy over the new value string
-  strncpy(pKeyPad->acValStr, pStrBuf, XKEYPAD_VAL_LEN);
-  pKeyPad->acValStr[XKEYPAD_VAL_LEN - 1] = 0; // Force null terminate
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
 
-  // Handle negation and floating point detection
-  pKeyPad->bValPositive = true;
-  if (pKeyPad->acValStr[0] == KEYPAD_DISP_NEGATIVE) {
-    pKeyPad->bValPositive = false;
-  }
-  pKeyPad->bValDecimalPt = false;
-  if (strchr(pKeyPad->acValStr, KEYPAD_DISP_DECIMAL_PT)) {
-    pKeyPad->bValDecimalPt = true;
+  // Copy over the new value string
+  strncpy(pKeyPad->acBuffer, pStrBuf, pKeyPad->nBufferMax);
+  pKeyPad->acBuffer[pKeyPad->nBufferMax-1] = 0; // Force null terminate
+
+  // Set the redraw status
+  pKeyPad->sRedraw.eRedrawState = pKeyPad->sRedraw.eRedrawState | XKEYPAD_REDRAW_TXT;
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+
+  // Handle any state initialization in the KeyPad variants
+  // based on the string content
+  GSLC_CB_XKEYPAD_TXT_INIT  pfuncTxtInit = pConfig->pfuncTxtInit;
+  if (pfuncTxtInit != NULL) {
+    (*pfuncTxtInit)((void*)pKeyPad);
   }
 
   // Update the current buffer position
-  pKeyPad->nValStrPos = strlen(pKeyPad->acValStr);
+  pKeyPad->nBufferLen = strlen(pKeyPad->acBuffer);
 
-  // Find element associated with text field
-  gslc_tsElemRef* pTxtElemRef = gslc_CollectFindElemById(pGui, &pKeyPad->sCollect, KEYPAD_ID_TXT);
+  // Set the cursor to the end of the buffer
+  pKeyPad->nCursorPos = pKeyPad->nBufferLen;
+  gslc_XKeyPadAdjustScroll(pKeyPad);
 
-  // Mark as needing redraw
-  gslc_ElemSetRedraw(pGui,pTxtElemRef,GSLC_REDRAW_INC);
 }
 
-void gslc_ElemXKeyPadTargetIdSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nTargetId)
+
+void gslc_ElemXKeyPadTargetRefSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsElemRef* pTxtRef)
 {
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return;
-  pKeyPad->nTargetId = nTargetId;
+  pKeyPad->pTargetRef = pTxtRef;
 }
+
 
 int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData)
 {
   if (pvData == NULL) {
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadDataTargetIdGet() NULL data\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: XKeyPadDataTargetIdGet() NULL data\n", "");
     #endif
     return GSLC_ID_NONE;
   }
   gslc_tsXKeyPadData* pData = (gslc_tsXKeyPadData*)pvData;
-  return pData->nTargetId;
+  gslc_tsElemRef* pElemRef = pData->pTargetRef;
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (pElem == NULL) {
+    return GSLC_ID_NONE;
+  }
+  return pElem->nId;
 }
 
 char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
 {
   if (pvData == NULL) {
     #if defined(DEBUG_LOG)
-    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXKeyPadDataValGet() NULL data\n", "");
+    GSLC_DEBUG2_PRINT("ERROR: XKeyPadDataValGet() NULL data\n", "");
     #endif
     return NULL;
   }
@@ -314,30 +450,20 @@ char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
 }
 
 
-
-// NOTE: API changed to pass nStrBufLen (total buffer size including terminator)
-//       instead of nStrBufMax (max index value)
+// Fetch the current value of the keypad
+// - Note that users will normally fetch the value through the gslc_ElemXKeyPadValGet()
+//   as a result of a callback after pressing Enter.
+// - gslc_ElemXKeyPadValGet can be useful to fetch the current value at
+//   any time during operation.
 bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pStrBuf, uint8_t nStrBufLen)
 {
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return false;
 
-  // - Check for negation flag
-  // - If negative, copy minus sign
-  // - Copy the remainder of the string
-  // FIXME: check for shortest of XKEYPAD_VAL_LEN & nStrBufLen
   char* pBufPtr = pStrBuf;
   uint8_t nMaxCopyLen = nStrBufLen - 1;
-  // FIXME: Do we still need to do this step?
-  if (!pKeyPad->bValPositive) {
-    *pBufPtr = KEYPAD_DISP_NEGATIVE;
-    pBufPtr++;
-    nMaxCopyLen--;
-  }
-  strncpy(pBufPtr, pKeyPad->acValStr, nMaxCopyLen);
+  strncpy(pBufPtr, pKeyPad->acBuffer, nMaxCopyLen);
   pStrBuf[nStrBufLen-1] = '\0';  // Force termination
-
-  // TODO: Do we need to reset the contents?
 
   return true;
 }
@@ -345,38 +471,35 @@ bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pS
 
 // Redraw the KeyPad element
 // - When drawing a KeyPad we do not clear the background.
-//   We do redraw the sub-element collection.
-bool gslc_ElemXKeyPadDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
+bool gslc_XKeyPadDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
 {
   gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
 
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return false;
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
 
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
 
-  // Draw any parts of the compound element itself
+  // For full redraw, we draw the background and force
+  // the fill to ensure the background doesn't bleed through
+  // between the keys.
   if (eRedraw == GSLC_REDRAW_FULL) {
-    // Force the fill to ensure the background doesn't bleed thorugh gaps
-    // between the sub-elements
     gslc_DrawFillRect(pGui, pElem->rElem, pElem->colElemFill);
     if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
       gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
     }
+
+    // Also ensure the keypad's pending state is set to full
+    pKeyPad->sRedraw.eRedrawState = XKEYPAD_REDRAW_FULL;
+    pKeyPad->sRedraw.nRedrawKeyId = -1;
   }
 
-  // Draw the sub-elements
-  gslc_tsCollect* pCollect = &pKeyPad->sCollect;
-
-  if (eRedraw != GSLC_REDRAW_NONE) {
-    uint8_t sEventSubType = GSLC_EVTSUB_DRAW_NEEDED;
-    if (eRedraw == GSLC_REDRAW_FULL) {
-      sEventSubType = GSLC_EVTSUB_DRAW_FORCE;
-    }
-    gslc_tsEvent  sEvent = gslc_EventCreate(pGui, GSLC_EVT_DRAW, sEventSubType, (void*)(pCollect), NULL);
-    gslc_CollectEvent(pGui, sEvent);
-  }
+  // Redraw the keypad
+  // - If incremental, may only redraw the text field
+  // - Otherwise, redraw everything
+  gslc_XKeyPadDrawLayout(pGui, (void*)pKeyPad, pElem->colElemFrame, pElem->colElemFill, pElem->colElemText, eRedraw);
 
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_NONE);
@@ -395,77 +518,136 @@ void gslc_ElemXKeyPadValSetCb(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_C
   pKeyPad->pfuncCb = pfuncCb;
 }
 
-// Change the sign of the number string
-// - This function also performs in-place shifting of the content
-void gslc_ElemXKeyPadValSetSign(gslc_tsGui* pGui, gslc_tsElemRef *pElemRef, bool bPositive)
+void gslc_XKeyPadSizeAllGet(gslc_tsKey** pLayouts, uint8_t nNumLayouts, uint8_t* pnRows, uint8_t* pnCols)
 {
-  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
-  if (!pKeyPad) return;
-
-  char* pStrBuf = pKeyPad->acValStr;
-
-  //GSLC_DEBUG2_PRINT("SetSign: old=%d new=%d\n", pKeyPad->bValPositive, bPositive);
-  if (pKeyPad->bValPositive == bPositive) {
-    // No change to sign
-    return;
+  uint8_t nMaxRows;
+  uint8_t nMaxCols;
+  *pnRows = 0;
+  *pnCols = 0;
+  for (uint8_t nLayoutInd=0;nLayoutInd<nNumLayouts;nLayoutInd++) {
+    gslc_XKeyPadSizeGet(pLayouts[nLayoutInd],&nMaxRows,&nMaxCols);
+    *pnRows = (nMaxRows > *pnRows)? nMaxRows : *pnRows;
+    *pnCols = (nMaxCols > *pnCols)? nMaxCols : *pnCols;
   }
-
-  //GSLC_DEBUG2_PRINT("SetSign:   str_old=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
-
-  if ((pKeyPad->bValPositive) && (!bPositive)) {
-    // Change from positive to negative
-    // - Shift string right one position, and replace first position with minus sign
-    // - Increase current buffer position
-    memmove(pStrBuf+1, pStrBuf, XKEYPAD_VAL_LEN-1);
-    pStrBuf[0] = KEYPAD_DISP_NEGATIVE; // Overwrite with minus sign
-    pStrBuf[XKEYPAD_VAL_LEN-1] = 0; // Force terminate
-    pKeyPad->nValStrPos++; // Advance buffer position
-  } else if ((!pKeyPad->bValPositive) && (bPositive)) {
-    // Change from negative to positive
-    // - Shift string left one position, overwriting the minus sign
-    memmove(pStrBuf, pStrBuf+1, XKEYPAD_VAL_LEN-1);
-    pStrBuf[XKEYPAD_VAL_LEN-1] = 0; // Force terminate
-    if (pKeyPad->nValStrPos > 0) {
-      // Expect that original position should be non-zero if previously minux
-      pKeyPad->nValStrPos--; // Reduce buffer position
-    }
-  }
-
-  //GSLC_DEBUG2_PRINT("SetSign:   str_new=[%s] idx=%d\n", pStrBuf,pKeyPad->nValStrPos);
-
-  // Update sign state
-  pKeyPad->bValPositive = bPositive;
-
-  // The text string sub-element content has already been updated,
-  // so now we can simply mark it for redraw
-  gslc_tsElemRef* pTxtElemRef = gslc_CollectFindElemById(pGui, &pKeyPad->sCollect, KEYPAD_ID_TXT);
-  gslc_ElemSetRedraw(pGui,pTxtElemRef,GSLC_REDRAW_INC);
-
 }
 
-bool ElemXKeyPadAddChar(gslc_tsGui* pGui, gslc_tsXKeyPad* pKeyPad, char ch)
+void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols)
 {
-  bool bRedraw = false;
-  // Do we have space for this character?
-  if (pKeyPad->nValStrPos < XKEYPAD_VAL_LEN - 1) {
-    pKeyPad->acValStr[pKeyPad->nValStrPos] = ch;
-    pKeyPad->nValStrPos++;
-    pKeyPad->acValStr[pKeyPad->nValStrPos] = '\0'; // Zero terminate
-    bRedraw = true;
-  }
-  return bRedraw;
+  uint8_t nRow, nCol, nRowSpan, nColSpan;
+
+  int16_t       nInd;
+  bool          bDone;
+  uint8_t       nType;
+  gslc_tsKey    sKey;
+
+  // Reset maximums
+  *pnRows = 0;
+  *pnCols = 0;
+
+  bDone = false;
+  nInd = 0;
+  while (!bDone) {
+    sKey = pLayout[nInd];
+    nType = sKey.nType;
+    if (nType == E_XKEYPAD_TYPE_END) {
+      bDone = true;
+    } else {
+      nRow     = sKey.nRow; 
+      nCol     = sKey.nCol; 
+      nRowSpan = sKey.nRowSpan;
+      nColSpan = sKey.nColSpan;
+
+      // Update maximum extents
+      *pnRows = (nRow + nRowSpan >= *pnRows)? nRow + nRowSpan : *pnRows;
+      *pnCols = (nCol + nColSpan >= *pnCols)? nCol + nColSpan : *pnCols;
+
+      // Check next button
+      nInd++;
+
+    } // nType
+
+  } // while !bDone
 }
 
-// Handle the compound element main functionality
+
+// Map keypad ID to its bounding rectangle position
+int16_t gslc_XKeyPadMapEvent(gslc_tsGui* pGui, void* pXData, int16_t nRelX, int16_t nRelY)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pXData;
+  gslc_tsXKeyPadCfg* pConfig;
+
+  pConfig = pKeyPad->pConfig;
+
+  uint8_t nRow, nCol, nRowSpan, nColSpan;
+
+  int16_t nButtonSzW = pConfig->nButtonSzW;
+  int16_t nButtonSzH = pConfig->nButtonSzH;
+  int16_t nOffsetX   = pConfig->nOffsetX;
+  int16_t nOffsetY   = pConfig->nOffsetY;
+  
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadMapEvent: nRelX=%d nRelY=%d\n",nRelX,nRelY);
+
+  // Scan for button (but skip over text field)
+  uint8_t       nId;
+  int16_t       nInd;
+  bool          bDone;
+  gslc_tsRect   selRect;
+  uint8_t       nType;
+  gslc_tsKey    sKey;
+
+  bDone = false;
+  nInd = 0;
+  while (!bDone) {
+    sKey = pConfig->pLayout[nInd];
+    nId = sKey.nId;
+    nType = sKey.nType;
+    if (nType == E_XKEYPAD_TYPE_END) {
+      bDone = true;
+      return -1; // Not found
+    } else if (nType == E_XKEYPAD_TYPE_TXT) {
+      // Skip over text field
+      nInd++;
+      continue;
+    } else {
+      // Basic and Special buttons
+      nRow     = sKey.nRow; 
+      nCol     = sKey.nCol; 
+      nRowSpan = sKey.nRowSpan;
+      nColSpan = sKey.nColSpan;
+  
+      int16_t nButtonW = (nColSpan * nButtonSzW);
+      int16_t nButtonH = (nRowSpan * nButtonSzH);
+
+      selRect.x = nOffsetX + (nCol*nButtonSzW);
+      selRect.y = nOffsetY + (nRow*nButtonSzH);
+      selRect.w = nButtonW - 1;
+      selRect.h = nButtonH - 1;
+
+      // Adjust for button spacing
+      // TODO selRect = gslc_ExpandRect(selRect,-(pConfig->nButtonSpaceX),-(pConfig->nButtonSpaceY));
+    
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  selRect.x=%d selRect.y=%d selRect.w=%d selRect.h=%d\n",selRect.x,selRect.y,selRect.w,selRect.h);
+
+      if (gslc_IsInRect(nRelX,nRelY,selRect)) {
+        if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  match: i=%d ID=%d\n", nInd, nId);
+        return (int16_t)nId;
+      } else {
+        // No match, so check the next button
+        nInd++;
+      }
+
+    } // nType
+
+  } // while !bDone
+
+  // Should not get here
+  return -1;
+}
+
 // - This routine is called by gslc_ElemEvent() to handle
 //   any click events that resulted from the touch tracking process.
-// - The code here will generally represent the core
-//   functionality of the compound element and any communication
-//   between sub-elements.
-// - pvElemRef is a void pointer to the element ref being tracked. From
-//   the pElemRefParent member we can get the parent/compound element
-//   data structures.
-bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
+// FIXME: Add back in support for glowing state?
+bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
 {
   #if defined(DRV_TOUCH_NONE)
   return false;
@@ -474,169 +656,254 @@ bool gslc_ElemXKeyPadClick(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, in
   gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  gslc_tsRect rElem = pElem->rElem;
+  
+  int16_t nRelX = nX + rElem.x;
+  int16_t nRelY = nY + rElem.y;
 
-  // Fetch the parent of the clicked element which is the compound
-  // element itself. This enables us to access the extra control data.
-  gslc_tsElemRef*    pElemRefParent = pElem->pElemRefParent;
-  if (pElemRefParent == NULL) {
-    GSLC_DEBUG2_PRINT("ERROR: ElemXKeyPadClick(%s) parent ElemRef ptr NULL\n", "");
-    return false;
-  }
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
+  if (pKeyPad == NULL) return false;
 
-  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRefParent, GSLC_TYPEX_KEYPAD, __LINE__);
-  if (!pKeyPad) return false;
-
-  //GSLC_DEBUG2_PRINT("KeyPad Click   Touch=%d\n", eTouch);
-
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+  
+  gslc_teRedrawType eRedraw = GSLC_REDRAW_NONE;
+  gslc_tsXKeyPadResult sResult;
+  sResult.eRedrawState = XKEYPAD_REDRAW_NONE;
+  sResult.nRedrawKeyId = -1;
+  
   // Handle the various button presses
+  // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)
+  // TODO: Also handle GSLC_TOUCH_MOVE?
   if (eTouch == GSLC_TOUCH_UP_IN) {
-    // Get the tracked element ID
-    gslc_tsElemRef* pElemRefTracked = pKeyPad->sCollect.pElemRefTracked;
-    gslc_tsElem*    pElemTracked = gslc_GetElemFromRef(pGui, pElemRefTracked);
-
-    int nSubElemId = pElemTracked->nId;
-    int16_t nKeyInd = 0;
-    bool bValRedraw = false;
+    char* sKey;
 
     GSLC_CB_INPUT pfuncXInput = pKeyPad->pfuncCb;
-    XKEYPAD_LOOKUP pfuncLookup = pKeyPad->pfuncLookup;
     gslc_tsXKeyPadData sKeyPadData;
 
-    if (pfuncLookup != NULL) {
-      // FIXME: ERROR
-    }
-
     // Prepare the return data
-    sKeyPadData.pStr = pKeyPad->acValStr;
-    sKeyPadData.nTargetId = pKeyPad->nTargetId;
+    sKeyPadData.pStr = pKeyPad->acBuffer;
+    sKeyPadData.pTargetRef = pKeyPad->pTargetRef;
+    
+    // Determine if touch matches any fields on the keypad
+    int16_t nId = gslc_XKeyPadMapEvent(pGui, pKeyPad, nRelX, nRelY);
 
-    //GSLC_DEBUG2_PRINT("KeyPad Click   ID=%d\n", nSubElemId);
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTouch: ID=%d\n", nId);
+    if (nId == -1) return false;
 
-    switch (nSubElemId) {
+    GSLC_CB_XKEYPAD_BTN_EVT  pfuncBtnEvt = pConfig->pfuncBtnEvt;
+    
+    switch (nId) {
 
     case KEYPAD_ID_ENTER:
-      //GSLC_DEBUG2_PRINT("KeyPad Key=ENT\n", "");
-      //GSLC_DEBUG2_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
-
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ENT Done Str=[%s]\n", pKeyPad->acBuffer);
    
       // Issue callback with Done status
       if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_DONE, (void*)(&sKeyPadData));
+        (*pfuncXInput)(pvGui, (void*)(pElemRef), XKEYPAD_CB_STATE_DONE, (void*)(&sKeyPadData));
       }
 
-      // Clear the contents
-      memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
-      pKeyPad->nValStrPos = 0;
-      pKeyPad->nTargetId = GSLC_ID_NONE;
+      // Reset buffer and associated state
+      gslc_ElemXKeyPadReset(pKeyPad);
+      break;
+
+    case KEYPAD_ID_SCROLL_RIGHT:
+      // Ensure we don't step past the end of the buffer
+      // - Note that the cursor ranges from 0..len(acBuffer)
+      if (pKeyPad->nCursorPos < pKeyPad->nBufferLen) {
+        pKeyPad->nCursorPos++;
+      }
+      // In case we have changed the cursor, adjust the scroll
+      gslc_XKeyPadAdjustScroll(pKeyPad);
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ScrollR Src=[%s]/%d/%d CursorPos=%d ScrollPos=%d\n",
+        pKeyPad->acBuffer,strlen(pKeyPad->acBuffer),pKeyPad->nBufferLen,pKeyPad->nCursorPos,pKeyPad->nScrollPos);
+      sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_TXT;
+      break;
+
+    case KEYPAD_ID_SCROLL_LEFT:
+      // Ensure we don't step past the front of the buffer
+      if (pKeyPad->nCursorPos > 0) {
+        pKeyPad->nCursorPos--;
+      }
+      // In case we have changed the cursor, adjust the scroll
+      gslc_XKeyPadAdjustScroll(pKeyPad);
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ScrollL Src=[%s]/%d/%d CurPos=%d ScrPos=%d\n",
+        pKeyPad->acBuffer,strlen(pKeyPad->acBuffer),pKeyPad->nBufferLen,pKeyPad->nCursorPos,pKeyPad->nScrollPos);
+      sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_TXT;
       break;
 
     case KEYPAD_ID_ESC:
-      //GSLC_DEBUG2_PRINT("KeyPad Key=ESC\n", "");
-      // Clear the contents
-      memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
-      pKeyPad->nValStrPos = 0;
-      pKeyPad->nTargetId = GSLC_ID_NONE;    
-      bValRedraw = true;
-      //GSLC_DEBUG2_PRINT("KeyPad Done Str=[%s]\n", pKeyPad->acValStr);
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ESC\n", "");
+      // Reset buffer and associated state
+      gslc_ElemXKeyPadReset(pKeyPad);
+      sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_TXT;
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Done Str=[%s]\n", pKeyPad->acBuffer);
       // Issue callback with Cancel status
       if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_CANCEL, (void*)(&sKeyPadData));
+        (*pfuncXInput)(pvGui, (void*)(pElemRef), XKEYPAD_CB_STATE_CANCEL, (void*)(&sKeyPadData));
       }
       break;
 
-    case KEYPAD_ID_DECIMAL:
-      //GSLC_DEBUG2_PRINT("KeyPad Key=Decimal\n", "");
-      if (!pKeyPad->sConfig.bFloatEn) break; // Ignore if floating point not enabled
-      if (!pKeyPad->bValDecimalPt) {
-        bValRedraw |= ElemXKeyPadAddChar(pGui, pKeyPad, KEYPAD_DISP_DECIMAL_PT);
-      }
-      break;
-
-    case KEYPAD_ID_MINUS:
-      //GSLC_DEBUG2_PRINT("KeyPad Key=Minus\n", "");
-      if (!pKeyPad->sConfig.bSignEn) break; // Ignore if negative numbers not enabled
-      // Toggle sign
-      gslc_ElemXKeyPadValSetSign(pGui, pElemRefParent, pKeyPad->bValPositive ? false : true);
-      bValRedraw = true;
-      break;
-
-    case KEYPAD_ID_BACKSPACE:
-      //GSLC_DEBUG2_PRINT("KeyPad Key=BS\n", "");
-      if (pKeyPad->nValStrPos < 1) break;
-      pKeyPad->nValStrPos--;
-      // Handle the special case of decimal point if floating point enabled
-      if (pKeyPad->sConfig.bFloatEn) {
-        if (pKeyPad->acValStr[pKeyPad->nValStrPos] == KEYPAD_DISP_DECIMAL_PT) {
-          //GSLC_DEBUG2_PRINT("KeyPad Key=BS across decimal\n", "");
-          pKeyPad->bValDecimalPt = false;
-        }
-      }
-      if (pKeyPad->nValStrPos == 0) {
-        memset(pKeyPad->acValStr, 0, XKEYPAD_VAL_LEN);
-        pKeyPad->bValPositive = true;
-      }
-      pKeyPad->acValStr[pKeyPad->nValStrPos] = '\0';
-      bValRedraw = true;
-      break;
-
-    case KEYPAD_ID_PERIOD:
-    case KEYPAD_ID_SPACE:
+    // Defer handling of all other buttons to variant
     default:
       // Normal character
-      //GSLC_DEBUG2_PRINT("KeyPad Key=Digit\n", "");
+
       // For basic buttons, we need to fetch the keypad string index
-      nKeyInd = (*pfuncLookup)(pGui, nSubElemId);
-      bValRedraw |= ElemXKeyPadAddChar(pGui, pKeyPad, pKeyPad->pacKeys[nKeyInd][0]);
+
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=Other ID=%d Str act pos=%d before=[%s]\n",
+        nId,pKeyPad->nBufferLen,pKeyPad->acBuffer);
+
+      // Call the variant button handler
+      if (pfuncBtnEvt != NULL) {
+        (*pfuncBtnEvt)((void*)pKeyPad,nId,&sResult);
+      }
+
+      // Note regarding backspace
+      // - We let the variant handler (BtnEvt) take care of the main edit
+      //   functions, which may in turn call DelCh(), updating the
+      //   buffer length and cursor position.
+      if (nId == KEYPAD_ID_BACKSPACE) {
+        if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=BACK\n","");
+      }
+      // In case we have changed the buffer or cursor, adjust the scroll
+      gslc_XKeyPadAdjustScroll(pKeyPad);
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key Src=[%s]/%d/%d CursorPos=%d ScrollPos=%d\n",
+        pKeyPad->acBuffer,strlen(pKeyPad->acBuffer),pKeyPad->nBufferLen,pKeyPad->nCursorPos,pKeyPad->nScrollPos);
       break;
+
     } // switch
 
-    // Do we need to redraw the text field?
-    if (bValRedraw) {
-      pElemRef = gslc_CollectFindElemById(pGui, &pKeyPad->sCollect, KEYPAD_ID_TXT);
-      gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_INC);
-      // Issue callback with Update status
-      if (pfuncXInput != NULL) {
-        (*pfuncXInput)(pvGui, (void*)(pElemRefParent), XKEYPAD_CB_STATE_UPDATE, (void*)(&sKeyPadData));
-      }
-    } // bValRedraw
-
   } // eTouch
+
+  // Assign the KeyPad's custom redraw status
+  pKeyPad->sRedraw = sResult;
+
+  // Assign the GUIslice standard redraw flag
+  if (sResult.eRedrawState == XKEYPAD_REDRAW_NONE) {
+    eRedraw = GSLC_REDRAW_NONE;
+  } else if (sResult.eRedrawState & RBIT_CTRL) {
+    eRedraw = GSLC_REDRAW_FULL;
+  } else {
+    eRedraw = GSLC_REDRAW_INC;
+  }
+
+  gslc_ElemSetRedraw(pGui,pElemRef,eRedraw);
 
   return true;
   #endif // !DRV_TOUCH_NONE
 }
 
-bool gslc_ElemXKeyPadTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, int16_t nRelX, int16_t nRelY)
+// Remove a character from the KeyPad text field at the selected position
+// - May change the buffer & length
+// - May change the cursor position
+bool gslc_XKeyPadTxtDelCh(gslc_tsXKeyPad* pKeyPad,uint8_t nPos)
 {
-  #if defined(DRV_TOUCH_NONE)
-  return false;
-  #else
+  uint8_t nCursorPos = pKeyPad->nCursorPos;
+  uint8_t nSrcLen = pKeyPad->nBufferLen;
+  bool bRedraw = false;
 
-  if ((pvGui == NULL) || (pvElemRef == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXKeyPadTouch";
-    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
-    return false;
+  if ((nPos == 0) || (nSrcLen == 0)) {
+    // Nothing to do
+  } else {
+    // Shift source buffer at selected position left by one
+    uint8_t nMoveLen = nSrcLen - nPos;
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadDelCh @ %d: SrcLen=%d CursorPos=%d MoveLen=%d Before=[%s]\n",
+      nPos,nSrcLen,nCursorPos,nMoveLen,pKeyPad->acBuffer);
+    memmove(pKeyPad->acBuffer+nPos-1,pKeyPad->acBuffer+nPos,nMoveLen);
+
+    // Update the buffer length
+    pKeyPad->nBufferLen--;
+    pKeyPad->acBuffer[pKeyPad->nBufferLen] = '\0'; // NULL terminate
+
+    // Retreat the cursor
+    // - Only do this if the deleted position was at or before the cursor
+    if (nPos <= pKeyPad->nCursorPos) {
+      pKeyPad->nCursorPos--;
+    }
+
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadDelCh: SrcLen=%d After=[%s]\n",
+      pKeyPad->nBufferLen,pKeyPad->acBuffer);
+
+    bRedraw = true;
   }
-  gslc_tsGui*           pGui = NULL;
-  gslc_tsElemRef*       pElemRef = NULL;
-  gslc_tsElem*          pElem = NULL;
-  gslc_tsXKeyPad*       pKeyPad = NULL;
-
-
-  // Typecast the parameters to match the GUI
-  pGui = (gslc_tsGui*)(pvGui);
-  pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  pElem = gslc_GetElemFromRef(pGui, pElemRef);
-  pKeyPad = (gslc_tsXKeyPad*)(pElem->pXData);
-
-  // Get Collection
-  gslc_tsCollect* pCollect = &pKeyPad->sCollect;
-
-  // Cascade the touch event to the sub-element collection
-  return gslc_CollectTouchCompound(pvGui, pvElemRef, eTouch, nRelX, nRelY, pCollect);
-  #endif // !DRV_TOUCH_NONE
+  return bRedraw;
 }
 
+// Add a character to the KeyPad text field at the selected position
+// - May change the buffer & length
+// - May change the cursor position
+bool gslc_XKeyPadTxtAddCh(gslc_tsXKeyPad* pKeyPad,char ch,uint8_t nPos)
+{
+  uint8_t nCursorPos = pKeyPad->nCursorPos;
+  uint8_t nBufLen = pKeyPad->nBufferLen;
+  bool bRedraw = false;
+
+  // Is there space for this character at the specified
+  // position within the buffer?
+  if (nPos+1 >= pKeyPad->nBufferMax) {
+    // No space, so terminate
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTxtAddCh @ %d: no space for char at pos\n",nPos);
+    return false;
+  }
+
+  // - Buffer is sized as: acBuffer[nBufferMax]
+  // - Need to leave room for extra character as well as the NULL
+
+  // Increment the total buffer length, but truncate at max (with NULL)
+  uint8_t nBufLenNew = (nBufLen+1 >= pKeyPad->nBufferMax)? pKeyPad->nBufferMax-1 : nBufLen+1;
+
+  // First, shift source buffer after selected position right by one
+  int8_t nMoveLen = (nBufLenNew - nPos) - 1;
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTxtAddCh @ %d: SrcLen=%d SrcLenNew=%d CursorPos=%d MoveLen=%d Before=[%s]\n",
+    nPos,nBufLen,nBufLenNew,nCursorPos,nMoveLen,pKeyPad->acBuffer);
+  if (nMoveLen > 0) {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh: move(d=%d,s=%d,len=%d)\n",
+      nPos+1,nPos,nMoveLen);
+    memmove(pKeyPad->acBuffer+nPos+1,pKeyPad->acBuffer+nPos,nMoveLen);
+
+  } else {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh: skip move\n","");
+  }
+
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh: set buf[%d]\n",nPos);
+
+  // Now insert the character
+  pKeyPad->acBuffer[nPos] = ch;
+
+
+  // Adjust the length
+  pKeyPad->nBufferLen = nBufLenNew;
+  pKeyPad->acBuffer[nBufLenNew] = '\0'; // NULL terminate
+
+  // Advance the cursor
+  // - Only do this if the inserted position was at or before the cursor
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh: cursor check: pos=%d CursorPos=%d\n",nPos,pKeyPad->nCursorPos);
+  if (nPos <= pKeyPad->nCursorPos) {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh:   cursor advance\n","");
+    pKeyPad->nCursorPos++;
+  } else {
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh:   skip cursor advance (no shift)\n","");
+  }
+
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  AddCh: SrcLen=%d CursorPos=%d After=[%s]\n",
+    pKeyPad->nBufferLen,pKeyPad->nCursorPos,pKeyPad->acBuffer);
+
+  bRedraw = true;
+
+  return bRedraw;
+}
+
+// Add a string (or UTF-8 character) to the current KeyPad txt field
+bool gslc_XKeyPadTxtAddStr(gslc_tsXKeyPad* pKeyPad,const char* pStr,uint8_t nPos)
+{
+  uint8_t nInsertPos = nPos;
+  uint8_t nStrLen = strlen(pStr);
+  uint8_t nStrPos;
+  bool bRedraw = false;
+  for (nStrPos=0;nStrPos<nStrLen;nStrPos++) {
+    bRedraw = bRedraw | gslc_XKeyPadTxtAddCh(pKeyPad,pStr[nStrPos],nInsertPos++);
+  }
+  return bRedraw;
+}
 
 
 void gslc_ElemXKeyPadCfgSetButtonSz(gslc_tsXKeyPadCfg* pConfig, int8_t nButtonSzW, int8_t nButtonSzH)
@@ -645,14 +912,10 @@ void gslc_ElemXKeyPadCfgSetButtonSz(gslc_tsXKeyPadCfg* pConfig, int8_t nButtonSz
   pConfig->nButtonSzH = nButtonSzH;
 }
 
-void gslc_ElemXKeyPadCfgSetFloatEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
+void gslc_ElemXKeyPadCfgSetButtonSpace(gslc_tsXKeyPadCfg* pConfig, int8_t nSpaceX, int8_t nSpaceY)
 {
-  pConfig->bFloatEn = bEn;
-}
-
-void gslc_ElemXKeyPadCfgSetSignEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
-{
-  pConfig->bSignEn = bEn;
+  pConfig->nButtonSpaceX = nSpaceX;
+  pConfig->nButtonSpaceY = nSpaceY;
 }
 
 void gslc_ElemXKeyPadCfgSetRoundEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
@@ -661,37 +924,258 @@ void gslc_ElemXKeyPadCfgSetRoundEn(gslc_tsXKeyPadCfg* pConfig, bool bEn)
 }
 
 
-// FIXME: Runtime API not fully functional yet - Do not use
-void gslc_ElemXKeyPadSetFloatEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn)
+void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPad* pKeyPad,
+  gslc_tsColor cColFrame, gslc_tsColor cColFill, gslc_tsColor cColTxt)
 {
-  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
-  if (!pKeyPad) return;
-  pKeyPad->sConfig.bFloatEn = bEn;
-  // Mark as needing full redraw as button visibility may have changed
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  gslc_tsElem  sElem;
+  gslc_tsElem* pVirtualElem = &sElem;
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+
+  // Create the display string from the main buffer
+  uint8_t nSrcPos;
+  char* pValStr = pKeyPad->acBuffer;
+  uint8_t nDispPos;
+  uint8_t nDispMax = pKeyPad->pConfig->nDispMax;
+  char acDispStr[nDispMax+1]; // Dynamic allocation, include NULL
+  uint8_t nCursorPos = pKeyPad->nCursorPos;
+  uint8_t nScrollPos = pKeyPad->nScrollPos;
+  uint8_t nSrcLen = pKeyPad->nBufferLen;
+  #if (XKEYPAD_CURSOR_ENHANCED)
+  char acTempStr[nDispMax+1]; // Dynamic allocation, include NULL
+  #endif
+
+  // ---
+  // The generation of the display string is done in 3 parts
+  // - Note that this could have been done in a single loop
+  //   or with memmove calls, but that makes the range checking
+  //   more involved.
+
+  // Reset the display string
+  nDispPos = 0;
+  acDispStr[nDispPos] = '\0';
+  int8_t nDispPosCursor = -1; // Default to no cursor visible
+
+  // - Step1: Source buffer prior to cursor
+  for (nSrcPos=nScrollPos;nSrcPos<nCursorPos;nSrcPos++) {
+    if ((nSrcPos < nSrcLen) && (nDispPos < nDispMax)) {
+      acDispStr[nDispPos++] = pValStr[nSrcPos];
+    }
+  }
+  // - Step2: Insert the cursor
+  if (nDispPos < nDispMax) {
+    nDispPosCursor = nDispPos; // Save the cursor position within display
+    acDispStr[nDispPos++] = XKEYPAD_CURSOR_CH;
+  }
+  // - Step3: Source buffer after cursor
+  for (nSrcPos=nCursorPos;nSrcPos<nSrcLen;nSrcPos++) {
+    if ((nSrcPos < nSrcLen) && (nDispPos < nDispMax)) {
+      acDispStr[nDispPos++] = pValStr[nSrcPos];
+    }
+  }
+  // ---
+
+  // NULL terminate
+  // - Note that we have left room for the NULL as acDispStr[]
+  //   is defined to have size (nDispMax+1)
+  acDispStr[nDispPos] = '\0';
+
+  gslc_ResetElem(pVirtualElem);
+  pVirtualElem->colElemFill       = cColFill;
+  pVirtualElem->colElemFillGlow   = cColFill;
+  pVirtualElem->colElemFrame      = cColFrame;
+  pVirtualElem->colElemFrameGlow  = cColFrame;
+  pVirtualElem->colElemText       = cColTxt;
+  pVirtualElem->colElemTextGlow   = cColTxt;
+
+  pVirtualElem->nFeatures         = GSLC_ELEM_FEA_NONE;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_VALID;
+
+  pVirtualElem->rElem             = rElem;
+  pVirtualElem->pTxtFont          = gslc_FontGet(pGui,pConfig->nFontId);
+
+  pVirtualElem->pStrBuf           = acDispStr;
+  pVirtualElem->nStrBufMax        = 0; // Virtual button has read-only string buffer
+  pVirtualElem->eTxtFlags         = GSLC_TXT_DEFAULT;
+  pVirtualElem->eTxtFlags         = (pVirtualElem->eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
+  pVirtualElem->eTxtAlign         = GSLC_ALIGN_MID_LEFT;
+  pVirtualElem->nTxtMarginX       = 2;
+  pVirtualElem->nTxtMarginY       = 2;
+  
+  // Render the virtual element
+  gslc_tsElemRef sElemRef;
+  sElemRef.pElem = pVirtualElem;
+  sElemRef.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_VISIBLE;
+
+  // Two different keypad cursor modes are available
+  // - XKEYPAD_CURSOR_ENHANCED=0: basic embedded cursor (same color as text)
+  // - XKEYPAD_CURSOR_ENHANCED=1: multi-color embedded cursor
+
+  #if (XKEYPAD_CURSOR_ENHANCED == 0)
+  // In the basic cursor mode, the cursor is the same color
+  // as the text. Proportional fonts should be supported.
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+
+  #else
+  // In the enhanced cursor mode, we support a differently-colored
+  // cursor versus the text. But we also have to make assumptions
+  // about each character width, meaning that proportional fonts
+  // won't be supported.
+  //
+  // In order to do this, we render the text string in 3 parts:
+  // - The text prior to the cursor
+  // - The cursor itself (potentially in a different color)
+  // - Any text after the cursor
+  // To leverage the existing code, we are rendering the
+  // virtual element three times, each with different parameters
+
+  int8_t nTxtLen;
+  int16_t nTxtSzW = 0;
+  int16_t nTxtPosX = 0;
+
+  pVirtualElem->pStrBuf = acTempStr;
+
+  // Clear out content first with empty framed baackground
+  strcpy(acTempStr,"");
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+
+  // For the interior context, we no longer want any frames
+  // - Also we shift the nTxtX by +1, nTxtY by +1 and
+  //   nTxtH by -2 to inset the text within the above frame
+  pVirtualElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
+
+  // Since we are splitting up the text field render into
+  // three parts, we need to disable the default "marginX"
+  // calculation in ElemDrawByRef, otherwise the margin
+  // will be accounted for multiple times. Instead, we
+  // clear the margin value but manually offset each render.
+  int16_t nMarginX = pVirtualElem->nTxtMarginX;
+  pVirtualElem->nTxtMarginX = 0;
+
+  // TODO: Determine if/how we should handle:
+  // - TxtOffsetX/Y
+  // Note that ElemDrawByRef() already calls DrvGetTxtSize()
+  // which utilizes the nTxtOffsetX/Y
+
+  int16_t       nTxtOffsetX=0;
+  int16_t       nTxtOffsetY=0;
+  uint16_t      nTxtSzH=0;
+
+  // Part 1: text before the cursor
+  // - The width of the first section also includes the
+  //   margin on the left side
+  nTxtLen = nDispPosCursor;
+  strncpy(acTempStr,acDispStr,nTxtLen);
+  acTempStr[nTxtLen] = '\0'; // NULL terminate
+
+  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+  nTxtPosX += nMarginX; // Account for margin once at start
+
+  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+  pVirtualElem->colElemText = cColTxt;
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+  nTxtPosX += nTxtSzW;
+
+  // Part 2: the cursor
+  nTxtLen = 1;
+  strncpy(acTempStr,acDispStr+nDispPosCursor,nTxtLen);
+  acTempStr[nTxtLen] = '\0'; // NULL terminate
+
+  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+
+  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+  pVirtualElem->colElemText = cColFrame;
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+  nTxtPosX += nTxtSzW;
+
+  // Part 3: text after cursor
+  nTxtLen = strlen(acDispStr)-nDispPosCursor;
+  strncpy(acTempStr,acDispStr+nDispPosCursor+1,nTxtLen);
+  acTempStr[nTxtLen] = '\0'; // NULL terminate
+
+  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+
+  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+  pVirtualElem->colElemText = cColTxt;
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+  nTxtPosX += nTxtSzW;
+
+  
+  #endif // XKEYPAD_CURSOR_ENHANCED
+
 }
 
-// FIXME: Runtime API not fully functional yet - Do not use
-void gslc_ElemXKeyPadSetSignEn(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool bEn)
+// FIXME: Add glow
+void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
+  char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId, gslc_tsColor cColFrame,
+  gslc_tsColor cColFill, gslc_tsColor cColText, bool bRoundedEn)
 {
-  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
-  if (!pKeyPad) return;
-  pKeyPad->sConfig.bSignEn = bEn;
-  // Mark as needing full redraw as button visibility may have changed
-  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+  gslc_tsElem  sElem;
+  gslc_tsElem* pVirtualElem = &sElem;
+
+  gslc_ResetElem(pVirtualElem);
+  pVirtualElem->colElemFill       = cColFill;
+  pVirtualElem->colElemFillGlow   = cColFill;
+  pVirtualElem->colElemFrame      = cColFrame;
+  pVirtualElem->colElemFrameGlow  = cColFrame;
+  pVirtualElem->colElemText       = cColText;
+  pVirtualElem->colElemTextGlow   = cColText;
+  pVirtualElem->nFeatures         = GSLC_ELEM_FEA_NONE;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_VALID;
+
+  pVirtualElem->rElem             = rElem;
+  pVirtualElem->pTxtFont          = gslc_FontGet(pGui,nFontId);
+
+  pVirtualElem->pStrBuf           = pStrBuf;
+  pVirtualElem->nStrBufMax        = nStrBufMax;
+  pVirtualElem->eTxtFlags         = GSLC_TXT_DEFAULT;
+  pVirtualElem->eTxtFlags         = (pVirtualElem->eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
+  pVirtualElem->eTxtAlign         = GSLC_ALIGN_MID_MID;
+  pVirtualElem->nTxtMarginX       = 0;
+  pVirtualElem->nTxtMarginY       = 0;
+
+  // For the text buttons, optionally use rounded profile if enabled
+  if (bRoundedEn) {
+    pVirtualElem->nFeatures |= GSLC_ELEM_FEA_ROUND_EN;
+  } else {
+    pVirtualElem->nFeatures &= ~GSLC_ELEM_FEA_ROUND_EN;
+  }
+
+  // Render the virtual element
+  gslc_tsElemRef sElemRef;
+  sElemRef.pElem = pVirtualElem;
+  sElemRef.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_VISIBLE;
+  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+
 }
 
 void gslc_ElemXKeyPadInputAsk(gslc_tsGui* pGui, gslc_tsElemRef* pKeyPadRef, int16_t nPgPopup, gslc_tsElemRef* pTxtRef)
 {
-  // Fetch the Element ID from the text element
-  gslc_tsElem* pTxtElem = gslc_GetElemFromRefD(pGui,pTxtRef,__LINE__);
-  if (!pTxtElem) return;
-  int16_t nTxtElemId = pTxtElem->nId;
-
   // Associate the keypad with the text field
-  gslc_ElemXKeyPadTargetIdSet(pGui, pKeyPadRef, nTxtElemId);
+  gslc_ElemXKeyPadTargetRefSet(pGui, pKeyPadRef, pTxtRef);
+
+  // Set the maximum buffer length based on the target text field size
+  // - The upper limit is defined by XKEYPAD_BUF_MAX
+  gslc_tsElem* pKeyPad = gslc_GetElemFromRef(pGui,pKeyPadRef);
+  gslc_tsXKeyPad* pKeyPadData = (gslc_tsXKeyPad*)(pKeyPad->pXData);
+  gslc_tsElem* pTxtElem = gslc_GetElemFromRef(pGui,pTxtRef);
+  pKeyPadData->nBufferMax = (pTxtElem->nStrBufMax >= XKEYPAD_BUF_MAX) ? XKEYPAD_BUF_MAX : pTxtElem->nStrBufMax;
+
+  // Initialize KeyPad state to defaults
+  GSLC_CB_XKEYPAD_RESET  pfuncReset = pKeyPadData->pConfig->pfuncReset;
+  if (pfuncReset != NULL) {
+    (*pfuncReset)((void*)(pKeyPadData->pConfig));
+  }
+
+  // Start with the default layout
+  gslc_XKeyPadLayoutSet(pKeyPadData->pConfig,pKeyPadData->pConfig->eLayoutDef);
+
   // Show a popup box for the keypad
   gslc_PopupShow(pGui, nPgPopup, true);
+
   // Preload text field with current value
   gslc_ElemXKeyPadValSet(pGui, pKeyPadRef, gslc_ElemGetTxtStr(pGui, pTxtRef));
 }
@@ -699,20 +1183,19 @@ void gslc_ElemXKeyPadInputAsk(gslc_tsGui* pGui, gslc_tsElemRef* pKeyPadRef, int1
 char* gslc_ElemXKeyPadInputGet(gslc_tsGui* pGui, gslc_tsElemRef* pTxtRef, void* pvCbData)
 {
   char* pStr = NULL;
+
   // Fetch the current value of the keypad popup
   pStr = gslc_ElemXKeyPadDataValGet(pGui, pvCbData);
+
   // Update the linked text item
-  gslc_ElemSetTxtStr(pGui, pTxtRef, gslc_ElemXKeyPadDataValGet(pGui, pvCbData));
+  gslc_ElemSetTxtStr(pGui, pTxtRef, pStr);
+
   // Hide the popup
   gslc_PopupHide(pGui);
 
   // Return the text string in case the user wants it
   return pStr;
 }
-
-
-
-#endif // GSLC_FEATURE_COMPOUND
 
 
 // ============================================================================
