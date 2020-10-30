@@ -44,9 +44,7 @@ extern "C" {
 // - These example configurations are located in the /configs folder
 // - To add your own, make a copy of an example config, rename it
 //   and add it to the list here.
-// - If no line is uncommented, then the default combined configuration
-//   file will be used, ie. GUIslice_config_ard.h / GUIslice_config_linux.h
-//   which is selected at the bottom of this file
+// - If no line is uncommented, an error message will be reported during compilation
 // - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
 //   to help identify a suitable config for your MCU shield / display
 // - Multiple configurations can be supported using the method described here:
@@ -207,10 +205,9 @@ extern "C" {
 //   will prevent these from loading if any of the user configs have been loaded
 // =========================================================================================
 
-#if defined(GSLC_CFG_LINUX)
-  #include "GUIslice_config_linux.h"
-#elif defined(GSLC_CFG_ARD)
-  #include "GUIslice_config_ard.h"
+#if !defined(_GUISLICE_CONFIG_ARD_H_) && !defined(_GUISLICE_CONFIG_LINUX_H_)
+  #error No config selected in GUIslice_config.h. Please uncomment/select a config.
+  #error For details: https://github.com/ImpulseAdventure/GUIslice/wiki/Select-a-Config
 #endif
 
 // -----------------------------------------------------------------------------------------
