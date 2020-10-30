@@ -107,6 +107,7 @@ extern "C" {
   //#include "../configs/due-adagfx-ili9225-notouch.h"
   //#include "../configs/due-adagfx-ili9341-ft6206.h"
   //#include "../configs/due-adagfx-ili9341-urtouch.h"
+  //#include "../configs/due-adagfx-ra8875-urtouch.h"
 
   // ESP8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
