@@ -6,7 +6,7 @@
 //   - CPU:     Arduino Zero
 //   - Display: RA8876 1024x600 SPI (EastRising TFTM070-6)
 //   - Touch:   FT5206 (Capacitive)
-//   - Wiring:  GEVINO TFT
+//   - Wiring:  GEVINO OPTO
 //
 //
 // DIRECTIONS:
@@ -76,7 +76,7 @@ extern "C" {
 
   // For shields, the following pinouts are typically hardcoded
   // These values were defined to match an Arduino Zero config
-  #define ADAGFX_PIN_CS       42    // Display chip select
+  #define ADAGFX_PIN_CS       11    // Display chip select
   #define ADAGFX_PIN_RST      -1    // Display Reset
 
   // SD Card
@@ -103,7 +103,7 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Touch bus & pinout
-  #define ADATOUCH_PIN_INT     38
+  #define ADATOUCH_PIN_INT     10
 
 
   // -----------------------------------------------------------------------------
