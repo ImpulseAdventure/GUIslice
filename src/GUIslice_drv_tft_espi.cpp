@@ -786,7 +786,12 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
 
   // Swap the colour byte order when rendering
   m_disp.setSwapBytes(true); 
-  m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
+  #if (GSLC_BMP_TRANS_EN)
+    uint16_t nTransRaw = gslc_DrvAdaptColorToRaw(pGui->sTransCol);
+    m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage, nTransRaw); 
+  #else
+    m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
+  #endif // GSLC_BMP_TRANS_EN
 }
 
 #if (GSLC_SD_EN)
