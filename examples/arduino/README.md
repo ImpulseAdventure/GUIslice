@@ -22,7 +22,7 @@ to run the minimal-RAM examples (see the `\examples\arduino_min` folder) instead
 Some sketches (eg. `ex03_ard_btn_img`) are intended to demonstrate image loading from SD cards.
 In order to support these functions, one needs to ensure:
 - Resource files from the `/res` folder are copied into the root of the SD card
-- SD card support is enabled in `GUIslice_config_ard.h` (via `#define GSLC_SD_EN 1`)
+- SD card support is enabled in the GUIslice config (via `#define GSLC_SD_EN 1`)
 - Some sketches (such as `ex18_ard_compound`) may include optional image support and
   therefore require uncommenting a section of code associated with the SD card images
 

@@ -19,11 +19,6 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-// Ensure optional compound element feature is enabled in the configuration
-// - Required by XKeyPad component
-#if !(GSLC_FEATURE_COMPOUND)
-  #error "Config: GSLC_FEATURE_COMPOUND required for this example but not enabled. Please update GUIslice_config."
-#endif
 
 #include "elem/XKeyPad_Num.h"
 
@@ -99,9 +94,7 @@ gslc_tsElemRef              m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                 m_asPopKeypadElem[MAX_ELEM_POP_KEYPAD_RAM];
 gslc_tsElemRef              m_asPopKeypadElemRef[MAX_ELEM_POP_KEYPAD];
 
-gslc_tsXKeyPad_Num          m_sKeyPadNum; // Keypad 
-
-#define MAX_STR                 100
+gslc_tsXKeyPad              m_sKeyPadNum; // Keypad 
 
 //<GUI_Extra_Elements !End!>
 
@@ -142,17 +135,11 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       //<Button Enums !Start!>
     case E_TXT_VAL1:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadTargetIdSet(&m_gui, m_pElemKeyPad, E_TXT_VAL1);
-      gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
-      // Preload current value
-      gslc_ElemXKeyPadValSet(&m_gui, m_pElemKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
+      gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
       break;
     case E_TXT_VAL2:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadTargetIdSet(&m_gui, m_pElemKeyPad, E_TXT_VAL2);
-      gslc_PopupShow(&m_gui, E_POP_KEYPAD, true);
-      // Preload current value
-      gslc_ElemXKeyPadValSet(&m_gui, m_pElemKeyPad, gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal2);
       break;
     case E_BTN_ADD:
       // Compute the sum and update the result
@@ -275,7 +262,7 @@ bool InitGUI()
 
   // Create E_TXT_VAL1 modifiable text label
   static char m_strtxt5[11] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_VAL1, E_PG_MAIN, (gslc_tsRect) { 90, 65, 62, 17 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_VAL1, E_PG_MAIN, (gslc_tsRect) { 90, 65, 62+10, 17 },
     (char*)m_strtxt5, 11, E_FONT_TXT1);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK1, GSLC_COL_BLACK, GSLC_COL_BLUE_DK4);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
@@ -287,7 +274,7 @@ bool InitGUI()
 
   // Create E_TXT_VAL2 modifiable text label
   static char m_strtxt6[11] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_VAL2, E_PG_MAIN, (gslc_tsRect) { 90, 90, 62, 17 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, E_TXT_VAL2, E_PG_MAIN, (gslc_tsRect) { 90, 90, 62+10, 17 },
     (char*)m_strtxt6, 11, E_FONT_TXT1);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK1, GSLC_COL_BLACK, GSLC_COL_BLUE_DK4);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
@@ -321,13 +308,16 @@ bool InitGUI()
 
   // -----------------------------------
   // PAGE: E_POP_KEYPAD
-  gslc_tsXKeyPadCfg sCfg = gslc_ElemXKeyPadCfgInit_Num();
-  gslc_ElemXKeyPadCfgSetFloatEn(&sCfg, false);
-  gslc_ElemXKeyPadCfgSetSignEn(&sCfg, true);
-  gslc_ElemXKeyPadCfgSetButtonSz(&sCfg, 25, 25);
+  static gslc_tsXKeyPadCfg_Num sCfg = gslc_ElemXKeyPadCfgInit_Num();
+  gslc_ElemXKeyPadCfgSetFloatEn_Num(&sCfg, true);
+  gslc_ElemXKeyPadCfgSetSignEn_Num(&sCfg, true);
+  //gslc_ElemXKeyPadCfgSetButtonSz((gslc_tsXKeyPadCfg*)&sCfg, 25, 25);
+  //gslc_ElemXKeyPadCfgSetRoundEn((gslc_tsXKeyPadCfg*)&sCfg, true);
   m_pElemKeyPad = gslc_ElemXKeyPadCreate_Num(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
     &m_sKeyPadNum, 65, 80, E_FONT_TXT1, &sCfg);
   gslc_ElemXKeyPadValSetCb(&m_gui, m_pElemKeyPad, &CbInputCommon);
+
+
 
   //<InitGUI !End!>
 

@@ -332,7 +332,16 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     pDriver->rClipRect = *pRect;
   }
 
-  // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
+  // Rendering within clipping regions is provided by TFT_eSPI's
+  // setViewport() API. Enabling this functionality provides
+  // greatly enhanced redraw performance when updating the
+  // entire page.
+  // The setViewport() API is only available in recent versions of
+  // TFT_eSPI (v2.3.2+).
+  #if (TFT_ESPI_FEATURES & 0x0001) // Bit 0 = Viewport capability
+    m_disp.setViewport(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h,false);
+  #endif
+
   return true;
 }
 
@@ -774,18 +783,10 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   const uint16_t* pImage = (const uint16_t*)pBitmap;
   int16_t h = *(pImage++);
   int16_t w = *(pImage++);
-  int row, col;
-  for (row=0; row<h; row++) { // For each scanline...
-    for (col=0; col<w; col++) { // For each pixel...
-      if (bProgMem) {
-        //To read from Flash Memory, pgm_read_XXX is required.
-        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
-      } else {
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
-      }
-    } // end pixel
-  }
+
+  // Swap the colour byte order when rendering
+  m_disp.setSwapBytes(true); 
+  m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
 }
 
 #if (GSLC_SD_EN)
@@ -1020,6 +1021,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
       return false;
     #endif
 

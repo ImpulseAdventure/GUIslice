@@ -28,7 +28,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XKeyPad.c
+/// \file XKeyPad_Num.c
 
 
 
@@ -42,10 +42,12 @@
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
+  #if defined(__AVR__)
     #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
-
-#if (GSLC_FEATURE_COMPOUND)
 
 // ----------------------------------------------------------------------------
 // Error Messages
@@ -72,135 +74,375 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // - Optionally supports negative values
 // ============================================================================
 
-// Define the button labels
-// - TODO: Create more efficient storage for the labels
-//   so that it doesn't consume 4 bytes even for labels
-//   that can be generated (eg. 0..9, a--z, etc.)
-// - TODO: Support use of PROGMEM. Note that these labels
-//   are not currently using "const char" since we may
-//   want to support user-modification of the labels.
+// Import the "setup" file for XKeyPad_Num
+#include "elem/XKeyPad_Num-setup.c"
 
-static char* KEYPAD_LABEL_STRINGS[] = {
-  // Special buttons
-  "<", ".", "-", "ESC", "ENT",
-  // Basic buttons
-  "0", "1", "2", "3", "4", "5", "6", "7" ,"8", "9",
-};
-// Define enums for KEYPAD_LABEL_STRINGS
-enum {
-  // - Special buttons
-  KEYPAD_LBL_BACKSPACE,
-  KEYPAD_LBL_DECIMAL,
-  KEYPAD_LBL_MINUS,
-  KEYPAD_LBL_ESC,
-  KEYPAD_LBL_ENTER,
-  // - Basic buttons
-  KEYPAD_LBL_BASIC_START
-};
-
-
-// Generate the keypad layout
-void XKeyPadCreateKeys_Num(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData)
+// Change the sign of the number string
+// - This function also triggers the shifting of the content
+void gslc_XKeyPadValSetSign_Num(gslc_tsXKeyPad* pXKeyPad, bool bPositive)
 {
-  int16_t nKeyInd;
-  int16_t nRow, nCol;
-  gslc_tsXKeyPadCfg* pConfig = &pXData->sConfig;
-  
+  gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pXKeyPad->pConfig; // Retrieve variant config
+  bool bValPositive = pConfigNum->bValPositive;
+  bool bRet;
 
-  // - Create the "special" buttons
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_BACKSPACE, false, 1, 6, 1, 2, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, true);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_MINUS, false, 1, 5, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, pConfig->bSignEn);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_DECIMAL, false, 2, 5, 1, 1, GSLC_COL_GRAY_LT1, GSLC_COL_GRAY_LT3, pConfig->bFloatEn);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ESC, false, 2, 6, 1, 2, GSLC_COL_RED, GSLC_COL_RED_LT4, true);
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_ENTER, false, 0, 6, 1, 2, GSLC_COL_GREEN, GSLC_COL_GREEN_LT4, true);
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadValSetSign_Num pos_cur=%d pos_req=%d\n",bValPositive,bPositive);
 
-  // - Create the "simple" buttons
-  for (int16_t nKeyId = KEYPAD_ID_BASIC_START; nKeyId < (KEYPAD_ID_BASIC_START + XKEYPADNUM_BTN_BASIC); nKeyId++) {
-    nKeyInd = nKeyId - KEYPAD_ID_BASIC_START;
-    nRow = (nKeyInd / 5) + 1;
-    nCol = nKeyInd % 5;
-    XKeyPadAddKeyElem(pGui, pXData, nKeyId, false, nRow, nCol, 1, 1, GSLC_COL_BLUE_LT1, GSLC_COL_BLUE_LT4, true);
+  if (bValPositive == bPositive) {
+    // No change to sign
+    return;
   }
 
-  // - Create the text field
-  XKeyPadAddKeyElem(pGui, pXData, KEYPAD_ID_TXT, true, 0, 0, 1, 6, GSLC_COL_BLACK, GSLC_COL_BLACK, true);
-}
-
-// Convert between keypad ID and the index into the keypad label array
-int16_t XKeyPadLookup_Num(gslc_tsGui* pGui, int16_t nKeyId)
-{
-  int16_t nKeyInd;
-
-  // Basic button
-  if (nKeyId >= KEYPAD_ID_BASIC_START) {
-    nKeyInd = (nKeyId - KEYPAD_ID_BASIC_START) + KEYPAD_LBL_BASIC_START;
-  } else {
-    // Special button
-    switch (nKeyId) {
-    case KEYPAD_ID_DECIMAL:
-      nKeyInd = KEYPAD_LBL_DECIMAL;
-      break;
-    case KEYPAD_ID_MINUS:
-      nKeyInd = KEYPAD_LBL_MINUS;
-      break;
-    case KEYPAD_ID_BACKSPACE:
-      nKeyInd = KEYPAD_LBL_BACKSPACE;
-      break;
-    case KEYPAD_ID_ESC:
-      nKeyInd = KEYPAD_LBL_ESC;
-      break;
-    case KEYPAD_ID_ENTER:
-      nKeyInd = KEYPAD_LBL_ENTER;
-      break;
-    default:
-      // FIXME: ERROR
-      nKeyInd = -1; // Not expected
-      break;
+  if ((bValPositive) && (!bPositive)) {
+    // Change from positive to negative
+    // - Insert negative sign at front of buffer
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  SetSign_Num pos to neg\n","");
+    bRet = gslc_XKeyPadTxtAddStr(pXKeyPad,KEYPAD_LABEL_NEGATIVE,0);
+    
+  } else if ((!bValPositive) && (bPositive)) {
+    // Change from negative to positive
+    // - Remove negative sign at front of buffer
+    // - ASSERT: ensure negative sign is at front
+    if (pXKeyPad->acBuffer[0] != KEYPAD_LABEL_NEGATIVE[0]) {
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("ASSERT: SetSign_Num flip to positive but negative sign missing\n","");
     }
-
+    // Request delete character from position 1 causes
+    // position 0 (the location of the negative sign) to be deleted
+    bRet = gslc_XKeyPadTxtDelCh(pXKeyPad,1);
   }
-  return nKeyInd;
+
+  // Update sign state
+  pConfigNum->bValPositive = bPositive;
 }
 
-// Create the XKeyPad_Alpha compound element
-// - Note that this also revises some of the members of the base XKeyPad struct
-gslc_tsElemRef* gslc_ElemXKeyPadCreate_Num(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
-  gslc_tsXKeyPad_Num* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg* pConfig)
+// Initialize any internal state upon reset
+void gslc_ElemXKeyPadReset_Num(void* pvConfig)
 {
-  gslc_tsXKeyPad* pXDataBase = (gslc_tsXKeyPad*)pXData;
-  pXDataBase->nSubElemMax = XKEYPADNUM_ELEM_MAX;
-  pXDataBase->psElemRef = pXData->asElemRef;
-  pXDataBase->psElem = pXData->asElem;
+  gslc_tsXKeyPadCfg* pConfig = (gslc_tsXKeyPadCfg*)pvConfig;
+  gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pvConfig; // Retrieve the variant config
+
+  // Initialize state
+  pConfigNum->bValPositive = true;
+  pConfigNum->bValDecimalPt = false;
+}
+
+
+// Initialize any internal state when the text field is first assigned
+void gslc_ElemXKeyPadTxtInit_Num(void* pvKeyPad)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+  gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pConfig; // Retrieve the variant config
+  char* pBuffer = pKeyPad->acBuffer;
+
+  // Update internal state based on new buffer value
+  pConfigNum->bValPositive = true;
+  if (pBuffer[0] == KEYPAD_LABEL_NEGATIVE[0]) {
+    pConfigNum->bValPositive = false;
+  }
+  pConfigNum->bValDecimalPt = false;
+  if (strchr(pBuffer, KEYPAD_LABEL_DECIMAL_PT[0])) {
+    pConfigNum->bValDecimalPt = true;
+  }
+
+}
+
+// Return the display label for a button
+// - pStr:    return string
+// - nStrMax: return string maximum length (including NULL)
+void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,char* pStr)
+{
+  uint8_t nOffset;
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
+  gslc_tsKey* pKeys = pKeyPad->pConfig->pLayout; 
+  int16_t nInd = gslc_XKeyPadLookupId(pKeys,nId);
+  uint8_t nType;
+  gslc_tsXKeyPadCfg_Num* pConfigV = (gslc_tsXKeyPadCfg_Num*)pKeyPad->pConfig; // Retrieve variant config
+  int8_t eLayoutSel = pKeyPad->pConfig->eLayoutSel;
+
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadLabelGet_Num: pKeyPad=%d nId=%d pKeys=%d nInd=%d\n",
+    pKeyPad,nId,pKeys,nInd);
+
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  ID=%d Ind=%d\n",nId,nInd);
+  if (nInd == -1) {
+    GSLC_DEBUG2_PRINT("ERROR: LabelGet_Num\n","");
+    // Should never get here
+  } else {
+    nType = pKeys[nInd].nType;
+    if (nType == E_XKEYPAD_TYPE_BASIC) {
+      nOffset = nId - KEYPAD_ID_BASIC_START;
+      #if (XKEYPAD_EXTEND_CHAR)
+        // KeyPad array composed of strings
+        strncpy(pStr,KEYPAD_SET_LABEL[eLayoutSel][nOffset],nStrMax-1);
+      #else
+        // KeyPad array composed of single characters
+        pStr[0] = KEYPAD_SET_LABEL[eLayoutSel][nOffset];
+        pStr[1] = '\0';
+      #endif
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  type=%d sel=%d offset=%d pStr=[%s]\n",
+        nType,eLayoutSel,nOffset,pStr);
+    } else if (nType == E_XKEYPAD_TYPE_SPECIAL) {
+      // Handle any dynamic keys first
+
+      // Static content
+      strncpy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax-1);
+    } else {
+      strncpy(pStr,"",nStrMax-1);
+    }
+    pStr[nStrMax-1] = '\0'; // NULL terminate
+  }
+}
+
+// Return the style for a button
+void gslc_ElemXKeyPadStyleGet_Num(void* pvKeyPad,uint8_t nId, bool* pbVisible, gslc_tsColor* pcolTxt, gslc_tsColor* pcolFrame, gslc_tsColor* pcolFill, gslc_tsColor* pcolGlow)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
+  gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pKeyPad->pConfig; // Retrieve variant config
+
+  // Provide defaults
+  *pcolTxt = XKEYPAD_COL_DEF_TXT;
+  *pcolFrame = XKEYPAD_COL_DEF_FRAME;
+  *pcolFill = XKEYPAD_COL_DEF_FILL;
+  *pcolGlow = XKEYPAD_COL_DEF_GLOW;
+
+  // Provide overrides
+  if (nId == KEYPAD_ID_TXT) {
+    *pcolTxt = XKEYPAD_COL_TEXT_TXT;
+    *pcolFill = XKEYPAD_COL_TEXT_FILL;
+    *pcolGlow = XKEYPAD_COL_TEXT_GLOW;
+  } else if (nId == KEYPAD_IDV_DECIMAL) {
+    // Show the button as dimmed (ie. not available) if
+    // a decimal point is already active
+    if (pConfigNum->bValDecimalPt) {
+      *pcolTxt = XKEYPAD_COL_DISABLE_TXT;
+      *pcolFill = XKEYPAD_COL_DISABLE_FILL;
+    } else {
+      *pcolTxt = XKEYPAD_COL_DEF_TXT;
+      *pcolFill = XKEYPAD_COL_DECIMAL_FILL;
+    }
+    *pcolGlow = XKEYPAD_COL_DECIMAL_GLOW;
+  } else if (nId == KEYPAD_IDV_MINUS) {
+    *pcolFill = XKEYPAD_COL_MINUS_FILL;
+    *pcolGlow = XKEYPAD_COL_MINUS_GLOW;
+  } else if (nId == KEYPAD_ID_ESC) {
+    *pcolFill = XKEYPAD_COL_ESC_FILL;
+    *pcolGlow = XKEYPAD_COL_ESC_GLOW;
+  } else if (nId == KEYPAD_ID_ENTER) {
+    *pcolFill = XKEYPAD_COL_ENTER_FILL;
+    *pcolGlow = XKEYPAD_COL_ENTER_GLOW;
+  } else if (nId == KEYPAD_ID_SCROLL_LEFT) {
+    *pcolFill = XKEYPAD_COL_SCROLL_L_FILL;
+    *pcolGlow = XKEYPAD_COL_SCROLL_L_GLOW;
+  } else if (nId == KEYPAD_ID_SCROLL_RIGHT) {
+    *pcolFill = XKEYPAD_COL_SCROLL_R_FILL;
+    *pcolGlow = XKEYPAD_COL_SCROLL_R_GLOW;
+  } else if (nId >= KEYPAD_ID_BASIC_START) {
+    *pcolFill = XKEYPAD_COL_BASIC_FILL;
+    *pcolGlow = XKEYPAD_COL_BASIC_GLOW;
+  }
+
+  // Update any button visibility
+  *pbVisible = true;
+  if (nId == KEYPAD_IDV_MINUS) {
+    *pbVisible = pConfigNum->bSignEn;
+  } else if (nId == KEYPAD_IDV_DECIMAL) {
+    *pbVisible = pConfigNum->bFloatEn;
+  }
+
+}
+
+
+// Update the keypad value string after detecting a button press
+// Note that this is only called if the global handler isn't already
+// handling this key (eg. Escape, Enter, etc.)
+void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult* psResult)
+{
+  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
+  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+  gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pKeyPad->pConfig; // Retrieve variant config
+  gslc_tsKey* pKeys = pConfig->pLayout; 
+  int16_t nInd = gslc_XKeyPadLookupId(pKeys,nId);
+  bool bRet;
+  uint8_t nCursorPos;
+  bool* pbFloatEn = &(pConfigNum->bFloatEn);
+  bool* pbSignEn = &(pConfigNum->bSignEn);
+  bool* pbValPositive = &(pConfigNum->bValPositive);
+  bool* pbValDecimalPt = &(pConfigNum->bValDecimalPt);
+
+  psResult->eRedrawState = XKEYPAD_REDRAW_NONE; // Default to no redraw needed
+  psResult->nRedrawKeyId = -1;
+
+  if (pKeys[nInd].nType == E_XKEYPAD_TYPE_UNUSED) {
+    // Ignore
+  } else if (pKeys[nInd].nType == E_XKEYPAD_TYPE_BASIC) {
+    // For basic buttons, we append the button key label
+    char  acStr[XKEYPAD_LABEL_MAX];
+    gslc_ElemXKeyPadLabelGet_Num(pvKeyPad,nId,XKEYPAD_LABEL_MAX,acStr);
+    // For numeric input, if the negation is active and the
+    // cursor is ahead of the negative sign, then ignore
+    // any numeric input.
+    if ((*pbValPositive == 0) && (pKeyPad->nCursorPos == 0)) {
+      // Ignore the input
+    } else {
+      bRet = gslc_XKeyPadTxtAddStr(pKeyPad,acStr,pKeyPad->nCursorPos);
+      if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+    }
+    return;
+
+  } else {
+    // Special buttons
+    if (nId == KEYPAD_ID_BACKSPACE) {
+      // Detect if any special characters were going to be deleted
+      // Note that we look at the character to the left of the
+      // cursor to determine what will be deleted
+      nCursorPos = pKeyPad->nCursorPos;
+      if (nCursorPos == 0) {
+        // Ignore the request as nothing to delete from here
+      } else if (pKeyPad->acBuffer[nCursorPos-1] == KEYPAD_LABEL_DECIMAL_PT[0]) {
+        // Clear decimal flag status
+        // - Expect only possible if (*pbFloatEn && *pbValDecimalPt)
+        if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: back across decimal\n","");
+        if ((*pbFloatEn) && (*pbValDecimalPt)) {
+          *pbValDecimalPt = false;
+        } else {
+          GSLC_DEBUG2_PRINT("ASSERT: delete decimal in wrong state\n","");
+        }
+        // The decimal point key may change state, so request redraw
+        psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_KEY;
+        psResult->nRedrawKeyId = KEYPAD_IDV_DECIMAL;
+
+      } else if (pKeyPad->acBuffer[nCursorPos-1] == KEYPAD_LABEL_NEGATIVE[0]) {
+        if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: back across neg\n","");
+        // Clear negative flag status
+        // - Expect only possible if (*pbSignEn && !*pbValPositive)
+        if ((*pbSignEn) && (!*pbValPositive)) {
+          if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: change to positive","");
+          *pbValPositive = true;
+        } else {
+          GSLC_DEBUG2_PRINT("ASSERT: delete negative in wrong state\n","");
+        }
+      }
+      
+      if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: about to DelCh @ %d\n",nCursorPos);
+      bRet = gslc_XKeyPadTxtDelCh(pKeyPad,pKeyPad->nCursorPos);
+
+      if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+      return;
+
+    } else if (nId == KEYPAD_IDV_MINUS) {
+      if (*pbSignEn) {
+        bool bPositive = *pbValPositive ? false : true; // Toggle sign
+        gslc_XKeyPadValSetSign_Num(pKeyPad,bPositive);
+        psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+        return;
+      }
+      return;
+    } else if (nId == KEYPAD_IDV_DECIMAL) {
+      //GSLC_DEBUG2_PRINT("KeyPad Key=Decimal\n", "");
+      if (*pbFloatEn) {
+        if (!*pbValDecimalPt) {
+          if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: key=dec, not already placed. add\n","");
+          // Note that the decimal point will be added at the current
+          // cursor position, which could be in the middle of an integer.
+          bRet = gslc_XKeyPadTxtAddStr(pKeyPad,KEYPAD_LABEL_DECIMAL_PT,pKeyPad->nCursorPos);
+          if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+
+          *pbValDecimalPt = true;
+
+          // As the decimal point button may be dimmed (to reflect it being disabled),
+          // we request a key redraw here.
+          psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_KEY;
+          psResult->nRedrawKeyId = KEYPAD_IDV_DECIMAL;
+
+          return;
+        } else {
+          if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("Bn key=dec, but already placed. ignore\n","");
+          // If a decimal point already has been placed, we ignore
+          // the button press. If the user wishes to remove the decimal
+          // point, they need to backspace across it.
+        }
+      }
+      return;
+      
+    } else {
+      // Other special buttons
+      // TODO
+    } // nId
+
+  } // eType
+  return;
+
+}
+
+// Reset the XKeyPad config struct
+// - This must be called before any XKeyPad config update APIs are called
+gslc_tsXKeyPadCfg_Num gslc_ElemXKeyPadCfgInit_Num()
+{
+  gslc_tsXKeyPadCfg_Num sConfig;
+
+  // Initialize base
+  gslc_ElemXKeyPadCfgInit(&sConfig.sBaseCfg);
+
+  // Override common config
+  sConfig.sBaseCfg.nDispMax      = XKEYPAD_DISP_MAX;
+  sConfig.sBaseCfg.nButtonSzW    = XKEYPAD_KEY_W;
+  sConfig.sBaseCfg.nButtonSzH    = XKEYPAD_KEY_H;
+  sConfig.sBaseCfg.nButtonSpaceX = XKEYPAD_SPACING_X;
+  sConfig.sBaseCfg.nButtonSpaceY = XKEYPAD_SPACING_Y;
+  sConfig.sBaseCfg.bRoundEn      = false;
+  sConfig.sBaseCfg.nFontId       = GSLC_FONT_NONE; // Will be overwritten
+  sConfig.sBaseCfg.pLayouts      = KEYPAD_LAYOUTS;
+  sConfig.sBaseCfg.eLayoutDef    = XKEYPAD_LAYOUT_DEFAULT;
+  gslc_XKeyPadLayoutSet(&(sConfig.sBaseCfg),XKEYPAD_LAYOUT_DEFAULT);
+
+  // Search layouts for maximum extents
+  gslc_XKeyPadSizeAllGet(sConfig.sBaseCfg.pLayouts, E_XKEYPAD_SET__MAX,
+    &(sConfig.sBaseCfg.nMaxRows), &(sConfig.sBaseCfg.nMaxCols));
+
+  sConfig.sBaseCfg.nFrameMargin  = 2;
+
+  // Provide variant-specific config
+  sConfig.bFloatEn     = true;
+  sConfig.bSignEn      = true;
+
+  // Define callback functions
+  sConfig.sBaseCfg.pfuncReset      = &gslc_ElemXKeyPadReset_Num;
+  sConfig.sBaseCfg.pfuncTxtInit    = &gslc_ElemXKeyPadTxtInit_Num;
+  sConfig.sBaseCfg.pfuncLabelGet   = &gslc_ElemXKeyPadLabelGet_Num;
+  sConfig.sBaseCfg.pfuncStyleGet   = &gslc_ElemXKeyPadStyleGet_Num;
+  sConfig.sBaseCfg.pfuncBtnEvt     = &gslc_ElemXKeyPadBtnEvt_Num;
+
+  return sConfig;
+}
+
+// Create the XKeyPad_Num element
+gslc_tsElemRef* gslc_ElemXKeyPadCreate_Num(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
+  gslc_tsXKeyPad* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg_Num* pConfig)
+{
 
   // Provide default config if none supplied
-  gslc_tsXKeyPadCfg sConfigTmp;
+  // FIXME: Take note of variable lifetime here
+  gslc_tsXKeyPadCfg_Num sConfigTmp;
   if (pConfig == NULL) {
     sConfigTmp = gslc_ElemXKeyPadCfgInit_Num();
     pConfig = &sConfigTmp;
   }
 
-  return gslc_ElemXKeyPadCreateBase(pGui, nElemId, nPage, pXDataBase, nX0, nY0, nFontId, pConfig,
-    &XKeyPadCreateKeys_Num,&XKeyPadLookup_Num);
+  // Initialize any local state
+  gslc_ElemXKeyPadReset_Num((void*)(pConfig));
+
+  // When passing the variant config to the base code, we typecast to the base type
+  return gslc_XKeyPadCreateBase(pGui, nElemId, nPage, (void*)pXData, nX0, nY0, nFontId, (gslc_tsXKeyPadCfg*)pConfig);
 }
 
-// Reset the XKeyPad config struct
-// - This must be called before any XKeyPad config update APIs are called
-gslc_tsXKeyPadCfg gslc_ElemXKeyPadCfgInit_Num()
-{
-  gslc_tsXKeyPadCfg sConfig;
-  sConfig.nButtonSzW = 25;
-  sConfig.nButtonSzH = 25;
-  sConfig.bFloatEn = true;
-  sConfig.bSignEn = true;
-  sConfig.bRoundEn = false;
-  sConfig.nFontId = GSLC_FONT_NONE; // Will be overwritten
-  sConfig.pacKeys = KEYPAD_LABEL_STRINGS;
-  sConfig.nMaxCols = 8;
-  sConfig.nMaxRows = 3;
-  sConfig.nFrameMargin = 2;
-  return sConfig;
-}
-
-#endif // GSLC_FEATURE_COMPOUND
 
 // ============================================================================
+
+void gslc_ElemXKeyPadCfgSetFloatEn_Num(gslc_tsXKeyPadCfg_Num* pConfig, bool bEn)
+{
+  pConfig->bFloatEn = bEn;
+}
+
+void gslc_ElemXKeyPadCfgSetSignEn_Num(gslc_tsXKeyPadCfg_Num* pConfig, bool bEn)
+{
+  pConfig->bSignEn = bEn;
+}

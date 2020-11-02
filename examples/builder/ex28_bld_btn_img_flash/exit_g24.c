@@ -9,7 +9,11 @@
 #include "GUIslice.h"
 #include "GUIslice_config.h"
 #if (GSLC_USE_PROGMEM)
-  #include <avr/pgmspace.h>
+  #if defined(__AVR__)
+    #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 const unsigned short exit_g24[1024+2] GSLC_PMEM ={

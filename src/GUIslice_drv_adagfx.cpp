@@ -51,14 +51,19 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
     // No need to import Adafruit_GFX
   #else
     #include <Adafruit_GFX.h>
   #endif
 
   // Now configure specific display driver for Adafruit-GFX
-  #if defined(DRV_DISP_ADAGFX_ILI9341)
+  #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    // https://github.com/martinzw/ILI9225_Due
+    #include "SPI.h"
+    #include "ILI9225_due.h"
+    #include <SystemFont5x7.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341)
     // https://github.com/adafruit/Adafruit_ILI9341
     #include <Adafruit_ILI9341.h>
     #include <SPI.h>
@@ -126,6 +131,10 @@
   #elif defined(DRV_DISP_LCDGFX)
     // https://github.com/lexus2k/lcdgfx
     #include <lcdgfx.h>
+    #if defined(DRV_DISP_LCDGFX_SSD1306_128x64_I2C) || defined(DRV_DISP_LCDGFX_SSD1306_128x64_SPI) || \
+        defined(DRV_DISP_LCDGFX_SSD1306_128x32_I2C) || defined(DRV_DISP_LCDGFX_SSD1306_128x32_SPI)
+      #define DRV_COLORMODE_MONO // Monochrome display
+    #endif    
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     // https://github.com/ImpulseAdventure/Waveshare_ILI9486
     #include <Waveshare_ILI9486.h>
@@ -229,7 +238,11 @@ extern "C" {
 
 
 // ------------------------------------------------------------------------
-#if defined(DRV_DISP_ADAGFX_ILI9341)
+#if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    const char* m_acDrvDisp = "ADA_ILI9225_DUE(SPI-HW)";
+    ILI9225_due m_disp(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
     const char* m_acDrvDisp = "ADA_ILI9341(SPI-HW)";
     Adafruit_ILI9341 m_disp = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -542,7 +555,28 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #endif
 
     // Perform any display initialization
-    #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+      #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
+        // TODO: Consider check for GSLC_DEV_TEENSY
+        // If ADAGFX_SPI_SET is enabled, then perform additional SPI initialization.
+        // This may be required for certain pinouts with Teensy 3 devices.
+        // If enabled, it must be done ahead of m_disp.begin()
+        SPI.setMOSI(ADAGFX_PIN_MOSI);
+        SPI.setSCK(ADAGFX_PIN_CLK);
+      #endif
+
+      m_disp.begin();
+
+
+      // ILI9225_DUE library defaults to "solid" mode, so we
+      // initialize it to transparent mode for text rendering consistency.
+      m_disp.setFontMode(gTextFontModeTransparent);
+
+      // The ILI9225_DUE library does not automatically
+      // assign a default font, so we will do that here.
+      m_disp.setFont(SystemFont5x7);
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) 
 
       #if (ADAGFX_SPI_SET) // Use extra SPI initialization (eg. on Teensy devices)
         // TODO: Consider check for GSLC_DEV_TEENSY
@@ -877,9 +911,10 @@ bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
 bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
-  uint16_t  nTxtScale = 0;
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  uint16_t  nTxtScale = 0;
+
   // Use PaulStoffregen/ILI9341_t3
   //
   // - IMPORTANT NOTE: Recent version of ILI9341_t3 library is required
@@ -926,7 +961,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
   return true;
 
-#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)  || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  uint16_t  nTxtScale = 0;
+
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
   } else {
@@ -949,8 +986,9 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
 
-  *pnTxtSzW = m_disp.getFont().getTextSize(pStr,pnTxtSzH);
-  // FIXME: Add *pnTxtSzH
+  unsigned int nTxtSzH; // LCDGFX expects 2nd param lcduint_t (unsigned int)
+  *pnTxtSzW = m_disp.getFont().getTextSize(pStr,&nTxtSzH);
+  *pnTxtSzH = (uint16_t)nTxtSzH;
 
   // No baseline info
   *pnTxtX = 0;
@@ -959,6 +997,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_RA8876)
+  uint16_t  nTxtScale = 0;
 
   // Initialize the current font mode & size
   gslc_DrvFontSetHelp(pGui,pFont);
@@ -985,6 +1024,8 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  uint16_t  nTxtScale = 0;
+
   // Use mjs513/RA8875: branch "RA8875_t4"
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
@@ -1019,6 +1060,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #else
+  uint16_t  nTxtScale = 0;
 
   // Support library-specific font exceptions
   #if defined(DRV_DISP_ADAGFX_RA8876_GV)
@@ -1079,13 +1121,12 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
-  uint16_t  nTxtScale = pFont->nSize;
   uint16_t  nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
-  int16_t   nCurPosY = 0;
   char      ch;
 
   // Initialize the font and positioning
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
@@ -1102,7 +1143,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
-#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+#elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  uint16_t  nTxtScale = pFont->nSize;
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
   } else {
@@ -1130,6 +1172,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
   case GSLC_FONTREF_MODE_DEFAULT:
@@ -1148,6 +1191,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #else
+  uint16_t  nTxtScale = pFont->nSize;
   #if defined(DRV_DISP_ADAGFX_RA8876_GV)
     if (pFont->pvFont == NULL) {
       // Internal ROM font
@@ -1233,7 +1277,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     #elif defined(DRV_DISP_ADAGFX_RA8876)
       m_disp.putChar(ch);
 
-    #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+      int16_t   nCurPosY = 0;
       // The ILI9341_DUE_MB library utilizes the API setTextLetterSpacing()
       // to control the kerning / spacing between letters in a string.
       // With a "letter spacing" (_letterSpacing variable in the lib) of
@@ -1283,19 +1328,21 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     if (ch == '\n') {
 
       #if defined(DRV_DISP_ADAGFX_RA8875)
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         if (bInternal8875Font) {
           // TODO: Is getCursorY() supported in RA8875 mode?
           m_disp.textSetCursor(nTxtX, nCurPosY);
         }
       #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         if (bInternal8875Font) {
           // TODO: Is getCursorY() supported in RA8875 mode?
           m_disp.setCursor(nTxtX, nCurPosY);
         }
 
-      #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
+      #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
         nTxtY += m_disp.getFontHeight();
         m_disp.cursorToXY(nTxtX,nTxtY);
 
@@ -1303,6 +1350,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 	    m_nTxtY += m_disp.getFont().getHeader().height;
 
       #else
+        int16_t   nCurPosY = 0;
         nCurPosY = m_disp.getCursorY();
         m_disp.setCursor(nTxtX,nCurPosY);
       #endif
@@ -1320,6 +1368,13 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   // Restore the font
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
   // TODO
+#elif defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  // Restore the font
+  if (pFont->pvFont == NULL) {
+    m_disp.setFont(SystemFont5x7);
+  } else {
+    m_disp.setFont((uint8_t)(pFont->pvFont));
+  }
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
   // TODO
 #elif defined(DRV_DISP_LCDGFX)
@@ -1421,6 +1476,7 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     // xlatb/RA8876 uses a non-standard fillRect() API
     m_disp.fillRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
+    //NOTE:tested for ILI9225_DUE
     m_disp.fillRect(rRect.x,rRect.y,rRect.w,rRect.h,nColRaw);
   #endif
   return true;
@@ -1898,6 +1954,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
       return false;
     #endif
 
@@ -2000,9 +2057,9 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
   // --------------------------------------------------------------------------
 
-  // Disable certain workarounds for Adafruit_TouchScreen in STM32 & SAMD mode
-  // as we haven't implemented the equivalent pin save/restore code yet.
-  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
+  // Disable certain workarounds for Adafruit_TouchScreen for certain devices
+  // that don't support the pin save/restore code.
+  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(GSLC_DEV_TEENSY)
     #undef FIX_4WIRE_PIN_STATE
   #endif
 
@@ -2858,7 +2915,18 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Inform the display to adjust the orientation and
   // update the saved display dimensions
-  #if defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #if defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+    pGui->nDisp0W = ILI9225_TFTWIDTH;
+    pGui->nDisp0H = ILI9225_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9225_TFTWIDTH;
+      pGui->nDispH = ILI9225_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9225_TFTHEIGHT;
+      pGui->nDispH = ILI9225_TFTWIDTH;
+    }
+  #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
@@ -2985,13 +3053,33 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     pGui->nDispH = m_disp.height();
 
   #elif defined(DRV_DISP_LCDGFX)
-    m_disp.getInterface().setRotation(0);
-    pGui->nDisp0W = m_disp.width();
-    pGui->nDisp0H = m_disp.height();
-    // It appears that LCDGFX rotation is 180 degrees offset from other libraries
-    m_disp.getInterface().setRotation((pGui->nRotation + 2) & 0x3);
-    pGui->nDispW = m_disp.width();
-    pGui->nDispH = m_disp.height();
+    // LCDGFX supports a number of displays
+    // - Some of the display interfaces do not support the setRotation() API.
+    // - As LCDGFX doesn't provide a consistent interface per display, we have
+    //   to check for specific displays here to provide backward-compatibility.
+    #if defined(DRV_DISP_LCDGFX_ILI9341_240x320_SPI) || defined(DRV_DISP_LCDGFX_SSD1351_128x128_SPI) || \
+        defined(DRV_DISP_LCDGFX_SSD1331_96x64x8_SPI) || defined(DRV_DISP_LCDGFX_SSD1331_96x64x16_SPI) || \
+        defined(DRV_DISP_LCDGFX_ILI9163_128x128_SPI)
+
+      // API supports setRotation()
+      m_disp.getInterface().setRotation(0);
+      pGui->nDisp0W = m_disp.width();
+      pGui->nDisp0H = m_disp.height();
+      // It appears that LCDGFX rotation is 180 degrees offset from other libraries
+      m_disp.getInterface().setRotation((pGui->nRotation + 2) & 0x3);
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+
+    #else
+
+      // API doesn't support setRotation()
+      bSupportRotation = false;
+      pGui->nDisp0W = m_disp.width();
+      pGui->nDisp0H = m_disp.height();
+      pGui->nDispW = m_disp.width();
+      pGui->nDispH = m_disp.height();
+
+    #endif
 
   #elif defined(DRV_DISP_WAVESHARE_ILI9486)
     m_disp.setRotation(0);

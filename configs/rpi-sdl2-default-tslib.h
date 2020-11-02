@@ -1,20 +1,18 @@
-#ifndef _GUISLICE_CONFIG_ARD_H_
-#define _GUISLICE_CONFIG_ARD_H_
+#ifndef _GUISLICE_CONFIG_LINUX_H_
+#define _GUISLICE_CONFIG_LINUX_H_
 
 // =============================================================================
 // GUIslice library (example user configuration) for:
-//   - CPU:     Arduino Zero
-//   - Display: RA8876 1024x600 SPI (EastRising TFTM070-6)
-//   - Touch:   FT5206 (Capacitive)
-//   - Wiring:  GEVINO TFT
-//
+//   - CPU:     LINUX Raspberry Pi (RPi)
+//   - Display: PiTFT
+//   - Touch:   tslib
+//   - Wiring:  None
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a breakout board, customization
-//   of the Pinout in SECTION 2 will be required to match your display.
+// - None
 //
 // =============================================================================
 // - Calvin Hass
@@ -44,7 +42,7 @@
 // THE SOFTWARE.
 //
 // =============================================================================
-// \file GUIslice_config_ard.h
+// \file GUIslice_config_linux.h
 
 // =============================================================================
 // User Configuration
@@ -66,22 +64,13 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_RA8876_GV // GEVINO ra8876 library
-  #define DRV_TOUCH_ADA_FT5206      // sumotoy/FT5206 library
+  #define DRV_DISP_SDL2             // LINUX SDL 2.0
+  #define DRV_TOUCH_TSLIB           // LINUX: kergoth/tslib touch driver
+
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
-
-  // For shields, the following pinouts are typically hardcoded
-  // These values were defined to match an Arduino Zero config
-  #define ADAGFX_PIN_CS       42    // Display chip select
-  #define ADAGFX_PIN_RST      -1    // Display Reset
-
-  // SD Card
-  #define ADAGFX_PIN_SDCS     12    // SD card chip select (if GSLC_SD_EN=1)
-
 
 
   // -----------------------------------------------------------------------------
@@ -90,6 +79,8 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
+  // NOTE: The GSLC_ROTATE feature is not yet supported in SDL mode
+  //       however, the following settings are provided for future use.
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
@@ -97,14 +88,6 @@ extern "C" {
   // - Documentation for configuring touch support can be found at:
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4A: Update your pin connections here
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // Touch bus & pinout
-  #define ADATOUCH_PIN_INT     38
-
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -138,13 +121,14 @@ extern "C" {
   //   required.
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
-  #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
+  #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
   // - Note that the inclusion of the SD library consumes considerable
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
+  // - NOTE: Mode not supported in LINUX
   #define GSLC_SD_EN    0
 
 
@@ -167,24 +151,39 @@ extern "C" {
   // Misc
   // -----------------------------------------------------------------------------
 
-  // Define buffer size for loading images from SD
-  // - A larger buffer will be faster but at the cost of RAM
-  #define GSLC_SD_BUFFPIXEL   50
-
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  #define GSLC_CLIP_EN 1
+  //#define GSLC_CLIP_EN 1
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
-  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        1   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
-  #define GSLC_DEV_TOUCH ""
+  // Define default device paths for framebuffer & touchscreen
+  // - The following assumes display driver (eg. fbtft) reads from fb1
+  // - Raspberry Pi can support hardware acceleration onto fb0
+  // - To use SDL2.0 with hardware acceleration with such displays,
+  //   use fb0 as the target and then run fbcp to mirror fb0 to fb1
+  #define GSLC_DEV_FB       "/dev/fb0"
+  #define GSLC_DEV_TOUCH    ""
+  #define GSLC_DEV_VID_DRV  "x11"
+
+
+  // Enable SDL startup workaround? (1 to enable, 0 to disable)
+  #define DRV_SDL_FIX_START     0
+
+  // Show SDL mouse (1 to show, 0 to hide)
+  #define DRV_SDL_MOUSE_SHOW    0
+
+  // Enable hardware acceleration
+  #define DRV_SDL_RENDER_ACCEL 1
+  
+  
   #define GSLC_USE_PROGMEM      0
 
-  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR        1   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
@@ -203,4 +202,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // _GUISLICE_CONFIG_ARD_H_
+#endif // _GUISLICE_CONFIG_LINUX_H_

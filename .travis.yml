@@ -34,7 +34,27 @@ install:
   - ln -s $PWD /usr/local/share/arduino/libraries/GUIslice
   - arduino --install-library "Adafruit GFX Library,Adafruit ILI9341,Adafruit STMPE610,Adafruit BusIO"
 script:
+  - # ------------------------------
+  - # TESTCASE 1
+  - # ------------------------------
+  - echo "=== TESTCASE 1 UNO + Display + NoTouch + FLASH"
+  - # Select config
+  - GUISLICE_CONFIG="ard-adagfx-ili9341-notouch.h"
+  - echo "Selecting config=[$GUISLICE_CONFIG]"
+  - mv $PWD/src/GUIslice_config.h $PWD/src/GUIslice_config.h.bak
+  - sed "s/^.*my-config.*/#include \"..\/configs\/$GUISLICE_CONFIG\" \/\/ my-config/" $PWD/src/GUIslice_config.h.bak > $PWD/src/GUIslice_config.h
+  - # Run the regression
   - arduino --verify --board arduino:avr:uno $PWD/examples/arduino_min/ex07_ardmin_slider/ex07_ardmin_slider.ino
+  - # ------------------------------
+  - # TESTCASE 2
+  - # ------------------------------
+  - echo "=== TESTCASE 2 ATmega2560 + Display + Touch"
+  - # Select config
+  - GUISLICE_CONFIG="ard-adagfx-ili9341-stmpe610.h"
+  - echo "Selecting config=[$GUISLICE_CONFIG]"
+  - mv $PWD/src/GUIslice_config.h $PWD/src/GUIslice_config.h.bak
+  - sed "s/^.*my-config.*/#include \"..\/configs\/$GUISLICE_CONFIG\" \/\/ my-config/" $PWD/src/GUIslice_config.h.bak > $PWD/src/GUIslice_config.h
+  - # Run the regression
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/examples/arduino/ex07_ard_slider/ex07_ard_slider.ino
   - doxygen doxygen.conf
 deploy:

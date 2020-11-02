@@ -56,7 +56,11 @@
 #endif
 
 #if (GSLC_USE_PROGMEM)
-  #include <avr/pgmspace.h>   // For memcpy_P()
+  #if defined(__AVR__)
+    #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 #include <stdarg.h>         // For va_*
@@ -933,7 +937,8 @@ gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
   sImgRef.pvImgRaw  = NULL;
 #else
   // TODO: Change message to also handle non-Arduino output
-  GSLC_DEBUG2_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
+  GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
+  //GSLC_DEBUG2_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
   sImgRef.eImgFlags = GSLC_IMGREF_NONE;
 #endif
   return sImgRef;
@@ -2975,7 +2980,7 @@ void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf,gslc_tsRect rTxt,gslc_tsFo
     // Now correct for offset from text bounds
     // - This is used by the driver (such as Adafruit-GFX) to provide an
     //   adjustment for baseline height, etc.
-    nTxtX += nTxtOffsetX;
+    nTxtX -= nTxtOffsetX;
     nTxtY -= nTxtOffsetY;
 
     // Call the driver text rendering routine
@@ -3071,6 +3076,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
       gslc_DrawFillRect(pGui, rElemInner, colBg);
     }
   } else {
+    colBg = pElem->colElemText;
     // TODO: If unfilled, then we might need
     // to redraw the background layer(s)
   }

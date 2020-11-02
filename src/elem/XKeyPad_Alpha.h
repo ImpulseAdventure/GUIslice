@@ -6,7 +6,7 @@
 #include "elem/XKeyPad.h"
 
 // =======================================================================
-// GUIslice library extension: XKeyPad control (alpha entry)
+// GUIslice library extension: XKeyPad control (alphanumeric entry)
 // - Paul Conti, Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
@@ -35,32 +35,27 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XKeyPad.h
+/// \file XKeyPad_Alpha.h
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-#if (GSLC_FEATURE_COMPOUND)
-
-// Define number of buttons & elements
-// - Refer to the definitions in the XKeyPad_*.c file
-#define XKEYPADALPHA_BTN_BASIC 26
-#define XKEYPADALPHA_ELEM_MAX (6 + XKEYPADALPHA_BTN_BASIC)
 
 // ============================================================================
-// Extended Element: KeyPad Character entry
+// Extended Element: KeyPad Alphanumeric entry
 // - NOTE: The XKeyPad_Alpha extends the XKeyPad base element
 // ============================================================================
 
 typedef struct {
-  // Base XKeyPad struct
-  // - The base type must appear at the top of the derived struct
-  gslc_tsXKeyPad      sKeyPad;                             ///< Base XKeyPad element
+    // Common configuration
+    gslc_tsXKeyPadCfg   sBaseCfg;         ///< KeyPad base config struct
 
-  gslc_tsElemRef      asElemRef[XKEYPADALPHA_ELEM_MAX];    ///< Storage for sub-element references
-  gslc_tsElem         asElem[XKEYPADALPHA_ELEM_MAX];       ///< Storage for sub-elements
-} gslc_tsXKeyPad_Alpha;
+    // Variant-specific configuration
+
+    // Variant-specific state
+    
+} gslc_tsXKeyPadCfg_Alpha;
 
   ///
   /// Create a KeyPad Element
@@ -77,7 +72,7 @@ typedef struct {
   /// \return Pointer to Element or NULL if failure
   ///
   gslc_tsElemRef* gslc_ElemXKeyPadCreate_Alpha(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
-    gslc_tsXKeyPad_Alpha* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg* pConfig);
+    gslc_tsXKeyPad* pXData, int16_t nX0, int16_t nY0, int8_t nFontId, gslc_tsXKeyPadCfg_Alpha* pConfig);
 
 
   ///
@@ -87,11 +82,88 @@ typedef struct {
   ///
   /// \return Initialized KeyPad config structure
   ///
-  gslc_tsXKeyPadCfg gslc_ElemXKeyPadCfgInit_Alpha();
+  gslc_tsXKeyPadCfg_Alpha gslc_ElemXKeyPadCfgInit_Alpha();
+
+  ///
+  /// Callback function to reset internal state
+  ///
+  /// \param[in]  pvConfig:    Void ptr to the KeyPad config
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadReset_Alpha(void* pvConfig);
+
+
+  ///
+  /// Callback function to update internal state whenever the text
+  /// field is manually set via gslc_ElemXKeyPadValSet().
+  /// - This is used to ensure any KeyPad variant state can be
+  ///   kept in sync with the text string.
+  /// - For example, if a numeric KeyPad is initiaized with a
+  ///   string that contains a minus sign, an internal negation
+  ///   flag might be set.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadTxtInit_Alpha(void* pvKeyPad);
+
+
+  ///
+  /// Callback function to retrieve the label associated with
+  /// a KeyPad button. This is called during the drawing of
+  /// the KeyPad layout.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[in]  nStrMax:     Maximum length of return string (including NULL)
+  /// \param[out] pStr:        Buffer for the returned label
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,char* pStr);
+
+
+  ///
+  /// Callback function to retrieve the style associated with
+  /// a KeyPad button. This is called during the drawing of
+  /// the KeyPad layout.
+  /// - This function is used to assign the color and visibility
+  ///   state of the keys at runtime.
+  /// - This function can also be used to change the appearance
+  ///   dynamically, according to internal state (eg. dimmed buttons).
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[out] pbVisible:   The returned visibility state
+  /// \param[out] pcolTxt:     The returned text color
+  /// \param[out] pcolFrame:   The returned key's frame color
+  /// \param[out] pcolFill:    The returned key's fill color
+  /// \param[out] pcolGlow:    The returned key's fill color when highlighted
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadStyleGet_Alpha(void* pvKeyPad,uint8_t nId, bool* pbVisible, gslc_tsColor* pcolTxt, gslc_tsColor* pcolFrame, gslc_tsColor* pcolFill, gslc_tsColor* pcolGlow);
+
+
+  ///
+  /// Callback function activated when a key has been pressed.
+  /// This callback is used to enable the KeyPad variant to
+  /// handle any events associated with the key press and
+  /// update any internal state.
+  /// - The callback is also used to determine whether any
+  ///   redraw actions need to be taken.
+  ///
+  /// \param[in]  pvKeyPad:    Void ptr to the KeyPad
+  /// \param[in]  nId:         KeyPad key ID
+  /// \param[out] psResult:    The returned state vector (including redraw)
+  ///
+  /// \return none
+  ///
+  void gslc_ElemXKeyPadBtnEvt_Alpha(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult* psResult);
 
 // ============================================================================
-
-#endif // GSLC_FEATURE_COMPOUND
 
 #ifdef __cplusplus
 }

@@ -3,11 +3,14 @@
 
 // =============================================================================
 // GUIslice library (example user configuration) for:
-//   - CPU:     Arduino Zero
-//   - Display: RA8876 1024x600 SPI (EastRising TFTM070-6)
-//   - Touch:   FT5206 (Capacitive)
-//   - Wiring:  GEVINO TFT
+//   - CPU:     Arduino UNO / MEGA / etc
+//   - Display: ILI9225
+//   - Touch:   None
+//   - Wiring:  Custom breakout
+//              - Pinout:
 //
+//   - Example display:
+//     -
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
@@ -67,20 +70,32 @@ extern "C" {
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
-  #define DRV_DISP_ADAGFX_RA8876_GV // GEVINO ra8876 library
-  #define DRV_TOUCH_ADA_FT5206      // sumotoy/FT5206 library
+  #define DRV_DISP_ADAGFX_MCUFRIEND // prenticedavid/MCUFRIEND_kbv
+  #define DRV_DISP_ADAGFX_MCUFRIEND_FORCE  0x9225 // RM68130 requires mcufriend ID override
+  #define DRV_TOUCH_NONE            // No touch enabled
+
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // For shields, the following pinouts are typically hardcoded
-  // These values were defined to match an Arduino Zero config
-  #define ADAGFX_PIN_CS       42    // Display chip select
-  #define ADAGFX_PIN_RST      -1    // Display Reset
+  #define ADAGFX_PIN_CS       10    // Display chip select
+  #define ADAGFX_PIN_DC       9     // Display SPI data/command
+  #define ADAGFX_PIN_RST      0     // Display Reset
+
+  // Display interface type
+  #define ADAGFX_SPI_HW       1	    // Display uses SPI interface: 1=hardware 0=software
+
+  // Display interface software SPI
+  // - Hardware SPI: the following definitions are unused
+  // - Software SPI: the following pins need to be defined
+  #define ADAGFX_PIN_MOSI     11
+  #define ADAGFX_PIN_MISO     12
+  #define ADAGFX_PIN_CLK      13
 
   // SD Card
-  #define ADAGFX_PIN_SDCS     12    // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -91,19 +106,6 @@ extern "C" {
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
   #define GSLC_ROTATE     1
-
-  // -----------------------------------------------------------------------------
-  // SECTION 4: Touch Handling
-  // - Documentation for configuring touch support can be found at:
-  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
-  // -----------------------------------------------------------------------------
-
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  // SECTION 4A: Update your pin connections here
-  // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  // Touch bus & pinout
-  #define ADATOUCH_PIN_INT     38
 
 
   // -----------------------------------------------------------------------------
@@ -136,7 +138,7 @@ extern "C" {
   // - For memory constrained devices such as Arduino, it is best to
   //   set the following features to 0 (to disable) unless they are
   //   required.
-  #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
+  #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -182,7 +184,7 @@ extern "C" {
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM      0
+  #define GSLC_USE_PROGMEM      1
 
   #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements

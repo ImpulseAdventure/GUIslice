@@ -44,9 +44,7 @@ extern "C" {
 // - These example configurations are located in the /configs folder
 // - To add your own, make a copy of an example config, rename it
 //   and add it to the list here.
-// - If no line is uncommented, then the default combined configuration
-//   file will be used, ie. GUIslice_config_ard.h / GUIslice_config_linux.h
-//   which is selected at the bottom of this file
+// - If no line is uncommented, an error message will be reported during compilation
 // - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
 //   to help identify a suitable config for your MCU shield / display
 // - Multiple configurations can be supported using the method described here:
@@ -87,6 +85,8 @@ extern "C" {
   //#include "../configs/ard-shld-waveshare_28_touch.h"
   //#include "../configs/ard-shld-waveshare_40_notouch.h"
   //#include "../configs/ard-shld-waveshare_40_xpt2046.h"
+  //#include "../configs/ard-lcdgfx-notouch.h"
+  //#include "../configs/ard-lcdgfx-stmpe610.h"
   //#include "../configs/ard-adagfx-hx8347-xpt2046.h"
   //#include "../configs/ard-adagfx-hx8357-ft6206.h"
   //#include "../configs/ard-adagfx-hx8357-notouch.h"
@@ -104,8 +104,10 @@ extern "C" {
   //#include "../configs/ard-adagfx-ra8876-ft5206.h"
   //#include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
+  //#include "../configs/due-adagfx-ili9225-notouch.h"
   //#include "../configs/due-adagfx-ili9341-ft6206.h"
   //#include "../configs/due-adagfx-ili9341-urtouch.h"
+  //#include "../configs/due-adagfx-ra8875-urtouch.h"
 
   // ESP8266, ESP32, M5stack, TTGO:
   // ------------------------------------------------------
@@ -167,25 +169,30 @@ extern "C" {
 #elif defined(ARDUINO_ARCH_SAMD)   // M0_PRO
   #define GSLC_CFG_ARD
 #elif defined(__AVR__) && defined(TEENSYDUINO) // Teensy 2
-  #define GSLC_DEV_TEENSY_2
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
+  #define GSLC_DEV_TEENSY_2
 #elif defined(__MKL26Z64__) // Teensy LC
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_LC
 #elif defined(__MK20DX256__) // Teensy 3.2
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_2
 #elif defined(__MK64FX512__) // Teensy 3.5
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_5
 #elif defined(__MK66FX1M0__) // Teensy 3.6
   #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_3_6
-#elif defined(__MK66FX1M0__) // Teensy 3.6
+#elif defined(__IMXRT1062__) // Teensy 4.0
+  //#elif defined(ARDUINO_TEENSY40)
+  //#elif defined(ARDUINO_TEENSY41)
   #define GSLC_CFG_ARD
-  #define GSLC_DEV_TEENSY_3_6
-#elif defined(__IMXRT1062__)
-  #define GSLC_CFG_ARD
+  #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_4_0
 #else
 #warning Unknown
@@ -199,10 +206,9 @@ extern "C" {
 //   will prevent these from loading if any of the user configs have been loaded
 // =========================================================================================
 
-#if defined(GSLC_CFG_LINUX)
-  #include "GUIslice_config_linux.h"
-#elif defined(GSLC_CFG_ARD)
-  #include "GUIslice_config_ard.h"
+#if !defined(_GUISLICE_CONFIG_ARD_H_) && !defined(_GUISLICE_CONFIG_LINUX_H_)
+  #error No config selected in GUIslice_config.h. Please uncomment/select a config.
+  #error For details: https://github.com/ImpulseAdventure/GUIslice/wiki/Select-a-Config
 #endif
 
 // -----------------------------------------------------------------------------------------
