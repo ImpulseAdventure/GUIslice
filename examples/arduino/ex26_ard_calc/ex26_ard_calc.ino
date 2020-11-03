@@ -124,7 +124,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
-  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
+  //gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
 
   char acTxtNum[11];
   int32_t nVal1, nVal2, nResult;
@@ -180,7 +180,6 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
   gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
-  char acTxtNum[11];
   // From the element's ID we can determine which element is ready.
   if (pElem->nId == E_ELEM_KEYPAD) {
     int16_t nTargetElemId = gslc_ElemXKeyPadDataTargetIdGet(pGui, pvData);
@@ -214,6 +213,7 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
       break;
     }
   }
+  return true;
 }
 
 //<Draw Callback !Start!>

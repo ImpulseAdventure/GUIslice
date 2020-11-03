@@ -108,7 +108,7 @@ void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,c
   gslc_tsKey* pKeys = pKeyPad->pConfig->pLayout; 
   int16_t nInd = gslc_XKeyPadLookupId(pKeys,nId);
   uint8_t nType;
-  gslc_tsXKeyPadCfg_Alpha* pConfigV = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
+  //gslc_tsXKeyPadCfg_Alpha* pConfigV = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
   int8_t eLayoutSel = pKeyPad->pConfig->eLayoutSel;
 
   if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadLabelGet_Alpha: ID=%d Ind=%d\n",nId,nInd);
@@ -149,8 +149,8 @@ void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,c
 // Return the style for a button
 void gslc_ElemXKeyPadStyleGet_Alpha(void* pvKeyPad,uint8_t nId, bool* pbVisible, gslc_tsColor* pcolTxt, gslc_tsColor* pcolFrame, gslc_tsColor* pcolFill, gslc_tsColor* pcolGlow)
 {
-  gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
-  gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
+  //gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
+  //gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
 
   // Provide defaults
   *pcolTxt = XKEYPAD_COL_DEF_TXT;
@@ -196,7 +196,7 @@ void gslc_ElemXKeyPadBtnEvt_Alpha(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResul
 {
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
   gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
-  gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
+  //gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
   gslc_tsKey* pKeys = pConfig->pLayout; 
 
   int16_t nInd = gslc_XKeyPadLookupId(pKeys,nId);

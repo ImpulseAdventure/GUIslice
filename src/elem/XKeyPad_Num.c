@@ -83,7 +83,6 @@ void gslc_XKeyPadValSetSign_Num(gslc_tsXKeyPad* pXKeyPad, bool bPositive)
 {
   gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pXKeyPad->pConfig; // Retrieve variant config
   bool bValPositive = pConfigNum->bValPositive;
-  bool bRet;
 
   if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadValSetSign_Num pos_cur=%d pos_req=%d\n",bValPositive,bPositive);
 
@@ -96,7 +95,7 @@ void gslc_XKeyPadValSetSign_Num(gslc_tsXKeyPad* pXKeyPad, bool bPositive)
     // Change from positive to negative
     // - Insert negative sign at front of buffer
     if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  SetSign_Num pos to neg\n","");
-    bRet = gslc_XKeyPadTxtAddStr(pXKeyPad,KEYPAD_LABEL_NEGATIVE,0);
+    gslc_XKeyPadTxtAddStr(pXKeyPad,KEYPAD_LABEL_NEGATIVE,0);
     
   } else if ((!bValPositive) && (bPositive)) {
     // Change from negative to positive
@@ -107,7 +106,7 @@ void gslc_XKeyPadValSetSign_Num(gslc_tsXKeyPad* pXKeyPad, bool bPositive)
     }
     // Request delete character from position 1 causes
     // position 0 (the location of the negative sign) to be deleted
-    bRet = gslc_XKeyPadTxtDelCh(pXKeyPad,1);
+    gslc_XKeyPadTxtDelCh(pXKeyPad,1);
   }
 
   // Update sign state
@@ -117,7 +116,7 @@ void gslc_XKeyPadValSetSign_Num(gslc_tsXKeyPad* pXKeyPad, bool bPositive)
 // Initialize any internal state upon reset
 void gslc_ElemXKeyPadReset_Num(void* pvConfig)
 {
-  gslc_tsXKeyPadCfg* pConfig = (gslc_tsXKeyPadCfg*)pvConfig;
+  //gslc_tsXKeyPadCfg* pConfig = (gslc_tsXKeyPadCfg*)pvConfig;
   gslc_tsXKeyPadCfg_Num* pConfigNum = (gslc_tsXKeyPadCfg_Num*)pvConfig; // Retrieve the variant config
 
   // Initialize state
@@ -156,7 +155,7 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
   gslc_tsKey* pKeys = pKeyPad->pConfig->pLayout; 
   int16_t nInd = gslc_XKeyPadLookupId(pKeys,nId);
   uint8_t nType;
-  gslc_tsXKeyPadCfg_Num* pConfigV = (gslc_tsXKeyPadCfg_Num*)pKeyPad->pConfig; // Retrieve variant config
+  //gslc_tsXKeyPadCfg_Num* pConfigV = (gslc_tsXKeyPadCfg_Num*)pKeyPad->pConfig; // Retrieve variant config
   int8_t eLayoutSel = pKeyPad->pConfig->eLayoutSel;
 
   if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadLabelGet_Num: pKeyPad=%d nId=%d pKeys=%d nInd=%d\n",

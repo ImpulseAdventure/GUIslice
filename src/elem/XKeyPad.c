@@ -478,7 +478,7 @@ bool gslc_XKeyPadDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
 
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_KEYPAD, __LINE__);
   if (!pKeyPad) return false;
-  gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+  //gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
 
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
 
@@ -675,7 +675,6 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)
   // TODO: Also handle GSLC_TOUCH_MOVE?
   if (eTouch == GSLC_TOUCH_UP_IN) {
-    char* sKey;
 
     GSLC_CB_INPUT pfuncXInput = pKeyPad->pfuncCb;
     gslc_tsXKeyPadData sKeyPadData;
@@ -1031,7 +1030,7 @@ void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPa
   // virtual element three times, each with different parameters
 
   int8_t nTxtLen;
-  int16_t nTxtSzW = 0;
+  uint16_t nTxtSzW = 0;
   int16_t nTxtPosX = 0;
 
   pVirtualElem->pStrBuf = acTempStr;
