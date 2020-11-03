@@ -788,9 +788,17 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   m_disp.setSwapBytes(true); 
   #if (GSLC_BMP_TRANS_EN)
     uint16_t nTransRaw = gslc_DrvAdaptColorToRaw(pGui->sTransCol);
-    m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage, nTransRaw); 
+    if (bProgMem) {
+      m_disp.pushImage(nDstX, nDstY, w, h, (const uint16_t*) pImage, nTransRaw); 
+    } else {
+      m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage, nTransRaw); 
+    }
   #else
-    m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
+    if (bProgMem) {
+      m_disp.pushImage(nDstX, nDstY, w, h, (const uint16_t*) pImage); 
+    } else {
+      m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
+    }
   #endif // GSLC_BMP_TRANS_EN
 }
 
