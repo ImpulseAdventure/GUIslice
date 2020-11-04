@@ -32,6 +32,10 @@
 *.dSYM/
 *.su
 
+# IDE files
+.pio/
+.vscode/
+
 # NetBeans files
 nbproject/
 build/
