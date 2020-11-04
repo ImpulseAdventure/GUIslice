@@ -51,8 +51,8 @@ private:
 	bool _held_callback_called;			// Indicate if button long press has been notified.
 	uint8_t _pin;						// Arduino pin number where the Button is connected to.
 	uint32_t _db_time;					// Debounce time (ms).
-	bool _invert;						// Inverts button logic. If true, low = pressed else high = pressed.
 	bool _pu_enabled;					// Internal pullup resistor enabled.
+	bool _invert;						// Inverts button logic. If true, low = pressed else high = pressed.
 	bool _current_state;				// Current button state, true = pressed.      
 	bool _last_state;					// Previous button state, true = pressed.
 	bool _changed;						// Has the state change since last read.
