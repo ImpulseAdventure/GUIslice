@@ -379,7 +379,8 @@ void gslc_DebugPrintf(const char* pFmt, ...)
     bool     bNumStart=false,bNumNeg=false;
     unsigned nNumDivisor=1;
     uint16_t nFmtInd=0;
-    char     cFmt,cOut;
+    char     cFmt = 0;
+    char     cOut = 0;
 
     va_list  vlist;
     va_start(vlist,pFmt);
