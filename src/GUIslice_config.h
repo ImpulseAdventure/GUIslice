@@ -38,6 +38,16 @@
 extern "C" {
 #endif // __cplusplus
 
+// Support the loading of config settings through compiler flags
+// - This is used to support environments such as PlatformIO
+#ifdef USER_CONFIG_LOADED
+  // If a config file has been specified, the following will load it
+  // Otherwise, all settings must be provided via build flags
+  #ifdef USER_CONFIG_INC_FILE
+    #include USER_CONFIG_INC_FNAME
+  #endif
+#else
+
 // =========================================================================================
 // SELECT ONE OF THE FOLLOWING EXAMPLE CONFIGURATIONS OR ADD YOUR OWN
 // - Uncomment one of the following lines
@@ -143,6 +153,7 @@ extern "C" {
   //#include "../configs/rpi-sdl1-default-sdl.h"
   //#include "../configs/linux-sdl1-default-mouse.h"
 
+#endif // USER_CONFIG_LOADED
 
 // =========================================================================================
 // DETECT DEVICE PLATFORM
@@ -195,15 +206,15 @@ extern "C" {
   #define GSLC_DEV_TEENSY
   #define GSLC_DEV_TEENSY_4_0
 #else
-#warning Unknown
-  #error "Unknown device platform"
+  #warning Unknown device platform
 #endif
 
 // =========================================================================================
 // DEFAULT COMBINED CONFIGURATION FILE
-// - If no user configuration has been selected, a default config will be selected here
+// - If no user configuration has been selected, an error will be reported here.
 // - Note that the include guard _GUISLICE_CONFIG_ARD_H_ and _GUISLICE_CONFIG_LINUX_H_
-//   will prevent these from loading if any of the user configs have been loaded
+//   is defined in all of the example config files, so we can test for it here
+//   to determine if one was loaded.
 // =========================================================================================
 
 #if !defined(_GUISLICE_CONFIG_ARD_H_) && !defined(_GUISLICE_CONFIG_LINUX_H_)
