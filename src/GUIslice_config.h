@@ -135,6 +135,7 @@ extern "C" {
   //#include "../configs/teensy-adagfx-ili9341-xpt2046.h"
   //#include "../configs/teensy-adagfx-ili9341-xpt2046-audio.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-notouch-audio.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-audio.h"
 
   // STM32:
