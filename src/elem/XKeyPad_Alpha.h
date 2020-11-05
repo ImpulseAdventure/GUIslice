@@ -47,6 +47,7 @@ extern "C" {
 // - NOTE: The XKeyPad_Alpha extends the XKeyPad base element
 // ============================================================================
 
+// Variant XKeyPad config structure
 typedef struct {
     // Common configuration
     gslc_tsXKeyPadCfg   sBaseCfg;         ///< KeyPad base config struct

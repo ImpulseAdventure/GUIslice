@@ -322,6 +322,7 @@ enum {
   /// in gslc_XKeyPadSizeGet().
   ///
   /// \param[in]  pLayouts:    Ptr to the array of KeyPad layouts
+  /// \param[in]  nNumLayouts: Number of layouts in pLayouts
   /// \param[out] pnRows:      Ptr for the number of rows
   /// \param[out] pnCols:      Ptr for the number of columns
   ///
@@ -365,7 +366,7 @@ enum {
   /// \param[in]  nX0:           X KeyPad Starting Coordinate 
   /// \param[in]  nY0:           Y KeyPad Starting Coordinate 
   /// \param[in]  nFontId:       Font ID to use for drawing the element
-  /// \param[in]  sConfig:       Config options
+  /// \param[in]  pConfig:       Pointer to base Config options
   ///
   /// \return Pointer to Element or NULL if failure
   ///
@@ -440,7 +441,7 @@ enum {
   /// - Called during redraw
   ///
   /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-  /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+  /// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
   /// \param[in]  eRedraw:     Redraw mode
   ///
   /// \return true if success, false otherwise
@@ -452,7 +453,7 @@ enum {
   /// - Called from gslc_ElemSendEventTouch()
   ///
   /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-  /// \param[in]  pvElem:      Void ptr to Element (typecast to gslc_tsElem*)
+  /// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
   /// \param[in]  eTouch:      Touch event type
   /// \param[in]  nRelX:       Touch X coord relative to element
   /// \param[in]  nRelY:       Touch Y coord relative to element
@@ -476,8 +477,7 @@ enum {
   ///
   /// Update the KeyPad configuration to enable rounded button corners
   ///
-  /// \param[in]    pGui:        Pointer to GUI
-  /// \param[inout] pConfig:     Pointer to the XKeyPad config structure
+  /// \param[inout] pConfig:     Pointer to the XKeyPad base config structure
   /// \param[in]    bEn:         Enable rounded corners
   ///
   /// \return none
@@ -487,8 +487,7 @@ enum {
   ///
   /// Update the KeyPad configuration to define the KeyPad button sizing
   ///
-  /// \param[in]    pGui:        Pointer to GUI
-  /// \param[inout] pConfig:     Pointer to the XKeyPad config structure
+  /// \param[inout] pConfig:     Pointer to the XKeyPad base config structure
   /// \param[in]    nButtonSzW:  Width of buttons in pixels
   /// \param[in]    nButtonSzH:  Height of buttons in pixels
   ///
@@ -502,8 +501,7 @@ enum {
   /// - A spacing of (1,1) will mean that the button is drawn with a
   ///   1 pixel margin around the grid defined by the Button Size
   ///
-  /// \param[in]    pGui:        Pointer to GUI
-  /// \param[inout] pConfig:     Pointer to the XKeyPad config structure
+  /// \param[inout] pConfig:     Pointer to the XKeyPad base config structure
   /// \param[in]    nSpaceX:     Amount to inset button in horizontal direction (pixels)
   /// \param[in]    nSpaceY:     Amount to inset button in vertical direction (pixels)
   ///

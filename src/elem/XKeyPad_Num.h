@@ -48,6 +48,7 @@ extern "C" {
 // ============================================================================
 
 
+// Variant XKeyPad config structure
 typedef struct {
     // Common configuration
     gslc_tsXKeyPadCfg   sBaseCfg;         ///< KeyPad base config struct
@@ -170,8 +171,7 @@ typedef struct {
   /// Update the KeyPad configuration to enable floating point numbers
   /// - Effectively disables/enables the decimal point button & handling
   ///
-  /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
+  /// \param[in]  pConfig:     Pointer to the XKeyPad variant config structure
   /// \param[in]  bEn:         Enable flag (true if floating point enabled)
   ///
   /// \return none
@@ -182,8 +182,7 @@ typedef struct {
   /// Update the KeyPad configuration to enable negative numbers
   /// - Effectively disables/enables the sign button & handling
   ///
-  /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  pConfig:     Pointer to the XKeyPad config structure
+  /// \param[in]  pConfig:     Pointer to the XKeyPad variant config structure
   /// \param[in]  bEn:         Enable flag (true if negative numbers enabled)
   ///
   /// \return none
