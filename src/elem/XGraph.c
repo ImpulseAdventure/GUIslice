@@ -282,7 +282,7 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t           nPixX,nPixY,nPixYBase,nPixYOffset;
   gslc_tsColor      colGraph;
 
-  uint8_t           nScrollMax;
+  uint16_t          nScrollMax;
 
   // Initialize color state
   colGraph  = pBox->colGraph;
@@ -299,8 +299,8 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   }
   pBox->nPlotIndStart  = pBox->nPlotIndStart % pBox->nBufMax;
 
-  uint8_t nPlotInd = 0;
-  uint8_t nIndMax = 0;
+  uint16_t nPlotInd = 0;
+  uint16_t nIndMax = 0;
   nIndMax = (pBox->nBufMax < pBox->nPlotIndMax)? pBox->nBufMax : pBox->nPlotIndMax;
   for (nPlotInd=0;nPlotInd<nIndMax;nPlotInd++) {
 
