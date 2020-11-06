@@ -218,10 +218,12 @@ extern "C" {
 //   to determine if one was loaded.
 // =========================================================================================
 
-#if !defined(_GUISLICE_CONFIG_ARD_H_) && !defined(_GUISLICE_CONFIG_LINUX_H_)
-  #error No config selected in GUIslice_config.h. Please uncomment/select a config.
-  #error For details: https://github.com/ImpulseAdventure/GUIslice/wiki/Select-a-Config
-#endif
+#ifndef USER_CONFIG_LOADED
+  #if !defined(_GUISLICE_CONFIG_ARD_H_) && !defined(_GUISLICE_CONFIG_LINUX_H_)
+    #error No config selected in GUIslice_config.h. Please uncomment/select a config.
+    #error For details: https://github.com/ImpulseAdventure/GUIslice/wiki/Select-a-Config
+  #endif
+#endif // USER_CONFIG_LOADED
 
 // -----------------------------------------------------------------------------------------
 
