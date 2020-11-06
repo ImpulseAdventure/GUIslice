@@ -1,3 +1,6 @@
+#ifndef _GUISLICE_EX_XKEYPAD_ALPHA_SETUP_H_
+#define _GUISLICE_EX_XKEYPAD_ALPHA_SETUP_H_
+
 #include "elem/XKeyPad.h"
 #include "elem/XKeyPad_Alpha.h"
 
@@ -175,3 +178,5 @@ static gslc_tsKey* KEYPAD_LAYOUTS[E_XKEYPAD_SET__MAX] = {
 #define XKEYPAD_COL_SCROLL_R_GLOW GSLC_COL_BLUE_LT3
 // - Color overrides for variant-specific keys
 // ...
+
+#endif // _GUISLICE_EX_XKEYPAD_ALPHA_SETUP_H_

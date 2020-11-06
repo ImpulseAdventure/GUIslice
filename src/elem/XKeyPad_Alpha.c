@@ -73,7 +73,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // ============================================================================
 
 // Import the "setup" file for XKeyPad_Alpha
-#include "elem/XKeyPad_Alpha-setup.c"
+#include "elem/XKeyPad_Alpha-setup.h"
 
 // Initialize any internal state upon reset
 void gslc_ElemXKeyPadReset_Alpha(void* pvConfig)

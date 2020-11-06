@@ -75,7 +75,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // ============================================================================
 
 // Import the "setup" file for XKeyPad_Num
-#include "elem/XKeyPad_Num-setup.c"
+#include "elem/XKeyPad_Num-setup.h"
 
 // Change the sign of the number string
 // - This function also triggers the shifting of the content
