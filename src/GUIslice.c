@@ -3292,24 +3292,33 @@ void gslc_ElemSetTxtMarginXY(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int8_t nM
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
+// Perform a deep copy with termination
+void gslc_StrCopy(char* pDstStr,const char* pSrcStr,uint16_t nDstLen)
+{
+    // Check for read-only status
+    if (nDstLen == 0) {
+      // Destination has no writeable storage, so abort now
+      // This can happen if we only intended the string
+      // to be read-only (eg. FLASH / PROGMEM)
+      return;
+    }
+
+    // Perform deep copy
+    strncpy(pDstStr,pSrcStr,nDstLen-1);
+    pDstStr[nDstLen-1] = '\0';  // Force termination
+
+}
+
 void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pStr)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
-  // Check for read-only status (in case the string was
-  // defined in Flash/PROGMEM)
-  if (pElem->nStrBufMax == 0) {
-    // String was read-only, so abort now
-    return;
-  }
-
   // To avoid unnecessary redraw / flicker, only a change in
   // the text content will drive a redraw
 
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
-    strncpy(pElem->pStrBuf,pStr,pElem->nStrBufMax-1);
-    pElem->pStrBuf[pElem->nStrBufMax-1] = '\0';  // Force termination
+    gslc_StrCopy(pElem->pStrBuf,pStr,pElem->nStrBufMax);
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 }

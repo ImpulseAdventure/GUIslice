@@ -2077,6 +2077,19 @@ void gslc_ElemSetTxtMargin(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned nM
 void gslc_ElemSetTxtMarginXY(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int8_t nMarginX,int8_t nMarginY);
 
 ///
+/// Helper routine to perform string deep copy
+/// - Includes termination
+/// - Similar to strncpy() plus terminator
+///
+/// \param[inout] pDstStr:    Pointer to destination buffer
+/// \param[in]    nDstLen:    Size of destination buffer (includes NULL)
+/// \param[in]    pSrcStr:    Pointer to source buffer
+///
+/// \return none
+///
+void gslc_StrCopy(char* pDstStr,const char* pSrcStr,uint16_t nDstLen);
+
+///
 /// Update the text string associated with an Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
