@@ -278,13 +278,8 @@ bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const 
 
   // Treat this section of the buffer as [char]
   pBuf = (char*)pListbox->pBufItems + nBufItemsPos;
-  strncpy(pBuf, pStrItem, nStrItemLen);
-  pListbox->nBufItemsPos += nStrItemLen;
-
-  // Ensure terminator added
-  pBuf += nStrItemLen;
-  *pBuf = 0;
-  pListbox->nBufItemsPos++;
+  gslc_StrCopy(pBuf, pStrItem, nStrItemLen+1);
+  pListbox->nBufItemsPos += (nStrItemLen+1); // +1 for terminator
 
   pListbox->nItemCnt++;
 
@@ -456,10 +451,7 @@ bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_
   }
   if (bFound) {
     pBuf = &(pListbox->pBufItems[nBufPos]);
-    strncpy(pStrItem, (char*)pBuf, nStrItemLen);
-    // Ensure null terminated in case the buffer
-    // was smaller than the item source
-    pStrItem[nStrItemLen - 1] = 0;
+    gslc_StrCopy(pStrItem, (char*)pBuf, nStrItemLen);
     return true;
   } else {
     // If no item was found, return an empty string (NULL)

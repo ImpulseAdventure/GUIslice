@@ -182,6 +182,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
 
 bool CbListBox(void* pvGui, void* pvElemRef, int16_t nSelId)
 {
+  gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   char acTxt[5];
 
@@ -191,12 +192,11 @@ bool CbListBox(void* pvGui, void* pvElemRef, int16_t nSelId)
 
   // Update the status message with the selection
   if (nSelId == XLISTBOX_SEL_NONE) {
-    strncpy(acTxt, "NONE", 5);
+    gslc_StrCopy(acTxt, "NONE", 5);
+  } else {
+    gslc_StrCopy(acTxt, m_astrCountryCodes[nSelId], 5);
   }
-  else {
-    strncpy(acTxt, m_astrCountryCodes[nSelId], 5);
-  }
-  gslc_ElemSetTxtStr(&m_gui, m_pElemSel, acTxt);
+  gslc_ElemSetTxtStr(pGui, m_pElemSel, acTxt);
 
   return true;
 }

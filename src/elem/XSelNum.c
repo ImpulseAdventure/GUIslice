@@ -155,7 +155,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     rSubElem,"+",0,nFontId,&gslc_ElemXSelNumClick);
   #else
-  strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[0],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
@@ -171,7 +171,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     rSubElem,"-",0,nFontId,&gslc_ElemXSelNumClick);
   #else
-  strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[1],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
@@ -187,7 +187,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     rSubElem,"0",0,nFontId);
   #else
-  strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif

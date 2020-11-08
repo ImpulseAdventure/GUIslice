@@ -279,8 +279,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
       pElem->eTxtAlign, colTxt, GSLC_COL_BLACK, nMarginX, nMarginY);
 
     // Save a copy of the new string content so we can support future erase
-    strncpy(pXRingGauge->acStrLast, pElem->pStrBuf, XRING_STR_MAX);
-    pXRingGauge->acStrLast[XRING_STR_MAX - 1] = 0; // Force null terminator
+    gslc_StrCopy(pXRingGauge->acStrLast, pElem->pStrBuf, XRING_STR_MAX);
 
   } // pStrBuf
 

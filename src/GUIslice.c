@@ -4386,8 +4386,7 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
       } else {
         nBufMax = GSLC_MIN(GSLC_LOCAL_STR_LEN,nStrBufMax);
       }
-      strncpy(sElem.pStrBuf,pStrBuf,nBufMax-1);
-      sElem.pStrBuf[nBufMax-1] = '\0';  // Force termination
+      gslc_StrCopy(sElem.pStrBuf,pStrBuf,nBufMax);
       sElem.nStrBufMax = nBufMax;
       sElem.eTxtFlags  = (sElem.eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_INT;
     #else

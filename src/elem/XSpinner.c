@@ -192,7 +192,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   //   structure (pXData).
   rSubElem = (gslc_tsRect) { nOffsetX, nOffsetY, nTxtBoxW, nTxtBoxH };
   rSubElem = gslc_ExpandRect(rSubElem, -1, -1);
-  strncpy(pXData->acElemTxt[0], acTxtNum, XSPINNER_STR_LEN - 1);
+  gslc_StrCopy(pXData->acElemTxt[0], acTxtNum, XSPINNER_STR_LEN);
   pElemRefTmp = gslc_ElemCreateTxt(pGui, SPINNER_ID_TXT, GSLC_PAGE_NONE,
     rSubElem, pXData->acElemTxt[0], XSPINNER_STR_LEN, nFontId);
   gslc_ElemSetTxtAlign(pGui, pElemRefTmp, GSLC_ALIGN_MID_MID);

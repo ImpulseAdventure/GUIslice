@@ -121,7 +121,7 @@ void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,c
       nOffset = nId - KEYPAD_ID_BASIC_START;
       #if (XKEYPAD_EXTEND_CHAR)
         // KeyPad array composed of strings
-        strncpy(pStr,KEYPAD_SET_LABEL[eLayoutSel][nOffset],nStrMax-1);
+        gslc_StrCopy(pStr,KEYPAD_SET_LABEL[eLayoutSel][nOffset],nStrMax);
       #else
         // KeyPad array composed of single characters
         pStr[0] = KEYPAD_SET_LABEL[eLayoutSel][nOffset];
@@ -134,15 +134,14 @@ void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,c
       if (nId == KEYPAD_ID_SWAP_PAD) {
         // Dynamic content
         // - Show indicator for next keypad in sequence
-        strncpy(pStr,KEYPAD_SPECIAL_SELECT[(eLayoutSel+1) % E_XKEYPAD_SET__MAX],nStrMax-1);
+        gslc_StrCopy(pStr,KEYPAD_SPECIAL_SELECT[(eLayoutSel+1) % E_XKEYPAD_SET__MAX],nStrMax);
       } else {
         // Static content
-        strncpy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax-1);
+        gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax);
       }
     } else {
-      strncpy(pStr,"",nStrMax-1);
+      gslc_StrCopy(pStr,"",nStrMax);
     }
-    pStr[nStrMax-1] = '\0'; // NULL terminate
   }
 }
 

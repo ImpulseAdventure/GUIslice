@@ -2080,7 +2080,9 @@ void gslc_ElemSetTxtMarginXY(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int8_t nM
 ///
 /// Helper routine to perform string deep copy
 /// - Includes termination
-/// - Similar to strncpy() plus terminator
+/// - Similar to strncpy() except:
+///   - nDstLen is the total buffer size (including terminator)
+///   - A terminator is added at the end of the buffer
 ///
 /// \param[inout] pDstStr:    Pointer to destination buffer
 /// \param[in]    nDstLen:    Size of destination buffer (includes NULL)

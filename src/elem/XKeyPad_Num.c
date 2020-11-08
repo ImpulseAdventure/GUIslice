@@ -171,7 +171,7 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
       nOffset = nId - KEYPAD_ID_BASIC_START;
       #if (XKEYPAD_EXTEND_CHAR)
         // KeyPad array composed of strings
-        strncpy(pStr,KEYPAD_SET_LABEL[eLayoutSel][nOffset],nStrMax-1);
+        gslc_StrCopy(pStr,KEYPAD_SET_LABEL[eLayoutSel][nOffset],nStrMax);
       #else
         // KeyPad array composed of single characters
         pStr[0] = KEYPAD_SET_LABEL[eLayoutSel][nOffset];
@@ -183,11 +183,10 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
       // Handle any dynamic keys first
 
       // Static content
-      strncpy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax-1);
+      gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax);
     } else {
-      strncpy(pStr,"",nStrMax-1);
+      gslc_StrCopy(pStr,"",nStrMax);
     }
-    pStr[nStrMax-1] = '\0'; // NULL terminate
   }
 }
 
