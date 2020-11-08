@@ -130,9 +130,9 @@ bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
   if (nSelId == XLISTBOX_SEL_NONE) {
     snprintf(acTxt, MAX_STR, "NONE");
   } else {
-    gslc_ElemXListboxGetItem(&m_gui, pElemRef, nSelId, acTxt, MAX_STR);
+    gslc_ElemXListboxGetItem(pGui, pElemRef, nSelId, acTxt, MAX_STR);
   }
-  gslc_ElemSetTxtStr(&m_gui, m_pElemSel, acTxt);
+  gslc_ElemSetTxtStr(pGui, m_pElemSel, acTxt);
 
   return true;
 }

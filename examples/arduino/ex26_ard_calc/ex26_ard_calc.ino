@@ -124,7 +124,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
 {
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
-  //gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
+  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
 
   char acTxtNum[11];
   int32_t nVal1, nVal2, nResult;
@@ -135,35 +135,35 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       //<Button Enums !Start!>
     case E_TXT_VAL1:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
+      gslc_ElemXKeyPadInputAsk(pGui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
       break;
     case E_TXT_VAL2:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal2);
+      gslc_ElemXKeyPadInputAsk(pGui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal2);
       break;
     case E_BTN_ADD:
       // Compute the sum and update the result
-      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal2));
       nResult = nVal1 + nVal2;
       ltoa(nResult, acTxtNum, 10);
-      gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
+      gslc_ElemSetTxtStr(pGui, m_pElemResult, acTxtNum);
       break;
     case E_BTN_SUB:
       // Compute the subtraction and update the result
-      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal2));
       nResult = nVal1 - nVal2;
       ltoa(nResult, acTxtNum, 10);
-      gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
+      gslc_ElemSetTxtStr(pGui, m_pElemResult, acTxtNum);
       break;
     case E_BTN_MULT:
       // Compute the multiplication and update the result
-      nVal1 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal1));
-      nVal2 = atol(gslc_ElemGetTxtStr(&m_gui, m_pElemVal2));
+      nVal1 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal1));
+      nVal2 = atol(gslc_ElemGetTxtStr(pGui, m_pElemVal2));
       nResult = nVal1 * nVal2;
       ltoa(nResult, acTxtNum, 10);
-      gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
+      gslc_ElemSetTxtStr(pGui, m_pElemResult, acTxtNum);
       break;
       //<Button Enums !End!>
     default:
@@ -190,11 +190,11 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
       //   the corresponding value field
       if (nTargetElemId == E_TXT_VAL1) {
         gslc_ElemSetTxtStr(pGui, m_pElemVal1, gslc_ElemXKeyPadDataValGet(pGui, pvData));
-        gslc_PopupHide(&m_gui);
+        gslc_PopupHide(pGui);
       }
       else if (nTargetElemId == E_TXT_VAL2) {
         gslc_ElemSetTxtStr(pGui, m_pElemVal2, gslc_ElemXKeyPadDataValGet(pGui, pvData));
-        gslc_PopupHide(&m_gui);
+        gslc_PopupHide(pGui);
       }
       else {
         // ERROR
@@ -202,7 +202,7 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
       break;
     case XKEYPAD_CB_STATE_CANCEL:
       // User escaped from popup, so don't update values
-      gslc_PopupHide(&m_gui);
+      gslc_PopupHide(pGui);
       break;
 
     case XKEYPAD_CB_STATE_UPDATE:

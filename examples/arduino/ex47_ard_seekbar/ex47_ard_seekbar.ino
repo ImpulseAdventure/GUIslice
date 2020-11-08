@@ -113,7 +113,7 @@ bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
       // Fetch the slider position
       nVal = gslc_ElemXSeekbarGetPos(pGui,m_pElemSeekbar);
       snprintf(acTxt,MAX_STR,"%u",nVal); 
-      gslc_ElemSetTxtStr(&m_gui,m_pElemSeekbarTxt,acTxt);
+      gslc_ElemSetTxtStr(pGui,m_pElemSeekbarTxt,acTxt);
       break;
     case E_ELEM_SEEKBAR2:
       // Fetch the slider position

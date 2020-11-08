@@ -107,27 +107,27 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       m_bQuit = true;
     }
     else if (nElemId == E_ELEM_TAB_CONFIG) {
-      gslc_SetPageCur(&m_gui, E_PG_CONFIG);
+      gslc_SetPageCur(pGui, E_PG_CONFIG);
       SetTabHighlight(E_ELEM_TAB_CONFIG);
     }
     else if (nElemId == E_ELEM_TAB_MAIN) {
-      gslc_SetPageCur(&m_gui, E_PG_MAIN);
+      gslc_SetPageCur(pGui, E_PG_MAIN);
       SetTabHighlight(E_ELEM_TAB_MAIN);
     }
     else if (nElemId == E_ELEM_BTN_ALERT) {
       // Show alert popup, modal
-      gslc_ElemSetTxtStr(&m_gui, m_pElemAlertMsg, "Alert Message!");
-      gslc_PopupShow(&m_gui,E_PG_ALERT,true); // Use false for modeless
+      gslc_ElemSetTxtStr(pGui, m_pElemAlertMsg, "Alert Message!");
+      gslc_PopupShow(pGui,E_PG_ALERT,true); // Use false for modeless
     }
     else if (nElemId == E_ELEM_ALERT_OK) {
       GSLC_DEBUG_PRINT("INFO: Alert popup selected OK\n", "");
       // Dispose of alert
-      gslc_PopupHide(&m_gui);
+      gslc_PopupHide(pGui);
     }
     else if (nElemId == E_ELEM_ALERT_CANCEL) {
       GSLC_DEBUG_PRINT("INFO: Alert popup selected Cancel\n", "");
       // Dispose of alert
-      gslc_PopupHide(&m_gui);
+      gslc_PopupHide(pGui);
     }
   }
   return true;

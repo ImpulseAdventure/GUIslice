@@ -114,7 +114,7 @@ bool CbSlidePos(void* pvGui, void* pvElemRef, int16_t nPos)
     // Fetch the slider position (0..100)
     nVal = gslc_ElemXSliderGetPos(pGui, pElemRef);
     // Update the right progress bar
-    gslc_ElemXProgressSetVal(&m_gui, m_pElemProgress2, nVal);
+    gslc_ElemXProgressSetVal(pGui, m_pElemProgress2, nVal);
     break;
   default:
     break;

@@ -134,7 +134,7 @@ bool CbDrawScanner(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   gslc_DrawFrameRect(pGui,pElem->rElem,pElem->colElemFrame);
 
   // Clear the redraw flag
-  gslc_ElemSetRedraw(&m_gui,pElemRef,GSLC_REDRAW_NONE);
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
 
   return true;
 }

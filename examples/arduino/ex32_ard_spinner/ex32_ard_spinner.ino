@@ -109,6 +109,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 // Common Input Ready callback
 bool CbInputCommon(void* pvGui,void *pvElemRef, int16_t nState, void* pvData)
 {
+  gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
   
@@ -118,17 +119,17 @@ bool CbInputCommon(void* pvGui,void *pvElemRef, int16_t nState, void* pvData)
 
   // From the element's ID we can determine which input field is ready.
   if (pElem->nId == E_ELEM_COMP1) {
-    m_nComp1 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[0]);
+    m_nComp1 = gslc_ElemXSpinnerGetCounter(pGui, &m_sXSpinner[0]);
     snprintf(acTxtNum, 4, "%d", m_nComp1);
-    gslc_ElemSetTxtStr(&m_gui,m_pElemComp1,acTxtNum);
+    gslc_ElemSetTxtStr(pGui,m_pElemComp1,acTxtNum);
   } else if (pElem->nId == E_ELEM_COMP2) {
-    m_nComp2 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[1]);
+    m_nComp2 = gslc_ElemXSpinnerGetCounter(pGui, &m_sXSpinner[1]);
     snprintf(acTxtNum, 4, "%d", m_nComp2);
-    gslc_ElemSetTxtStr(&m_gui,m_pElemComp2,acTxtNum);
+    gslc_ElemSetTxtStr(pGui,m_pElemComp2,acTxtNum);
   } else if (pElem->nId == E_ELEM_COMP3) {
-    m_nComp3 = gslc_ElemXSpinnerGetCounter(&m_gui, &m_sXSpinner[2]);
+    m_nComp3 = gslc_ElemXSpinnerGetCounter(pGui, &m_sXSpinner[2]);
     snprintf(acTxtNum, 4, "%d", m_nComp3);
-    gslc_ElemSetTxtStr(&m_gui,m_pElemComp3,acTxtNum);
+    gslc_ElemSetTxtStr(pGui,m_pElemComp3,acTxtNum);
   }
   return true;
 }

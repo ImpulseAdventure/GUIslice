@@ -73,16 +73,17 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 // - Show example of common callback function
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
   int16_t nElemId = pElem->nId;
   if (eTouch == GSLC_TOUCH_UP_IN) {
     if (nElemId == E_ELEM_BTN_QUIT) {
       m_bQuit = true;
     } else if (nElemId == E_ELEM_BTN_EXTRA) {
-      gslc_SetPageCur(&m_gui,E_PG_EXTRA);
+      gslc_SetPageCur(pGui,E_PG_EXTRA);
     } else if (nElemId == E_ELEM_BTN_BACK) {
-      gslc_SetPageCur(&m_gui,E_PG_MAIN);
+      gslc_SetPageCur(pGui,E_PG_MAIN);
     }
   }
   return true;

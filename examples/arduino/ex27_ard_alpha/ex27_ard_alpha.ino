@@ -132,7 +132,7 @@ bool CbBtnCommon(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       //<Button Enums !Start!>
     case E_TXT_VAL1:
       // Clicked on edit field, so show popup box and associate with this text field
-      gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
+      gslc_ElemXKeyPadInputAsk(pGui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
       break;
       //<Button Enums !End!>
     default:
@@ -159,7 +159,7 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
       //   the corresponding value field
       if (nTargetElemId == E_TXT_VAL1) {
         gslc_ElemSetTxtStr(pGui, m_pElemVal1, gslc_ElemXKeyPadDataValGet(pGui, pvData));
-        gslc_PopupHide(&m_gui);
+        gslc_PopupHide(pGui);
       }
       else {
         // ERROR
@@ -167,7 +167,7 @@ bool CbInputCommon(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
       break;
     case XKEYPAD_CB_STATE_CANCEL:
       // User escaped from popup, so don't update values
-      gslc_PopupHide(&m_gui);
+      gslc_PopupHide(pGui);
       break;
 
     case XKEYPAD_CB_STATE_UPDATE:
