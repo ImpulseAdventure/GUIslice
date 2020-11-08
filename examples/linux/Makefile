@@ -112,6 +112,7 @@ SRC =   ex01_lnx_basic.c \
 	ex18_lnx_compound.c \
 	ex22_lnx_input_key.c \
 	ex24_lnx_tabs.c \
+	ex27_lnx_alpha.c \
 	ex31_lnx_listbox.c \
 	ex42_lnx_ring.c \
 	ex43_lnx_glowball.c
@@ -203,6 +204,10 @@ ex22_lnx_input_key: ex22_lnx_input_key.c $(GSLC_CORE) $(GSLC_SRCS)
 ex24_lnx_tabs: ex24_lnx_tabs.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
 	@$(CC) $(CFLAGS) -o $@ ex24_lnx_tabs.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
+
+ex27_lnx_alpha: ex27_lnx_alpha.c $(GSLC_CORE) $(GSLC_SRCS)
+	@echo [Building $@]
+	@$(CC) $(CFLAGS) -o $@ ex27_lnx_alpha.c $(GSLC_CORE) $(GSLC_SRCS) $(LDFLAGS) $(LDLIBS) -I . -I ../../src
 
 ex31_lnx_listbox: ex31_lnx_listbox.c $(GSLC_CORE) $(GSLC_SRCS)
 	@echo [Building $@]
