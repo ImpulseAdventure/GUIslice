@@ -4377,9 +4377,18 @@ gslc_tsElem gslc_ElemCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPageId,
   } else {
     #if (GSLC_LOCAL_STR)
       // NOTE: Assume the string buffer pointer is located in RAM and not PROGMEM
-      strncpy(sElem.pStrBuf,pStrBuf,GSLC_LOCAL_STR_LEN-1);
-      sElem.pStrBuf[GSLC_LOCAL_STR_LEN-1] = '\0';  // Force termination
-      sElem.nStrBufMax = GSLC_LOCAL_STR_LEN;
+
+      // Limit string length to minimum of either the internal buffer (GSLC_LOCAL_STR_LEN)
+      // or the max length provided by the user (nStrBufMax)
+      int8_t nBufMax;
+      if (nStrBufMax == 0) {
+        nBufMax = GSLC_LOCAL_STR_LEN;
+      } else {
+        nBufMax = GSLC_MIN(GSLC_LOCAL_STR_LEN,nStrBufMax);
+      }
+      strncpy(sElem.pStrBuf,pStrBuf,nBufMax-1);
+      sElem.pStrBuf[nBufMax-1] = '\0';  // Force termination
+      sElem.nStrBufMax = nBufMax;
       sElem.eTxtFlags  = (sElem.eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_INT;
     #else
       // No need to copy locally; instead, we are going to retain
@@ -4747,7 +4756,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->eTxtFlags        = GSLC_TXT_DEFAULT;
   #if (GSLC_LOCAL_STR)
     pElem->pStrBuf[0]       = '\0';
-    pElem->nStrBufMax       = 0;
+    pElem->nStrBufMax       = GSLC_LOCAL_STR_LEN;
   #else
     pElem->pStrBuf          = NULL;
     pElem->nStrBufMax       = 0;

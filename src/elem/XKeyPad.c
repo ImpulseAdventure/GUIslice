@@ -388,8 +388,7 @@ void gslc_ElemXKeyPadValSet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const ch
   gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
 
   // Copy over the new value string
-  strncpy(pKeyPad->acBuffer, pStrBuf, pKeyPad->nBufferMax);
-  pKeyPad->acBuffer[pKeyPad->nBufferMax-1] = 0; // Force null terminate
+  gslc_StrCopy(pKeyPad->acBuffer,pStrBuf,pKeyPad->nBufferMax);
 
   // Set the redraw status
   pKeyPad->sRedraw.eRedrawState = pKeyPad->sRedraw.eRedrawState | XKEYPAD_REDRAW_TXT;
@@ -461,9 +460,7 @@ bool gslc_ElemXKeyPadValGet(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, char* pS
   if (!pKeyPad) return false;
 
   char* pBufPtr = pStrBuf;
-  uint8_t nMaxCopyLen = nStrBufLen - 1;
-  strncpy(pBufPtr, pKeyPad->acBuffer, nMaxCopyLen);
-  pStrBuf[nStrBufLen-1] = '\0';  // Force termination
+  gslc_StrCopy(pBufPtr,pKeyPad->acBuffer,nStrBufLen);
 
   return true;
 }
@@ -940,7 +937,9 @@ void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPa
   uint8_t nScrollPos = pKeyPad->nScrollPos;
   uint8_t nSrcLen = pKeyPad->nBufferLen;
   #if (XKEYPAD_CURSOR_ENHANCED)
-  char acTempStr[nDispMax+1]; // Dynamic allocation, include NULL
+    #if (GSLC_LOCAL_STR==0)
+      char acTempStr[nDispMax+1]; // Dynamic allocation, include NULL
+    #endif
   #endif
 
   // ---
@@ -994,8 +993,6 @@ void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPa
   pVirtualElem->rElem             = rElem;
   pVirtualElem->pTxtFont          = gslc_FontGet(pGui,pConfig->nFontId);
 
-  pVirtualElem->pStrBuf           = acDispStr;
-  pVirtualElem->nStrBufMax        = 0; // Virtual button has read-only string buffer
   pVirtualElem->eTxtFlags         = GSLC_TXT_DEFAULT;
   pVirtualElem->eTxtFlags         = (pVirtualElem->eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
   pVirtualElem->eTxtAlign         = GSLC_ALIGN_MID_LEFT;
@@ -1012,95 +1009,134 @@ void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPa
   // - XKEYPAD_CURSOR_ENHANCED=1: multi-color embedded cursor
 
   #if (XKEYPAD_CURSOR_ENHANCED == 0)
-  // In the basic cursor mode, the cursor is the same color
-  // as the text. Proportional fonts should be supported.
-  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+   // In the basic cursor mode, the element's text buffer
+   // is simply updated to the full display string.
+
+   // In this mode, the cursor is the same color
+   // as the text. Proportional fonts should be supported.
+
+   // In GSLC_LOCAL_STR mode, pStrBuf is a local character
+   // array, so we need to perform a deep string copy here.
+   // When not in GSLC_LOCAL_STR mode, pStrBuf is just a
+   // pointer, so we can simply update the pointer.
+   #if (GSLC_LOCAL_STR)
+     // Deep copy
+     gslc_StrCopy(pVirtualElem->pStrBuf,acDispStr,GSLC_LOCAL_STR_LEN);
+   #else
+     // Shallow copy 
+     pVirtualElem->nStrBufMax = 0; // Read-only string buffer
+     pVirtualElem->pStrBuf = acDispStr;
+   #endif
+   gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+
+   nDispPosCursor; // Avoid unused warning
 
   #else
-  // In the enhanced cursor mode, we support a differently-colored
-  // cursor versus the text. But we also have to make assumptions
-  // about each character width, meaning that proportional fonts
-  // won't be supported.
-  //
-  // In order to do this, we render the text string in 3 parts:
-  // - The text prior to the cursor
-  // - The cursor itself (potentially in a different color)
-  // - Any text after the cursor
-  // To leverage the existing code, we are rendering the
-  // virtual element three times, each with different parameters
-
-  int8_t nTxtLen;
-  uint16_t nTxtSzW = 0;
-  int16_t nTxtPosX = 0;
-
-  pVirtualElem->pStrBuf = acTempStr;
-
-  // Clear out content first with empty framed baackground
-  strcpy(acTempStr,"");
-  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
-
-  // For the interior context, we no longer want any frames
-  // - Also we shift the nTxtX by +1, nTxtY by +1 and
-  //   nTxtH by -2 to inset the text within the above frame
-  pVirtualElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
-
-  // Since we are splitting up the text field render into
-  // three parts, we need to disable the default "marginX"
-  // calculation in ElemDrawByRef, otherwise the margin
-  // will be accounted for multiple times. Instead, we
-  // clear the margin value but manually offset each render.
-  int16_t nMarginX = pVirtualElem->nTxtMarginX;
-  pVirtualElem->nTxtMarginX = 0;
-
-  // TODO: Determine if/how we should handle:
-  // - TxtOffsetX/Y
-  // Note that ElemDrawByRef() already calls DrvGetTxtSize()
-  // which utilizes the nTxtOffsetX/Y
-
-  int16_t       nTxtOffsetX=0;
-  int16_t       nTxtOffsetY=0;
-  uint16_t      nTxtSzH=0;
-
-  // Part 1: text before the cursor
-  // - The width of the first section also includes the
-  //   margin on the left side
-  nTxtLen = nDispPosCursor;
-  strncpy(acTempStr,acDispStr,nTxtLen);
-  acTempStr[nTxtLen] = '\0'; // NULL terminate
-
-  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
-  nTxtPosX += nMarginX; // Account for margin once at start
-
-  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
-  pVirtualElem->colElemText = cColTxt;
-  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
-  nTxtPosX += nTxtSzW;
-
-  // Part 2: the cursor
-  nTxtLen = 1;
-  strncpy(acTempStr,acDispStr+nDispPosCursor,nTxtLen);
-  acTempStr[nTxtLen] = '\0'; // NULL terminate
-
-  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
-
-  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
-  pVirtualElem->colElemText = cColFrame;
-  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
-  nTxtPosX += nTxtSzW;
-
-  // Part 3: text after cursor
-  nTxtLen = strlen(acDispStr)-nDispPosCursor;
-  strncpy(acTempStr,acDispStr+nDispPosCursor+1,nTxtLen);
-  acTempStr[nTxtLen] = '\0'; // NULL terminate
-
-  gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,acTempStr,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
-
-  pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
-  pVirtualElem->colElemText = cColTxt;
-  gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
-  nTxtPosX += nTxtSzW;
-
+    // In the enhanced cursor mode, the element's text buffer
+    // is updated three times during rendering.
   
+    // In this mode, we support a differently-colored
+    // cursor versus the text. But we also have to make assumptions
+    // about each character width, meaning that proportional fonts
+    // won't be supported.
+    //
+    // In order to do this, we render the text string in 3 parts:
+    // - The text prior to the cursor
+    // - The cursor itself (potentially in a different color)
+    // - Any text after the cursor
+    // To leverage the existing code, we are rendering the
+    // virtual element three times, each with different parameters
+  
+    int8_t nTxtLen;
+    uint16_t nTxtSzW = 0;
+    int16_t nTxtPosX = 0;
+  
+    #if (GSLC_LOCAL_STR)
+      // Use the buffer internal to the element
+      char* pStrBuf = pVirtualElem->pStrBuf;
+      // Note that in GSLC_LOCAL_STR mode, pVirtualElem->pStrBuf
+      // is actually an internal character array, so we don't
+      // need to update it here.
+      //int8_t nStrBufMax = GSLC_LOCAL_STR_LEN;
+  
+      // IMPORTANT NOTE:
+      // - It is assumed that GSLC_LOCAL_STR_LEN will be at least
+      //   as large as the maximum display length (nDispMax).
+      // - To limit the extent of code dedicated to error checking,
+      //   the StrCopy() calls are not currently checking for
+      //   MIN(nStrBufMax,nTxtLen), but this could be added.
+    #else
+      // Use the dynamically allocated buffer
+      char* pStrBuf = acTempStr;
+      // Update the virtual element to use this buffer
+      pVirtualElem->pStrBuf = pStrBuf;
+      //int8_t nStrBufMax = nDispMax+1;
+    #endif
+  
+    // Clear out content first with empty framed baackground
+    strcpy(pStrBuf,"");
+  
+    gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+  
+    // For the interior context, we no longer want any frames
+    // - Also we shift the nTxtX by +1, nTxtY by +1 and
+    //   nTxtH by -2 to inset the text within the above frame
+    pVirtualElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
+  
+    // Since we are splitting up the text field render into
+    // three parts, we need to disable the default "marginX"
+    // calculation in ElemDrawByRef, otherwise the margin
+    // will be accounted for multiple times. Instead, we
+    // clear the margin value but manually offset each render.
+    int16_t nMarginX = pVirtualElem->nTxtMarginX;
+    pVirtualElem->nTxtMarginX = 0;
+  
+    // TODO: Determine if/how we should handle:
+    // - TxtOffsetX/Y
+    // Note that ElemDrawByRef() already calls DrvGetTxtSize()
+    // which utilizes the nTxtOffsetX/Y
+  
+    int16_t       nTxtOffsetX=0;
+    int16_t       nTxtOffsetY=0;
+    uint16_t      nTxtSzH=0;
+  
+    // Part 1: text before the cursor
+    // - The width of the first section also includes the
+    //   margin on the left side
+    nTxtLen = nDispPosCursor;
+    gslc_StrCopy(pStrBuf,acDispStr,nTxtLen+1);
+  
+    gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,pStrBuf,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+    nTxtPosX += nMarginX; // Account for margin once at start
+  
+    pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+    pVirtualElem->colElemText = cColTxt;
+    gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+    nTxtPosX += nTxtSzW;
+  
+    // Part 2: the cursor
+    nTxtLen = 1;
+    gslc_StrCopy(pStrBuf,acDispStr+nDispPosCursor,nTxtLen+1);
+  
+    gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,pStrBuf,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+  
+    pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+    pVirtualElem->colElemText = cColFrame;
+    gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+    nTxtPosX += nTxtSzW;
+  
+    // Part 3: text after cursor
+    nTxtLen = strlen(acDispStr)-nDispPosCursor;
+    gslc_StrCopy(pStrBuf,acDispStr+nDispPosCursor+1,nTxtLen+1);
+  
+    gslc_DrvGetTxtSize(pGui,pVirtualElem->pTxtFont,pStrBuf,pVirtualElem->eTxtFlags,&nTxtOffsetX,&nTxtOffsetY,&nTxtSzW,&nTxtSzH);
+  
+    pVirtualElem->rElem = (gslc_tsRect){rElem.x+1+nTxtPosX,rElem.y+1,nTxtSzW,rElem.h-2};
+    pVirtualElem->colElemText = cColTxt;
+    gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
+    nTxtPosX += nTxtSzW;
+  
+    
   #endif // XKEYPAD_CURSOR_ENHANCED
 
 }
@@ -1128,8 +1164,15 @@ void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
   pVirtualElem->rElem             = rElem;
   pVirtualElem->pTxtFont          = gslc_FontGet(pGui,nFontId);
 
-  pVirtualElem->pStrBuf           = pStrBuf;
   pVirtualElem->nStrBufMax        = nStrBufMax;
+  #if (GSLC_LOCAL_STR)
+    // Deep copy
+    gslc_StrCopy(pVirtualElem->pStrBuf,pStrBuf,GSLC_LOCAL_STR_LEN);
+  #else
+    // Shallow copy 
+    pVirtualElem->pStrBuf         = pStrBuf;
+  #endif
+
   pVirtualElem->eTxtFlags         = GSLC_TXT_DEFAULT;
   pVirtualElem->eTxtFlags         = (pVirtualElem->eTxtFlags & ~GSLC_TXT_ALLOC) | GSLC_TXT_ALLOC_EXT;
   pVirtualElem->eTxtAlign         = GSLC_ALIGN_MID_MID;

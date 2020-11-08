@@ -804,7 +804,8 @@ typedef struct {
 } gslc_tsGui;
 
 
-
+#define GSLC_MIN(a,b) (a<b)?a:b
+#define GSLC_MAX(a,b) (a>b)?a:b
 
 // ------------------------------------------------------------------------
 /// \defgroup _GeneralFunc_ General Functions
