@@ -229,7 +229,8 @@ bool InitGUI()
 
   // -----------------------------------
   // PAGE: E_POP_KEYPAD
-  static gslc_tsXKeyPadCfg_Alpha sCfg = gslc_ElemXKeyPadCfgInit_Alpha();
+  static gslc_tsXKeyPadCfg_Alpha sCfg;
+  sCfg = gslc_ElemXKeyPadCfgInit_Alpha();
   //gslc_ElemXKeyPadCfgSetButtonSz((gslc_tsXKeyPadCfg*)&sCfg, 12, 25);
   m_pElemKeyPad = gslc_ElemXKeyPadCreate_Alpha(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
     &m_sKeyPadAlpha, 50, 80, E_FONT_TXT1, &sCfg);

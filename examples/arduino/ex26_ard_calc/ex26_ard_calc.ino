@@ -308,7 +308,8 @@ bool InitGUI()
 
   // -----------------------------------
   // PAGE: E_POP_KEYPAD
-  static gslc_tsXKeyPadCfg_Num sCfg = gslc_ElemXKeyPadCfgInit_Num();
+  static gslc_tsXKeyPadCfg_Num sCfg;
+  sCfg = gslc_ElemXKeyPadCfgInit_Num();
   gslc_ElemXKeyPadCfgSetFloatEn_Num(&sCfg, true);
   gslc_ElemXKeyPadCfgSetSignEn_Num(&sCfg, true);
   //gslc_ElemXKeyPadCfgSetButtonSz((gslc_tsXKeyPadCfg*)&sCfg, 25, 25);
