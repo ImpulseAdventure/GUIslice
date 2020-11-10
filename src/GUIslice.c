@@ -3056,14 +3056,16 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   // Fill in the background
   gslc_tsRect rElemInner = pElem->rElem;
-  // - If both fill and frame are enabled then contract
-  //   the fill region slightly so that we don't overdraw
-  //   the frame (prevent unnecessary flicker).
-  if ((pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) && (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN)) {
+
+  // If frame is enabled then contract the inner region slightly so that:
+  //   a) we don't overdraw the frame (if enabled), avoiding flicker
+  //   b) text placement will not overlap the frame
+  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
     // NOTE: If the region is already too small to shrink (eg. w=1 or h=1)
     // then a zero dimension box will be returned by ExpandRect() and not drawn
     rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
   }
+
   // - This also changes the fill color if selected and glow state is enabled
   if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
@@ -3132,7 +3134,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     int8_t        nMarginX  = pElem->nTxtMarginX;
     int8_t        nMarginY  = pElem->nTxtMarginY;
 
-    gslc_DrawTxtBase(pGui, pElem->pStrBuf, pElem->rElem, pElem->pTxtFont, pElem->eTxtFlags,
+    // Note that we use the "inner" region for text placement to
+    // avoid overlapping any frame
+    gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
       pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
   }
 
