@@ -988,6 +988,15 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 bool gslc_SetTransparentColor(gslc_tsGui* pGui,gslc_tsColor nCol);
 
 ///
+/// Get the current the clipping rectangle
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return rect for active clipping region
+///
+gslc_tsRect gslc_GetClipRect(gslc_tsGui* pGui);
+
+///
 /// Set the clipping rectangle for further drawing
 ///
 /// \param[in]  pGui:        Pointer to GUI

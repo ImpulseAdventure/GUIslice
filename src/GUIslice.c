@@ -4648,6 +4648,12 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
   return pElemRefAdd;
 }
 
+gslc_tsRect gslc_GetClipRect(gslc_tsGui* pGui)
+{
+  gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
+  return pDriver->rClipRect;
+}
+
 bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 {
   // Update the drawing clip rectangle
