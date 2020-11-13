@@ -123,6 +123,8 @@ typedef struct {
   struct tsdev*       pTsDev;           ///< Ptr to touchscreen device
   #endif
 
+  gslc_tsRect         rClipRect;        ///< Clipping rectangle
+
 } gslc_tsDriver;
 
 
