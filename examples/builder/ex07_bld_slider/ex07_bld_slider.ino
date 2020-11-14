@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex07_bld_slider.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -38,6 +38,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -56,7 +60,7 @@ enum {E_DRAW_LINE1,E_DRAW_LINE2,E_ELEM_BOX1,E_ELEM_BTN_KITCHEN
       ,E_LBL_RED,E_LBL_ROOM,E_LBL_SETLED,E_LBL_TITLE,E_SLIDER_B
       ,E_SLIDER_G,E_SLIDER_R};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN15X24,E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -69,7 +73,7 @@ enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 16                                         // # Elems total on page
+#define MAX_ELEM_PG_MAIN 16 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -107,11 +111,11 @@ uint8_t   m_nPosB = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemColor      = NULL;
-gslc_tsElemRef*  m_pElemSave       = NULL;
-gslc_tsElemRef*  m_pElemSlider1    = NULL;
-gslc_tsElemRef*  m_pElemSlider2    = NULL;
-gslc_tsElemRef*  m_pElemSlider3    = NULL;
+gslc_tsElemRef* m_pElemColor      = NULL;
+gslc_tsElemRef* m_pElemSave       = NULL;
+gslc_tsElemRef* m_pElemSlider1    = NULL;
+gslc_tsElemRef* m_pElemSlider2    = NULL;
+gslc_tsElemRef* m_pElemSlider3    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -135,7 +139,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemSave,"Saved");
         gslc_ElemSetCol(&m_gui,m_pElemSave,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
       case E_ELEM_BTN_KITCHEN:
         //TODO- Replace with button handling code
         break;
@@ -211,7 +214,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -223,40 +226,39 @@ bool InitGUI()
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){22,0,272,28},
-    (char*)"Home Automation",0,E_FONT_TXT15);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){128,128,240});
+    (char*)"Home Automation",0,E_BUILTIN15X24);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,((gslc_tsColor){128,128,240}));
    
   // Create E_ELEM_COLOR box
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_COLOR,E_PG_MAIN,(gslc_tsRect){20,115,130,100});
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,(gslc_tsColor){255,128,0},GSLC_COL_WHITE);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,((gslc_tsColor){255,128,0}),GSLC_COL_WHITE);
   m_pElemColor = pElemRef;
   
   // Create E_ELEM_BTN_QUIT button with modifiable text label
   static char m_strbtn1[8] = "SAVE";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,60,50,30},
-    (char*)m_strbtn1,8,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,8,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemSave = pElemRef;
   
   // Create E_LBL_ROOM text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_ROOM,E_PG_MAIN,(gslc_tsRect){20,65,86,12},
-    (char*)"Selected Room:",0,E_FONT_TXT5);
+    (char*)"Selected Room:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
   
   // create E_ELEM_BTN_KITCHEN button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_KITCHEN,E_PG_MAIN,
-    (gslc_tsRect){140,60,80,30},(char*)"Kitchen...",0,E_FONT_TXT5,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (gslc_tsRect){140,60,80,30},(char*)"Kitchen...",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY_DK2,GSLC_COL_GRAY_DK3,GSLC_COL_BLUE_DK1);
   
   // Create E_LBL_SETLED text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_SETLED,E_PG_MAIN,(gslc_tsRect){160,115,74,12},
-    (char*)"Set LED RGB:",0,E_FONT_TXT5);
+    (char*)"Set LED RGB:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_LBL_RED text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_RED,E_PG_MAIN,(gslc_tsRect){160,130,26,12},
-    (char*)"Red:",0,E_FONT_TXT5);
+    (char*)"Red:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
   // Create slider E_SLIDER_R 
@@ -264,11 +266,12 @@ bool InitGUI()
           (gslc_tsRect){210,130,80,20},0,255,255,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_RED,10,5,GSLC_COL_RED);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider1 = pElemRef;
   
   // Create E_LBL_GREEN text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_GREEN,E_PG_MAIN,(gslc_tsRect){160,160,38,12},
-    (char*)"Green:",0,E_FONT_TXT5);
+    (char*)"Green:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
   // Create slider E_SLIDER_G 
@@ -276,11 +279,12 @@ bool InitGUI()
           (gslc_tsRect){210,160,80,20},0,255,128,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN,10,5,GSLC_COL_GREEN);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider2 = pElemRef;
   
   // Create E_LBL_BLUE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_BLUE,E_PG_MAIN,(gslc_tsRect){160,190,32,12},
-    (char*)"Blue:",0,E_FONT_TXT5);
+    (char*)"Blue:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT3);
 
   // Create slider E_SLIDER_B 
@@ -288,11 +292,12 @@ bool InitGUI()
           (gslc_tsRect){210,190,80,20},0,255,0,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_BLUE,10,5,GSLC_COL_BLUE);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider3 = pElemRef;
   
   // Create E_ELEM_TEXT8 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT8,E_PG_MAIN,(gslc_tsRect){215,230,98,10},
-    (char*)"GUIslice Example",0,E_FONT_TXT5);
+    (char*)"GUIslice Example",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
 
@@ -325,8 +330,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT15,GSLC_FONTREF_PTR,NULL,3)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN15X24,GSLC_FONTREF_PTR,NULL,3)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

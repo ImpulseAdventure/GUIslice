@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex03_bld_btn_img.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -38,7 +38,7 @@
 
 // Ensure optional features are enabled in the configuration
 #if !(GSLC_SD_EN)
-  #error "Config: GSLC_SD_EN required for this program but not enabled. Please update GUIslice/config/"
+  #error "Config: GSLC_SD_EN required for this program but not enabled. Please see: https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-GUIslice"
 #endif
 //<Includes !End!>
 
@@ -77,7 +77,7 @@ enum {MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PAGE_MAIN 2                                          // # Elems total on page
+#define MAX_ELEM_PAGE_MAIN 2 // # Elems total on page
 #define MAX_ELEM_PAGE_MAIN_RAM MAX_ELEM_PAGE_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -125,7 +125,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     // From the element's ID we can determine which button was pressed.
     switch (pElem->nId) {
 //<Button Enums !Start!>
-
       case E_ELEM_BTN_QUIT:
         // Output a message when the button is pressed
         Serial.println("Quit button pressed");
@@ -169,7 +168,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PAGE_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PAGE_MAIN
@@ -184,7 +183,7 @@ bool InitGUI()
           gslc_GetImageFromSD((const char*)IMG_EXIT_N24,GSLC_IMGREF_FMT_BMP24),
           gslc_GetImageFromSD((const char*)IMG_EXIT_G24_SEL,GSLC_IMGREF_FMT_BMP24),
           &CbBtnCommon);
-  gslc_ElemSetFillEn(&m_gui,pElemRef,true);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 //<InitGUI !End!>
 
   return true;

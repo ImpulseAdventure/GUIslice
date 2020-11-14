@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex06_bld_callback.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -34,7 +34,7 @@
 
 // Ensure optional features are enabled in the configuration
 #if !(GSLC_SD_EN)
-  #error "Config: GSLC_SD_EN required for this program but not enabled. Please update GUIslice/config/"
+  #error "Config: GSLC_SD_EN required for this program but not enabled. Please see: https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-GUIslice"
 #endif
 //<Includes !End!>
 
@@ -43,6 +43,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -63,7 +67,7 @@ enum {E_ELEM_BOX1,E_ELEM_BOX2,E_ELEM_BTN_QUIT,E_ELEM_CHECK1
       ,E_LBL_COORDY,E_LBL_COORDZ,E_LBL_ENABLE,E_LBL_EXAMPLE
       ,E_LBL_PROGRESS,E_LBL_SCANNER,E_LBL_SEARCHES,E_SCAN3};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -76,7 +80,7 @@ enum {E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 20                                         // # Elems total on page
+#define MAX_ELEM_PG_MAIN 20 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -116,12 +120,12 @@ float     m_fCoordZ = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemCount      = NULL;
-gslc_tsElemRef*  m_pElemDataX      = NULL;
-gslc_tsElemRef*  m_pElemDataY      = NULL;
-gslc_tsElemRef*  m_pElemDataZ      = NULL;
-gslc_tsElemRef*  m_pElemProgress1  = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemCount      = NULL;
+gslc_tsElemRef* m_pElemDataX      = NULL;
+gslc_tsElemRef* m_pElemDataY      = NULL;
+gslc_tsElemRef* m_pElemDataZ      = NULL;
+gslc_tsElemRef* m_pElemProgress1  = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -145,7 +149,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
         gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -258,7 +261,7 @@ bool InitGUI()
   // Create E_ELEM_LOGO using Image 
   pElemRef = gslc_ElemCreateImg(&m_gui,E_ELEM_LOGO,E_PG_MAIN,(gslc_tsRect){60,5,200,40},
     gslc_GetImageFromSD((const char*)IMG_LOGO1_24,GSLC_IMGREF_FMT_BMP24));
-  gslc_ElemSetFillEn(&m_gui,pElemRef,true);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
    
   // Create E_ELEM_BOX1 box
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX1,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
@@ -268,23 +271,23 @@ bool InitGUI()
   static char m_strbtn1[7] = "QUIT";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){40,210,50,20},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
   
   // Create E_LBL_SEARCHES text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_SEARCHES,E_PG_MAIN,(gslc_tsRect){20,60,56,12},
-    (char*)"Searches:",0,E_FONT_TXT5);
+    (char*)"Searches:",0,E_BUILTIN5X8);
   
   // Create E_ELEM_TXT_COUNT runtime modifiable text
   static char m_sDisplayText2[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){80,60,44,12},
-    (char*)m_sDisplayText2,8,E_FONT_TXT5);
+    (char*)m_sDisplayText2,8,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
   m_pElemCount = pElemRef;
   
   // Create E_LBL_PROGRESS text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_PROGRESS,E_PG_MAIN,(gslc_tsRect){20,80,56,12},
-    (char*)"Progress:",0,E_FONT_TXT5);
+    (char*)"Progress:",0,E_BUILTIN5X8);
 
   // Create progress bar E_ELEM_PROGRESS1 
   pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXBarGauge1,
@@ -293,43 +296,43 @@ bool InitGUI()
   
   // Create E_LBL_COORDX text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COORDX,E_PG_MAIN,(gslc_tsRect){40,100,50,12},
-    (char*)"Coord X:",0,E_FONT_TXT5);
+    (char*)"Coord X:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_ELEM_DATAX runtime modifiable text
   static char m_sDisplayText5[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAX,E_PG_MAIN,(gslc_tsRect){100,100,44,12},
-    (char*)m_sDisplayText5,8,E_FONT_TXT5);
+    (char*)m_sDisplayText5,8,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
   m_pElemDataX = pElemRef;
   
   // Create E_LBL_COORDY text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COORDY,E_PG_MAIN,(gslc_tsRect){40,120,50,12},
-    (char*)"Coord Y:",0,E_FONT_TXT5);
+    (char*)"Coord Y:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_ELEM_DATAY runtime modifiable text
   static char m_sDisplayText7[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAY,E_PG_MAIN,(gslc_tsRect){100,120,44,12},
-    (char*)m_sDisplayText7,8,E_FONT_TXT5);
+    (char*)m_sDisplayText7,8,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
   m_pElemDataY = pElemRef;
   
   // Create E_LBL_COORDZ text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COORDZ,E_PG_MAIN,(gslc_tsRect){40,140,50,12},
-    (char*)"Coord Z:",0,E_FONT_TXT5);
+    (char*)"Coord Z:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_ELEM_DATAZ runtime modifiable text
   static char m_sDisplayText9[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_DATAZ,E_PG_MAIN,(gslc_tsRect){100,140,44,12},
-    (char*)m_sDisplayText9,8,E_FONT_TXT5);
+    (char*)m_sDisplayText9,8,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2);
   m_pElemDataZ = pElemRef;
   
   // Create E_LBL_CONTROL text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_CONTROL,E_PG_MAIN,(gslc_tsRect){20,170,50,12},
-    (char*)"Control:",0,E_FONT_TXT5);
+    (char*)"Control:",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
    
   // create checkbox E_ELEM_CHECK1
@@ -338,12 +341,12 @@ bool InitGUI()
   
   // Create E_LBL_ENABLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_ENABLE,E_PG_MAIN,(gslc_tsRect){110,170,38,12},
-    (char*)"Enable",0,E_FONT_TXT5);
+    (char*)"Enable",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT1);
   
   // Create E_LBL_EXAMPLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_EXAMPLE,E_PG_MAIN,(gslc_tsRect){110,210,176,12},
-    (char*)"Example of GUIslice C library",0,E_FONT_TXT5);
+    (char*)"Example of GUIslice C library",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED_LT2);
    
   // Create E_ELEM_BOX2 box
@@ -352,7 +355,7 @@ bool InitGUI()
   
   // Create E_LBL_SCANNER text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_SCANNER,E_PG_MAIN,(gslc_tsRect){218,60,44,12},
-    (char*)"SCANNER",0,E_FONT_TXT5);
+    (char*)"SCANNER",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLUE_LT2);
    
   // Create E_SCAN3 box
@@ -384,7 +387,7 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

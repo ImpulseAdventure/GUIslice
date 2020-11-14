@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex32_bld_spinner.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -39,7 +39,7 @@
 
 // Ensure optional features are enabled in the configuration
 #if !(GSLC_FEATURE_COMPOUND)
-  #error "Config: GSLC_FEATURE_COMPOUND required for this program but not enabled. Please update GUIslice/config."
+  #error "Config: GSLC_FEATURE_COMPOUND required for this program but not enabled. Please see: https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-GUIslice"
 #endif
 //<Includes !End!>
 
@@ -48,6 +48,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -67,7 +71,7 @@ enum {E_ELEM_BOX1,E_ELEM_BOX2,E_ELEM_BTN_BACK,E_ELEM_BTN_EXTRA
       ,E_LBL_PROGRESS,E_LBL_TITLE,E_TXT_COUNT,E_TXT_DATA1,E_TXT_DATA2
       ,E_TXT_DATA3};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT10,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN10X16,E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -80,10 +84,10 @@ enum {E_FONT_TXT10,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
 
-#define MAX_ELEM_PG_MAIN 9                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 9 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 
-#define MAX_ELEM_PG_EXTRA 10                                         // # Elems total on page
+#define MAX_ELEM_PG_EXTRA 10 // # Elems total on page
 #define MAX_ELEM_PG_EXTRA_RAM MAX_ELEM_PG_EXTRA // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -123,15 +127,15 @@ int16_t   m_nComp3 = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemCnt        = NULL;
-gslc_tsElemRef*  m_pElemComp1      = NULL;
-gslc_tsElemRef*  m_pElemComp2      = NULL;
-gslc_tsElemRef*  m_pElemComp3      = NULL;
-gslc_tsElemRef*  m_pElemProgress1  = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemSpinner1   = NULL;
-gslc_tsElemRef*  m_pElemSpinner2   = NULL;
-gslc_tsElemRef*  m_pElemSpinner3   = NULL;
+gslc_tsElemRef* m_pElemCnt        = NULL;
+gslc_tsElemRef* m_pElemComp1      = NULL;
+gslc_tsElemRef* m_pElemComp2      = NULL;
+gslc_tsElemRef* m_pElemComp3      = NULL;
+gslc_tsElemRef* m_pElemProgress1  = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemSpinner1   = NULL;
+gslc_tsElemRef* m_pElemSpinner2   = NULL;
+gslc_tsElemRef* m_pElemSpinner3   = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -161,7 +165,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
       case E_ELEM_BTN_BACK:
         gslc_SetPageCur(&m_gui,E_PG_MAIN);
         break;
-
 //<Button Enums !End!>
       default:
         break;
@@ -240,7 +243,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -252,33 +255,33 @@ bool InitGUI()
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){88,10,144,18},
-    (char*)"Demo Spinner",0,E_FONT_TXT10);
+    (char*)"Demo Spinner",0,E_BUILTIN10X16);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_ELEM_BTN_QUIT button with modifiable text label
   static char m_strbtn1[7] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){100,140,50,20},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
   
   // create E_ELEM_BTN_EXTRA button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_EXTRA,E_PG_MAIN,
-    (gslc_tsRect){170,140,50,20},(char*)"Extra",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){170,140,50,20},(char*)"Extra",0,E_BUILTIN5X8,&CbBtnCommon);
   
   // Create E_LBL_COUNT text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNT,E_PG_MAIN,(gslc_tsRect){40,60,36,10},
-    (char*)"Count:",0,E_FONT_TXT5);
+    (char*)"Count:",0,E_BUILTIN5X8);
   
   // Create E_TXT_COUNT runtime modifiable text
   static char m_sDisplayText3[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){100,60,42,10},
-    (char*)m_sDisplayText3,8,E_FONT_TXT5);
+    (char*)m_sDisplayText3,8,E_BUILTIN5X8);
   m_pElemCnt = pElemRef;
   
   // Create E_LBL_PROGRESS text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_PROGRESS,E_PG_MAIN,(gslc_tsRect){40,80,54,10},
-    (char*)"Progress:",0,E_FONT_TXT5);
+    (char*)"Progress:",0,E_BUILTIN5X8);
 
   // Create progress bar E_ELEM_PROGRESS1 
   pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXBarGauge1,
@@ -286,7 +289,7 @@ bool InitGUI()
   m_pElemProgress1 = pElemRef;
   // Add Spinner element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP1,E_PG_MAIN,&m_sXSpinner1,
-    (gslc_tsRect){160,60,68,20},0,99,0,1,E_FONT_TXT5,20,&CbSpinner);
+    (gslc_tsRect){160,60,68,20},0,99,0,1,E_BUILTIN5X8,20,&CbSpinner);
 
   m_pElemSpinner1 = pElemRef;
 
@@ -300,48 +303,48 @@ bool InitGUI()
   
   // create E_ELEM_BTN_BACK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_BUILTIN5X8,&CbBtnCommon);
   
   // Create E_LBL_DATA1 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA1,E_PG_EXTRA,(gslc_tsRect){60,60,42,10},
-    (char*)"Data 1:",0,E_FONT_TXT5);
+    (char*)"Data 1:",0,E_BUILTIN5X8);
   
   // Create E_TXT_DATA1 runtime modifiable text
   static char m_sDisplayText6[4] = "0";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_DATA1,E_PG_EXTRA,(gslc_tsRect){120,60,24,10},
-    (char*)m_sDisplayText6,4,E_FONT_TXT5);
+    (char*)m_sDisplayText6,4,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
   m_pElemComp1 = pElemRef;
   
   // Create E_LBL_DATA2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA2,E_PG_EXTRA,(gslc_tsRect){60,100,42,10},
-    (char*)"Data 2:",0,E_FONT_TXT5);
+    (char*)"Data 2:",0,E_BUILTIN5X8);
   
   // Create E_TXT_DATA2 runtime modifiable text
   static char m_sDisplayText8[4] = "0";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_DATA2,E_PG_EXTRA,(gslc_tsRect){120,100,24,10},
-    (char*)m_sDisplayText8,4,E_FONT_TXT5);
+    (char*)m_sDisplayText8,4,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
   m_pElemComp2 = pElemRef;
   // Add Spinner element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_COMP2,E_PG_EXTRA,&m_sXSpinner2,
-    (gslc_tsRect){200,100,68,20},0,99,0,1,E_FONT_TXT5,20,&CbSpinner);
+    (gslc_tsRect){200,100,68,20},0,99,0,1,E_BUILTIN5X8,20,&CbSpinner);
 
   m_pElemSpinner2 = pElemRef;
   
   // Create E_LBL_DATA3 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA3,E_PG_EXTRA,(gslc_tsRect){60,140,42,10},
-    (char*)"Data 3:",0,E_FONT_TXT5);
+    (char*)"Data 3:",0,E_BUILTIN5X8);
   
   // Create E_TXT_DATA3 runtime modifiable text
   static char m_sDisplayText10[4] = "0";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_DATA3,E_PG_EXTRA,(gslc_tsRect){120,140,24,10},
-    (char*)m_sDisplayText10,4,E_FONT_TXT5);
+    (char*)m_sDisplayText10,4,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
   m_pElemComp3 = pElemRef;
   // Add Spinner element
   pElemRef = gslc_ElemXSpinnerCreate(&m_gui,E_ELEM_SPINNER3,E_PG_EXTRA,&m_sXSpinner3,
-    (gslc_tsRect){200,140,68,20},0,99,0,1,E_FONT_TXT5,20,&CbSpinner);
+    (gslc_tsRect){200,140,68,20},0,99,0,1,E_BUILTIN5X8,20,&CbSpinner);
 
   m_pElemSpinner3 = pElemRef;
 //<InitGUI !End!>
@@ -366,8 +369,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN10X16,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

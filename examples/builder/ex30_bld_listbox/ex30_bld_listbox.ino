@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex30_bld_listbox.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -40,8 +40,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeMono9pt7b.h"
 //<Fonts !End!>
 
@@ -59,7 +61,7 @@ enum {E_PAGE_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_LISTBOX1,E_ELEM_QUIT,E_ELEM_SELECTED
       ,E_LBLSELECTED};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_MONO9,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,E_FREEMONO9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -72,7 +74,7 @@ enum {E_FONT_MONO9,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PAGE_MAIN 5                                          // # Elems total on page
+#define MAX_ELEM_PAGE_MAIN 5 // # Elems total on page
 #define MAX_ELEM_PAGE_MAIN_RAM MAX_ELEM_PAGE_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -102,10 +104,9 @@ bool        m_bQuit = false;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemListbox    = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemSel        = NULL;
-gslc_tsElemRef*  m_pListSlider1    = NULL;
+gslc_tsElemRef* m_pElemListbox    = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemSel        = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -129,7 +130,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
         gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
 //<Button Enums !End!>
       default:
         break;
@@ -194,7 +194,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PAGE_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PAGE_MAIN
@@ -208,24 +208,24 @@ bool InitGUI()
   static char m_strbtn1[7] = "QUIT";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_QUIT,E_PAGE_MAIN,
     (gslc_tsRect){240,20,60,30},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
   
   // Create E_LBLSELECTED text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBLSELECTED,E_PAGE_MAIN,(gslc_tsRect){20,20,56,12},
-    (char*)"Selected:",0,E_FONT_TXT5);
+    (char*)"Selected:",0,E_BUILTIN5X8);
   
   // Create E_ELEM_SELECTED runtime modifiable text
   static char m_sDisplayText2[11] = "Red";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_SELECTED,E_PAGE_MAIN,(gslc_tsRect){80,20,62,12},
-    (char*)m_sDisplayText2,11,E_FONT_TXT5);
+    (char*)m_sDisplayText2,11,E_BUILTIN5X8);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   m_pElemSel = pElemRef;
    
   // Create listbox
   pElemRef = gslc_ElemXListboxCreate(&m_gui,E_ELEM_LISTBOX1,E_PAGE_MAIN,&m_sListbox1,
-    (gslc_tsRect){60,50,160,160},E_FONT_MONO9,
-    (char*)&m_acListboxBuf1,sizeof(m_acListboxBuf1),0);
+    (gslc_tsRect){60,50,160,160},E_FREEMONO9,
+    (uint8_t*)&m_acListboxBuf1,sizeof(m_acListboxBuf1),0);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 4, 2); // 4 rows, 2 columns
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
   gslc_ElemSetTxtMarginXY(&m_gui, pElemRef, 5, 0);
@@ -263,8 +263,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREEMONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

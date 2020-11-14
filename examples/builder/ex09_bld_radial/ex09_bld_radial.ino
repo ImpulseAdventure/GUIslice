@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex09_bld_radial.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -41,6 +41,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -57,7 +61,7 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_BTN_QUIT,E_ELEM_TXT_COUNT,E_LBL_TITLE,E_RADIAL
       ,E_RAMP,E_SLIDER};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN15X24,E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -70,7 +74,7 @@ enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 7                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 7 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -107,11 +111,11 @@ uint8_t   m_nPosB = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemCount      = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemRadial1    = NULL;
-gslc_tsElemRef*  m_pElemRamp1      = NULL;
-gslc_tsElemRef*  m_pElemSlider1    = NULL;
+gslc_tsElemRef* m_pElemCount      = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemRadial1    = NULL;
+gslc_tsElemRef* m_pElemRamp1      = NULL;
+gslc_tsElemRef* m_pElemSlider1    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -135,7 +139,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
         gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -215,8 +218,8 @@ bool InitGUI()
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){58,0,200,28},
-    (char*)"Directional",0,E_FONT_TXT15);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,(gslc_tsColor){128,128,240});
+    (char*)"Directional",0,E_BUILTIN15X24);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,((gslc_tsColor){128,128,240}));
    
   // Create E_ELEM_BOX1 box
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX1,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
@@ -225,7 +228,7 @@ bool InitGUI()
   // Create progress bar E_RADIAL 
   pElemRef = gslc_ElemXRadialCreate(&m_gui,E_RADIAL,E_PG_MAIN,&m_sXRadialGauge1,
     (gslc_tsRect){210,140,80,80},0,100,50,GSLC_COL_YELLOW);
-  gslc_ElemXRadialSetFlip(&m_gui,pElemRef,true);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemXRadialSetIndicator(&m_gui,pElemRef,GSLC_COL_YELLOW,30,3,true);
   gslc_ElemXRadialSetTicks(&m_gui,pElemRef,GSLC_COL_GRAY_LT1,8,5);
   m_pElemRadial1 = pElemRef;
@@ -241,22 +244,23 @@ bool InitGUI()
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN,10,5,GSLC_COL_GREEN);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider1 = pElemRef;
   
   // Create E_ELEM_TXT_COUNT runtime modifiable text
   static char m_sDisplayText2[8] = "50";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,56,12},
-    (char*)m_sDisplayText2,8,E_FONT_TXT5);
+    (char*)m_sDisplayText2,8,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemCount = pElemRef;
   
   // Create E_ELEM_BTN_QUIT button with modifiable text label
   static char m_strbtn1[7] = "QUIT";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){250,60,50,20},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
 //<InitGUI !End!>
 
@@ -280,8 +284,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT15,GSLC_FONTREF_PTR,NULL,3)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN15X24,GSLC_FONTREF_PTR,NULL,3)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

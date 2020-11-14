@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex25_bld_popup.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -39,8 +39,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeSans9pt7b.h"
 //<Fonts !End!>
 
@@ -58,7 +60,7 @@ enum {E_PG_MAIN,E_PG_POPUP};
 enum {E_BTN_CANCEL,E_BTN_OK,E_BTN_QUIT,E_ELEM_BOX1,E_ELEM_TEXT2
       ,E_ELEM_TEXT3,E_PROGRESS,E_TXT_STATUS};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_SANS9,E_FONT_TXT10,MAX_FONT};
+enum {E_BUILTIN10X16,E_FREESANS9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -71,10 +73,10 @@ enum {E_FONT_SANS9,E_FONT_TXT10,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
 
-#define MAX_ELEM_PG_MAIN 3                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 3 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 
-#define MAX_ELEM_PG_POPUP 5                                          // # Elems total on page
+#define MAX_ELEM_PG_POPUP 5 // # Elems total on page
 #define MAX_ELEM_PG_POPUP_RAM MAX_ELEM_PG_POPUP // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -108,9 +110,9 @@ unsigned    m_nCount = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemProgress   = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pTxtStatus      = NULL;
+gslc_tsElemRef* m_pElemProgress   = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pTxtStatus      = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -129,6 +131,9 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     // From the element's ID we can determine which button was pressed.
     switch (pElem->nId) {
 //<Button Enums !Start!>
+      case E_BTN_QUIT:
+        gslc_PopupShow(&m_gui, E_PG_POPUP, true);
+        break;
       case E_BTN_OK:
         gslc_PopupHide(&m_gui);
         m_bQuit = true;
@@ -139,10 +144,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
       case E_BTN_CANCEL:
         gslc_PopupHide(&m_gui);
         gslc_ElemSetTxtStr(&m_gui, m_pTxtStatus, "Keep Running!");
-        break;
-
-      case E_BTN_QUIT:
-        gslc_PopupShow(&m_gui, E_PG_POPUP, true);
         break;
 //<Button Enums !End!>
       default:
@@ -182,7 +183,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -192,8 +193,7 @@ bool InitGUI()
   static char m_strbtn1[7] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){80,130,80,40},
-    (char*)m_strbtn1,7,E_FONT_SANS9,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (char*)m_strbtn1,7,E_FREESANS9,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLUE_DK4,GSLC_COL_BLUE_DK1);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   m_pElemQuit = pElemRef;
@@ -201,7 +201,7 @@ bool InitGUI()
   // Create E_TXT_STATUS runtime modifiable text
   static char m_sDisplayText1[18] = "Program Running";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_STATUS,E_PG_MAIN,(gslc_tsRect){27,21,190,20},
-    (char*)m_sDisplayText1,18,E_FONT_TXT10);
+    (char*)m_sDisplayText1,18,E_BUILTIN10X16);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
   m_pTxtStatus = pElemRef;
 
@@ -220,27 +220,25 @@ bool InitGUI()
   
   // create E_BTN_OK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_OK,E_PG_POPUP,
-    (gslc_tsRect){130,170,80,40},(char*)"YES",0,E_FONT_SANS9,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (gslc_tsRect){130,170,80,40},(char*)"YES",0,E_FREESANS9,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLUE_LT2,GSLC_COL_BLUE_LT4);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   
   // create E_BTN_CANCEL button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_CANCEL,E_PG_POPUP,
-    (gslc_tsRect){30,170,80,40},(char*)"NO",0,E_FONT_SANS9,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (gslc_tsRect){30,170,80,40},(char*)"NO",0,E_FREESANS9,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED,GSLC_COL_BLUE_LT2,GSLC_COL_BLUE_LT4);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   
   // Create E_ELEM_TEXT2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT2,E_PG_POPUP,(gslc_tsRect){43,100,153,23},
-    (char*)"Do you really want",0,E_FONT_SANS9);
+    (char*)"Do you really want",0,E_FREESANS9);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
   
   // Create E_ELEM_TEXT3 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT3,E_PG_POPUP,(gslc_tsRect){86,123,68,23},
-    (char*)"to Quit?",0,E_FONT_SANS9);
+    (char*)"to Quit?",0,E_FREESANS9);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
 //<InitGUI !End!>
@@ -265,8 +263,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN10X16,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

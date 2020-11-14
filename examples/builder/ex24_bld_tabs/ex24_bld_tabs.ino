@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex24_bld_tabs.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -39,6 +39,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -51,14 +55,14 @@
 // Enumerations for pages, elements, fonts, images
 // ------------------------------------------------
 //<Enum !Start!>
-enum {E_PG_MAIN,E_PG_BASE,E_PG_CONFIG,E_PG_ALERT};
+enum {E_PG_BASE,E_PG_MAIN,E_PG_CONFIG,E_PG_ALERT};
 enum {E_DRAW_LINE1,E_ELEM_ALERT_CANCEL,E_ELEM_ALERT_OK,E_ELEM_BOX1
       ,E_ELEM_BOX2,E_ELEM_BTN_ALERT,E_ELEM_BTN_QUIT,E_ELEM_CHECK1
       ,E_ELEM_CHECK2,E_ELEM_CHECK3,E_ELEM_PROGRESS1,E_ELEM_TAB_CONFIG
       ,E_ELEM_TAB_MAIN,E_ELEM_TEXT9,E_ELEM_TXT_COUNT,E_LBL_COUNT
       ,E_LBL_DATA1,E_LBL_DATA2,E_LBL_PROGRESS,E_LBL_TITLE};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -71,16 +75,16 @@ enum {E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                4
 
-#define MAX_ELEM_PG_MAIN 3                                          // # Elems total on page
-#define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
-
-#define MAX_ELEM_PG_BASE 8                                          // # Elems total on page
+#define MAX_ELEM_PG_BASE 8 // # Elems total on page
 #define MAX_ELEM_PG_BASE_RAM MAX_ELEM_PG_BASE // # Elems in RAM
 
-#define MAX_ELEM_PG_CONFIG 5                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 3 // # Elems total on page
+#define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
+
+#define MAX_ELEM_PG_CONFIG 5 // # Elems total on page
 #define MAX_ELEM_PG_CONFIG_RAM MAX_ELEM_PG_CONFIG // # Elems in RAM
 
-#define MAX_ELEM_PG_ALERT 4                                          // # Elems total on page
+#define MAX_ELEM_PG_ALERT 4 // # Elems total on page
 #define MAX_ELEM_PG_ALERT_RAM MAX_ELEM_PG_ALERT // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -93,10 +97,10 @@ gslc_tsFont                     m_asFont[MAX_FONT];
 gslc_tsPage                     m_asPage[MAX_PAGE];
 
 //<GUI_Extra_Elements !Start!>
-gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
-gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                     m_asBasePage1Elem[MAX_ELEM_PG_BASE_RAM];
 gslc_tsElemRef                  m_asBasePage1ElemRef[MAX_ELEM_PG_BASE];
+gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
+gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                     m_asPage2Elem[MAX_ELEM_PG_CONFIG_RAM];
 gslc_tsElemRef                  m_asPage2ElemRef[MAX_ELEM_PG_CONFIG];
 gslc_tsElem                     m_asPopup1Elem[MAX_ELEM_PG_ALERT_RAM];
@@ -120,12 +124,12 @@ unsigned  m_nCount = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemAlertMsg   = NULL;
-gslc_tsElemRef*  m_pElemCnt        = NULL;
-gslc_tsElemRef*  m_pElemProgress1  = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemTabConfig  = NULL;
-gslc_tsElemRef*  m_pElemTabMain    = NULL;
+gslc_tsElemRef* m_pElemAlertMsg   = NULL;
+gslc_tsElemRef* m_pElemCnt        = NULL;
+gslc_tsElemRef* m_pElemProgress1  = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemTabConfig  = NULL;
+gslc_tsElemRef* m_pElemTabMain    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -215,7 +219,7 @@ bool InitGUI()
   gslc_PageAdd(&m_gui,E_PG_CONFIG,m_asPage2Elem,MAX_ELEM_PG_CONFIG_RAM,m_asPage2ElemRef,MAX_ELEM_PG_CONFIG);
   gslc_PageAdd(&m_gui,E_PG_ALERT,m_asPopup1Elem,MAX_ELEM_PG_ALERT_RAM,m_asPopup1ElemRef,MAX_ELEM_PG_ALERT);
 
-  // Now mark $<COM-000> as a "base" page which means that it's elements
+  // Now mark E_PG_BASE as a "base" page which means that it's elements
   // are always visible. This is useful for common page elements.
   gslc_SetPageBase(&m_gui, E_PG_BASE);
 
@@ -228,59 +232,41 @@ bool InitGUI()
   gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
-  // PAGE: E_PG_MAIN
-  
-  
-  // Create E_LBL_PROGRESS text label
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_PROGRESS,E_PG_MAIN,(gslc_tsRect){40,120,56,12},
-    (char*)"Progress:",0,E_FONT_TXT5);
-
-  // Create progress bar E_ELEM_PROGRESS1 
-  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXBarGauge1,
-    (gslc_tsRect){100,120,50,12},0,100,0,GSLC_COL_GREEN,false);
-  m_pElemProgress1 = pElemRef;
-   
-  // create checkbox E_ELEM_CHECK1
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck1,
-    (gslc_tsRect){100,160,30,30},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
-
-  // -----------------------------------
   // PAGE: E_PG_BASE
   
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_BASE,(gslc_tsRect){10,10,80,12},
-    (char*)"GUIslice Demo",0,E_FONT_TXT5);
+    (char*)"GUIslice Demo",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   
   // Create E_ELEM_BTN_QUIT button with modifiable text label
   static char m_strbtn1[7] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_BASE,
     (gslc_tsRect){240,5,50,25},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_RED_DK2,GSLC_COL_RED_DK4,GSLC_COL_RED_DK1);
   m_pElemQuit = pElemRef;
   
   // Create E_LBL_COUNT text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNT,E_PG_BASE,(gslc_tsRect){110,10,38,12},
-    (char*)"Count:",0,E_FONT_TXT5);
+    (char*)"Count:",0,E_BUILTIN5X8);
   
   // Create E_ELEM_TXT_COUNT runtime modifiable text
   static char m_sDisplayText5[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_BASE,(gslc_tsRect){170,10,44,12},
-    (char*)m_sDisplayText5,8,E_FONT_TXT5);
+    (char*)m_sDisplayText5,8,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_PURPLE);
   m_pElemCnt = pElemRef;
   
   // create E_ELEM_TAB_MAIN button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_TAB_MAIN,E_PG_BASE,
-    (gslc_tsRect){30,50,50,20},(char*)"Main",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){30,50,50,20},(char*)"Main",0,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemTabMain = pElemRef;
   
   // create E_ELEM_TAB_CONFIG button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_TAB_CONFIG,E_PG_BASE,
-    (gslc_tsRect){90,50,50,20},(char*)"Extra",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){90,50,50,20},(char*)"Extra",0,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemTabConfig = pElemRef;
    
   // Create E_ELEM_BOX1 box
@@ -292,13 +278,29 @@ bool InitGUI()
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLACK,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
 
   // -----------------------------------
+  // PAGE: E_PG_MAIN
+  
+  
+  // Create E_LBL_PROGRESS text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_PROGRESS,E_PG_MAIN,(gslc_tsRect){40,120,56,12},
+    (char*)"Progress:",0,E_BUILTIN5X8);
+
+  // Create progress bar E_ELEM_PROGRESS1 
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXBarGauge1,
+    (gslc_tsRect){100,120,50,12},0,100,0,GSLC_COL_GREEN,false);
+  m_pElemProgress1 = pElemRef;
+   
+  // create checkbox E_ELEM_CHECK1
+  pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck1,
+    (gslc_tsRect){100,160,30,30},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+
+  // -----------------------------------
   // PAGE: E_PG_CONFIG
   
   
   // create E_ELEM_BTN_ALERT button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_ALERT,E_PG_CONFIG,
-    (gslc_tsRect){60,170,50,20},(char*)"Alert",0,E_FONT_TXT5,&CbBtnCommon);
-  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
+    (gslc_tsRect){60,170,50,20},(char*)"Alert",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN_DK2,GSLC_COL_GREEN_DK4,GSLC_COL_GREEN_DK1);
    
   // create checkbox E_ELEM_CHECK2
@@ -307,7 +309,7 @@ bool InitGUI()
   
   // Create E_LBL_DATA1 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA1,E_PG_CONFIG,(gslc_tsRect){100,80,38,12},
-    (char*)"Data 1",0,E_FONT_TXT5);
+    (char*)"Data 1",0,E_BUILTIN5X8);
    
   // create checkbox E_ELEM_CHECK3
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK3,E_PG_CONFIG,&m_asXCheck3,
@@ -315,7 +317,7 @@ bool InitGUI()
   
   // Create E_LBL_DATA2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA2,E_PG_CONFIG,(gslc_tsRect){100,110,38,12},
-    (char*)"Data 2",0,E_FONT_TXT5);
+    (char*)"Data 2",0,E_BUILTIN5X8);
 
   // -----------------------------------
   // PAGE: E_PG_ALERT
@@ -328,7 +330,7 @@ bool InitGUI()
   // Create E_ELEM_TEXT9 runtime modifiable text
   static char m_sDisplayText9[20] = "Alert";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT9,E_PG_ALERT,(gslc_tsRect){85,95,146,12},
-    (char*)m_sDisplayText9,20,E_FONT_TXT5);
+    (char*)m_sDisplayText9,20,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED_LT1);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
@@ -336,11 +338,11 @@ bool InitGUI()
   
   // create E_ELEM_ALERT_OK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_ALERT_OK,E_PG_ALERT,
-    (gslc_tsRect){90,150,60,20},(char*)"OK",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){90,150,60,20},(char*)"OK",0,E_BUILTIN5X8,&CbBtnCommon);
   
   // create E_ELEM_ALERT_CANCEL button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_ALERT_CANCEL,E_PG_ALERT,
-    (gslc_tsRect){170,150,60,20},(char*)"CANCEL",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){170,150,60,20},(char*)"CANCEL",0,E_BUILTIN5X8,&CbBtnCommon);
 //<InitGUI !End!>
 
   // Highlight the Main Page Tab
@@ -366,7 +368,7 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

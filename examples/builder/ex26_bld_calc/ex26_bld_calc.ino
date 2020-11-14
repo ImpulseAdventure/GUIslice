@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex26_bld_calc.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -33,6 +33,7 @@
 // Include extended elements
 #include "elem/XKeyPad_Num.h"
 
+// Ensure optional features are enabled in the configuration
 //<Includes !End!>
 
 // ------------------------------------------------
@@ -40,8 +41,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeSans12pt7b.h"
 //<Fonts !End!>
 
@@ -55,11 +58,11 @@
 // Enumerations for pages, elements, fonts, images
 // ------------------------------------------------
 //<Enum !Start!>
-enum {E_PAGE_MAIN,E_POP_KEYPAD};
+enum {E_PAGE_MAIN,E_POP_KEYPAD_NUM};
 enum {E_BTN_ADD,E_BTN_MULT,E_BTN_SUB,E_LBLRESULT,E_LBLTITLE,E_LBLVALUE1
-      ,E_LBLVALUE2,E_TXT_RESULT,E_TXT_VAL1,E_TXT_VAL2,E_ELEM_KEYPAD};
+      ,E_LBLVALUE2,E_TXT_RESULT,E_TXT_VAL1,E_TXT_VAL2,E_ELEM_KEYPAD_NUM};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_SANS12,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,E_FREESANS12,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -72,7 +75,7 @@ enum {E_FONT_SANS12,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                2
 
-#define MAX_ELEM_PAGE_MAIN 10                                         // # Elems total on page
+#define MAX_ELEM_PAGE_MAIN 10 // # Elems total on page
 #define MAX_ELEM_PAGE_MAIN_RAM MAX_ELEM_PAGE_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -87,9 +90,9 @@ gslc_tsPage                     m_asPage[MAX_PAGE];
 //<GUI_Extra_Elements !Start!>
 gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PAGE_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PAGE_MAIN];
-gslc_tsElem                     m_asKeypadElem[1];
-gslc_tsElemRef                  m_asKeypadElemRef[1];
-gslc_tsXKeyPad                  m_sKeyPad;
+gslc_tsElem                     m_asKeypadNumElem[1];
+gslc_tsElemRef                  m_asKeypadNumElemRef[1];
+gslc_tsXKeyPad                  m_sKeyPadNum;
 
 #define MAX_STR                 100
 
@@ -101,10 +104,10 @@ gslc_tsXKeyPad                  m_sKeyPad;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemResult     = NULL;
-gslc_tsElemRef*  m_pElemVal1       = NULL;
-gslc_tsElemRef*  m_pElemVal2       = NULL;
-gslc_tsElemRef*  m_pElemKeyPad     = NULL;
+gslc_tsElemRef* m_pElemResult     = NULL;
+gslc_tsElemRef* m_pElemVal1       = NULL;
+gslc_tsElemRef* m_pElemVal2       = NULL;
+gslc_tsElemRef* m_pElemKeyPadNum  = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -128,11 +131,11 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 //<Button Enums !Start!>
       case E_TXT_VAL1:
         // Clicked on edit field, so show popup box and associate with this text field
-        gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal1);
+        gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPadNum, E_POP_KEYPAD_NUM, m_pElemVal1);
         break;
       case E_TXT_VAL2:
         // Clicked on edit field, so show popup box and associate with this text field
-        gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPad, E_POP_KEYPAD, m_pElemVal2);
+        gslc_ElemXKeyPadInputAsk(&m_gui, m_pElemKeyPadNum, E_POP_KEYPAD_NUM, m_pElemVal2);
         break;
       case E_BTN_ADD:
         // Compute the sum and update the result
@@ -158,7 +161,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         ltoa(nResult, acTxtNum, 10);
         gslc_ElemSetTxtStr(&m_gui, m_pElemResult, acTxtNum);
         break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -171,41 +173,36 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 // KeyPad Input Ready callback
 bool CbKeypad(void* pvGui, void *pvElemRef, int16_t nState, void* pvData)
 {
+  gslc_tsGui*     pGui     = (gslc_tsGui*)pvGui;
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsGui* pGui = (gslc_tsGui*)pvGui;
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsElem*    pElem    = gslc_GetElemFromRef(pGui,pElemRef);
 
-  // From the element's ID we can determine which element is ready.
-  if (pElem->nId == E_ELEM_KEYPAD) {
-    int16_t nTargetElemId = gslc_ElemXKeyPadDataTargetIdGet(pGui, pvData);
-    if (nState == XKEYPAD_CB_STATE_DONE) {
-      // User clicked on Enter to leave popup
-      // - If we have a popup active, pass the return value directly to
-      //   the corresponding value field
-      switch (nTargetElemId) {
+  // From the pvData we can get the ID element that is ready.
+  int16_t nTargetElemId = gslc_ElemXKeyPadDataTargetIdGet(pGui, pvData);
+  if (nState == XKEYPAD_CB_STATE_DONE) {
+    // User clicked on Enter to leave popup
+    // - If we have a popup active, pass the return value directly to
+    //   the corresponding value field
+    switch (nTargetElemId) {
 //<Keypad Enums !Start!>
-        case E_TXT_VAL1:
-          //TODO- Update input handling code
-          // using gslc_ElemXKeyPadDataValGet(pGui, pvData)
-          gslc_ElemSetTxtStr(pGui, m_pElemVal1, gslc_ElemXKeyPadDataValGet(pGui, pvData));
-          gslc_PopupHide(&m_gui);
+      case E_TXT_VAL1:
+        gslc_ElemXKeyPadInputGet(pGui, m_pElemVal1, pvData);
+	    gslc_PopupHide(&m_gui);
         break;
-        case E_TXT_VAL2:
-          //TODO- Update input handling code
-          // using gslc_ElemXKeyPadDataValGet(pGui, pvData)
-          gslc_ElemSetTxtStr(pGui, m_pElemVal2, gslc_ElemXKeyPadDataValGet(pGui, pvData));
-          gslc_PopupHide(&m_gui);
+      case E_TXT_VAL2:
+        gslc_ElemXKeyPadInputGet(pGui, m_pElemVal2, pvData);
+	    gslc_PopupHide(&m_gui);
         break;
 
 //<Keypad Enums !End!>
-        default:
-          break;
-      }
-    } else if (nState == XKEYPAD_CB_STATE_CANCEL) {
-      // User escaped from popup, so don't update values
-      gslc_PopupHide(&m_gui);
+      default:
+        break;
     }
+  } else if (nState == XKEYPAD_CB_STATE_CANCEL) {
+    // User escaped from popup, so don't update values
+    gslc_PopupHide(&m_gui);
   }
+  return true;
 }
 //<Spinner Callback !Start!>
 //<Spinner Callback !End!>
@@ -227,7 +224,7 @@ bool InitGUI()
 
 //<InitGUI !Start!>
   gslc_PageAdd(&m_gui,E_PAGE_MAIN,m_asPage1Elem,MAX_ELEM_PAGE_MAIN_RAM,m_asPage1ElemRef,MAX_ELEM_PAGE_MAIN);
-  gslc_PageAdd(&m_gui,E_POP_KEYPAD,m_asKeypadElem,1,m_asKeypadElemRef,1);  // KeyPad
+  gslc_PageAdd(&m_gui,E_POP_KEYPAD_NUM,m_asKeypadNumElem,1,m_asKeypadNumElemRef,1);  // KeyPad
 
   // NOTE: The current page defaults to the first page added. Here we explicitly
   //       ensure that the main page is the correct page no matter the add order.
@@ -242,25 +239,26 @@ bool InitGUI()
   
   // Create E_LBLTITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBLTITLE,E_PAGE_MAIN,(gslc_tsRect){90,10,129,29},
-    (char*)"Simple Calc",0,E_FONT_SANS12);
+    (char*)"Simple Calc",0,E_FREESANS12);
   
   // Create E_LBLVALUE1 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBLVALUE1,E_PAGE_MAIN,(gslc_tsRect){20,65,50,12},
-    (char*)"Value 1:",0,E_FONT_TXT5);
+    (char*)"Value 1:",0,E_BUILTIN5X8);
   
   // Create E_LBLVALUE2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBLVALUE2,E_PAGE_MAIN,(gslc_tsRect){20,90,50,12},
-    (char*)"Value 2:",0,E_FONT_TXT5);
+    (char*)"Value 2:",0,E_BUILTIN5X8);
   
   // Create E_LBLRESULT text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBLRESULT,E_PAGE_MAIN,(gslc_tsRect){80,200,44,12},
-    (char*)"Result:",0,E_FONT_TXT5);
+    (char*)"Result:",0,E_BUILTIN5X8);
   
   // Create E_TXT_VAL1 numeric input field
   static char m_sInputNumber1[11] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_VAL1,E_PAGE_MAIN,(gslc_tsRect){90,65,62,17},
-    (char*)m_sInputNumber1,11,E_FONT_TXT5);
+    (char*)m_sInputNumber1,11,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
+  gslc_ElemSetTxtMargin(&m_gui,pElemRef,5);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   gslc_ElemSetClickEn(&m_gui, pElemRef, true);
   gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
@@ -269,8 +267,9 @@ bool InitGUI()
   // Create E_TXT_VAL2 numeric input field
   static char m_sInputNumber2[11] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_VAL2,E_PAGE_MAIN,(gslc_tsRect){90,90,62,17},
-    (char*)m_sInputNumber2,11,E_FONT_TXT5);
+    (char*)m_sInputNumber2,11,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
+  gslc_ElemSetTxtMargin(&m_gui,pElemRef,5);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   gslc_ElemSetClickEn(&m_gui, pElemRef, true);
   gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
@@ -279,37 +278,35 @@ bool InitGUI()
   // Create E_TXT_RESULT runtime modifiable text
   static char m_sDisplayText6[11] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_RESULT,E_PAGE_MAIN,(gslc_tsRect){150,200,62,12},
-    (char*)m_sDisplayText6,11,E_FONT_TXT5);
+    (char*)m_sDisplayText6,11,E_BUILTIN5X8);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_RIGHT);
   m_pElemResult = pElemRef;
   
   // create E_BTN_ADD button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_ADD,E_PAGE_MAIN,
-    (gslc_tsRect){30,140,60,20},(char*)"Add",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){30,140,60,20},(char*)"Add",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   
   // create E_BTN_SUB button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_SUB,E_PAGE_MAIN,
-    (gslc_tsRect){130,140,60,20},(char*)"Subtract",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){130,140,60,20},(char*)"Subtract",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   
   // create E_BTN_MULT button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_MULT,E_PAGE_MAIN,
-    (gslc_tsRect){220,140,60,20},(char*)"Multiply",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){220,140,60,20},(char*)"Multiply",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
 
   // -----------------------------------
-  // PAGE: E_POP_KEYPAD
+  // PAGE: E_POP_KEYPAD_NUM
   
-  static gslc_tsXKeyPadCfg_Num sCfg = gslc_ElemXKeyPadCfgInit_Num();
+  static gslc_tsXKeyPadCfg_Num sCfg;
+  sCfg = gslc_ElemXKeyPadCfgInit_Num();
   gslc_ElemXKeyPadCfgSetFloatEn_Num(&sCfg, true);
   gslc_ElemXKeyPadCfgSetSignEn_Num(&sCfg, true);
-  gslc_ElemXKeyPadCfgSetButtonSz((gslc_tsXKeyPadCfg*)&sCfg, 20, 20);
-  gslc_ElemXKeyPadCfgSetRoundEn((gslc_tsXKeyPadCfg*)&sCfg, false);
-  m_pElemKeyPad = gslc_ElemXKeyPadCreate_Num(&m_gui, E_ELEM_KEYPAD, E_POP_KEYPAD,
-    &m_sKeyPad, 65, 80, E_FONT_TXT5, &sCfg);
-  gslc_ElemXKeyPadValSetCb(&m_gui, m_pElemKeyPad, &CbKeypad);
-  
+  m_pElemKeyPadNum = gslc_ElemXKeyPadCreate_Num(&m_gui, E_ELEM_KEYPAD_NUM, E_POP_KEYPAD_NUM,
+    &m_sKeyPadNum, 65, 80, E_BUILTIN5X8, &sCfg);
+  gslc_ElemXKeyPadValSetCb(&m_gui, m_pElemKeyPadNum, &CbKeypad);
 //<InitGUI !End!>
 
   return true;
@@ -332,8 +329,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

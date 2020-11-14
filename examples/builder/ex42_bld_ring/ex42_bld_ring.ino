@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex42_bld_ring.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -32,8 +32,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeSans12pt7b.h"
 //<Fonts !End!>
 
@@ -50,7 +52,7 @@
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_BTN_QUIT,E_ELEM_SLIDER1,E_ELEM_XRING};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_SANS12,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,E_FREESANS12,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -63,7 +65,7 @@ enum {E_FONT_SANS12,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 4                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 4 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -100,9 +102,9 @@ uint32_t m_nTimeLast = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemSlider1    = NULL;
-gslc_tsElemRef*  m_pElemXRingGauge1= NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemSlider1    = NULL;
+gslc_tsElemRef* m_pElemXRingGauge1= NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -126,7 +128,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
         gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
 //<Button Enums !End!>
       default:
         break;
@@ -200,18 +201,19 @@ bool InitGUI()
   static char m_strbtn1[7] = "QUIT";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
     (gslc_tsRect){235,5,80,30},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
 
   // Create ring gauge E_ELEM_XRING 
   static char m_sRingText1[11] = "";
   pElemRef = gslc_ElemXRingGaugeCreate(&m_gui,E_ELEM_XRING,E_PG_MAIN,&m_sXRingGauge1,
           (gslc_tsRect){80,80,100,100},
-          (char*)m_sRingText1,11,E_FONT_SANS12);
+          (char*)m_sRingText1,11,E_FREESANS12);
   gslc_ElemXRingGaugeSetValRange(&m_gui, pElemRef, 0, 100);
   gslc_ElemXRingGaugeSetVal(&m_gui, pElemRef, 60); // Set initial value
   gslc_ElemXRingGaugeSetThickness(&m_gui,pElemRef, 15);
   gslc_ElemXRingGaugeSetColorActiveGradient(&m_gui, pElemRef, GSLC_COL_BLUE_LT4, GSLC_COL_RED);
+  gslc_ElemXRingGaugeSetColorInactive(&m_gui,pElemRef, GSLC_COL_GRAY_DK2);
   m_pElemXRingGauge1 = pElemRef;
 
   // Create slider E_ELEM_SLIDER1 
@@ -219,6 +221,7 @@ bool InitGUI()
           (gslc_tsRect){200,80,100,20},0,100,60,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_BLUE_DK1,10,5,GSLC_COL_BLUE_DK1);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider1 = pElemRef;
 //<InitGUI !End!>
 
@@ -242,8 +245,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

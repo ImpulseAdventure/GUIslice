@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex28_bld_btn_img_flash.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -43,6 +43,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -60,7 +64,7 @@ extern "C" const unsigned short exit_n24[] PROGMEM;
 enum {E_PG_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_IBTN1,E_TXTFINISHED};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT10,MAX_FONT};
+enum {E_BUILTIN10X16,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -73,7 +77,7 @@ enum {E_FONT_TXT10,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 3                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 3 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -100,7 +104,7 @@ bool        m_bQuit = false;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pTxtStatus      = NULL;
+gslc_tsElemRef* m_pTxtStatus      = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -123,7 +127,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         m_bQuit = true;
         gslc_ElemSetTxtStr(&m_gui, m_pTxtStatus, "Stopped!");
         break;
-
 //<Button Enums !End!>
       default:
         break;
@@ -161,7 +164,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -176,12 +179,12 @@ bool InitGUI()
           gslc_GetImageFromProg((const unsigned char*)exit_n24,GSLC_IMGREF_FMT_BMP24),
           gslc_GetImageFromProg((const unsigned char*)exit_g24,GSLC_IMGREF_FMT_BMP24),
           &CbBtnCommon);
-  gslc_ElemSetFillEn(&m_gui,pElemRef,true);
+  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
   
   // Create E_TXTFINISHED runtime modifiable text
   static char m_sDisplayText1[11] = "Running";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXTFINISHED,E_PG_MAIN,(gslc_tsRect){100,160,120,18},
-    (char*)m_sDisplayText1,11,E_FONT_TXT10);
+    (char*)m_sDisplayText1,11,E_BUILTIN10X16);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
   m_pTxtStatus = pElemRef;
 //<InitGUI !End!>
@@ -206,7 +209,7 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN10X16,GSLC_FONTREF_PTR,NULL,2)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

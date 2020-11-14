@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex00_bld_fonttest.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -29,8 +29,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeMono12pt7b.h"
 #include "Fonts/FreeMono9pt7b.h"
 #include "Fonts/FreeSans12pt7b.h"
@@ -51,8 +53,8 @@ enum {E_PG_MAIN};
 enum {E_ELEM_TEXT1,E_ELEM_TEXT2,E_ELEM_TEXT3,E_ELEM_TEXT4,E_ELEM_TEXT5
       ,E_ELEM_TEXT6,E_ELEM_TEXT7,E_SCAN1};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_MONO12,E_FONT_MONO9,E_FONT_SANS12,E_FONT_SANS9
-      ,E_FONT_TXT10,E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN10X16,E_BUILTIN15X24,E_BUILTIN5X8,E_FREEMONO12
+      ,E_FREEMONO9,E_FREESANS12,E_FREESANS9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -65,7 +67,7 @@ enum {E_FONT_MONO12,E_FONT_MONO9,E_FONT_SANS12,E_FONT_SANS9
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 8                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 8 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -109,10 +111,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     // From the element's ID we can determine which button was pressed.
     switch (pElem->nId) {
 //<Button Enums !Start!>
-      case E_SCAN1:
-        //TODO- Replace with button handling code
-        break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -214,7 +212,7 @@ bool InitGUI()
   //       ensure that the main page is the correct page no matter the add order.
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
-  // Background flat color
+  // Set Background to a flat color
   gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
@@ -223,38 +221,37 @@ bool InitGUI()
    
   // Create E_SCAN1 box
   pElemRef = gslc_ElemCreateBox(&m_gui,E_SCAN1,E_PG_MAIN,(gslc_tsRect){0,0,320,240});
-  gslc_ElemSetTouchFunc(&m_gui, pElemRef, &CbBtnCommon);
   // Set the callback function to handle all drawing for the element
   gslc_ElemSetDrawFunc(&m_gui,pElemRef,&CbDrawScanner);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_WHITE,GSLC_COL_BLACK);
   
   // Create E_ELEM_TEXT1 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT1,E_PG_MAIN,(gslc_tsRect){10,10,74,12},
-    (char*)"TEXT 5X8PT7B",0,E_FONT_TXT5);
+    (char*)"TEXT 5X8PT7B",0,E_BUILTIN5X8);
   
   // Create E_ELEM_TEXT2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT2,E_PG_MAIN,(gslc_tsRect){10,30,170,20},
-    (char*)"TEXT 10X16pt7b",0,E_FONT_TXT10);
+    (char*)"TEXT 10X16pt7b",0,E_BUILTIN10X16);
   
   // Create E_ELEM_TEXT3 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT3,E_PG_MAIN,(gslc_tsRect){10,70,254,28},
-    (char*)"TEST 15x24pt7b",0,E_FONT_TXT15);
+    (char*)"TEST 15x24pt7b",0,E_BUILTIN15X24);
   
   // Create E_ELEM_TEXT4 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT4,E_PG_MAIN,(gslc_tsRect){10,120,93,25},
-    (char*)"MONO 9pt",0,E_FONT_MONO9);
+    (char*)"MONO 9pt",0,E_FREEMONO9);
   
   // Create E_ELEM_TEXT5 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT5,E_PG_MAIN,(gslc_tsRect){10,170,84,23},
-    (char*)"SANS 9pt",0,E_FONT_SANS9);
+    (char*)"SANS 9pt",0,E_FREESANS9);
   
   // Create E_ELEM_TEXT6 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT6,E_PG_MAIN,(gslc_tsRect){150,120,131,33},
-    (char*)"MONO 12pt",0,E_FONT_MONO12);
+    (char*)"MONO 12pt",0,E_FREEMONO12);
   
   // Create E_ELEM_TEXT7 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT7,E_PG_MAIN,(gslc_tsRect){150,170,123,29},
-    (char*)"SANS 12pt",0,E_FONT_SANS12);
+    (char*)"SANS 12pt",0,E_FREESANS12);
 //<InitGUI !End!>
 
   return true;
@@ -277,13 +274,13 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_MONO12,GSLC_FONTREF_PTR,&FreeMono12pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT15,GSLC_FONTREF_PTR,NULL,3)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN10X16,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN15X24,GSLC_FONTREF_PTR,NULL,3)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREEMONO12,GSLC_FONTREF_PTR,&FreeMono12pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREEMONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex02_bld_btn_txt.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -36,6 +36,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -51,7 +55,7 @@
 enum {E_PAGE_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_BTN_QUIT};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -64,7 +68,7 @@ enum {E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PAGE_MAIN 2                                          // # Elems total on page
+#define MAX_ELEM_PAGE_MAIN 2 // # Elems total on page
 #define MAX_ELEM_PAGE_MAIN_RAM MAX_ELEM_PAGE_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -91,7 +95,7 @@ bool    m_bQuit = false;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -118,7 +122,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         Serial.println("Quit button pressed");
         // Set a variable flag that we can use elsewhere        m_bQuit = true;
         break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -156,7 +159,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PAGE_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PAGE_MAIN
@@ -168,7 +171,7 @@ bool InitGUI()
   
   // create E_ELEM_BTN_QUIT button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PAGE_MAIN,
-    (gslc_tsRect){120,100,80,40},(char*)"Quit",0,E_FONT_TXT5,&CbBtnCommon);
+    (gslc_tsRect){120,100,80,40},(char*)"Quit",0,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
 //<InitGUI !End!>
 
@@ -192,7 +195,7 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

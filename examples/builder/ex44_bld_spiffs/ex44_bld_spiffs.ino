@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex44_bld_spiffs.ino]
-// Created by GUIslice Builder version: [0.13.b019]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -58,8 +58,8 @@
 
 //<Fonts !Start!>
 #if !defined(DRV_DISP_TFT_ESPI)
-  #error Builder config "Edit->Options->General->Target Platform" should be "arduino"
-#endif 
+  #error Project tab->Target Platform should be arduino
+#endif
 #include <TFT_eSPI.h>
 //<Fonts !End!>
 
@@ -80,7 +80,7 @@ enum {E_PG_MAIN,E_PG_POPUP_MSG_QUIT};
 enum {E_ELEM_BOX1,E_ELEM_BTN1,E_ELEM_BTN_QUIT,E_ELEM_IMAGE_LOGO
       ,E_ELEM_TEXT_PRESSED,E_ELEM_TEXT_TITLE};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_SANS12,E_FONT_SANS9,MAX_FONT};
+enum {E_FREESANS12,E_FREESANS9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -197,20 +197,17 @@ bool InitGUI()
   // Create E_ELEM_IMAGE_LOGO using Image 
   pElemRef = gslc_ElemCreateImg(&m_gui,E_ELEM_IMAGE_LOGO,E_PG_MAIN,(gslc_tsRect){50,13,219,60},
     gslc_GetImageFromFile(IMG_LOGO,GSLC_IMGREF_FMT_JPG));
-  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
   
   // Create E_ELEM_TEXT_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT_TITLE,E_PG_MAIN,(gslc_tsRect){38,80,244,29},
-    (char*)"Using SPIFFS Example",0,E_FONT_SANS12);
+    (char*)"Using SPIFFS Example",0,E_FREESANS12);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
-  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_BLACK);
   
   // Create E_ELEM_BTN_QUIT button with image label
   pElemRef = gslc_ElemCreateBtnImg(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,(gslc_tsRect){275,200,32,32},
           gslc_GetImageFromFile(IMG_EXIT_N24,GSLC_IMGREF_FMT_JPG),
           gslc_GetImageFromFile(IMG_EXIT_G24_SEL,GSLC_IMGREF_FMT_JPG),
           &CbBtnCommon);
-  gslc_ElemSetFillEn(&m_gui,pElemRef,false);
 
   // -----------------------------------
   // PAGE: E_PG_POPUP_MSG_QUIT
@@ -222,13 +219,13 @@ bool InitGUI()
   
   // Create E_ELEM_TEXT_PRESSED text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT_PRESSED,E_PG_POPUP_MSG_QUIT,(gslc_tsRect){90,89,141,23},
-    (char*)"You Pressed Quit",0,E_FONT_SANS9);
+    (char*)"You Pressed Quit",0,E_FREESANS9);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_LT2,GSLC_COL_GRAY_LT2);
   
   // create E_ELEM_BTN1 button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN1,E_PG_POPUP_MSG_QUIT,
-    (gslc_tsRect){140,141,40,40},(char*)"OK",0,E_FONT_SANS9,&CbBtnCommon);
+    (gslc_tsRect){140,141,40,40},(char*)"OK",0,E_FREESANS9,&CbBtnCommon);
 //<InitGUI !End!>
 
   return true;
@@ -252,8 +249,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS12,GSLC_FONTREF_PTR,&FreeSans12pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

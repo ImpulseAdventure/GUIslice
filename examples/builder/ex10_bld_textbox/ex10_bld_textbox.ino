@@ -1,8 +1,8 @@
 //<File !Start!>
 // FILE: [ex10_bld_textbox.ino]
-// Created by GUIslice Builder version: [0.13.0]
+// Created by GUIslice Builder version: [0.16.0]
 //
-// GUIslice Builder Generated File
+// GUIslice Builder Generated GUI Framework File
 //
 // For the latest guides, updates and support view:
 // https://github.com/ImpulseAdventure/GUIslice
@@ -38,6 +38,10 @@
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
 //<Fonts !Start!>
+#if defined(DRV_DISP_TFT_ESPI)
+  #error Project tab->Target Platform should be tft_espi
+#endif
+#include <Adafruit_GFX.h>
 //<Fonts !End!>
 
 // ------------------------------------------------
@@ -54,7 +58,7 @@ enum {E_PG_MAIN};
 enum {E_ELEM_BOX1,E_ELEM_SLIDER1,E_ELEM_TBTN1,E_ELEM_TEXTBOX1
       ,E_ELEM_TXT_COUNT,E_LBL_TITLE,E_SCROLLBAR};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
+enum {E_BUILTIN15X24,E_BUILTIN5X8,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -67,7 +71,7 @@ enum {E_FONT_TXT15,E_FONT_TXT5,MAX_FONT};
 //<ElementDefines !Start!>
 #define MAX_PAGE                1
 
-#define MAX_ELEM_PG_MAIN 8                                          // # Elems total on page
+#define MAX_ELEM_PG_MAIN 8 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 //<ElementDefines !End!>
 
@@ -101,11 +105,11 @@ unsigned  m_nCount = 0;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef*  m_pElemCount      = NULL;
-gslc_tsElemRef*  m_pElemQuit       = NULL;
-gslc_tsElemRef*  m_pElemSlider     = NULL;
-gslc_tsElemRef*  m_pElemSlider1    = NULL;
-gslc_tsElemRef*  m_pElemTextbox    = NULL;
+gslc_tsElemRef* m_pElemCount      = NULL;
+gslc_tsElemRef* m_pElemQuit       = NULL;
+gslc_tsElemRef* m_pElemSlider     = NULL;
+gslc_tsElemRef* m_pElemSlider1    = NULL;
+gslc_tsElemRef* m_pElemTextbox    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -129,7 +133,6 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         gslc_ElemSetTxtStr(&m_gui,m_pElemQuit,"DONE");
         gslc_ElemSetCol(&m_gui,m_pElemQuit,GSLC_COL_RED,GSLC_COL_BLACK,GSLC_COL_BLACK);
         break;
-
 //<Button Enums !End!>
         default:
         break;
@@ -204,7 +207,7 @@ bool InitGUI()
   gslc_SetPageCur(&m_gui,E_PG_MAIN);
   
   // Set Background to a flat color
-  gslc_SetBkgndColor(&m_gui,GSLC_COL_GRAY_DK2);
+  gslc_SetBkgndColor(&m_gui,GSLC_COL_BLACK);
 
   // -----------------------------------
   // PAGE: E_PG_MAIN
@@ -212,7 +215,7 @@ bool InitGUI()
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){94,0,128,28},
-    (char*)"Textbox",0,E_FONT_TXT15);
+    (char*)"Textbox",0,E_BUILTIN15X24);
    
   // Create E_ELEM_BOX1 box
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX1,E_PG_MAIN,(gslc_tsRect){10,50,300,180});
@@ -223,12 +226,13 @@ bool InitGUI()
           (gslc_tsRect){20,60,140,20},0,100,50,5,false);
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,GSLC_COL_GREEN_DK4,10,5,GSLC_COL_GRAY_LT2);
   gslc_ElemXSliderSetPosFunc(&m_gui,pElemRef,&CbSlidePos);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemSlider1 = pElemRef;
   
   // Create E_ELEM_TXT_COUNT runtime modifiable text
   static char m_sDisplayText2[8] = "";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_COUNT,E_PG_MAIN,(gslc_tsRect){180,60,44,12},
-    (char*)m_sDisplayText2,8,E_FONT_TXT5);
+    (char*)m_sDisplayText2,8,E_BUILTIN5X8);
   m_pElemCount = pElemRef;
    
   // Create wrapping box for textbox E_ELEM_TEXTBOX1 and scrollbar
@@ -237,7 +241,7 @@ bool InitGUI()
   
   // Create textbox
   pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX1,E_PG_MAIN,&m_sTextbox1,
-    (gslc_tsRect){18+2,83+4,203-23,64-7},E_FONT_TXT5,
+    (gslc_tsRect){18+2,83+4,203-23,64-7},E_BUILTIN5X8,
     (char*)&m_acTextboxBuf1,12,16);
   gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,true);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_YELLOW);
@@ -255,7 +259,7 @@ bool InitGUI()
   static char m_strbtn1[7] = "QUIT";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_TBTN1,E_PG_MAIN,
     (gslc_tsRect){250,60,50,30},
-    (char*)m_strbtn1,7,E_FONT_TXT5,&CbBtnCommon);
+    (char*)m_strbtn1,7,E_BUILTIN5X8,&CbBtnCommon);
   m_pElemQuit = pElemRef;
 //<InitGUI !End!>
 
@@ -279,8 +283,8 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT15,GSLC_FONTREF_PTR,NULL,3)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FONT_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN15X24,GSLC_FONTREF_PTR,NULL,3)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------

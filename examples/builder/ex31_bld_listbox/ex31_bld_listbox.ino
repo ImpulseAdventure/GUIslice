@@ -1,6 +1,6 @@
 //<File !Start!>
 // FILE: [ex31_bld_listbox.ino]
-// Created by GUIslice Builder version: [0.14.b005]
+// Created by GUIslice Builder version: [0.16.0]
 //
 // GUIslice Builder Generated GUI Framework File
 //
@@ -45,10 +45,9 @@
 // ------------------------------------------------
 //<Fonts !Start!>
 #if defined(DRV_DISP_TFT_ESPI)
-  #error Builder config "Edit->Options->General->Target Platform" should be "arduino TFT_eSPI"
-#endif 
+  #error Project tab->Target Platform should be tft_espi
+#endif
 #include <Adafruit_GFX.h>
-// Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeMono9pt7b.h"
 #include "Fonts/FreeSans9pt7b.h"
 //<Fonts !End!>
@@ -68,7 +67,7 @@ enum {E_BTN_ADD,E_BTN_DEL,E_BTN_OK,E_ELEM_BOX1,E_ELEM_TEXT4
       ,E_ELEM_TEXT5,E_LBL_COUNTRYCD,E_LBL_TITLE,E_LISTBOX,E_LISTSCROLL1
       ,E_TXT_COUNTRY_CODE};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_BUILTIN_TXT10,E_BUILTIN_TXT5,E_FREE_MONO9,E_FREE_SANS9,MAX_FONT};
+enum {E_BUILTIN10X16,E_BUILTIN5X8,E_FREEMONO9,E_FREESANS9,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -326,7 +325,7 @@ bool InitGUI()
   
   // Create listbox
   pElemRef = gslc_ElemXListboxCreate(&m_gui,E_LISTBOX,E_PG_MAIN,&m_sListbox1,
-    (gslc_tsRect){20+2,75+4,200-23,100-7},E_FREE_MONO9,
+    (gslc_tsRect){20+2,75+4,200-23,100-7},E_FREEMONO9,
     (uint8_t*)&m_acListboxBuf1,sizeof(m_acListboxBuf1),0);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 5, 1); // 5 rows, 1 columns
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
@@ -334,10 +333,18 @@ bool InitGUI()
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_WHITE);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK3,GSLC_COL_GRAY_DK2);
   gslc_ElemXListboxSetSelFunc(&m_gui, pElemRef, &CbListbox);
-  // Populate the listbox with countries
-  for (nInd=0;nInd<COUNTRY_CNT;nInd++) {
-    gslc_ElemXListboxAddItem(&m_gui, pElemRef, m_CountryNames[nInd]);  
-  }
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "USA");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Brazil");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Canada");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Denmark");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Germany");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "France");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "India");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Japan");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Mexico");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Peru");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "England");
+  gslc_ElemXListboxAddItem(&m_gui, pElemRef, "Vietnam");
   gslc_ElemSetFrameEn(&m_gui,pElemRef,true);
   m_pElemListbox = pElemRef;
 
@@ -351,26 +358,29 @@ bool InitGUI()
   // Create E_TXT_COUNTRY_CODE runtime modifiable text
   static char m_sDisplayText2[6] = "US";
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_TXT_COUNTRY_CODE,E_PG_MAIN,(gslc_tsRect){130,45,90,23},
-    (char*)m_sDisplayText2,6,E_FREE_SANS9);
+    (char*)m_sDisplayText2,6,E_FREESANS9);
   gslc_ElemSetTxtAlign(&m_gui,pElemRef,GSLC_ALIGN_MID_MID);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   m_pElemSel = pElemRef;
   
   // Create E_LBL_COUNTRYCD text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_COUNTRYCD,E_PG_MAIN,(gslc_tsRect){10,45,121,23},
-    (char*)"Country Code:",0,E_FREE_SANS9);
+    (char*)"Country Code:",0,E_FREESANS9);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
   // Create E_LBL_TITLE text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_TITLE,E_PG_MAIN,(gslc_tsRect){49,20,141,23},
-    (char*)"Country Chooser",0,E_FREE_SANS9);
+    (char*)"Country Chooser",0,E_FREESANS9);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_DK2,GSLC_COL_BLACK);
   
   // create E_BTN_ADD button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_ADD,E_PG_MAIN,
-    (gslc_tsRect){140,190,80,30},(char*)"Insert New",0,E_BUILTIN_TXT5,&CbBtnCommon);
+    (gslc_tsRect){140,190,80,30},(char*)"Insert New",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN_DK2,GSLC_COL_GREEN_DK4,GSLC_COL_GREEN_DK1);
   
   // create E_BTN_DEL button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_DEL,E_PG_MAIN,
-    (gslc_tsRect){20,190,80,30},(char*)"Delete",0,E_BUILTIN_TXT5,&CbBtnCommon);
+    (gslc_tsRect){20,190,80,30},(char*)"Delete",0,E_BUILTIN5X8,&CbBtnCommon);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GREEN_DK2,GSLC_COL_GREEN_DK4,GSLC_COL_GREEN_DK1);
 
   // -----------------------------------
@@ -383,18 +393,18 @@ bool InitGUI()
   
   // Create E_ELEM_TEXT4 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT4,E_PG_WARNING,(gslc_tsRect){60,70,100,25},
-    (char*)"WARNING:",0,E_BUILTIN_TXT10);
+    (char*)"WARNING:",0,E_BUILTIN10X16);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_RED);
   
   // Create E_ELEM_TEXT5 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT5,E_PG_WARNING,(gslc_tsRect){60,120,228,10},
-    (char*)"Buffer too small to add more  entries.",0,E_BUILTIN_TXT5);
+    (char*)"Buffer too small to add more  entries.",0,E_BUILTIN5X8);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_BLACK);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_GRAY_LT3,GSLC_COL_GRAY_LT3);
   
   // create E_BTN_OK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_BTN_OK,E_PG_WARNING,
-    (gslc_tsRect){250,150,40,40},(char*)"OK",0,E_BUILTIN_TXT5,&CbBtnCommon);
+    (gslc_tsRect){250,150,40,40},(char*)"OK",0,E_BUILTIN5X8,&CbBtnCommon);
 //<InitGUI !End!>
 
   return true;
@@ -417,10 +427,10 @@ void setup()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
-    if (!gslc_FontSet(&m_gui,E_BUILTIN_TXT10,GSLC_FONTREF_PTR,NULL,2)) { return; }
-    if (!gslc_FontSet(&m_gui,E_BUILTIN_TXT5,GSLC_FONTREF_PTR,NULL,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FREE_MONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
-    if (!gslc_FontSet(&m_gui,E_FREE_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN10X16,GSLC_FONTREF_PTR,NULL,2)) { return; }
+    if (!gslc_FontSet(&m_gui,E_BUILTIN5X8,GSLC_FONTREF_PTR,NULL,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREEMONO9,GSLC_FONTREF_PTR,&FreeMono9pt7b,1)) { return; }
+    if (!gslc_FontSet(&m_gui,E_FREESANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
 //<Load_Fonts !End!>
 
   // ------------------------------------------------
