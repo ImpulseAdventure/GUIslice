@@ -76,8 +76,8 @@ typedef struct {
   // EventType
   gslc_teTouch    eTouch;         ///< Touch event type
   // Extra Ticks
-  double *        nTickArr;       ///< User defined tick array
-  int             nTickArrLen;    ///< User defined tick array length
+  uint16_t *        nTickArr;       ///< User defined tick array - Range 0 - 1000
+  uint8_t           nTickArrLen;    ///< User defined tick array length
 } gslc_tsXSlider;
 
 
@@ -164,7 +164,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
 ///
 /// \return none
 ///
-void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,double * nTickArr,int nTickArrLen);
+void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t* nTickArr, uint8_t nTickArrLen);
 
 
 ///

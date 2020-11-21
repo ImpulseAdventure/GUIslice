@@ -215,7 +215,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
   pSlider->pfuncXPos = funcCb;
 }
 
-void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, double * nTickArr, int nTickArrLen) {
+void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, uint16_t* nTickArr, uint8_t nTickArrLen) {
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
   pSlider->nTickArr = nTickArr;
@@ -257,8 +257,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   uint16_t        nTickDiv  = pSlider->nTickDiv;
   int16_t         nTickLen  = pSlider->nTickLen;
   gslc_tsColor    colTick   = pSlider->colTick;
-  double *        nTickArr  = pSlider->nTickArr;
-  int             nTickArrLen = pSlider->nTickArrLen;
+  uint16_t *      nTickArr  = pSlider->nTickArr;
+  uint8_t         nTickArrLen = pSlider->nTickArrLen;
 
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
@@ -316,8 +316,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   if (nTickArr) {
     for (size_t i = 0; i < nTickArrLen; i++) {
-      if (nTickArr[i] == 0) { continue; }
-      int16_t xOffset = (pElem->rElem.w - (nMargin * 2)) * (double)(nTickArr[i] / 100);
+      if (nTickArr[i] < 0 || nTickArr[i] > 1000) { continue; }
+      int16_t xOffset = ((pElem->rElem.w - (nMargin * 2)) * nTickArr[i]) / 1000;
       gslc_DrawLine(pGui,xOffset+nX0+nMargin,nYMid-17,xOffset+nX0+nMargin,nYMid+18,GSLC_COL_GRAY);
     }
   }
