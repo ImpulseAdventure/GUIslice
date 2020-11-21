@@ -172,6 +172,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   }
   pGui->bScreenNeedRedraw  = true;
   pGui->bScreenNeedFlip    = false;
+  pGui->bScreenDisableRedraw = false;
 
   gslc_InvalidateRgnReset(pGui);
 
@@ -708,7 +709,9 @@ void gslc_Update(gslc_tsGui* pGui)
   }
 
   // Perform any redraw required for current page
-  gslc_PageRedrawGo(pGui);
+  if (!pGui->bScreenDisableRedraw) {
+    gslc_PageRedrawGo(pGui);
+  }
 
   // Simple "frame" rate reporting
   // - Note that the rate is based on the number of calls to gslc_Update()
@@ -2447,6 +2450,11 @@ int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
 #endif
 }
 
+
+void gslc_SetScreenDisableRedraw(gslc_tsGui* pGui,bool pbool)
+{
+  pGui->bScreenDisableRedraw = pbool;
+}
 
 // ------------------------------------------------------------------------
 // Element General Functions
