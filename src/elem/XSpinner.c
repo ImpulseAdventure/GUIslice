@@ -106,7 +106,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   nBtnPosY = rElem.y + (rElem.h - nButtonSz) / 2;
 
   // set our intial value for our text field
-  snprintf(acTxtNum, XSPINNER_STR_LEN - 1, "%d", nVal);
+  snprintf(acTxtNum, XSPINNER_STR_LEN - 1, "%hd", nVal);
 
   gslc_tsElem sElem;
 
