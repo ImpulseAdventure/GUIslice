@@ -47,3 +47,6 @@ nbdist/
 
 # Builder files
 builder/.gradle
+
+# Dep Files
+*.dep
