@@ -73,6 +73,11 @@ typedef struct {
   int16_t         nPos;           ///< Current position value of the slider
   // Callbacks
   GSLC_CB_XSLIDER_POS pfuncXPos;  ///< Callback func ptr for position update
+  // EventType
+  gslc_teTouch    eTouch;         ///< Touch event type
+  // Extra Ticks
+  double *        nTickArr;       ///< User defined tick array
+  int             nTickArrLen;    ///< User defined tick array length
 } gslc_tsXSlider;
 
 
@@ -148,6 +153,19 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
 /// \return none
 ///
 void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XSLIDER_POS funcCb);
+
+
+///
+/// Assign user defined ticks for a slider
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  nTickArr:    Pointer of dbl types, offset percentages from left side
+///
+/// \return none
+///
+void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,double * nTickArr,int nTickArrLen);
+
 
 ///
 /// Draw a Slider element on the screen
@@ -229,6 +247,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   sSlider##nElemId.colTrim = GSLC_COL_BLACK;                      \
   sSlider##nElemId.nPos = nPos_;                                  \
   sSlider##nElemId.pfuncXPos = NULL;                              \
+  sSlider##nElemId.eTouch = GSLC_TOUCH_NONE;                      \
+  sSlider##nElemId.nTickArr = GSLC_TOUCH_NONE;                    \
+  sSlider##nElemId.nTickArrLen = 0;                               \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
@@ -276,6 +297,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   sSlider##nElemId.colTrim = GSLC_COL_BLACK;                      \
   sSlider##nElemId.nPos = nPos_;                                  \
   sSlider##nElemId.pfuncXPos = NULL;                              \
+  sSlider##nElemId.eTouch = GSLC_TOUCH_NONE;                      \
+  sSlider##nElemId.nTickArr = GSLC_TOUCH_NONE;                    \
+  sSlider##nElemId.nTickArrLen = 0;                               \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
