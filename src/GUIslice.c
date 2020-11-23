@@ -3318,10 +3318,17 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
+  // Check for read-only status (in case the string was
+  // defined in Flash/PROGMEM)
+  if (pElem->nStrBufMax == 0) {
+    // String was read-only, so abort now
+    return;
+  }
+
   // To avoid unnecessary redraw / flicker, only a change in
   // the text content will drive a redraw
 
-  if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax-1)) {
+  if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax)) {
     gslc_StrCopy(pElem->pStrBuf,pStr,pElem->nStrBufMax);
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
