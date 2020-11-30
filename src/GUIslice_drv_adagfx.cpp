@@ -74,6 +74,12 @@
     // https://github.com/PaulStoffregen/ILI9341_t3
     #include <ILI9341_t3.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
+    #include <ILI9488.h>
+    #if (GSLC_SD_EN)
+      #include <SD.h>   // Include support for SD card access
+    #endif
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
     // https://github.com/marekburiak/ILI9341_due
     #include <ILI9341_due.h>
@@ -281,6 +287,16 @@ extern "C" {
   #else
     const char* m_acDrvDisp = "ADA_ILI9341_STM(SPI-SW)";
     Adafruit_ILI9341_STM m_disp = Adafruit_ILI9341_STM(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
+  #endif
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
+  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+    const char* m_acDrvDisp = "ILI9348_JB(SPI-HW)";
+    ILI9488 m_disp = ILI9488(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
+  #else
+    const char* m_acDrvDisp = "ILI9488_JB(SPI-SW)";
+    ILI9488 m_disp = ILI9488(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_RST, ADAGFX_PIN_MISO);
   #endif
 
 // ------------------------------------------------------------------------
@@ -610,6 +626,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
       m_disp.begin();
 
+    #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
+      m_disp.begin();
+	  
     #elif defined(DRV_DISP_ADAGFX_SSD1306)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
 
@@ -2948,6 +2967,18 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     } else {
       pGui->nDispW = ILI9341_TFTHEIGHT;
       pGui->nDispH = ILI9341_TFTWIDTH;
+    }
+
+  #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
+    pGui->nDisp0W = ILI9488_TFTWIDTH;
+    pGui->nDisp0H = ILI9488_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9488_TFTWIDTH;
+      pGui->nDispH = ILI9488_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9488_TFTHEIGHT;
+      pGui->nDispH = ILI9488_TFTWIDTH;
     }
 
   #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)
