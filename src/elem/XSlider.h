@@ -56,6 +56,13 @@ typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int16_t nPos);
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
 
+/// Enumerations for custom tick styling
+enum {
+  teXSliderFmt_TickAbove = 1,   ///< Draw a tick mark above/left of the line
+  teXSliderFmt_TickBelow = 2,   ///< Draw a tick mark below/right of the line
+  teXSliderFmt_PosCustom = 32,  ///< Position of tick marks defined by user array
+};
+
 /// Extended data for Slider element
 typedef struct {
   // Config
@@ -69,15 +76,14 @@ typedef struct {
   gslc_tsColor    colTick;        ///< Style: color of ticks
   bool            bTrim;          ///< Style: show a trim color
   gslc_tsColor    colTrim;        ///< Style: color of trim
+  uint8_t         eTickFmt;       ///< Style: tick format options
+  uint8_t*        anTickPos;      ///< Style: custom tick position array (range: 0..100), nTickDiv entries
   // State
   int16_t         nPos;           ///< Current position value of the slider
   // Callbacks
   GSLC_CB_XSLIDER_POS pfuncXPos;  ///< Callback func ptr for position update
   // EventType
   gslc_teTouch    eTouch;         ///< Touch event type
-  // Extra Ticks
-  uint16_t *        nTickArr;       ///< User defined tick array - Range 0 - 1000
-  uint8_t           nTickArrLen;    ///< User defined tick array length
 } gslc_tsXSlider;
 
 
@@ -103,7 +109,7 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 
 
 ///
-/// Set a Slider element's current position
+/// Set a Slider element's appearance
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
@@ -119,6 +125,22 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
         int16_t nTickLen,gslc_tsColor colTick);
 
+///
+/// Set a Slider element's appearance (custom options)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  anTickPos:   Pointer to custom tick position array (in percent)
+///                          If NULL, the default evenly-spaced ticks are used
+///                          If non-NULL, the tick positions are defined by the array
+///                          with a length defined by nTickDiv
+/// \param[in]  bTickAbove:  If enabled, draw tick marks above/left of the line
+/// \param[in]  bTickBelow:  If enabled, draw tick marks below/right of the line
+///
+/// \return none
+///
+void gslc_ElemXSliderSetStyleCustom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
+        uint8_t* anTickPos, bool bTickAbove, bool bTickBelow);
 
 ///
 /// Get a Slider element's current position

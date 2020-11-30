@@ -105,8 +105,10 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pXData->bTrim           = false;
   pXData->colTrim         = GSLC_COL_BLACK;
   pXData->nTickDiv        = 0;
+  pXData->anTickPos       = NULL;
   pXData->pfuncXPos       = NULL;
   pXData->eTouch          = GSLC_TOUCH_NONE;
+  pXData->eTickFmt        = teXSliderFmt_TickBelow;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw        = &gslc_ElemXSliderDraw;
@@ -153,6 +155,19 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 
   // Update
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+}
+
+void gslc_ElemXSliderSetStyleCustom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, uint8_t* anTickPos, bool bTickAbove, bool bTickBelow)
+{
+  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
+  pSlider->eTickFmt = 0;
+  if (anTickPos != NULL) {
+    pSlider->anTickPos = anTickPos;
+    pSlider->eTickFmt |= teXSliderFmt_PosCustom;
+  }
+  pSlider->eTickFmt |= (bTickAbove)? teXSliderFmt_TickAbove : 0;
+  pSlider->eTickFmt |= (bTickBelow)? teXSliderFmt_TickBelow : 0;
 }
 
 int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
@@ -215,13 +230,6 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
   pSlider->pfuncXPos = funcCb;
 }
 
-void gslc_ElemXSliderSetTicks(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, uint16_t* nTickArr, uint8_t nTickArrLen) {
-  gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
-  pSlider->nTickArr = nTickArr;
-  pSlider->nTickArrLen = nTickArrLen;
-}
-
 // Redraw the slider
 // - Note that this redraw is for the entire element rect region
 // - The Draw function parameters use void pointers to allow for
@@ -256,9 +264,9 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   gslc_tsColor    colTrim   = pSlider->colTrim;
   uint16_t        nTickDiv  = pSlider->nTickDiv;
   int16_t         nTickLen  = pSlider->nTickLen;
+  uint8_t         eTickFmt  = pSlider->eTickFmt;
   gslc_tsColor    colTick   = pSlider->colTick;
-  uint16_t *      nTickArr  = pSlider->nTickArr;
-  uint8_t         nTickArrLen = pSlider->nTickArrLen;
+  uint8_t*        anTickPos = pSlider->anTickPos;
 
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
@@ -302,26 +310,33 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (nTickDiv>=1) {
     uint16_t  nTickInd;
     int16_t   nTickOffset;
+    int16_t   nTickLenAbove,nTickLenBelow;
+    bool      bTickPosCustom;
+    nTickLenAbove = (eTickFmt & teXSliderFmt_TickAbove) ? nTickLen : 0;
+    nTickLenBelow = (eTickFmt & teXSliderFmt_TickBelow) ? nTickLen : 0;
+    bTickPosCustom = (eTickFmt & teXSliderFmt_PosCustom);
     for (nTickInd=0;nTickInd<=nTickDiv;++nTickInd) {
-      nTickOffset = (int16_t)((int32_t)nTickInd * (int32_t)nCtrlRng / (int32_t)nTickDiv);
-      if (!bVert) {
-        gslc_DrawLine(pGui,nX0+nMargin+ nTickOffset,nYMid,
-                nX0+nMargin + nTickOffset,nYMid+nTickLen,colTick);
+      if (!bTickPosCustom) {
+        // Tick marks are evenly spaced along length
+        // - In this mode, nTickDiv defines the number of "divisions", so we 
+        //   draw nTickDiv+1 lines in total
+        nTickOffset = (int16_t)((int32_t)nTickInd * (int32_t)nCtrlRng / (int32_t)nTickDiv);
       } else {
-        gslc_DrawLine(pGui,nXMid,nY0+nMargin+ nTickOffset,
-                nXMid+nTickLen,nY0+nMargin + nTickOffset,colTick);
+        // Tick marks are positioned according to custom tick array
+        // - In this mode, nTickDiv defines the length of the tick array
+        //   so we need to skip the last loop iteration
+        if (nTickInd == nTickDiv) { continue; }
+        nTickOffset = (int16_t)((int32_t)anTickPos[nTickInd] * (int32_t)nCtrlRng / (int32_t)100);
+      }
+      if (!bVert) {
+        gslc_DrawLine(pGui,nX0+nMargin+nTickOffset,nYMid-nTickLenAbove,
+                nX0+nMargin+nTickOffset,nYMid+nTickLenBelow,colTick);
+      } else {
+        gslc_DrawLine(pGui,nXMid-nTickLenAbove,nY0+nMargin+nTickOffset,
+                nXMid+nTickLenBelow,nY0+nMargin+nTickOffset,colTick);
       }
     }
   }
-
-  if (nTickArr) {
-    for (size_t i = 0; i < nTickArrLen; i++) {
-      if (nTickArr[i] < 0 || nTickArr[i] > 1000) { continue; }
-      int16_t xOffset = ((pElem->rElem.w - (nMargin * 2)) * nTickArr[i]) / 1000;
-      gslc_DrawLine(pGui,xOffset+nX0+nMargin,nYMid-17,xOffset+nX0+nMargin,nYMid+18,GSLC_COL_GRAY);
-    }
-  }
-
 
   // Draw the track
   if (!bVert) {
