@@ -78,6 +78,7 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // Initialize any internal state upon reset
 void gslc_ElemXKeyPadReset_Alpha(void* pvConfig)
 {
+  (void)pvConfig; // Unused
   //gslc_tsXKeyPadCfg* pConfig = (gslc_tsXKeyPadCfg*)pvConfig;
   //gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pConfig; // Retrieve the variant config
 
@@ -89,6 +90,7 @@ void gslc_ElemXKeyPadReset_Alpha(void* pvConfig)
 // Initialize any internal state when the text field is first assigned
 void gslc_ElemXKeyPadTxtInit_Alpha(void* pvKeyPad)
 {
+  (void)pvKeyPad; // Unused
   //gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
   //gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
   //gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pConfig; // Retrieve the variant config
@@ -148,6 +150,7 @@ void gslc_ElemXKeyPadLabelGet_Alpha(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,c
 // Return the style for a button
 void gslc_ElemXKeyPadStyleGet_Alpha(void* pvKeyPad,uint8_t nId, bool* pbVisible, gslc_tsColor* pcolTxt, gslc_tsColor* pcolFrame, gslc_tsColor* pcolFill, gslc_tsColor* pcolGlow)
 {
+  (void)pvKeyPad; // Unused
   //gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pvKeyPad;
   //gslc_tsXKeyPadCfg_Alpha* pConfigAlpha = (gslc_tsXKeyPadCfg_Alpha*)pKeyPad->pConfig; // Retrieve variant config
 

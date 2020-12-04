@@ -377,6 +377,7 @@ void gslc_ElemXCheckboxToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 //   simpler callback function definition & scalability.
 bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  (void)eRedraw; // Unused
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
@@ -453,6 +454,8 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
 //
 bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
+  (void)nRelX; // Unused
+  (void)nRelY; // Unused
 #if defined(DRV_TOUCH_NONE)
   return false;
 #else

@@ -331,6 +331,7 @@ void gslc_ElemXTogglebtnDrawRectangularHelp(gslc_tsGui* pGui,gslc_tsElem* pElem,
 
 bool gslc_ElemXTogglebtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  (void)eRedraw; // Unused
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);

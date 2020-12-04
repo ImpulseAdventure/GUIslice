@@ -147,9 +147,14 @@ int16_t gslc_XKeyPadLookupId(gslc_tsKey* pKeys, uint8_t nKeyId)
 // - cColFill:  used for TXT field
 // - cColTxt:   text for all buttons
 // - eRedraw:   scope of redraw (FULL / INC)
+// TODO: Remove unused params
 void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFrame,
   gslc_tsColor cColFill, gslc_tsColor cColText, gslc_teRedrawType eRedraw)
 {
+  (void)cColFrame; // Unused
+  (void)cColFill; // Unused
+  (void)cColText; // Unused
+  (void)eRedraw; // Unused
   // - Draw the fields
   gslc_tsXKeyPad* pKeypadData = (gslc_tsXKeyPad*)pXData;
   gslc_tsXKeyPadCfg* pConfig = pKeypadData->pConfig;
@@ -438,6 +443,7 @@ int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData)
 
 char* gslc_ElemXKeyPadDataValGet(gslc_tsGui* pGui, void* pvData)
 {
+  (void)pGui; // Unused
   if (pvData == NULL) {
     #if defined(DEBUG_LOG)
     GSLC_DEBUG2_PRINT("ERROR: XKeyPadDataValGet() NULL data\n", "");
@@ -496,6 +502,7 @@ bool gslc_XKeyPadDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
   // Redraw the keypad
   // - If incremental, may only redraw the text field
   // - Otherwise, redraw everything
+  // TODO: Note some params unused
   gslc_XKeyPadDrawLayout(pGui, (void*)pKeyPad, pElem->colElemFrame, pElem->colElemFill, pElem->colElemText, eRedraw);
 
   // Clear the redraw flag
@@ -570,6 +577,7 @@ void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols)
 // Map keypad ID to its bounding rectangle position
 int16_t gslc_XKeyPadMapEvent(gslc_tsGui* pGui, void* pXData, int16_t nRelX, int16_t nRelY)
 {
+  (void)pGui; // Unused
   gslc_tsXKeyPad* pKeyPad = (gslc_tsXKeyPad*)pXData;
   gslc_tsXKeyPadCfg* pConfig;
 

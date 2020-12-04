@@ -220,6 +220,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
 //   simpler callback function definition & scalability.
 bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  (void)eRedraw; // Unused
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderDraw";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);

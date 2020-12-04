@@ -131,6 +131,7 @@ gslc_tsElemRef* gslc_ElemXTemplateCreate(gslc_tsGui* pGui, int16_t nElemId, int1
 //   simpler callback function definition & scalability.
 bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  (void)eRedraw; // Unused
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXTemplateDraw";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -239,6 +240,8 @@ bool gslc_ElemXTemplateDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
 // after any touch event
 bool gslc_ElemXTemplateTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
+  (void)nRelX; // Unused
+  (void)nRelY; // Unused
 #if defined(DRV_TOUCH_NONE)
   return false;
 #else

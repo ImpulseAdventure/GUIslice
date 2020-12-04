@@ -740,20 +740,24 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
 void* gslc_DrvGetDriverDisp(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   return (void*)(&m_disp);
 }
 
 void gslc_DrvDestruct(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
 }
 
 const char* gslc_DrvGetNameDisp(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   return m_acDrvDisp;
 }
 
 const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   return m_acDrvTouch;
 }
 
@@ -764,6 +768,7 @@ const char* gslc_DrvGetNameTouch(gslc_tsGui* pGui)
 
 void* gslc_DrvLoadImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
 {
+  (void)pGui; // Unused
   // GUIslice adapter for Adafruit-GFX doesn't preload the
   // images into RAM (to keep RAM requirements low), so we
   // don't need to do any further processing here. Instead,
@@ -816,6 +821,7 @@ bool gslc_DrvSetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
 
 bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef)
 {
+  (void)pGui; // Unused
   // This driver doesn't preload the image to memory,
   // so we just save the reference for loading upon render
   pElem->sImgRefNorm = sImgRef;
@@ -825,6 +831,7 @@ bool gslc_DrvSetElemImageNorm(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
 
 bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef sImgRef)
 {
+  (void)pGui; // Unused
   // This driver doesn't preload the image to memory,
   // so we just save the reference for loading upon render
   pElem->sImgRefGlow = sImgRef;
@@ -834,6 +841,7 @@ bool gslc_DrvSetElemImageGlow(gslc_tsGui* pGui,gslc_tsElem* pElem,gslc_tsImgRef 
 
 void gslc_DrvImageDestruct(void* pvImg)
 {
+  (void)pvImg; // Unused
 }
 
 bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
@@ -861,6 +869,7 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
 
 const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRef,uint16_t nFontSz)
 {
+  (void)nFontSz; // Unused
   // Arduino mode currently only supports font definitions from memory
   if (eFontRefType != GSLC_FONTREF_PTR) {
     GSLC_DEBUG2_PRINT("ERROR: DrvFontAdd(%s) failed - Arduino only supports memory-based fonts\n","");
@@ -872,6 +881,7 @@ const void* gslc_DrvFontAdd(gslc_teFontRefType eFontRefType,const void* pvFontRe
 
 void gslc_DrvFontsDestruct(gslc_tsGui* pGui)
 {
+  (void)pGui;
   // Nothing to deallocate
 }
 
@@ -922,6 +932,8 @@ bool gslc_DrvFontSetHelp(gslc_tsGui* pGui,gslc_tsFont* pFont)
 
   return true;
 #else
+  (void)pGui; // Unused
+  (void)pFont; // Unused
   return true;
 #endif // DRV_DISP_*
 
@@ -932,6 +944,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 {
 
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = 0;
 
   // Use PaulStoffregen/ILI9341_t3
@@ -981,6 +994,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB)  || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = 0;
 
   if (pFont->pvFont == NULL) {
@@ -1002,6 +1016,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_LCDGFX)
+  (void)pGui; // Unused
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8); // FIXME
 
@@ -1043,6 +1058,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = 0;
 
   // Use mjs513/RA8875: branch "RA8875_t4"
@@ -1079,6 +1095,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   return true;
 
 #else
+  (void)pGui; // Unused
   uint16_t  nTxtScale = 0;
 
   // Support library-specific font exceptions
@@ -1145,6 +1162,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Initialize the font and positioning
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
@@ -1163,6 +1181,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #elif defined(DRV_DISP_ADAGFX_ILI9341_DUE_MB) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = pFont->nSize;
   if (pFont->pvFont == NULL) {
     m_disp.setFont(SystemFont5x7);
@@ -1173,6 +1192,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.cursorToXY(nTxtX,nTxtY);
   m_disp.setTextScale(nTxtScale);
 #elif defined(DRV_DISP_LCDGFX)
+  (void)pGui; // Unused
   // TODO: Add support for user defined fonts
   m_disp.setFixedFont(ssd1306xled_font6x8);
   m_disp.setColor(nColRaw);
@@ -1191,6 +1211,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextColor(nColRaw);
 
 #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+  (void)pGui; // Unused
   uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
   switch (pFont->eFontRefMode) {
@@ -1210,6 +1231,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
 #else
+  (void)pGui; // Unused
   uint16_t  nTxtScale = pFont->nSize;
   #if defined(DRV_DISP_ADAGFX_RA8876_GV)
     if (pFont->pvFont == NULL) {
@@ -1250,7 +1272,10 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       m_disp.textSetCursor(nTxtX, nTxtY);
     }
   #elif defined(DRV_DISP_ADAGFX_RA8875_SUMO)
+    (void)colBg; // Unused
     bool bInternal8875Font = false;
+  #else
+    (void)colBg; // Unused
   #endif // DRV_DISP_*
 
   // Default to accessing RAM directly (GSLC_TXT_MEM_RAM)
@@ -1417,6 +1442,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
 void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   #if defined(DRV_DISP_ADAGFX_SSD1306)
     // Show the display buffer on the hardware.
     // NOTE: You _must_ call display after making any drawing commands
@@ -1474,6 +1500,10 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 
 bool gslc_DrvDrawPoints(gslc_tsGui* pGui,gslc_tsPt* asPt,uint16_t nNumPt,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
+  (void)asPt; // Unused
+  (void)nNumPt; // Unused
+  (void)nCol; // Unused
   return false;
 }
 
@@ -1503,11 +1533,16 @@ bool gslc_DrvDrawFillRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
 #if (DRV_HAS_DRAW_RECT_ROUND_FILL)
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#else
+  (void)rRect; // Unused
+  (void)nRadius; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
@@ -1546,6 +1581,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   nY1 = rRect.y + rRect.h - 1;
   if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
 #else
+  (void)pGui; // Unused
   #if defined(DRV_DISP_LCDGFX)
     NanoRect r;
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
@@ -1562,12 +1598,17 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
 #if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
 
   // TODO: Support GSLC_CLIP_EN
   // - Would need to determine how to clip the rounded corners
   m_disp.drawRoundRect(rRect.x,rRect.y,rRect.w,rRect.h,nRadius,nColRaw);
+#else
+  (void)rRect; // Unused
+  (void)nRadius; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
@@ -1579,6 +1620,8 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
 #if (GSLC_CLIP_EN)
   gslc_tsDriver* pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   if (!gslc_ClipLine(&pDriver->rClipRect,&nX0,&nY0,&nX1,&nY1)) { return true; }
+#else
+  (void)pGui; // Unused
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
@@ -1586,8 +1629,9 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
   return true;
 }
 
-bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
+bool gslc_DrvDrawFrameCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
+  (void)pGui;
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
@@ -1595,12 +1639,18 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
 #if (DRV_HAS_DRAW_CIRCLE_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawCircle(nMidX,nMidY,nRadius,nColRaw);
+#else
+  (void)nMidX; // Unused
+  (void)nMidY; // Unused
+  (void)nRadius; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
 
-bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
+bool gslc_DrvDrawFillCircle(gslc_tsGui* pGui,int16_t nMidX,int16_t nMidY,uint16_t nRadius,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
 #if (GSLC_CLIP_EN)
   // TODO
 #endif
@@ -1608,6 +1658,11 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 #if (DRV_HAS_DRAW_CIRCLE_FILL)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillCircle(nMidX,nMidY,nRadius,nColRaw);
+#else
+  (void)nMidX; // Unused
+  (void)nMidY; // Unused
+  (void)nRadius; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
@@ -1616,6 +1671,7 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
 bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
 #if (DRV_HAS_DRAW_TRI_FRAME)
 
 #if (GSLC_CLIP_EN)
@@ -1624,6 +1680,12 @@ bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.drawTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#else
+  (void)nX0; // Unused
+  (void)nY0; // Unused
+  (void)nX1; // Unused
+  (void)nY1; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
@@ -1631,6 +1693,7 @@ bool gslc_DrvDrawFrameTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
         int16_t nX1,int16_t nY1,int16_t nX2,int16_t nY2,gslc_tsColor nCol)
 {
+  (void)pGui; // Unused
 #if (DRV_HAS_DRAW_TRI_FILL)
 
 #if (GSLC_CLIP_EN)
@@ -1639,6 +1702,14 @@ bool gslc_DrvDrawFillTriangle(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.fillTriangle(nX0,nY0,nX1,nY1,nX2,nY2,nColRaw);
+#else
+  (void)nX0; // Unused
+  (void)nY0; // Unused
+  (void)nX1; // Unused
+  (void)nY1; // Unused
+  (void)nX2; // Unused
+  (void)nY2; // Unused
+  (void)nCol; // Unused
 #endif
   return true;
 }
@@ -2022,6 +2093,7 @@ void gslc_DrvDrawBkgnd(gslc_tsGui* pGui)
 
 
 bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+  (void)acDev; // Unused
   if (pGui == NULL) {
     GSLC_DEBUG2_PRINT("ERROR: DrvInitTouch(%s) called with NULL ptr\n","");
     return false;
@@ -2033,6 +2105,7 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
 void* gslc_DrvGetDriverTouch(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   // As the touch driver instance is optional, we need to check for
   // its existence before returning a pointer to it.
   #if defined(DRV_TOUCH_INSTANCE)
@@ -2045,6 +2118,12 @@ void* gslc_DrvGetDriverTouch(gslc_tsGui* pGui)
 
 bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPress,gslc_teInputRawEvent* peInputEvent,int16_t* pnInputVal)
 {
+  (void)pGui; // Unused
+  (void)pnX; // Unused
+  (void)pnY; // Unused
+  (void)pnPress; // Unused
+  (void)peInputEvent; // Unused
+  (void)pnInputVal; // Unused
   // TODO
   return false;
 }
@@ -2166,6 +2245,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 #if defined(DRV_TOUCH_TYPE_EXTERNAL)
 
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
+  (void)acDev; // Unused
 
   // Capture default calibration settings for resistive displays
   #if defined(DRV_TOUCH_TYPE_RES)

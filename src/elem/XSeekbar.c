@@ -234,6 +234,7 @@ void gslc_ElemXSeekbarSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_
 //   simpler callback function definition & scalability.
 bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
+  (void)eRedraw; // Unused
   if ((pvGui == NULL) || (pvElemRef == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXSeekbarDraw";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);

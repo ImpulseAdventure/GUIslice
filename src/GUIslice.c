@@ -94,6 +94,7 @@ const char GSLC_PMEM ERRSTR_PXD_NULL[]  = "ERROR: %z() pXData NULL\n";
 
 char* gslc_GetVer(gslc_tsGui* pGui)
 {
+  (void)pGui; // Unused
   return (char*)GUISLICE_VER;
 }
 
@@ -284,8 +285,12 @@ void gslc_SetPinPollFunc(gslc_tsGui* pGui,GSLC_CB_PIN_POLL pfunc)
 void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)asInputMap; // Unused
+  (void)nInputMapMax; // Unused
   return;
 #else
+  (void)pGui; // Unused
   pGui->asInputMap    = asInputMap;
   pGui->nInputMapMax  = nInputMapMax;
   pGui->nInputMapCnt  = 0;
@@ -295,6 +300,11 @@ void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInp
 void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)eInputEvent; // Unused
+  (void)nInputVal; // Unused
+  (void)eAction; // Unused
+  (void)nActionVal; // Unused
   return;
 #else
   if (pGui->nInputMapCnt >= pGui->nInputMapMax) {
@@ -314,6 +324,11 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)eInputEvent; // Unused
+  (void)nInputVal; // Unused
+  (void)peAction; // Unused
+  (void)pnActionVal; // Unused
   return false;
 #else
   uint8_t         nInputInd;
@@ -728,6 +743,7 @@ void gslc_Update(gslc_tsGui* pGui)
 
 gslc_tsEvent  gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t nSubType,void* pvScope,void* pvData)
 {
+  (void)pGui; // Unused
   gslc_tsEvent      sEvent;
   sEvent.eType      = eType;
   sEvent.nSubType   = nSubType;
@@ -937,6 +953,8 @@ gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
   sImgRef.pImgBuf   = NULL;
   sImgRef.pvImgRaw  = NULL;
 #else
+  (void)pFname; // Unused
+  (void)eFmt; // Unused
   // TODO: Change message to also handle non-Arduino output
   GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
   //GSLC_DEBUG2_PRINT("ERROR: GetImageFromSD(%s) not supported as Config:GSLC_SD_EN=0\n","");
@@ -2420,6 +2438,9 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
 int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pPage; // Unused
+  (void)bNext; // Unused
   return GSLC_IND_NONE;
 #else
   bool              bWrapped = false;
@@ -2460,6 +2481,7 @@ int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 // Note that the flag remains aligned to the position within the flags bitfield
 uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask)
 {
+  (void)pGui; // Unused
   if (!pElemRef) {
     static const char GSLC_PMEM FUNCSTR[] = "GetElemRefFlag";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -2472,6 +2494,7 @@ uint8_t gslc_GetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nF
 // Note that the nFlagVal must be aligned to the nFlagMask
 void gslc_SetElemRefFlag(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,uint8_t nFlagMask,uint8_t nFlagVal)
 {
+  (void)pGui; // Unused
   if (!pElemRef) {
     static const char GSLC_PMEM FUNCSTR[] = "SetElemRefFlag";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -3457,6 +3480,7 @@ void gslc_ElemSetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
 gslc_teRedrawType gslc_ElemGetRedraw(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+  (void)pGui; // Unused
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetRedraw";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -3693,7 +3717,10 @@ bool gslc_ElemOwnsCoord(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nX,int
 
 void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTouch* pEventTouch)
 {
+  (void)pGui; // Unused
 #if !(GSLC_FEATURE_INPUT)
+  (void)pCollect; // Unused
+  (void)pEventTouch; // Unused
   return;
 #else
   // Fetch the data members of the touch event
@@ -3983,6 +4010,10 @@ bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pPage; // Unused
+  (void)eInputEvent; // Unused
+  (void)nInputVal; // Unused
   GSLC_DEBUG_PRINT("WARNING: GSLC_FEATURE_INPUT not enabled in GUIslice config%s\n", "");
   return;
 #else
@@ -4111,6 +4142,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 // FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,uint16_t nPress)
 {
+  (void)pPage; // Unused
   if (pGui == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "TrackTouch";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -4952,6 +4984,11 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd)
 {
 #if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pCollect; // Unused
+  (void)bNext; // Unused
+  (void)pbWrapped; // Unused
+  (void)pnElemInd; // Unused
   return false;
 #else
   gslc_tsElemRef*   pElemRef = NULL;
@@ -5058,6 +5095,7 @@ gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pColle
 
 int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
+  (void)pGui; // Unused
   int16_t nElemId = pCollect->nElemAutoIdNext;
   pCollect->nElemAutoIdNext++;
   return nElemId;
@@ -5065,11 +5103,13 @@ int gslc_CollectGetNextId(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 
 gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
+  (void)pGui; // Unused
   return pCollect->pElemRefTracked;
 }
 
 void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef)
 {
+  (void)pGui; // Unused
   pCollect->pElemRefTracked = pElemRef;
 }
 
@@ -5107,11 +5147,13 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
 
 int16_t gslc_CollectGetFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
 {
+  (void)pGui; // Unused
   return pCollect->nElemIndFocused;
 }
 
 void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd)
 {
+  (void)pGui; // Unused
   pCollect->nElemIndFocused = nElemInd;
 }
 

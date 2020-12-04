@@ -330,6 +330,9 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned 
 void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor nCol)
 {
 #if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  (void)nCol; // Unused
   GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTextboxColSet() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
   return;
 #else
@@ -355,6 +358,8 @@ void gslc_ElemXTextboxColSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsCo
 void gslc_ElemXTextboxColReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
 #if (GSLC_FEATURE_XTEXTBOX_EMBED == 0)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
   GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTextboxColReset() not enabled. Requires GSLC_FEATURE_XTEXTBOX_EMBED=1 %s\n","");
   return;
 #else

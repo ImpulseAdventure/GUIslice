@@ -335,6 +335,7 @@ void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, 
 
 void gslc_ElemXRingGaugeSetAngleRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nStart, int16_t nRange, bool bClockwise)
 {
+  (void)bClockwise; // Unused TODO: Support rotation reversal
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 

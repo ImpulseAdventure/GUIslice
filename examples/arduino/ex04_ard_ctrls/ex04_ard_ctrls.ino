@@ -109,6 +109,10 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 //   which is used to terminate the program.
 bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  (void)pvGui; // Unused
+  (void)pvElemRef; // Unused
+  (void)nX; // Unused
+  (void)nY; // Unused
   //gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   //gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
 

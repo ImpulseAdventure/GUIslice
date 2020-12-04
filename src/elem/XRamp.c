@@ -84,6 +84,8 @@ gslc_tsElemRef* gslc_ElemXRampCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nP
   gslc_tsXRamp* pXData,gslc_tsRect rElem,
   int16_t nMin,int16_t nMax,int16_t nVal,gslc_tsColor colGauge,bool bVert)
 {
+  (void)colGauge; // Unused FIXME: Should be used
+  (void)bVert; // Unused
   if ((pGui == NULL) || (pXData == NULL)) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemXRampCreate";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
