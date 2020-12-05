@@ -760,8 +760,8 @@ gslc_tsEvent  gslc_EventCreate(gslc_tsGui* pGui,gslc_teEventType eType,uint8_t n
 
 bool gslc_IsInRect(int16_t nSelX,int16_t nSelY,gslc_tsRect rRect)
 {
-  if ( (nSelX >= rRect.x) && (nSelX <= rRect.x+rRect.w) &&
-     (nSelY >= rRect.y) && (nSelY <= rRect.y+rRect.h) ) {
+  if ( (nSelX >= rRect.x) && (nSelX <= rRect.x+(int16_t)rRect.w) &&
+     (nSelY >= rRect.y) && (nSelY <= rRect.y+(int16_t)rRect.h) ) {
     return true;
   } else {
     return false;
@@ -770,8 +770,8 @@ bool gslc_IsInRect(int16_t nSelX,int16_t nSelY,gslc_tsRect rRect)
 
 bool gslc_IsInWH(int16_t nSelX,int16_t nSelY,uint16_t nWidth,uint16_t nHeight)
 {
-  if ( (nSelX >= 0) && (nSelX <= nWidth-1) &&
-     (nSelY >= 0) && (nSelY <= nHeight-1) ) {
+  if ( (nSelX >= 0) && (nSelX <= (int16_t)(nWidth)-1) &&
+     (nSelY >= 0) && (nSelY <= (int16_t)(nHeight)-1) ) {
     return true;
   } else {
     return false;
@@ -2154,7 +2154,7 @@ bool gslc_PageRedrawGet(gslc_tsGui* pGui)
 //       on the region exposed by the transparent element.
 void gslc_PageRedrawCalc(gslc_tsGui* pGui)
 {
-  int               nInd;
+  uint16_t          nInd;
   int               nStackPage;
   gslc_tsElem*      pElem = NULL;
   gslc_tsElemRef*   pElemRef = NULL;

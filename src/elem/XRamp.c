@@ -212,7 +212,7 @@ bool gslc_ElemXRampDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRed
   uint16_t  nHeight;
   int32_t   nHeightTmp;
   uint16_t  nHeightBot;
-  uint16_t  nX;
+  int16_t   nX;
   uint16_t  nColInd;
 
   // Calculate region to draw or clear

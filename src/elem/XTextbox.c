@@ -271,7 +271,7 @@ void gslc_ElemXTextboxBufAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,unsigned 
 
   // Ensure that we haven't gone past end of line
   // - Note that we have to leave one extra byte for the line terminator (NULL)
-  if ((pBox->nBufPosX+1) >= pBox->nBufCols) {
+  if ((pBox->nBufPosX+1) >= (int16_t)(pBox->nBufCols)) {
     if (pBox->bWrapEn) {
       // Perform line wrap
       // - Force a null at the end of the current line first
@@ -516,7 +516,7 @@ bool gslc_ElemXTextboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
     // Calculate row offset after accounting for buffer wrap
     // and current window starting offset
-    uint16_t nRowCur = nWndRowStartScr + nOutRow;
+    int16_t nRowCur = nWndRowStartScr + nOutRow;
     nRowCur = nRowCur % pBox->nBufRows;
 
     // If we are doing incremental redraw and only a single

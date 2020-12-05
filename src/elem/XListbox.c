@@ -107,7 +107,7 @@ char* gslc_ElemXListboxGetItemAddr(gslc_tsXListbox* pListbox, int16_t nItemCurSe
 {
   char*      pBuf = NULL;
   uint16_t   nBufPos = 0;
-  uint16_t   nItemInd = 0;
+  int16_t    nItemInd = 0;
   bool       bFound = false;
   while (1) {
     if (nItemInd == nItemCurSel) {
@@ -305,7 +305,7 @@ bool gslc_ElemXListboxInsertItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   uint16_t    nBufItemsPos = pListbox->nBufItemsPos;
   uint16_t    nBufItemsMax = pListbox->nBufItemsMax;
 
-  if (nInsertPos > pListbox->nItemCnt) {
+  if ((int16_t)nInsertPos > pListbox->nItemCnt) {
     GSLC_DEBUG2_PRINT("ERROR: ElemXListboxInsertItemAt() Current Count: %d Invalid Position %d\n", 
       pListbox->nItemCnt,nInsertPos);
     return false;
@@ -340,7 +340,7 @@ bool gslc_ElemXListboxInsertItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   // Make a hole in the buffer to slot in the new item
   char* pSrc = (char*)pListbox->pBufItems+nBufItemsPos-1;
   char* pDest = pSrc+nStrItemLen+1;  
-  int16_t nMoveLen = (int16_t)(pSrc - pBuf)+1;
+  uint16_t nMoveLen = (int16_t)(pSrc - pBuf)+1;
   uint8_t ch;
   for (uint16_t nInd = 0; nInd < nMoveLen; nInd++) {
     ch = *pSrc;
@@ -391,7 +391,7 @@ bool gslc_ElemXListboxDeleteItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   char* pSrc  = (char*)pBuf+nStrItemLen+1;
   char* pDest = (char*)pBuf;
   char* pEndOfBuf = (char*)(pListbox->pBufItems+nBufItemsPos);
-  int16_t nMoveLen = (int16_t)(pEndOfBuf-pSrc)+1;
+  uint16_t nMoveLen = (int16_t)(pEndOfBuf-pSrc)+1;
   uint8_t ch;
   if (nMoveLen > 1) {
     for (uint16_t nInd = 0; nInd < nMoveLen; nInd++) {
@@ -433,7 +433,7 @@ bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_
     return false;
   }
   uint16_t   nBufPos = 0;
-  uint16_t   nItemInd = 0;
+  int16_t   nItemInd = 0;
   uint8_t*   pBuf = NULL;
   bool       bFound = false;
   while (1) {
@@ -941,7 +941,7 @@ bool gslc_ElemXListboxSetScrollPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   if (!pListbox) return false;
 
   bool bOk = false;
-  if (nScrollPos < pListbox->nItemCnt) {
+  if ((int16_t)nScrollPos < pListbox->nItemCnt) {
     bOk = true;
   }
 
@@ -949,7 +949,7 @@ bool gslc_ElemXListboxSetScrollPos(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, u
   int16_t nItemCnt = pListbox->nItemCnt;
 
   // Error handling: in case position out of bounds
-  if (nScrollPos >= nItemCnt) {
+  if ((int16_t)nScrollPos >= nItemCnt) {
     nScrollPos = (nItemCnt > 0) ? nItemCnt - 1 : 0;
   }
 

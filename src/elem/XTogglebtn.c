@@ -184,7 +184,7 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
     // Proceed to deselect any other selected items in the group.
     // Note that SetState calls itself to deselect other items so it
     // is important to qualify this logic with bOn=true
-    int16_t           nCurInd;
+    uint16_t          nCurInd;
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
     gslc_tsElemRef*   pCurElemRef = NULL;
@@ -410,7 +410,7 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 // Determine which togglebtn in the group is selected "on"
 gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupId)
 {
-  int16_t             nCurInd;
+  uint16_t            nCurInd;
   gslc_tsElemRef*     pCurElemRef = NULL;
   gslc_tsElem*        pCurElem = NULL;
   int16_t             nCurType;

@@ -139,7 +139,7 @@ bool gslc_ElemXCheckboxGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 // Determine which checkbox in the group has been "checked"
 gslc_tsElemRef* gslc_ElemXCheckboxFindChecked(gslc_tsGui* pGui,int16_t nGroupId)
 {
-  int16_t             nCurInd;
+  uint16_t            nCurInd;
   gslc_tsElemRef*     pCurElemRef = NULL;
   gslc_tsElem*        pCurElem = NULL;
   int16_t             nCurType;
@@ -296,7 +296,7 @@ void gslc_ElemXCheckboxSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool b
     // Proceed to deselect any other selected items in the group.
     // Note that SetState calls itself to deselect other items so it
     // is important to qualify this logic with bChecked=true
-    int16_t           nCurInd;
+    uint16_t          nCurInd;
     int16_t           nCurId;
     gslc_tsElem*      pCurElem = NULL;
     gslc_tsElemRef*   pCurElemRef = NULL;
