@@ -120,6 +120,9 @@ static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); els
 // Common Button callback
 bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  (void)pvGui; // Unused
+  (void)nX; // Unused
+  (void)nY; // Unused
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRef(&m_gui,pElemRef);
 
@@ -153,6 +156,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 // Callback function for when a slider's position has been updated
 bool CbSlidePos(void* pvGui,void* pvElemRef,int16_t nPos)
 {
+  (void)nPos; // Unused
   gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
