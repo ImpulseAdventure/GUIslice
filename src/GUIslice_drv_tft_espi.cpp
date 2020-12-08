@@ -1273,7 +1273,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     uint8_t nSamples = 5;
     uint8_t nSamplesValid = 0;
     while (nSamples--) {
-      if (TFT_eSPI_validTouch(&nRawX, &nRawY, 20)) nSamplesValid++;
+      if (TFT_eSPI_validTouch(&nRawX, &nRawY, ADATOUCH_PRESS_MIN)) nSamplesValid++;
     }
     if (nSamplesValid < 1) {
       nRawPress = 0; // Invalidate the reading
