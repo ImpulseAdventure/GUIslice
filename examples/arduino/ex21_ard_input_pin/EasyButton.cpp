@@ -117,7 +117,7 @@ bool EasyButton::read() {
 				_short_press_count = 0;
 				_first_press_time = 0;
 			}
-			// if secuence timeout, reset short presses counters.
+			// if sequence timeout, reset short presses counters.
 			else if (_press_sequence_duration <= (read_started_ms - _first_press_time)) {
 				_short_press_count = 0;
 				_first_press_time = 0;
