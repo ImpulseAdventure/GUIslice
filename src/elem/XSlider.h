@@ -77,7 +77,7 @@ typedef struct {
   bool            bTrim;          ///< Style: show a trim color
   gslc_tsColor    colTrim;        ///< Style: color of trim
   uint8_t         eTickFmt;       ///< Style: tick format options
-  uint8_t*        anTickPos;      ///< Style: custom tick position array (range: 0..100), nTickDiv entries
+  uint16_t*       anTickPos;      ///< Style: custom tick position array (pixel offset), nTickDiv entries
   // State
   int16_t         nPos;           ///< Current position value of the slider
   // Callbacks
@@ -130,7 +130,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  anTickPos:   Pointer to custom tick position array (in percent)
+/// \param[in]  anTickPos:   Pointer to custom tick position array (in pixels)
 ///                          If NULL, the default evenly-spaced ticks are used
 ///                          If non-NULL, the tick positions are defined by the array
 ///                          with a length defined by nTickDiv
@@ -140,7 +140,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
 /// \return none
 ///
 void gslc_ElemXSliderSetStyleCustom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
-        uint8_t* anTickPos, bool bTickAbove, bool bTickBelow);
+        uint16_t* anTickPos, bool bTickAbove, bool bTickBelow);
 
 ///
 /// Get a Slider element's current position

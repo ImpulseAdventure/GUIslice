@@ -157,7 +157,7 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemXSliderSetStyleCustom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, uint8_t* anTickPos, bool bTickAbove, bool bTickBelow)
+void gslc_ElemXSliderSetStyleCustom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef, uint16_t* anTickPos, bool bTickAbove, bool bTickBelow)
 {
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
   gslc_tsXSlider*   pSlider = (gslc_tsXSlider*)(pElem->pXData);
@@ -266,7 +266,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t         nTickLen  = pSlider->nTickLen;
   uint8_t         eTickFmt  = pSlider->eTickFmt;
   gslc_tsColor    colTick   = pSlider->colTick;
-  uint8_t*        anTickPos = pSlider->anTickPos;
+  uint16_t*       anTickPos = pSlider->anTickPos;
 
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
@@ -326,7 +326,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
         // - In this mode, nTickDiv defines the length of the tick array
         //   so we need to skip the last loop iteration
         if (nTickInd == nTickDiv) { continue; }
-        nTickOffset = (int16_t)((int32_t)anTickPos[nTickInd] * (int32_t)nCtrlRng / (int32_t)100);
+        nTickOffset = (int16_t)(anTickPos[nTickInd]);
       }
       if (!bVert) {
         gslc_DrawLine(pGui,nX0+nMargin+nTickOffset,nYMid-nTickLenAbove,
