@@ -1049,7 +1049,10 @@ bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_t
   const char* pStrFname = sImgRef.pFname;
 
   // Load BMP image from file system
-  return fex.drawBmp(pStrFname, nDstX, nDstY);
+  // NOTE: No return value is provided upon decoder failure,
+  //       so we always proceed as if it is OK.
+  fex.drawBmp(pStrFname, nDstX, nDstY);
+  return true;
 }
 
 bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
@@ -1059,12 +1062,20 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
   // Load JPEG image from file system
 #if defined(ESP32)
   // use optimized ESP32 native decoder
-  return fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
+  // drawJpgFile() can return false upon a decoding failure (eg. for
+  // unsupported progressive JPEG images), so we trap it here.
+  if (!fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY)) {
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawJpegFromFile() failed on [%s]",pStrFname);
+    return false;
+  }
 #else 
   // use library decoder
-  return fex.drawJpeg(pStrFname, nDstX, nDstY);
+  // NOTE: No return value is provided upon decoder failure,
+  //       so we always proceed as if it is OK.
+  fex.drawJpeg(pStrFname, nDstX, nDstY);
 #endif
 
+  return true;
 }
 #endif // GSLC_SPIFFS_EN
 
