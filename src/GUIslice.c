@@ -3031,6 +3031,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return false;
 
+  bool bOk = true;
+
   // --------------------------------------------------------------------------
   // Handle visibility
   // --------------------------------------------------------------------------
@@ -3141,9 +3143,12 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Draw any images associated with element
   if (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE) {
     if ((bGlowEn && bGlowing) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
-      gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
+      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
     } else {
-      gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefNorm);
+      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefNorm);
+    }
+    if (!bOk) {
+      GSLC_DEBUG2_PRINT("ERROR: DrvDrawImage failed\n","");
     }
   }
 

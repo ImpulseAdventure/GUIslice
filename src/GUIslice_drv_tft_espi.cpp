@@ -978,12 +978,10 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     #if (GSLC_SPIFFS_EN)
       if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_JPG) {
         // Draw Jpeg from SPIFFS file system
-        gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
-        return true;
+        return gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
       } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
         // Draw Bitmap from SPIFFS file system
-        gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
-        return true;
+        return gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
       } else {
         return false; // TODO: not yet supported
       }
@@ -1051,9 +1049,7 @@ bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_t
   const char* pStrFname = sImgRef.pFname;
 
   // Load BMP image from file system
-  fex.drawBmp(pStrFname, nDstX, nDstY);
-
-  return true;
+  return fex.drawBmp(pStrFname, nDstX, nDstY);
 }
 
 bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
@@ -1063,13 +1059,12 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
   // Load JPEG image from file system
 #if defined(ESP32)
   // use optimized ESP32 native decoder
-  fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
+  return fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
 #else 
   // use library decoder
-  fex.drawJpeg(pStrFname, nDstX, nDstY);
+  return fex.drawJpeg(pStrFname, nDstX, nDstY);
 #endif
 
-  return true;
 }
 #endif // GSLC_SPIFFS_EN
 
