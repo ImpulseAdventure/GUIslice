@@ -193,8 +193,10 @@
     // -   Arduino\libraries\SdFat\src\SdFatConfig.h:
     // -     #define ENABLE_SOFTWARE_SPI_CLASS 1 // Change default from 0 to 1
     #include <SdFat.h>
-    #if !defined(ENABLE_SOFTWARE_SPI_CLASS)  // || ((SD_FAT_VERSION / 10000) > 1)
-    #error "It's possible you are using SdFat version 2.X.  Please downgrade to 1.X."\If you are on 1.X, it's possible you failed to set ENABLE_SOFTWARE_SPI_CLASS"
+	//#ifndef ((SD_FAT_VERSION / 10000) > 1) ...the right version here doesn't work to test for v2 see https://github.com/greiman/SdFat/issues/235
+    #ifndef ENABLE_SOFTWARE_SPI_CLASS  
+    #error "It's possible you are using SdFat version 2.X.  Please downgrade to 1.X."\If you are on 1.X, it's possible you failed to set ENABLE_SOFTWARE_SPI_CLASS to 0 or 1"
+    #endif
     SdFatSoftSpi<12, 11, 13> SD; // FIXME: Add configurability
   #endif
 #endif
