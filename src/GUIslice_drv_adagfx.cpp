@@ -188,16 +188,24 @@
   #elif (GSLC_SD_EN == 2)
     // Use greiman/SdFat library
     // - Supports SW SPI
-    // - Recommend usage of SdFat library version 1.0.1
+    #include <SdFat.h>
+    #if (SD_FAT_VERSION >= 20003)
+    // For SdFat v2.0.3 onwards, we can detect the SdFat version and
+    // use the new software SPI instantiation.
+    // - To support SW SPI interface, need to make mod to SdFat lib:
+    // -   Arduino\libraries\SdFat\src\SdFatConfig.h:
+    // -     #define SPI_DRIVER_SELECT 2 // Change default from 0 to 2
+    SoftSpiDriver<12, 11, 13> softSpi; // FIXME: Add configurability
+    #define SD_CONFIG SdSpiConfig(ADAGFX_PIN_SDCS, DEDICATED_SPI, SD_SCK_MHZ(0), &softSpi)
+    SdFat SD;
+    #else
+    // Seems we are running an older version of SdFat (ie. v1.x)
+    // - Recommend usage of SdFat library version v1.0.1
     // - To support SW SPI interface, need to make mod to SdFat lib:
     // -   Arduino\libraries\SdFat\src\SdFatConfig.h:
     // -     #define ENABLE_SOFTWARE_SPI_CLASS 1 // Change default from 0 to 1
-    #include <SdFat.h>
-	//#ifndef ((SD_FAT_VERSION / 10000) > 1) ...the right version here doesn't work to test for v2 see https://github.com/greiman/SdFat/issues/235
-    #ifndef ENABLE_SOFTWARE_SPI_CLASS  
-    #error "It's possible you are using SdFat version 2.X.  Please downgrade to 1.X."\If you are on 1.X, it's possible you failed to set ENABLE_SOFTWARE_SPI_CLASS to 0 or 1"
-    #endif
     SdFatSoftSpi<12, 11, 13> SD; // FIXME: Add configurability
+    #endif
   #endif
 #endif
  
@@ -731,9 +739,14 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
 
     // Initialize SD card usage
-    #if (GSLC_SD_EN)
+    #if (GSLC_SD_EN == 1)
     if (!SD.begin(ADAGFX_PIN_SDCS)) {
       GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n",0);
+      return false;
+    }
+    #elif (GSLC_SD_EN == 2)
+    if (!SD.begin(SD_CONFIG)) {
+      GSLC_DEBUG_PRINT("ERROR: DrvInit() SD(Soft) init failed\n",0);
       return false;
     }
     #endif
