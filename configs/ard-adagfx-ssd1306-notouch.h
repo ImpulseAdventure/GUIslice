@@ -77,6 +77,10 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_SSD1306   // Adafruit SSD1306
+  //#define DRV_DISP_ADAGFX_SSD1306_SPI 
+  #define DRV_DISP_ADAGFX_SSD1306_I2C 
+  #define DRV_DISP_ADAGFX_SSD1306_I2C_ADDR 0X3C
+
   #define DRV_TOUCH_NONE            // No touch enabled
 
 
