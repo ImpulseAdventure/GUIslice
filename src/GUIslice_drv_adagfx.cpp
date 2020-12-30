@@ -332,8 +332,7 @@ extern "C" {
 
 #elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
     const char* m_acDrvDisp = "ADA_SSD1306(I2C)";
-    Adafruit_SSD1306 m_disp(SSD1306_LCDWIDTH,SSD1306_LCDHEIGHT,&Wire,-1);
-    //Adafruit_SSD1306 m_disp(128,64,&Wire,-1);
+    Adafruit_SSD1306 m_disp(SSD1306_LCDWIDTH,SSD1306_LCDHEIGHT,&Wire,ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
