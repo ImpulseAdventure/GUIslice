@@ -77,10 +77,10 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_SSD1306   // Adafruit SSD1306
-  // Must uncomment either SPI or I2C mode:
-  #define DRV_DISP_ADAGFX_SSD1306_SPI 
-  // #define DRV_DISP_ADAGFX_SSD1306_I2C
-  // #define DRV_DISP_ADAGFX_SSD1306_I2C_ADDR 0X3C
+  // Must uncomment either SPI or I2C mode: (otherwise will default to SPI mode)
+  //#define DRV_DISP_ADAGFX_SSD1306_SPI 
+  //#define DRV_DISP_ADAGFX_SSD1306_I2C
+  //#define DRV_DISP_ADAGFX_SSD1306_I2C_ADDR 0X3C // if not set, then use library default addr.
 
   #define DRV_TOUCH_NONE            // No touch enabled
 
