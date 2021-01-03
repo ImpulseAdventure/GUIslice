@@ -48,7 +48,7 @@
 // Load display drivers
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX)
-
+  
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
   #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
@@ -88,17 +88,16 @@
     // suitable default in case the user doesn't load
     // one explicitly.
     #include <SystemFont5x7.h>
-  #elif defined(DRV_DISP_ADAGFX_SSD1306_SPI)
+  #elif defined(DRV_DISP_ADAGFX_SSD1306)
     // https://github.com/adafruit/Adafruit_SSD1306
-    #include <Adafruit_SSD1306.h>
-    // TODO: Select either SPI or I2C. For now, assume SPI
-    #include <SPI.h>
-    #include <Wire.h>
     #define DRV_COLORMODE_MONO // Monochrome display
-  #elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
-   // https://github.com/adafruit/Adafruit_SSD1306
     #include <Adafruit_SSD1306.h>
-    #define DRV_COLORMODE_MONO // Monochrome display
+    #if !defined(DRV_DISP_ADAGFX_SSD1306_I2C)
+      // defaults to SPI mode for backward compatibility
+      #define DRV_DISP_ADAGFX_SSD1306_SPI 
+      #include <SPI.h>
+      #include <Wire.h>
+    #endif
   #elif defined(DRV_DISP_ADAGFX_ST7735)
     // https://github.com/adafruit/Adafruit-ST7735-Library
     #include <Adafruit_ST7735.h>
@@ -652,7 +651,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_SSD1306_SPI)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
     #elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
-      m_disp.begin(SSD1306_SWITCHCAPVCC,DRV_DISP_ADAGFX_SSD1306_I2C_ADDR);
+      #if defined(DRV_DISP_ADAGFX_SSD1306_I2C_ADDR)
+        m_disp.begin(SSD1306_SWITCHCAPVCC,DRV_DISP_ADAGFX_SSD1306_I2C_ADDR);
+      #else
+        m_disp.begin(SSD1306_SWITCHCAPVCC); //use the default I2C ADDR
+      #endif
     #elif defined(DRV_DISP_ADAGFX_ST7735)
 
       // ST7735 requires additional initialization depending on
