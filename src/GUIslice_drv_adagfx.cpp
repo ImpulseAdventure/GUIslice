@@ -48,6 +48,7 @@
 // Load display drivers
 // ------------------------------------------------------------------------
 #if defined(DRV_DISP_ADAGFX)
+
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
   #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
