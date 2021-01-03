@@ -90,11 +90,14 @@
     #include <SystemFont5x7.h>
   #elif defined(DRV_DISP_ADAGFX_SSD1306)
     // https://github.com/adafruit/Adafruit_SSD1306
-    #include <Adafruit_SSD1306.h>
-    // TODO: Select either SPI or I2C. For now, assume SPI
-    #include <SPI.h>
-    #include <Wire.h>
     #define DRV_COLORMODE_MONO // Monochrome display
+    #include <Adafruit_SSD1306.h>
+    #if !defined(DRV_DISP_ADAGFX_SSD1306_I2C)
+      // defaults to SPI mode for backward compatibility
+      #define DRV_DISP_ADAGFX_SSD1306_SPI 
+      #include <SPI.h>
+      #include <Wire.h>
+    #endif
   #elif defined(DRV_DISP_ADAGFX_ST7735)
     // https://github.com/adafruit/Adafruit-ST7735-Library
     #include <Adafruit_ST7735.h>
@@ -317,14 +320,18 @@ extern "C" {
   ILI9341_due m_disp = ILI9341_due(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
-#elif defined(DRV_DISP_ADAGFX_SSD1306)
-  #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
+#elif defined(DRV_DISP_ADAGFX_SSD1306_SPI)
+  #if (ADAGFX_SPI_HW) //  Use hardware SPI or software SPI (with custom pins)
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-HW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
     Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
+
+#elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
+    const char* m_acDrvDisp = "ADA_SSD1306(I2C)";
+    Adafruit_SSD1306 m_disp(SSD1306_LCDWIDTH,SSD1306_LCDHEIGHT,&Wire,ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
@@ -641,9 +648,14 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
       m_disp.begin();
 	  
-    #elif defined(DRV_DISP_ADAGFX_SSD1306)
+    #elif defined(DRV_DISP_ADAGFX_SSD1306_SPI)
       m_disp.begin(SSD1306_SWITCHCAPVCC);
-
+    #elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
+      #if defined(DRV_DISP_ADAGFX_SSD1306_I2C_ADDR)
+        m_disp.begin(SSD1306_SWITCHCAPVCC,DRV_DISP_ADAGFX_SSD1306_I2C_ADDR);
+      #else
+        m_disp.begin(SSD1306_SWITCHCAPVCC); //use the default I2C ADDR
+      #endif
     #elif defined(DRV_DISP_ADAGFX_ST7735)
 
       // ST7735 requires additional initialization depending on
