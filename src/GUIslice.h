@@ -729,10 +729,10 @@ typedef struct {
     uint8_t           nFlipX;          ///< Adafruit GFX Touch Flip x axis
     uint8_t           nFlipY;          ///< Adafruit GFX Touch Flip x axis
     // Calibration for resistive touch displays
-    uint16_t          nTouchCalXMin;   ///< Calibration X minimum reading
-    uint16_t          nTouchCalXMax;   ///< Calibration X maximum reading
-    uint16_t          nTouchCalYMin;   ///< Calibration Y minimum reading
-    uint16_t          nTouchCalYMax;   ///< Calibration Y maximum reading
+    int16_t           nTouchCalXMin;   ///< Calibration X minimum reading
+    int16_t           nTouchCalXMax;   ///< Calibration X maximum reading
+    int16_t           nTouchCalYMin;   ///< Calibration Y minimum reading
+    int16_t           nTouchCalYMax;   ///< Calibration Y maximum reading
   #endif
 
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts

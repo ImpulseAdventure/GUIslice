@@ -89,6 +89,14 @@ extern "C" {
 #elif defined(DRV_TOUCH_NONE)
 #endif // DRV_TOUCH_*
 
+// Determine if calibration required
+// - Enable for resistive displays
+// - User config can also enable for capacitive displays by adding:
+//   #define DRV_TOUCH_CALIB
+#if defined(DRV_TOUCH_TYPE_RES)
+  #define DRV_TOUCH_CALIB
+#endif
+
 
 // =======================================================================
 // API support definitions
