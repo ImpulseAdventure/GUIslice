@@ -321,17 +321,23 @@ extern "C" {
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_SSD1306_SPI)
+  #ifndef DRV_DISP_ADAGFX_SSD1306_INIT
+    // Provide backward compatibility in case user config
+    // doesn't provide initialization options
+    #define DRV_DISP_ADAGFX_SSD1306_INIT 128,32
+  #endif
+
   #if (ADAGFX_SPI_HW) //  Use hardware SPI or software SPI (with custom pins)
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-HW)";
-    Adafruit_SSD1306 m_disp(ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
+    Adafruit_SSD1306 m_disp(DRV_DISP_ADAGFX_SSD1306_INIT,&SPI,ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #else
     const char* m_acDrvDisp = "ADA_SSD1306(SPI-SW)";
-    Adafruit_SSD1306 m_disp(ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
+    Adafruit_SSD1306 m_disp(DRV_DISP_ADAGFX_SSD1306_INIT,ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_CS);
   #endif
 
 #elif defined(DRV_DISP_ADAGFX_SSD1306_I2C)
     const char* m_acDrvDisp = "ADA_SSD1306(I2C)";
-    Adafruit_SSD1306 m_disp(SSD1306_LCDWIDTH,SSD1306_LCDHEIGHT,&Wire,ADAGFX_PIN_RST);
+    Adafruit_SSD1306 m_disp(DRV_DISP_ADAGFX_SSD1306_INIT,&Wire,ADAGFX_PIN_RST);
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ST7735)
