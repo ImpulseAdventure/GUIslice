@@ -803,8 +803,13 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
       // instead of touch coordinates
 
       if (eTouch == GSLC_TOUCH_SET_REL) {
-        // Overload the "nRelY" parameter as an increment value
-        nItemCurSel = nItemCurSelOld + nRelY;
+        // If nothing has been selected, force to select first entry
+        if (nItemCurSelOld == XLISTBOX_SEL_NONE) {
+          nItemCurSel = 0;
+        } else {
+          // Overload the "nRelY" parameter as an increment value
+          nItemCurSel = nItemCurSelOld + nRelY;
+        }
       }
       else if (eTouch == GSLC_TOUCH_SET_ABS) {
         // Overload the "nRelY" parameter as an absolute value
