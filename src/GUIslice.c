@@ -4789,6 +4789,7 @@ bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
   if (!gslc_DrvSetBkgndImage(pGui,sImgRef)) {
     return false;
   }
+  gslc_InvalidateRgnScreen(pGui);
   gslc_PageFlipSet(pGui,true);
   return true;
 }
@@ -4798,6 +4799,7 @@ bool gslc_SetBkgndColor(gslc_tsGui* pGui,gslc_tsColor nCol)
   if (!gslc_DrvSetBkgndColor(pGui,nCol)) {
     return false;
   }
+  gslc_InvalidateRgnScreen(pGui);
   gslc_PageFlipSet(pGui,true);
   return true;
 }
