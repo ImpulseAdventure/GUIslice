@@ -307,7 +307,7 @@ extern "C" {
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
-    const char* m_acDrvDisp = "ILI9348_JB(SPI-HW)";
+    const char* m_acDrvDisp = "ILI9488_JB(SPI-HW)";
     ILI9488 m_disp = ILI9488(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
   #else
     const char* m_acDrvDisp = "ILI9488_JB(SPI-SW)";
