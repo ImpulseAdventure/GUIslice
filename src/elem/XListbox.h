@@ -52,7 +52,7 @@ extern "C" {
 #define  GSLC_TYPEX_LISTBOX GSLC_TYPE_BASE_EXTEND + 10
 
 // Define constants specific to the control
-#define XLISTBOX_SEL_NONE       -1  // Indicator for "no selection"
+#define XLISTBOX_SEL_NONE       -9  // Indicator for "no selection"
 #define XLISTBOX_SIZE_AUTO      -1  // Indicator for "auto-size"
 #define XLISTBOX_BUF_OH_R        2  // Listbox buffer overhead per row
 
@@ -90,6 +90,7 @@ typedef struct {
   int16_t         nItemCurSelLast;  ///< Old selected item to redraw (XLISTBOX_SEL_NONE for none)
   int16_t         nItemSavedSel;    ///< Persistent selected item (ie. saved selection)
   int16_t         nItemTop;         ///< Item to show at top of list after scrolling (0 is default)
+  uint8_t         nGlowLast;        ///< Last glow state (0=false, 1=true)
 
   // Callbacks
   GSLC_CB_XLISTBOX_SEL pfuncXSel; ///< Callback func ptr for selection update

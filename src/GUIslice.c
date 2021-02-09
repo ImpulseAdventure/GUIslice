@@ -216,6 +216,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->asInputMap            = NULL;
   pGui->nInputMapMax          = 0;
   pGui->nInputMapCnt          = 0;
+  pGui->nInputMode            = 0; // Navigate mode
 
 
   pGui->sImgRefBkgnd = gslc_ResetImage();
@@ -4054,30 +4055,57 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   }
 
   gslc_InputMapLookup(pGui,eInputEvent,nInputVal,&eAction,&nActionVal);
+
+  gslc_tsElemRef* pSelElemRef = NULL;
+  gslc_tsElem* pSelElem = NULL;
+  bool bCanEdit = false;
+
+  uint8_t nInputMode = pGui->nInputMode;
+
   switch(eAction) {
     case GSLC_ACTION_FOCUS_PREV:
     case GSLC_ACTION_FOCUS_NEXT:
 
-      // Unfocus old element
-      sEventTouch.eTouch = GSLC_TOUCH_FOCUS_OFF;
-      sEventTouch.nX = GSLC_IND_NONE;
-      sEventTouch.nY = 0; // Unused
+      if (nInputMode) {
+        // Edit mode
+        if (eAction == GSLC_ACTION_FOCUS_PREV) {
+          sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
+          sEventTouch.nX = 0; // Unused
+          sEventTouch.nY = -1;
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          gslc_PageEvent(pGui,sEvent);
+        } else if (eAction == GSLC_ACTION_FOCUS_NEXT) {
+          sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
+          sEventTouch.nX = 0; // Unused
+          sEventTouch.nY = 1;
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          gslc_PageEvent(pGui,sEvent);
+        }
+      } else {
+        // Navigate mode
 
-      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
-      gslc_PageEvent(pGui,sEvent);
+        // Unfocus old element
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_OFF;
+        sEventTouch.nX = GSLC_IND_NONE;
+        sEventTouch.nY = 0; // Unused
 
-      // Focus on new element
-      bool bStepNext = (eAction == GSLC_ACTION_FOCUS_NEXT);
-      nFocusInd = gslc_PageFocusStep(pGui,pFocusPage,bStepNext);
-      if (nFocusInd == GSLC_IND_NONE) {
-        break;
-      }
-      sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
-      sEventTouch.nX = nFocusInd;
-      sEventTouch.nY = 0; // Unused
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
 
-      sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
-      gslc_PageEvent(pGui,sEvent);
+        // Focus on new element
+        bool bStepNext = (eAction == GSLC_ACTION_FOCUS_NEXT);
+        nFocusInd = gslc_PageFocusStep(pGui,pFocusPage,bStepNext);
+        if (nFocusInd == GSLC_IND_NONE) {
+          break;
+        }
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
+        sEventTouch.nX = nFocusInd;
+        sEventTouch.nY = 0; // Unused
+
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
+
+      } // nInputMode
 
       break;
 
@@ -4090,15 +4118,42 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
       if (nFocusInd == GSLC_IND_NONE) {
         break;
       } else {
-        // Select currently focused element
-        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
-        sEventTouch.nX = nFocusInd;
-        sEventTouch.nY = 0; // Unused
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
-        gslc_PageEvent(pGui,sEvent);
+
+        // Convert collect index into ElemRef
+        pSelElemRef = &pCollect->asElemRef[nFocusInd];
+        pSelElem = gslc_GetElemFromRef(pGui,pSelElemRef);
+        bCanEdit = false;
+        if (pSelElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
+          bCanEdit = true;
+        }
+
+        // Only issue a touch "select" if:
+        // - The element is not editable
+        if (!bCanEdit) {
+
+          // Select currently focused element
+          sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
+          sEventTouch.nX = nFocusInd;
+          sEventTouch.nY = 0; // Unused
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          gslc_PageEvent(pGui,sEvent);
+        }
+
+        // If element supports edit, toggle nav/edit mode
+        if (bCanEdit) {
+          if (nInputMode == 0) {
+            // Switch from nav to edit
+            pGui->nInputMode = 1;
+          } else {
+            // Switch from edit to nav
+            pGui->nInputMode = 0;
+          }
+        }
 
         // Reapply focus to current element
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
+        sEventTouch.nX = nFocusInd;
+        sEventTouch.nY = 0; // Unused
         sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
       }

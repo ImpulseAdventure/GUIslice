@@ -176,6 +176,7 @@ typedef enum {
 
 /// Element features type
 #define GSLC_ELEM_FEA_VALID     0x80      ///< Element record is valid
+#define GSLC_ELEM_FEA_EDIT_EN   0x20      ///< Element supports edit
 #define GSLC_ELEM_FEA_ROUND_EN  0x10      ///< Element is drawn with a rounded profile
 #define GSLC_ELEM_FEA_CLICK_EN  0x08      ///< Element accepts touch presses
 #define GSLC_ELEM_FEA_GLOW_EN   0x04      ///< Element supports glowing state
@@ -800,6 +801,7 @@ typedef struct {
   gslc_tsInputMap*    asInputMap;       ///< Array of input maps
   uint8_t             nInputMapMax;     ///< Maximum number of input maps
   uint8_t             nInputMapCnt;     ///< Current number of input maps
+  uint8_t             nInputMode;       ///< Input mode: 0=navigate, 1=edit
 
 } gslc_tsGui;
 
