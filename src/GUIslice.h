@@ -666,9 +666,6 @@ typedef struct {
   // Touch tracking
   gslc_tsElemRef*       pElemRefTracked;  ///< Element reference currently being touch-tracked (NULL for none)
 
-  // Input focus
-  int16_t               nElemIndFocused;  ///< Element index currently in focus (eg. by keyboard/pin control), GSLC_IND_NONE for none
-
   // Callback functions
   //GSLC_CB_EVENT         pfuncXEvent;      ///< UNUSED: Callback func ptr for events
 
@@ -802,6 +799,12 @@ typedef struct {
   uint8_t             nInputMapMax;     ///< Maximum number of input maps
   uint8_t             nInputMapCnt;     ///< Current number of input maps
   uint8_t             nInputMode;       ///< Input mode: 0=navigate, 1=edit
+
+  // Input navigation / focus state
+  int16_t             nFocusPageInd;    ///< Index of page in stack currently in focus
+  gslc_tsPage*        pFocusPage;       ///< Page ptr currently in focus
+  int16_t             nFocusElemInd;    ///< Index of element in page currently in focus
+  int16_t             nFocusElemMax;    ///< Max number of elements in page in focus
 
 } gslc_tsGui;
 
@@ -2468,6 +2471,15 @@ void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInp
 /// \todo Doc. This API is experimental and subject to change
 void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal);
 
+///
+/// Find the currently focused element
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return Element reference of focused widget, or NULL if none
+///
+/// \todo Doc. This API is experimental and subject to change
+gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui);
 
 // ------------------------------------------------------------------------
 /// @}
@@ -3429,10 +3441,6 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
 void gslc_PageRedrawCalc(gslc_tsGui* pGui);
 
 
-/// \todo Doc. This API is experimental and subject to change
-int16_t gslc_PageFocusStep(gslc_tsGui* pGui,gslc_tsPage* pPage,bool bNext);
-
-
 ///
 /// Create an event structure
 ///
@@ -3596,32 +3604,6 @@ gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* p
 /// \return none
 ///
 void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef);
-
-
-
-/// Get the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-///
-/// \return Element index or GSLC_IND_NONE for none
-///
-int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
-
-
-/// Set the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  nElemInd:     Element index to set in focus, GSLC_IND_NONE for none
-///
-/// \return none
-///
-void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
-
-
-/// \todo Doc. This API is experimental and subject to change
-bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
 
 
 /// Assign the parent element reference to all elements within a collection

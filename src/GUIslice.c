@@ -218,6 +218,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->nInputMapCnt          = 0;
   pGui->nInputMode            = 0; // Navigate mode
 
+  pGui->nFocusPageInd         = GSLC_IND_NONE;
+  pGui->pFocusPage            = NULL;
+  pGui->nFocusElemInd         = GSLC_IND_NONE;
+  pGui->nFocusElemMax         = 0;
 
   pGui->sImgRefBkgnd = gslc_ResetImage();
 
@@ -2424,47 +2428,6 @@ void gslc_PageSetEventFunc(gslc_tsGui* pGui,gslc_tsPage* pPage,GSLC_CB_EVENT fun
 */
 
 
-// TODO: Create a PageStackFocusStep()
-// - The functionality would track which page is currently focused
-//   and instead of looping around on the page, the next enabled
-//   page in the stack would be traversed.
-// - Wrapping at the bottom of the stack would create the GSLC_IND_NONE
-//   state.
-// - Without this enhancement, GPIO / keyboard controls will only
-//   operate on the top-most page in the stack, which prevents the
-//   ability to navigate tab select controls if they are provided
-//   by a lower layer in the stack.
-
-
-int16_t gslc_PageFocusStep(gslc_tsGui* pGui, gslc_tsPage* pPage, bool bNext)
-{
-#if !(GSLC_FEATURE_INPUT)
-  (void)pGui; // Unused
-  (void)pPage; // Unused
-  (void)bNext; // Unused
-  return GSLC_IND_NONE;
-#else
-  bool              bWrapped = false;
-  bool              bFound = false;
-  int16_t           nInd = GSLC_IND_NONE;
-  gslc_tsCollect* pCollect = &pPage->sCollect;
-
-  bFound = gslc_CollectFindFocusStep(pGui, pCollect, bNext, &bWrapped, &nInd);
-  if (!bFound) {
-    nInd = GSLC_IND_NONE;
-  } else {
-    if (bWrapped) {
-      // Optionally pause here
-      // If we wrap, then disable current focus for this particular step
-      nInd = GSLC_IND_NONE;
-    }
-  }
-  gslc_CollectSetFocus(pGui,pCollect,nInd);
-  return nInd;
-#endif
-}
-
-
 // ------------------------------------------------------------------------
 // Element General Functions
 // ------------------------------------------------------------------------
@@ -4012,6 +3975,181 @@ bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch
 #endif // GSLC_FEATURE_COMPOUND
 
 
+bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemInd)
+{
+  // Get focus capability attribute
+  bool bCanFocus = false;
+  gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[nElemInd]);
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
+    if (pElem == NULL) {
+      GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
+      exit(1); // FATAL
+    } else {
+      // Check the "click enable" flag
+      if (pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) {
+        bCanFocus = true;
+      }
+    }
+  }
+  return bCanFocus;
+}
+
+// Return element reference of currently-focused element or NULL for none
+gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
+{
+  gslc_tsPage* pFocusPage = pGui->pFocusPage;
+  if (!pFocusPage) {
+    return NULL;
+  }
+  // TODO: Error checking
+  gslc_tsCollect* pCollect = &(pFocusPage->sCollect);
+  gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[pGui->nFocusElemInd]);
+  return pElemRef;
+}
+
+
+// Advance to the next page in the stack that can accept a focus event
+// POST:
+// - nFocusPageInd
+// - pFocusPage
+// - nFocusElemInd
+// - nFocusElemMax
+void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext)
+{
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)bNext; // Unused
+  return;
+#else
+  bool bFound = false;
+  bool bDone = false;
+  uint8_t nInd = 0;
+  gslc_tsPage* pPage = NULL;
+  int16_t nFocusPageInd = pGui->nFocusPageInd;
+
+  while (!bDone) {
+
+    // Keep track of iterations to detect search exhaustion
+    nInd++;
+
+    if (nFocusPageInd == GSLC_IND_NONE) {
+      // Provide default
+      nFocusPageInd = (bNext)? 0 : GSLC_STACK__MAX-1;
+    } else {
+      if (bNext) {
+        nFocusPageInd = (nFocusPageInd >= GSLC_STACK__MAX-1)? 0 : nFocusPageInd+1;
+      } else {
+        nFocusPageInd = (nFocusPageInd <= 0)? GSLC_STACK__MAX-1 : nFocusPageInd-1;
+      }
+    }
+    // Is this stack layer valid?
+    pPage = pGui->apPageStack[nFocusPageInd];
+    if (pPage) {
+      // Ensure the page layer is active (receiving touch events)
+      if (pGui->abPageStackActive[nFocusPageInd]) {
+        bFound = true;
+        bDone = true;
+      }
+    }
+    // Did we exhaust our search?
+    if (nInd >= GSLC_STACK__MAX) {
+      bDone = true;
+    }
+  }
+
+  if (bFound) {
+    pGui->pFocusPage = pPage;
+    pGui->nFocusPageInd = nFocusPageInd;
+    pGui->nFocusElemMax = pPage->sCollect.nElemCnt;
+    pGui->nFocusElemInd = (bNext)? 0 : pGui->nFocusElemMax-1;
+  } else {
+    pGui->pFocusPage = NULL;
+    pGui->nFocusPageInd = GSLC_IND_NONE;
+    pGui->nFocusElemMax = 0;
+    pGui->nFocusElemInd = GSLC_IND_NONE;
+  }
+#endif // GSLC_FEATURE_INPUT
+}
+
+
+// Advance the focus to the next/previous element
+// Reaching the end/start of the elements on the current page
+// will cause another page to be selected for focus
+// If no element is found, pFocusElem
+// FIXME: Cache local vars to avoid excess pGui indirection
+// POST:
+// - nFocusPageInd  (via FocusPageStep)
+// - pFocusPage     (via FocusPageStep)
+// - nFocusElemInd
+// - nFocusElemMax  (via FocusPageStep)
+int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
+{
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)bNext; // Unused
+  return;
+#else
+  // Ensure we initialize the focused page
+  if (pGui->pFocusPage == NULL) {
+    gslc_FocusPageStep(pGui,bNext);
+  }
+
+  // Save starting element to detect search exhaustion
+  gslc_tsPage* pStartPage = pGui->pFocusPage;
+  int16_t nStartElemInd = pGui->nFocusElemInd;
+
+  // Start search
+  bool bFound = false;
+  bool bDone = false;
+  while (!bDone) {
+    if (bNext) {
+      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
+        // Provide default element to focus
+        pGui->nFocusElemInd = 0;
+      } else if (pGui->nFocusElemInd >= pGui->nFocusElemMax-1) {
+        // At end of element list, so increment page (also reset element index)
+        gslc_FocusPageStep(pGui,bNext);
+      } else {
+        // Increment element position
+        pGui->nFocusElemInd++;
+      }
+    } else {
+
+      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
+        // Provide default element to focus
+        pGui->nFocusElemInd = pGui->nFocusElemMax-1;
+      } else if (pGui->nFocusElemInd == 0) {
+        // At start of element list, so decrement page (also reset element index)
+        gslc_FocusPageStep(pGui,bNext);
+      } else {
+        // Decrement element position
+        pGui->nFocusElemInd--;
+      }
+    } // bNext
+
+
+    // Check if element can be focused
+    // FIXME: simplify the params
+    if (gslc_ElemCanFocus(pGui,&(pGui->pFocusPage->sCollect),pGui->nFocusElemInd)) {
+      bDone = true;
+      bFound = true;
+    }
+
+    // Check if exhausted search across all pages in stack
+    if ((pGui->pFocusPage == pStartPage) && (pGui->nFocusElemInd == nStartElemInd)) {
+      bDone = true;
+      pGui->nFocusElemInd = GSLC_IND_NONE;
+    }
+
+  } // bDone
+
+  // FIXME: What should we return and what params should be updated?
+  return pGui->nFocusElemInd;
+#endif // GSLC_FEATURE_INPUT
+}
+
+
 // FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
 {
@@ -4032,24 +4170,18 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   gslc_tsEventTouch sEventTouch;
   void*             pvData = (void*)(&sEventTouch);
   gslc_tsEvent      sEvent;
-  int16_t           nFocusInd = GSLC_IND_NONE;
-  gslc_tsPage*      pFocusPage = NULL;
-  gslc_tsCollect*   pCollect = NULL;
 
   gslc_teAction     eAction = GSLC_ACTION_NONE;
   int16_t           nActionVal;
 
-  // Determine the page to accept focus
-  // - For now, use the top enabled page in the stack
-  for (int nStack = 0; nStack < GSLC_STACK__MAX; nStack++) {
-    if (pGui->apPageStack[nStack]) {
-      // Ensure the page layer is active (receiving touch events)
-      if (pGui->abPageStackActive[nStack]) {
-        pFocusPage = pGui->apPageStack[nStack];
-      }
-    }
+  if (pGui->nFocusPageInd == GSLC_IND_NONE) {
+    // If we haven't initialized our starting page, do it now
+    // This assigns pFocusPage
+    gslc_FocusPageStep(pGui,true);
   }
-  if (!pFocusPage) {
+
+  void* pvFocusPage = (void*)(pGui->pFocusPage);
+  if (!pvFocusPage) {
     // No pages enabled in the stack, so exit
     return;
   }
@@ -4072,13 +4204,13 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
           sEventTouch.nX = 0; // Unused
           sEventTouch.nY = -1;
-          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
           gslc_PageEvent(pGui,sEvent);
         } else if (eAction == GSLC_ACTION_FOCUS_NEXT) {
           sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
           sEventTouch.nX = 0; // Unused
           sEventTouch.nY = 1;
-          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
           gslc_PageEvent(pGui,sEvent);
         }
       } else {
@@ -4089,20 +4221,23 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         sEventTouch.nX = GSLC_IND_NONE;
         sEventTouch.nY = 0; // Unused
 
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
         // Focus on new element
         bool bStepNext = (eAction == GSLC_ACTION_FOCUS_NEXT);
-        nFocusInd = gslc_PageFocusStep(pGui,pFocusPage,bStepNext);
-        if (nFocusInd == GSLC_IND_NONE) {
+
+        gslc_FocusElemStep(pGui,bStepNext);
+        pvFocusPage = (void*)(pGui->pFocusPage); // Focus page may have changed
+
+        if (pGui->nFocusElemInd == GSLC_IND_NONE) {
           break;
         }
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
-        sEventTouch.nX = nFocusInd;
+        sEventTouch.nX = pGui->nFocusElemInd;
         sEventTouch.nY = 0; // Unused
 
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
       } // nInputMode
@@ -4111,16 +4246,13 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
     case GSLC_ACTION_SELECT:
 
-      pCollect = &pFocusPage->sCollect;
-      nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
-
       // Ensure an element is in focus!
-      if (nFocusInd == GSLC_IND_NONE) {
+      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
         break;
       } else {
 
-        // Convert collect index into ElemRef
-        pSelElemRef = &pCollect->asElemRef[nFocusInd];
+        // Get the currently focused element
+        pSelElemRef = gslc_FocusElemGet(pGui);
         pSelElem = gslc_GetElemFromRef(pGui,pSelElemRef);
         bCanEdit = false;
         if (pSelElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
@@ -4133,9 +4265,9 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
           // Select currently focused element
           sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
-          sEventTouch.nX = nFocusInd;
+          sEventTouch.nX = pGui->nFocusElemInd;
           sEventTouch.nY = 0; // Unused
-          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
           gslc_PageEvent(pGui,sEvent);
         }
 
@@ -4152,9 +4284,9 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
         // Reapply focus to current element
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
-        sEventTouch.nX = nFocusInd;
+        sEventTouch.nX = pGui->nFocusElemInd;
         sEventTouch.nY = 0; // Unused
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
       }
 
@@ -4163,11 +4295,8 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
     case GSLC_ACTION_SET_REL:
     case GSLC_ACTION_SET_ABS:
 
-      pCollect = &pFocusPage->sCollect;
-      nFocusInd = gslc_CollectGetFocus(pGui, pCollect);
-
       // Ensure an element is in focus!
-      if (nFocusInd == GSLC_IND_NONE) {
+      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
         break;
       } else {
         // Change current element
@@ -4181,7 +4310,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           sEventTouch.nY = nActionVal;
         }
 
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pFocusPage,pvData);
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
       }
       break;
@@ -5039,85 +5168,6 @@ void gslc_CollectReset(gslc_tsCollect* pCollect,gslc_tsElem* asElem,uint16_t nEl
 
   // Reset touch / input tracking
   pCollect->pElemRefTracked = NULL;
-  pCollect->nElemIndFocused = GSLC_IND_NONE;
-}
-
-
-bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd)
-{
-#if !(GSLC_FEATURE_INPUT)
-  (void)pGui; // Unused
-  (void)pCollect; // Unused
-  (void)bNext; // Unused
-  (void)pbWrapped; // Unused
-  (void)pnElemInd; // Unused
-  return false;
-#else
-  gslc_tsElemRef*   pElemRef = NULL;
-  gslc_tsElem*      pElem = NULL;
-  int16_t           nIndStart;
-  bool              bFound = false;
-  unsigned          nElemIndCnt = pCollect->nElemRefCnt;
-  int16_t           nIndStep;
-  int16_t           nInd;
-  int16_t           nIndFocus = GSLC_IND_NONE;
-  bool              bCanFocus;
-
-  *pbWrapped = false;
-  *pnElemInd = GSLC_IND_NONE;
-
-  nIndFocus = gslc_CollectGetFocus(pGui, pCollect);
-  if (nIndFocus == GSLC_IND_NONE) {
-    nIndStart = (bNext) ? 0 : (nElemIndCnt - 1);
-  } else {
-    nIndStart = (bNext) ? (nIndFocus + 1) : (nIndFocus - 1);
-  }
-
-  for (nIndStep=0;((!bFound)&&(nIndStep<nElemIndCnt));nIndStep++) {
-    if (bNext) {
-      nInd = nIndStep + nIndStart;
-      // Detect wrap
-      if (nInd >= nElemIndCnt) {
-        *pbWrapped = true;
-        nInd -= nElemIndCnt;
-      }
-    } else {
-      nInd = nIndStart - nIndStep;
-      // Detect wrap
-      if (nInd < 0) {
-        *pbWrapped = true;
-        nInd += nElemIndCnt;
-      }
-    }
-
-    // Get focus capability attribute
-    bCanFocus = false;
-    pElemRef = &(pCollect->asElemRef[nInd]);
-    pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
-    if (pElemRef->eElemFlags != GSLC_ELEMREF_NONE) {
-      if (pElem == NULL) {
-        GSLC_DEBUG2_PRINT("ERROR: eElemFlags not none, but pElem is NULL%s\n","");
-        exit(1); // FATAL
-      } else {
-        // Check the "click enable" flag
-        if (pElem->nFeatures & GSLC_ELEM_FEA_CLICK_EN) {
-          bCanFocus = true;
-        }
-      }
-    }
-
-
-    if (bCanFocus) {
-      bFound = true;
-    }
-  }
-
-  if (bFound) {
-    *pnElemInd = nInd;
-  }
-
-  return bFound;
-#endif // GSLC_FEATURE_INPUT
 }
 
 
@@ -5204,19 +5254,6 @@ gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* p
   }
    // Return pointer or NULL if none found
   return pFoundElemRef;
-}
-
-
-int16_t gslc_CollectGetFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect)
-{
-  (void)pGui; // Unused
-  return pCollect->nElemIndFocused;
-}
-
-void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd)
-{
-  (void)pGui; // Unused
-  pCollect->nElemIndFocused = nElemInd;
 }
 
 
