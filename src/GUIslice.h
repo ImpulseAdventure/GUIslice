@@ -266,6 +266,13 @@ typedef enum {
   GSLC_INPUT_PIN_DEASSERT,  ///< GPIO pin input deasserted (eg. set to 0 / Low)
 } gslc_teInputRawEvent;
 
+/// External input mode. Dictates how directional controls
+/// affect the interaction with the GUI elements.
+typedef enum {
+  GSLC_INPUTMODE_NAV,       ///< External input is in navigation mode
+  GSLC_INPUTMODE_EDIT,      ///< External input is in element edit mode
+} gslc_teInputMode;
+
 
 /// GUI Action Requested
 /// These actions are usually the result of an InputMap lookup

@@ -216,7 +216,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->asInputMap            = NULL;
   pGui->nInputMapMax          = 0;
   pGui->nInputMapCnt          = 0;
-  pGui->nInputMode            = 0; // Navigate mode
+  pGui->nInputMode            = GSLC_INPUTMODE_NAV; // Navigate mode
 
   pGui->nFocusPageInd         = GSLC_IND_NONE;
   pGui->pFocusPage            = NULL;
@@ -4198,7 +4198,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
     case GSLC_ACTION_FOCUS_PREV:
     case GSLC_ACTION_FOCUS_NEXT:
 
-      if (nInputMode) {
+      if (nInputMode == GSLC_INPUTMODE_EDIT) {
         // Edit mode
         if (eAction == GSLC_ACTION_FOCUS_PREV) {
           sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
@@ -4273,12 +4273,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
         // If element supports edit, toggle nav/edit mode
         if (bCanEdit) {
-          if (nInputMode == 0) {
+          if (nInputMode == GSLC_INPUTMODE_NAV) {
             // Switch from nav to edit
-            pGui->nInputMode = 1;
+            pGui->nInputMode = GSLC_INPUTMODE_EDIT;
           } else {
             // Switch from edit to nav
-            pGui->nInputMode = 0;
+            pGui->nInputMode = GSLC_INPUTMODE_NAV;
           }
         }
 
