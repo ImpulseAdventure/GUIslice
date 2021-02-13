@@ -489,6 +489,7 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_EDIT_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
 
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
   pXData->pBufItems       = pBufItems;
@@ -513,6 +514,7 @@ gslc_tsElemRef* gslc_ElemXListboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
   pXData->colGap          = GSLC_COL_BLACK;
   pXData->nItemCurSelLast = XLISTBOX_SEL_NONE;
   pXData->nGlowLast       = 0;
+  pXData->nFocusLast      = 0;
   sElem.pXData            = (void*)(pXData);
   // Specify the custom drawing callback
   sElem.pfuncXDraw        = &gslc_ElemXListboxDraw;
@@ -561,6 +563,8 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
   bool            bGlow        = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
   int8_t          bGlowLast    = pListbox->nGlowLast;
+  bool            bFocus       = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
+  int8_t          bFocusLast   = pListbox->nFocusLast;
   int8_t          nItemCurSel  = pListbox->nItemCurSel;
 
 
@@ -571,8 +575,9 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     bool bDrawFrame = false;
     if (eRedraw == GSLC_REDRAW_FULL) { bDrawFrame = true; }
     if (bGlowLast != bGlow) { bDrawFrame = true; }
+    if (bFocusLast != bFocus) { bDrawFrame = true; }
     if (bDrawFrame) {
-      gslc_DrawFrameRect(pGui, pElem->rElem, (bGlow)? pElem->colElemFrameGlow : pElem->colElemFrame);
+      gslc_DrawFrameRect(pGui, pElem->rElem, (bGlow||bFocus)? pElem->colElemFrameGlow : pElem->colElemFrame);
     }
 
   } else {
@@ -581,6 +586,7 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
   // Update last state
   pListbox->nGlowLast = bGlow;
+  pListbox->nFocusLast = bFocus;
 
   // If full redraw and gap is enabled:
   // - Clear background with gap color, as list items

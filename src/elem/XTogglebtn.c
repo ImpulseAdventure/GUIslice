@@ -93,6 +93,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
 
   // Define other extended data
   sElem.pXData            = (void*)(pXData);

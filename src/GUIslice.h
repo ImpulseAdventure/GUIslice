@@ -176,6 +176,7 @@ typedef enum {
 
 /// Element features type
 #define GSLC_ELEM_FEA_VALID     0x80      ///< Element record is valid
+#define GSLC_ELEM_FEA_FOCUS_EN  0x40      ///< Element can accept focus
 #define GSLC_ELEM_FEA_EDIT_EN   0x20      ///< Element supports edit
 #define GSLC_ELEM_FEA_ROUND_EN  0x10      ///< Element is drawn with a rounded profile
 #define GSLC_ELEM_FEA_CLICK_EN  0x08      ///< Element accepts touch presses
@@ -426,12 +427,13 @@ typedef enum {
   GSLC_ELEMREF_REDRAW_FULL = (1<<4),  ///< Full redraw of element requested
   GSLC_ELEMREF_REDRAW_INC  = (2<<4),  ///< Incremental redraw of element requested
 
+  GSLC_ELEMREF_FOCUSED     = (1<<3),  ///< Element state is focused
   GSLC_ELEMREF_GLOWING     = (1<<6),  ///< Element state is glowing
   GSLC_ELEMREF_VISIBLE     = (1<<7),  ///< Element is currently shown (ie. visible)
 
   // Mask values for bitfield comparisons
-  GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags
-  GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags
+  GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags [bits 1,0]
+  GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags [bits 5,4]
 
 } gslc_teElemRefFlags;
 
@@ -2281,6 +2283,38 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing);
 /// \return True if element is glowing
 ///
 bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Get the focus enable for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element supports focus
+///
+bool gslc_ElemGetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Update the focused indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bFocused:    True if element is focused
+///
+/// \return none
+///
+void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused);
+
+///
+/// Get the focused indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element is focused
+///
+bool gslc_ElemGetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
 
 ///
 /// Update the visibility status for an element

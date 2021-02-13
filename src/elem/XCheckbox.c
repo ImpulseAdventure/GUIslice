@@ -91,6 +91,7 @@ gslc_tsElemRef* gslc_ElemXCheckboxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
 
   // Default group assignment. Can override later with ElemSetGroup()
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
@@ -391,6 +392,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   bool bChecked  = pCheckbox->bChecked;
   gslc_teXCheckboxStyle   nStyle = pCheckbox->nStyle;
   bool bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
+  bool bFocus    = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
 
   // Draw the background
   gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
@@ -414,7 +416,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
       // we don't need to do anything more in the unchecked case
     }
     // Draw a frame around the checkbox
-    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
 
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_X) {
     // Draw an X through center if checked
@@ -423,7 +425,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
       gslc_DrawLine(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
     }
     // Draw a frame around the checkbox
-    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
 
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
@@ -431,7 +433,7 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
       gslc_DrawFillCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);
     }
     // Draw a frame around the checkbox
-    gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
 
   }
 
@@ -472,6 +474,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   bool  bRadio      = pCheckbox->bRadio;
   bool  bCheckedOld = pCheckbox->bChecked;
   bool  bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
+  bool  bFocusedOld = gslc_ElemGetFocus(pGui,pElemRef);
 
   switch(eTouch) {
 
@@ -511,6 +514,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
   // If the checkbox changed state, redraw
   bool  bChanged = false;
   if (gslc_ElemGetGlow(pGui,pElemRef) != bGlowingOld) { bChanged = true; }
+  if (gslc_ElemGetFocus(pGui,pElemRef) != bFocusedOld) { bChanged = true; }
   if (pCheckbox->bChecked != bCheckedOld) { bChanged = true; }
   if (bChanged) {
     // Incremental redraw
