@@ -3798,6 +3798,7 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     //   with an element still marked as being tracked
     if (pTrackedRefOld != NULL) {
       //xxx gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: old Tracking exist, about to clear old focus\n",""); //xxx
       gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
     }
 
@@ -3807,9 +3808,11 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     if (pTrackedRefNew == NULL) {
       // Didn't find an element, so clear the tracking reference
 
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: new Tracking not exist\n",""); //xxx
       gslc_CollectSetElemTracked(pGui,pCollect,NULL);
     } else {
       // Found an element, so mark it as being the tracked element
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: new Tracking exist\n",""); //xxx
 
       // Set the new tracked element reference
       gslc_CollectSetElemTracked(pGui,pCollect,pTrackedRefNew);
@@ -3817,14 +3820,15 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
         return;
       }
 
-      // Start glow on new element
-      //xxx gslc_ElemSetGlow(pGui,pTrackedRefNew,true);
+      // Start focus on new element
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: about to set new focus\n",""); //xxx
       gslc_ElemSetFocus(pGui,pTrackedRefNew,true);
 
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
       eTouch = GSLC_TOUCH_DOWN_IN;
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: Send TOUCH_DOWN_IN (skip)\n",""); //xxx
       //gslc_ElemSendEventTouch(pGui,pTrackedRefNew,eTouch,nX,nY);
 
     }
@@ -3834,32 +3838,29 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // FOCUS_OFF -> Touch Up Event
     // ---------------------------------
 
+
     if (pTrackedRefOld != NULL) {
-      // Are we still over tracked element?
-        bInTracked = false;
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking exist\n",""); //xxx
 
-        // Clear focus state //zzz1
-        if (pTrackedRefOld->pElem == NULL) {
-          GSLC_DEBUG_PRINT("DBG: CollectInput: Track elem NULL\n",""); //xxx
-          return;
-        }
-        //xxx gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
-        gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
+      // Clear focus state //zzz1
+      if (pTrackedRefOld->pElem == NULL) {
+        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Track elem NULL\n",""); //xxx
+        return;
+      }
+      gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
 
-      GSLC_DEBUG_PRINT("DBG: CollectInput: Track existed, InTrack=%d\n",bInTracked); //xxx
-
-        // Released not over tracked element
-        eTouch = GSLC_TOUCH_UP_OUT;
-        //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
-        GSLC_DEBUG_PRINT("DBG: CollectInput: Not InTrack, so TOUCH_UP_OUT (skip)\n",""); //xxx
+      // Released not over tracked element
+      eTouch = GSLC_TOUCH_UP_OUT;
+      //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Send TOUCH_UP_OUT (skip)\n",""); //xxx
 
 
     } else {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: Track not exist\n",""); //xxx
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking not exist\n",""); //xxx
     }
 
     // Clear the element tracking state
-    GSLC_DEBUG_PRINT("DBG: CollectInput: About to reset tracked\n",""); //xxx
+    GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: About to reset tracked\n",""); //xxx
     gslc_CollectSetElemTracked(pGui,pCollect,NULL);
 
   } else if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
@@ -3868,22 +3869,19 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
 
     if (pTrackedRefOld != NULL) {
-      // Are we still over tracked element?
-        bInTracked = true;
-      GSLC_DEBUG_PRINT("DBG: CollectInput: Track existed, InTrack=%d\n",bInTracked); //xxx
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Tracking exist\n",""); //xxx
 
-        // Notify original tracked element for optional custom handling
-        eTouch = GSLC_TOUCH_UP_IN;
-        GSLC_DEBUG_PRINT("DBG: CollectInput: Yes InTrack, so TOUCH_UP_IN\n",""); //xxx
-        // FIXME: Do we really want to change the eTouch type here?
-        // Perhaps this is the best way to reuse the existing touch handler in the element
-        nX = 0; // Arbitrary
-        nY = 0; // Arbitrary
-        gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
-
+      // Notify original tracked element for optional custom handling
+      eTouch = GSLC_TOUCH_UP_IN;
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send TOUCH_UP_IN\n",""); //xxx
+      // FIXME: Do we really want to change the eTouch type here?
+      // Perhaps this is the best way to reuse the existing touch handler in the element
+      nX = 0; // Arbitrary
+      nY = 0; // Arbitrary
+      gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
     } else {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: Track not exist\n",""); //xxx
+      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: No Tracking exist\n",""); //xxx
     }
 
   } else if ((eTouch == GSLC_TOUCH_SET_REL) || (eTouch == GSLC_TOUCH_SET_ABS)) {
@@ -3892,6 +3890,11 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
     nX = 0; // Unused
     nY = nInputVal; // Relative or Absolute value
+    if (eTouch == GSLC_TOUCH_SET_REL) {
+      GSLC_DEBUG_PRINT("DBG: CollectInput: SET_REL: Send SET_REL\n",""); //xxx
+    } else if (eTouch == GSLC_TOUCH_SET_ABS) {
+      GSLC_DEBUG_PRINT("DBG: CollectInput: SET_ABS: Send SET_ABS\n",""); //xxx
+    }
     gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
   }
 #endif // GSLC_FEATURE_INPUT
