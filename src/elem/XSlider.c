@@ -425,7 +425,6 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
     case GSLC_TOUCH_SET_REL:
     case GSLC_TOUCH_SET_ABS:
       bIndexed = true;
-      //xxx gslc_ElemSetGlow(pGui,pElemRef,true);
       bUpdatePos = true;
       break;
 

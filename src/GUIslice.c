@@ -3797,7 +3797,6 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // - We shouldn't really enter a "Touch Down" event
     //   with an element still marked as being tracked
     if (pTrackedRefOld != NULL) {
-      //xxx gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: old Tracking exist, about to clear old focus\n",""); //xxx
       gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
     }
@@ -3829,6 +3828,7 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
       //   receive the touch tracking
       eTouch = GSLC_TOUCH_DOWN_IN;
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: Send TOUCH_DOWN_IN (skip)\n",""); //xxx
+      // No need to create a "TOUCH" event when we are just changing focus
       //gslc_ElemSendEventTouch(pGui,pTrackedRefNew,eTouch,nX,nY);
 
     }
@@ -3838,11 +3838,10 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // FOCUS_OFF -> Touch Up Event
     // ---------------------------------
 
-
     if (pTrackedRefOld != NULL) {
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking exist\n",""); //xxx
 
-      // Clear focus state //zzz1
+      // Clear focus state
       if (pTrackedRefOld->pElem == NULL) {
         GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Track elem NULL\n",""); //xxx
         return;
@@ -3851,9 +3850,9 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
       // Released not over tracked element
       eTouch = GSLC_TOUCH_UP_OUT;
-      //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Send TOUCH_UP_OUT (skip)\n",""); //xxx
-
+      // No need to create a "TOUCH" event when we are just changing focus
+      //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
     } else {
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking not exist\n",""); //xxx
@@ -3874,8 +3873,9 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
       // Notify original tracked element for optional custom handling
       eTouch = GSLC_TOUCH_UP_IN;
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send TOUCH_UP_IN\n",""); //xxx
-      // FIXME: Do we really want to change the eTouch type here?
-      // Perhaps this is the best way to reuse the existing touch handler in the element
+      // TODO: Do we really want to change the eTouch type here?
+      //       - Perhaps this is the best way to reuse the existing touch handler in the element
+      // Here we are mimicking a touch event within the element
       nX = 0; // Arbitrary
       nY = 0; // Arbitrary
       gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
