@@ -567,6 +567,7 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   int8_t          bFocusLast   = pListbox->nFocusLast;
   int8_t          nItemCurSel  = pListbox->nItemCurSel;
 
+  GSLC_DEBUG_PRINT("DBG: XListbox: Draw() Glow=%d Focus=%d\n",bGlow,bFocus); //xxx
 
   gslc_tsRect rElemRect;
   if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
@@ -786,7 +787,7 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
   case GSLC_TOUCH_SET_REL:
   case GSLC_TOUCH_SET_ABS:
     bIndexed = true;
-    gslc_ElemSetGlow(pGui,pElemRef,true);
+    //xxx gslc_ElemSetGlow(pGui,pElemRef,true);
     // Keyboard / pin control
     bSelTrack = true;
     bSelSave = true;
