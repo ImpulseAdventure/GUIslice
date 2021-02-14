@@ -810,10 +810,15 @@ typedef struct {
   uint8_t             nInputMode;       ///< Input mode: 0=navigate, 1=edit
 
   // Input navigation / focus state
+  // - TODO: Wrap in GSLC_FEATURE_INPUT
   int16_t             nFocusPageInd;    ///< Index of page in stack currently in focus
   gslc_tsPage*        pFocusPage;       ///< Page ptr currently in focus
   int16_t             nFocusElemInd;    ///< Index of element in page currently in focus
   int16_t             nFocusElemMax;    ///< Max number of elements in page in focus
+
+  // Saved focus state (for popups)
+  int16_t             nFocusSavedPageInd;
+  int16_t             nFocusSavedElemInd;
 
 } gslc_tsGui;
 
@@ -2521,6 +2526,15 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 ///
 /// \todo Doc. This API is experimental and subject to change
 gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui);
+
+/// \todo Doc. This API is experimental and subject to change
+void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext);
+
+/// \todo Doc. This API is experimental and subject to change
+int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext);
+
+/// \todo Doc. This API is experimental and subject to change
+void gslc_FocusElemIndSet(gslc_tsGui* pGui,int16_t nPageInd,int16_t nElemInd,bool bFocus);
 
 // ------------------------------------------------------------------------
 /// @}

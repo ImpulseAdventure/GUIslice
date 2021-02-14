@@ -222,6 +222,8 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   pGui->pFocusPage            = NULL;
   pGui->nFocusElemInd         = GSLC_IND_NONE;
   pGui->nFocusElemMax         = 0;
+  pGui->nFocusSavedPageInd    = GSLC_IND_NONE;
+  pGui->nFocusSavedElemInd    = GSLC_IND_NONE;
 
   pGui->sImgRefBkgnd = gslc_ResetImage();
 
@@ -2116,6 +2118,18 @@ void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
     gslc_SetStackState(pGui, GSLC_STACK_CUR, true, true);
     gslc_SetStackState(pGui, GSLC_STACK_BASE, true, true);
   }
+  // If a focus is currently active, save it and change the
+  // focus to the new popup page
+  #if (GSLC_FEATURE_INPUT)
+  pGui->nFocusSavedPageInd = pGui->nFocusPageInd;
+  pGui->nFocusSavedElemInd = pGui->nFocusElemInd;
+  if (pGui->nFocusPageInd != GSLC_IND_NONE) {
+    // Update the focus to the overlay page and find
+    // suitable default element to receive focus
+    //xxx gslc_FocusPageChange(pGui,GSLC_STACK_OVERLAY,GSLC_IND_NONE);
+    gslc_FocusElemIndSet(pGui,GSLC_STACK_OVERLAY,GSLC_IND_NONE,true);
+  }
+  #endif
 }
 
 void gslc_PopupHide(gslc_tsGui* pGui)
@@ -2125,6 +2139,15 @@ void gslc_PopupHide(gslc_tsGui* pGui)
   // - This is done in case they were deactivated due to a modal popup
   gslc_SetStackState(pGui, GSLC_STACK_CUR, true, true);
   gslc_SetStackState(pGui, GSLC_STACK_BASE, true, true);
+
+  #if (GSLC_FEATURE_INPUT)
+  // If there was a focus state saved before we opened
+  // the popup, restore it now
+  if (pGui->nFocusSavedPageInd != GSLC_IND_NONE) {
+    //xxx gslc_FocusPageChange(pGui,pGui->nFocusSavedPageInd,pGui->nFocusSavedElemInd);
+    gslc_FocusElemIndSet(pGui,pGui->nFocusSavedPageInd,pGui->nFocusSavedElemInd,true);
+  }
+  #endif
 }
 
 
@@ -3053,6 +3076,10 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   bFocused  = gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
   bFocusNow = bFocusEn & bFocused; // Element is currently focused
   gslc_tsColor colBg = GSLC_COL_BLACK;
+
+  if (pElem->nType == GSLC_TYPE_BTN) {
+    GSLC_DEBUG_PRINT("DBG: ElemDraw(BTN) ID=%d Glow=%d Focus=%d\n",pElem->nId,bGlowNow,bFocusNow); //xxx
+  }
 
   // --------------------------------------------------------------------------
   // Background
@@ -4093,6 +4120,9 @@ bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemIn
 }
 
 // Return element reference of currently-focused element or NULL for none
+// PRE:
+// - pGui->pFocusPage
+// - pGui->nFocusElemInd
 gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
 {
   gslc_tsPage* pFocusPage = pGui->pFocusPage;
@@ -4103,6 +4133,58 @@ gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
   gslc_tsCollect* pCollect = &(pFocusPage->sCollect);
   gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[pGui->nFocusElemInd]);
   return pElemRef;
+}
+
+// Update the focus to another element
+// - Clears focus on existing element
+// - Identifies default element if new page (nElemInd=GSLC_IND_NONE)
+// - Sets focus on new element (if bFocus=true)
+// - Updates tracking element reference
+void gslc_FocusElemIndSet(gslc_tsGui* pGui,int16_t nPageInd,int16_t nElemInd,bool bFocus)
+{
+  gslc_tsElemRef* pElemRef = NULL;
+  gslc_tsCollect* pCollect = NULL;
+
+  // Unfocus existing element (if one is enabled)
+  pElemRef = gslc_FocusElemGet(pGui);
+  if (pElemRef) {
+    gslc_ElemSetFocus(pGui,pElemRef,false);
+    // Reset the tracking
+    pCollect = &(pGui->pFocusPage->sCollect);
+    gslc_CollectSetElemTracked(pGui,pCollect,NULL);
+  }
+
+  // Focus new element (if enabled) and set attributes
+  if (bFocus) {
+    pGui->nFocusPageInd = nPageInd;
+    pGui->pFocusPage = pGui->apPageStack[nPageInd];
+    if (pGui->pFocusPage == NULL) {
+      // TODO: ERROR handling
+      return;
+    }
+    pGui->nFocusElemInd = nElemInd;
+    pGui->nFocusElemMax = pGui->pFocusPage->sCollect.nElemCnt;
+    if (nElemInd == GSLC_IND_NONE) {
+      // No element was specified, so assign default
+      gslc_FocusElemStep(pGui,true);
+    }
+    // Fetch the focused element reference
+    pElemRef = gslc_FocusElemGet(pGui);
+    if (pElemRef) {
+      // Mark it as focused
+      gslc_ElemSetFocus(pGui,pElemRef,true);
+      // Update the tracking reference
+      pCollect = &(pGui->pFocusPage->sCollect);
+      gslc_CollectSetElemTracked(pGui,pCollect,pElemRef);
+    }
+  } else {
+    // Reset the focus state
+    pGui->nFocusPageInd = GSLC_IND_NONE;
+    pGui->pFocusPage = NULL;
+    pGui->nFocusElemInd = GSLC_IND_NONE;
+    pGui->nFocusElemMax = 0;
+    gslc_CollectSetElemTracked(pGui,pCollect,pElemRef);
+  }
 }
 
 
@@ -4173,6 +4255,7 @@ void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext)
 // Advance the focus to the next/previous element
 // Reaching the end/start of the elements on the current page
 // will cause another page to be selected for focus
+// If nFocusElemInd is GSLC_IND_NONE, then start search at default element on page
 // If no element is found, pFocusElem
 // FIXME: Cache local vars to avoid excess pGui indirection
 // POST:
@@ -4187,6 +4270,7 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
   (void)bNext; // Unused
   return;
 #else
+  GSLC_DEBUG_PRINT("DBG: FocusElemStep()\n",""); //xxx
   // Ensure we initialize the focused page
   if (pGui->pFocusPage == NULL) {
     gslc_FocusPageStep(pGui,bNext);
@@ -4240,6 +4324,8 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
     }
 
   } // bDone
+
+  GSLC_DEBUG_PRINT("DBG: FocusElemStep(): PageInd=%d ElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
 
   // FIXME: What should we return and what params should be updated?
   return pGui->nFocusElemInd;
@@ -4352,7 +4438,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         sEventTouch.nX = pGui->nFocusElemInd;
         sEventTouch.nY = 0; // Unused
 
-        GSLC_DEBUG_PRINT("DBG: TrackInput()   Nav FocusOn Pg=%d Ind=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
+        GSLC_DEBUG_PRINT("DBG: TrackInput()   Nav FocusOn PageInd=%d ElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
         sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
