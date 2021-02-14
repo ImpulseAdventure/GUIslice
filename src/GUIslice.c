@@ -2126,7 +2126,6 @@ void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
   if (pGui->nFocusPageInd != GSLC_IND_NONE) {
     // Update the focus to the overlay page and find
     // suitable default element to receive focus
-    //xxx gslc_FocusPageChange(pGui,GSLC_STACK_OVERLAY,GSLC_IND_NONE);
     gslc_FocusElemIndSet(pGui,GSLC_STACK_OVERLAY,GSLC_IND_NONE,true);
   }
   #endif
@@ -2144,7 +2143,6 @@ void gslc_PopupHide(gslc_tsGui* pGui)
   // If there was a focus state saved before we opened
   // the popup, restore it now
   if (pGui->nFocusSavedPageInd != GSLC_IND_NONE) {
-    //xxx gslc_FocusPageChange(pGui,pGui->nFocusSavedPageInd,pGui->nFocusSavedElemInd);
     gslc_FocusElemIndSet(pGui,pGui->nFocusSavedPageInd,pGui->nFocusSavedElemInd,true);
   }
   #endif
@@ -4484,14 +4482,6 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           }
         }
 
-/* //zzz1
-        // Reapply focus to current element
-        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
-        sEventTouch.nX = pGui->nFocusElemInd;
-        sEventTouch.nY = 0; // Unused
-        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
-        gslc_PageEvent(pGui,sEvent);
-        */
       }
 
       break;
