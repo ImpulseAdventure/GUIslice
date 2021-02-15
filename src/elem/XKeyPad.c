@@ -85,7 +85,7 @@ void gslc_ElemXKeyPadReset(gslc_tsXKeyPad* pKeyPad)
   pKeyPad->nScrollPos = 0;
   pKeyPad->pTargetRef = NULL;
 
-  pKeyPad->nFocusKeyInd = 8; //xxx GSLC_IND_NONE;
+  pKeyPad->nFocusKeyInd = GSLC_IND_NONE;
 
   // Reset any pending redraw state
   pKeyPad->sRedraw.eRedrawState = XKEYPAD_REDRAW_NONE;
@@ -282,7 +282,7 @@ void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* p
     // - Support button spacing config
     // TODO: May need to define more glow color attributes
     rElem = gslc_ExpandRect(rElem,-(pConfig->nButtonSpaceX),-(pConfig->nButtonSpaceY));
-    GSLC_DEBUG_PRINT("DBG: XKeyPadDrawKey() [ID=%d] R=%d C=%d [Str=%s] Glow=%d\n",pKey->nId,pKey->nRow,pKey->nCol,pKeyStr,bGlow); //xxx
+    //xxx GSLC_DEBUG_PRINT("DBG: XKeyPadDrawKey() [ID=%d] R=%d C=%d [Str=%s] Glow=%d\n",pKey->nId,pKey->nRow,pKey->nCol,pKeyStr,bGlow); //xxx
     gslc_XKeyPadDrawVirtualBtn(pGui,rElem,pKeyStr,sizeof(pKeyStr),pConfig->nFontId,colFrame, 
       colFill,colGlow,colTxt,pConfig->bRoundEn,bGlow);
   }
@@ -543,16 +543,17 @@ void gslc_XKeyPadSizeAllGet(gslc_tsKey** pLayouts, uint8_t nNumLayouts, uint8_t*
 {
   uint8_t nMaxRows;
   uint8_t nMaxCols;
+  int8_t nIndFirst,nIndLast; // Unused
   *pnRows = 0;
   *pnCols = 0;
   for (uint8_t nLayoutInd=0;nLayoutInd<nNumLayouts;nLayoutInd++) {
-    gslc_XKeyPadSizeGet(pLayouts[nLayoutInd],&nMaxRows,&nMaxCols);
+    gslc_XKeyPadSizeGet(pLayouts[nLayoutInd],&nMaxRows,&nMaxCols,&nIndFirst,&nIndLast);
     *pnRows = (nMaxRows > *pnRows)? nMaxRows : *pnRows;
     *pnCols = (nMaxCols > *pnCols)? nMaxCols : *pnCols;
   }
 }
 
-void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols)
+void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols,int8_t* pnIndFirst,int8_t* pnIndLast)
 {
   uint8_t nRow, nCol, nRowSpan, nColSpan;
 
@@ -564,6 +565,10 @@ void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols)
   // Reset maximums
   *pnRows = 0;
   *pnCols = 0;
+
+  // Reset indices
+  *pnIndFirst = -1;
+  *pnIndLast = -1;
 
   bDone = false;
   nInd = 0;
@@ -581,6 +586,16 @@ void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols)
       // Update maximum extents
       *pnRows = (nRow + nRowSpan >= *pnRows)? nRow + nRowSpan : *pnRows;
       *pnCols = (nCol + nColSpan >= *pnCols)? nCol + nColSpan : *pnCols;
+
+      // Only latch valid keys
+      if ((nType == E_XKEYPAD_TYPE_BASIC) || (nType == E_XKEYPAD_TYPE_SPECIAL)) {
+        // Latch first
+        if (*pnIndFirst == -1) {
+          *pnIndFirst = nInd;
+        }
+        // Latch last
+        *pnIndLast = nInd;
+      }
 
       // Check next button
       nInd++;
@@ -687,6 +702,9 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   if (pKeyPad == NULL) return false;
 
   gslc_tsXKeyPadCfg* pConfig = pKeyPad->pConfig;
+
+  uint8_t nMaxRows,nMaxCols; // Unused
+  int8_t nIndFirst,nIndLast;
   
   gslc_teRedrawType eRedraw = GSLC_REDRAW_NONE;
   gslc_tsXKeyPadResult sResult;
@@ -694,12 +712,23 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   sResult.nRedrawKeyId = -1;
 
   // Intercept a focus-select and turn it into a key press event
+  // If we are not in edit mode yet, then enter edit mode
+  // If we are already in edit mode, then turn into key press event
   int16_t nForceId = -1;
   if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
-    eTouch = GSLC_TOUCH_UP_IN;
-    // Fetch the key ID from the focused keypad index
-    nForceId = pConfig->pLayout[pKeyPad->nFocusKeyInd].nId;
-    GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() FOCUS_SELECT Ind=%d ID=%d\n",pKeyPad->nFocusKeyInd,nForceId); //xxx
+    if (gslc_ElemGetEdit(pGui,pElemRef)) {
+      eTouch = GSLC_TOUCH_UP_IN;
+      // Fetch the key ID from the focused keypad index
+      nForceId = pConfig->pLayout[pKeyPad->nFocusKeyInd].nId;
+      GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() FOCUS_SELECT Ind=%d ID=%d\n",pKeyPad->nFocusKeyInd,nForceId); //xxx
+    } else {
+      // We are not in edit mode, so enter edit mode
+      // but don't force any key presses yet
+      GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() enter edit mode\n",""); //xxx
+      gslc_XKeyPadSizeGet(pConfig->pLayout,&nMaxRows,&nMaxCols,&nIndFirst,&nIndLast);
+      pKeyPad->nFocusKeyInd = nIndFirst; // Start off at first valid key
+      gslc_ElemSetEdit(pGui,pElemRef,true);
+    }
   }
 
   
@@ -707,8 +736,20 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)
   // TODO: Also handle GSLC_TOUCH_MOVE?
   if (eTouch == GSLC_TOUCH_SET_REL) {
-    GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() SET_REL\n",""); //xxx
-    pKeyPad->nFocusKeyInd++;
+    int16_t nPos = pKeyPad->nFocusKeyInd;
+    gslc_XKeyPadSizeGet(pConfig->pLayout,&nMaxRows,&nMaxCols,&nIndFirst,&nIndLast);
+    if (nY > 0) {
+      nPos = (nPos+1 > nIndLast)? nIndFirst : nPos+1;
+    } else {
+      nPos = (nPos-1 < nIndFirst)? nIndLast : nPos-1;
+    }
+    GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() SET_REL (inc=%d first=%d last=%d old_pos=%d new_pos=%d)\n",
+      nY,nIndFirst,nIndLast,pKeyPad->nFocusKeyInd,nPos); //xxx
+    pKeyPad->nFocusKeyInd = nPos;
+
+    // Force the new Key ID
+    nForceId = pConfig->pLayout[pKeyPad->nFocusKeyInd].nId;
+
     sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_ALL; // FIXME: Change to single key
   } else if (eTouch == GSLC_TOUCH_UP_IN) {
 
@@ -737,6 +778,10 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
 
     case KEYPAD_ID_ENTER:
       if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ENT Done Str=[%s]\n", pKeyPad->acBuffer);
+
+      // Leave edit mode
+      GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() leave edit mode\n",""); //xxx
+      gslc_ElemSetEdit(pGui,pElemRef,false);
    
       // Issue callback with Done status
       if (pfuncXInput != NULL) {
@@ -774,6 +819,9 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
 
     case KEYPAD_ID_ESC:
       if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ESC\n", "");
+      // Leave edit mode
+      GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() leave edit mode\n",""); //xxx
+      gslc_ElemSetEdit(pGui,pElemRef,false);
       // Reset buffer and associated state
       gslc_ElemXKeyPadReset(pKeyPad);
       sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_TXT;

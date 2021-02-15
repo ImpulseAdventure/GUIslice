@@ -738,6 +738,7 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
   if (!pListbox) return false;
 
   //bool    bGlowingOld = gslc_ElemGetGlow(pGui, pElemRef);
+  bool    bEditingOld = gslc_ElemGetEdit(pGui, pElemRef);
   bool    bIndexed = false;
 
   int16_t nItemSavedSel = pListbox->nItemSavedSel;
@@ -782,6 +783,11 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
     // User released outside elem: leave selection as-is
     bSelTrack = true;
     bSelSave = true; // Save SEL_NONE
+    break;
+
+  case GSLC_TOUCH_FOCUS_SELECT:
+    GSLC_DEBUG_PRINT("XListbox: Touch() FOCUS_SELECT toggle edit to %d\n",(bEditingOld)?0:1); //xxx
+    gslc_ElemSetEdit(pGui,pElemRef,!bEditingOld);
     break;
 
   case GSLC_TOUCH_SET_REL:

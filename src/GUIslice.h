@@ -427,6 +427,7 @@ typedef enum {
   GSLC_ELEMREF_REDRAW_FULL = (1<<4),  ///< Full redraw of element requested
   GSLC_ELEMREF_REDRAW_INC  = (2<<4),  ///< Incremental redraw of element requested
 
+  GSLC_ELEMREF_EDITING     = (1<<2),  ///< Element is in edit state (1=edit, 0=navigate)
   GSLC_ELEMREF_FOCUSED     = (1<<3),  ///< Element state is focused
   GSLC_ELEMREF_GLOWING     = (1<<6),  ///< Element state is glowing
   GSLC_ELEMREF_VISIBLE     = (1<<7),  ///< Element is currently shown (ie. visible)
@@ -2320,6 +2321,26 @@ void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused);
 ///
 bool gslc_ElemGetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
+///
+/// Update the editing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bEditing:    True if element is being edited
+///
+/// \return none
+///
+void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing);
+
+///
+/// Get the editing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element is being edited
+///
+bool gslc_ElemGetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Update the visibility status for an element

@@ -336,15 +336,18 @@ enum {
   /// Calculate the overall dimensions of the KeyPad control encompassing
   /// the text field and key buttons. The dimension is calculated in
   /// units of the configured key size (width and height), and accounts
-  /// for any column spans.
+  /// for any column spans. It also returns the index of the first and
+  /// last keys on the keypad.
   ///
   /// \param[in]  pLayout:     Ptr to the KeyPad layout
   /// \param[out] pnRows:      Ptr for the number of rows
   /// \param[out] pnCols:      Ptr for the number of columns
+  /// \param[out] pnIndFirst:  Ptr for the index of first key
+  /// \param[out] pnIndLast:   Ptr for the index of last key
   ///
   /// \return none
   ///
-  void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols);
+  void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols, int8_t* pnIndFirst, int8_t* pnIndLast);
 
   ///
   /// Draw a key to the screen

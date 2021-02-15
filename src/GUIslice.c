@@ -3076,7 +3076,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   gslc_tsColor colBg = GSLC_COL_BLACK;
 
   if (pElem->nType == GSLC_TYPE_BTN) {
-    GSLC_DEBUG_PRINT("DBG: ElemDraw(BTN) ID=%d Glow=%d Focus=%d\n",pElem->nId,bGlowNow,bFocusNow); //xxx
+    //GSLC_DEBUG_PRINT("DBG: ElemDraw(BTN) ID=%d Glow=%d Focus=%d\n",pElem->nId,bGlowNow,bFocusNow); //xxx
   }
 
   // --------------------------------------------------------------------------
@@ -3560,7 +3560,7 @@ void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  GSLC_DEBUG_PRINT("DBG: SetFocus(ID=%d,focus=%d)\n",pElemRef->pElem->nId,bFocused); //xxx
+  //GSLC_DEBUG_PRINT("DBG: SetFocus(ID=%d,focus=%d)\n",pElemRef->pElem->nId,bFocused); //xxx
   // Only change focus state if enabled
   if (gslc_ElemGetFocusEn(pGui, pElemRef)) {
     bool bFocusedOld = gslc_ElemGetFocus(pGui, pElemRef);
@@ -3580,6 +3580,41 @@ bool gslc_ElemGetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_FOCUSED);
+}
+
+/// \todo Doc
+bool gslc_ElemGetEditEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+
+  return pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN;
+}
+
+
+void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemSetEdit";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  GSLC_DEBUG_PRINT("DBG: SetEdit(ID=%d,edit=%d)\n",pElemRef->pElem->nId,bEditing); //xxx
+  // Only change glow state if enabled
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
+    gslc_SetElemRefFlag(pGui, pElemRef, GSLC_ELEMREF_EDITING, (bEditing) ? GSLC_ELEMREF_EDITING : 0);
+  }
+}
+
+bool gslc_ElemGetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemGetEdit";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return false;
+  }
+  return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_EDITING);
 }
 
 
@@ -3894,20 +3929,26 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
   } else if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
     // ---------------------------------
-    // SELECT -> Touch Up Event
+    // SELECT -> Select or Touch Up Event
     // ---------------------------------
 
     if (pTrackedRefOld != NULL) {
       GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Tracking exist\n",""); //xxx
 
       // Notify original tracked element for optional custom handling
-      eTouch = GSLC_TOUCH_UP_IN;
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send TOUCH_UP_IN\n",""); //xxx
-      // TODO: Do we really want to change the eTouch type here?
-      //       - Perhaps this is the best way to reuse the existing touch handler in the element
-      // Here we are mimicking a touch event within the element
-      nX = 0; // Arbitrary
-      nY = 0; // Arbitrary
+      // If the element is not editable, then mimic a touch event,
+      // otherwise, pass on the focus select event
+      if (!gslc_ElemGetEditEn(pGui,pTrackedRefOld)) {
+        eTouch = GSLC_TOUCH_UP_IN;
+        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send TOUCH_UP_IN\n",""); //xxx
+        // TODO: Do we really want to change the eTouch type here?
+        //       - Perhaps this is the best way to reuse the existing touch handler in the element
+        // Here we are mimicking a touch event within the element
+        nX = 0; // Arbitrary
+        nY = 0; // Arbitrary
+      } else {
+        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send FOCUS_SELECT\n",""); //xxx
+      }
       gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
     } else {
@@ -4403,6 +4444,8 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
   GSLC_DEBUG_PRINT("DBG: TrackInput()  FocusPageInd=%d FocusElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
 
+  bool bElemInEdit = false;
+
   switch(eAction) {
     case GSLC_ACTION_FOCUS_PREV:
     case GSLC_ACTION_FOCUS_NEXT:
@@ -4475,7 +4518,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         // Only issue a touch "select" if:
         // - The element is not editable
         // FIXME: still need to issue SELECT to KeyPad
-        if (!bCanEdit) {
+        //xxx if (!bCanEdit) {
 
           // Select currently focused element
           sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
@@ -4483,7 +4526,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           sEventTouch.nY = 0; // Unused
           sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
           gslc_PageEvent(pGui,sEvent);
-        }
+        //xxx }
 
         // If element supports edit, toggle nav/edit mode
         // FIXME: for XKeyPad, we need widget to tell us whether we switch modes
@@ -4491,6 +4534,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         //        Perhaps for all "edit" widgets, we pass in SELECT and the
         //        return value indicates if we swap mode.
         if (bCanEdit) {
+          // Now that we sent a FOCUS_SELECT, determine if we have changed
+          // the GUI navigate/edit mode by checking with the widget
+          bElemInEdit = gslc_ElemGetEdit(pGui,pSelElemRef);
+
+          pGui->nInputMode = (bElemInEdit)? GSLC_INPUTMODE_EDIT : GSLC_INPUTMODE_NAV;
+          /* //xxx
           if (nInputMode == GSLC_INPUTMODE_NAV) {
             // Switch from nav to edit
             pGui->nInputMode = GSLC_INPUTMODE_EDIT;
@@ -4498,6 +4547,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
             // Switch from edit to nav
             pGui->nInputMode = GSLC_INPUTMODE_NAV;
           }
+          */
         }
 
       }

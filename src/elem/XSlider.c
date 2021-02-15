@@ -391,6 +391,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   pSlider   = (gslc_tsXSlider*)(pElem->pXData);
 
   bool    bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
+  bool    bEditingOld = gslc_ElemGetEdit(pGui,pElemRef);
   int16_t nPosRng;
   int16_t nPos = 0;
   bool    bUpdatePos = false;
@@ -420,6 +421,11 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
     case GSLC_TOUCH_UP_OUT:
       // End glow
       gslc_ElemSetGlow(pGui,pElemRef,false);
+      break;
+
+    case GSLC_TOUCH_FOCUS_SELECT:
+      GSLC_DEBUG_PRINT("XSlider: Touch() FOCUS_SELECT toggle edit to %d\n",(bEditingOld)?0:1); //xxx
+      gslc_ElemSetEdit(pGui,pElemRef,!bEditingOld);
       break;
 
     case GSLC_TOUCH_SET_REL:
