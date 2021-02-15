@@ -3099,9 +3099,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
       colBg = pElem->colElemFillGlow;
+      GSLC_DEBUG_PRINT("DBG: DrawByRef(): nId=%d glow\n",pElem->nId); //xxx
     } else if (bFocusEn && bFocused) {
       // TODO: Decide if focus should use frame or fill
       colBg = pElem->colElemFillGlow;
+      GSLC_DEBUG_PRINT("DBG: DrawByRef(): nId=%d focus\n",pElem->nId); //xxx
     } else {
       colBg = pElem->colElemFill;
     }
@@ -3667,10 +3669,13 @@ void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
+  // For now, associate accepting click events as also accepting focus
   if (bClickEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
+    pElem->nFeatures |= GSLC_ELEM_FEA_FOCUS_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_CLICK_EN;
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_FOCUS_EN;
   }
   // No need to call ElemSetRedraw() as we aren't changing a visual characteristic
 }
@@ -4205,6 +4210,8 @@ void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext)
   gslc_tsPage* pPage = NULL;
   int16_t nFocusPageInd = pGui->nFocusPageInd;
 
+  GSLC_DEBUG_PRINT("DBG: FocusPageStep() PageInd=%d\n",nFocusPageInd); //xxx
+
   while (!bDone) {
 
     // Keep track of iterations to detect search exhaustion
@@ -4274,6 +4281,11 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
     gslc_FocusPageStep(pGui,bNext);
   }
 
+  // If no element has been focused yet, provide a default
+  if (pGui->nFocusElemInd == GSLC_IND_NONE) {
+    pGui->nFocusElemInd = (bNext)? 0 : pGui->nFocusElemMax-1;
+  }
+
   // Save starting element to detect search exhaustion
   gslc_tsPage* pStartPage = pGui->pFocusPage;
   int16_t nStartElemInd = pGui->nFocusElemInd;
@@ -4282,11 +4294,9 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
   bool bFound = false;
   bool bDone = false;
   while (!bDone) {
+    GSLC_DEBUG_PRINT("DBG: FocusElemStep() StartElemInd=%d ElemInd=%d\n",nStartElemInd,pGui->nFocusElemInd); //xxx
     if (bNext) {
-      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
-        // Provide default element to focus
-        pGui->nFocusElemInd = 0;
-      } else if (pGui->nFocusElemInd >= pGui->nFocusElemMax-1) {
+      if (pGui->nFocusElemInd >= pGui->nFocusElemMax-1) {
         // At end of element list, so increment page (also reset element index)
         gslc_FocusPageStep(pGui,bNext);
       } else {
@@ -4294,11 +4304,7 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
         pGui->nFocusElemInd++;
       }
     } else {
-
-      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
-        // Provide default element to focus
-        pGui->nFocusElemInd = pGui->nFocusElemMax-1;
-      } else if (pGui->nFocusElemInd == 0) {
+      if (pGui->nFocusElemInd == 0) {
         // At start of element list, so decrement page (also reset element index)
         gslc_FocusPageStep(pGui,bNext);
       } else {
@@ -4306,7 +4312,6 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
         pGui->nFocusElemInd--;
       }
     } // bNext
-
 
     // Check if element can be focused
     // FIXME: simplify the params
@@ -4316,9 +4321,17 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
     }
 
     // Check if exhausted search across all pages in stack
+    // - If we have performed a search and still didn't locate a suitable
+    //   next element by the time we loop back to the starting element
+    //   then terminate the search.
+    // - If the starting element "can focus" then we return that,
+    //   otherwise we indicate no match (GSLC_IND_NONE)
     if ((pGui->pFocusPage == pStartPage) && (pGui->nFocusElemInd == nStartElemInd)) {
       bDone = true;
-      pGui->nFocusElemInd = GSLC_IND_NONE;
+      if (!bFound) {
+        // Even after wrapping, we haven't found a match, so indicate "no match"
+        pGui->nFocusElemInd = GSLC_IND_NONE;
+      }
     }
 
   } // bDone
@@ -4461,6 +4474,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
         // Only issue a touch "select" if:
         // - The element is not editable
+        // FIXME: still need to issue SELECT to KeyPad
         if (!bCanEdit) {
 
           // Select currently focused element
@@ -4472,6 +4486,10 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         }
 
         // If element supports edit, toggle nav/edit mode
+        // FIXME: for XKeyPad, we need widget to tell us whether we switch modes
+        //        eg. press OK / ESC button.
+        //        Perhaps for all "edit" widgets, we pass in SELECT and the
+        //        return value indicates if we swap mode.
         if (bCanEdit) {
           if (nInputMode == GSLC_INPUTMODE_NAV) {
             // Switch from nav to edit

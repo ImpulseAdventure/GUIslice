@@ -85,6 +85,8 @@ void gslc_ElemXKeyPadReset(gslc_tsXKeyPad* pKeyPad)
   pKeyPad->nScrollPos = 0;
   pKeyPad->pTargetRef = NULL;
 
+  pKeyPad->nFocusKeyInd = 8; //xxx GSLC_IND_NONE;
+
   // Reset any pending redraw state
   pKeyPad->sRedraw.eRedrawState = XKEYPAD_REDRAW_NONE;
   pKeyPad->sRedraw.nRedrawKeyId = -1;
@@ -160,12 +162,14 @@ void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFra
   gslc_tsXKeyPadCfg* pConfig = pKeypadData->pConfig;
   int16_t ePendRedraw = pKeypadData->sRedraw.eRedrawState;
   int16_t nPendRedrawId = pKeypadData->sRedraw.nRedrawKeyId;
+  int16_t nFocusKeyInd = pKeypadData->nFocusKeyInd;
   
   // Draw the buttons
   uint8_t       nInd;
   gslc_tsKey    sKey;
   bool          bDone = false;
   bool          bRedraw;
+  bool          bFocus;
 
   nInd = 0;
   while (!bDone) {
@@ -185,6 +189,9 @@ void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFra
         bRedraw = (ePendRedraw & RBIT_TXT);
       }
 
+      // Is this key in focus?
+      bFocus = (nFocusKeyInd == nInd);
+
       // Check for specific key redraw
       if (ePendRedraw & RBIT_KEYONE) {
         // If this is the specific key, redraw it
@@ -193,7 +200,7 @@ void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFra
 
       // Now perform the redraw
       if (bRedraw) {
-        gslc_XKeyPadDrawKey(pGui, pKeypadData, &sKey);
+        gslc_XKeyPadDrawKey(pGui, pKeypadData, &sKey, bFocus);
       }
       nInd++;
     }
@@ -205,7 +212,7 @@ void gslc_XKeyPadDrawLayout(gslc_tsGui* pGui, void* pXData, gslc_tsColor cColFra
 
 }
 
-void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey)
+void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey, bool bGlow)
 {
   gslc_tsXKeyPadCfg* pConfig;
   char* pKeyStr = NULL;
@@ -273,9 +280,11 @@ void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* p
   } else {
     // Text button
     // - Support button spacing config
+    // TODO: May need to define more glow color attributes
     rElem = gslc_ExpandRect(rElem,-(pConfig->nButtonSpaceX),-(pConfig->nButtonSpaceY));
+    GSLC_DEBUG_PRINT("DBG: XKeyPadDrawKey() [ID=%d] R=%d C=%d [Str=%s] Glow=%d\n",pKey->nId,pKey->nRow,pKey->nCol,pKeyStr,bGlow); //xxx
     gslc_XKeyPadDrawVirtualBtn(pGui,rElem,pKeyStr,sizeof(pKeyStr),pConfig->nFontId,colFrame, 
-      colFill,colTxt,pConfig->bRoundEn);
+      colFill,colGlow,colTxt,pConfig->bRoundEn,bGlow);
   }
 
 }
@@ -308,6 +317,8 @@ gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_
   sElem.nFeatures |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures &= ~GSLC_ELEM_FEA_GLOW_EN;  // Don't need to glow outer element
+  sElem.nFeatures |= GSLC_ELEM_FEA_FOCUS_EN;
+  sElem.nFeatures |= GSLC_ELEM_FEA_EDIT_EN;
   sElem.nGroup = GSLC_GROUP_ID_NONE;
 
   sElem.pXData = (void*)(pXData);
@@ -319,7 +330,7 @@ gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_
   // shouldn't be used
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_WHITE;
+  sElem.colElemFrame      = GSLC_COL_GRAY_DK2;
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;
   sElem.colElemText       = GSLC_COL_WHITE;
 
@@ -485,18 +496,24 @@ bool gslc_XKeyPadDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRedraw)
 
   gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
 
+  bool bFocus    = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
+
   // For full redraw, we draw the background and force
   // the fill to ensure the background doesn't bleed through
   // between the keys.
   if (eRedraw == GSLC_REDRAW_FULL) {
     gslc_DrawFillRect(pGui, pElem->rElem, pElem->colElemFill);
-    if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
-      gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
-    }
 
     // Also ensure the keypad's pending state is set to full
     pKeyPad->sRedraw.eRedrawState = XKEYPAD_REDRAW_FULL;
     pKeyPad->sRedraw.nRedrawKeyId = -1;
+  }
+
+  // For now, always redraw frame in order to enable focus
+  // transitions to be updated.
+  // TODO: Optimize to only redraw frame if the focus has changed.
+  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
+    gslc_DrawFrameRect(pGui, pElem->rElem, (bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
   }
 
   // Redraw the keypad
@@ -675,21 +692,41 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   gslc_tsXKeyPadResult sResult;
   sResult.eRedrawState = XKEYPAD_REDRAW_NONE;
   sResult.nRedrawKeyId = -1;
+
+  // Intercept a focus-select and turn it into a key press event
+  int16_t nForceId = -1;
+  if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
+    eTouch = GSLC_TOUCH_UP_IN;
+    // Fetch the key ID from the focused keypad index
+    nForceId = pConfig->pLayout[pKeyPad->nFocusKeyInd].nId;
+    GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() FOCUS_SELECT Ind=%d ID=%d\n",pKeyPad->nFocusKeyInd,nForceId); //xxx
+  }
+
   
   // Handle the various button presses
   // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)
   // TODO: Also handle GSLC_TOUCH_MOVE?
-  if (eTouch == GSLC_TOUCH_UP_IN) {
+  if (eTouch == GSLC_TOUCH_SET_REL) {
+    GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() SET_REL\n",""); //xxx
+    pKeyPad->nFocusKeyInd++;
+    sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_ALL; // FIXME: Change to single key
+  } else if (eTouch == GSLC_TOUCH_UP_IN) {
 
     GSLC_CB_INPUT pfuncXInput = pKeyPad->pfuncCb;
     gslc_tsXKeyPadData sKeyPadData;
+    int16_t nId;
 
     // Prepare the return data
     sKeyPadData.pStr = pKeyPad->acBuffer;
     sKeyPadData.pTargetRef = pKeyPad->pTargetRef;
     
     // Determine if touch matches any fields on the keypad
-    int16_t nId = gslc_XKeyPadMapEvent(pGui, pKeyPad, nRelX, nRelY);
+    if (nForceId == -1) {
+      nId = gslc_XKeyPadMapEvent(pGui, pKeyPad, nRelX, nRelY);
+    } else {
+      // Key comes from input navigation instead of coordinates
+      nId = nForceId;
+    }
 
     if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTouch: ID=%d\n", nId);
     if (nId == -1) return false;
@@ -1152,14 +1189,15 @@ void gslc_XKeyPadDrawVirtualTxt(gslc_tsGui* pGui,gslc_tsRect rElem,gslc_tsXKeyPa
 // FIXME: Add glow
 void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
   char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId, gslc_tsColor cColFrame,
-  gslc_tsColor cColFill, gslc_tsColor cColText, bool bRoundedEn)
+  gslc_tsColor cColFill, gslc_tsColor cColFillGlow, gslc_tsColor cColText,
+  bool bRoundedEn, bool bGlow)
 {
   gslc_tsElem  sElem;
   gslc_tsElem* pVirtualElem = &sElem;
 
   gslc_ResetElem(pVirtualElem);
   pVirtualElem->colElemFill       = cColFill;
-  pVirtualElem->colElemFillGlow   = cColFill;
+  pVirtualElem->colElemFillGlow   = cColFillGlow;
   pVirtualElem->colElemFrame      = cColFrame;
   pVirtualElem->colElemFrameGlow  = cColFrame;
   pVirtualElem->colElemText       = cColText;
@@ -1168,6 +1206,9 @@ void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
   pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
   pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_VALID;
+  pVirtualElem->nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
+
+  pVirtualElem->nType             = GSLC_TYPE_BTN;
 
   pVirtualElem->rElem             = rElem;
   pVirtualElem->pTxtFont          = gslc_FontGet(pGui,nFontId);
@@ -1198,6 +1239,10 @@ void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
   gslc_tsElemRef sElemRef;
   sElemRef.pElem = pVirtualElem;
   sElemRef.eElemFlags = GSLC_ELEMREF_SRC_RAM | GSLC_ELEMREF_VISIBLE;
+
+  // Update any other element reference states
+  gslc_ElemSetFocus(pGui,&sElemRef,bGlow);
+
   gslc_ElemDrawByRef(pGui,&sElemRef,GSLC_REDRAW_FULL);
 
 }

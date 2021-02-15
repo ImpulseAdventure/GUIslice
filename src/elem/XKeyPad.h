@@ -202,6 +202,7 @@ enum {
     uint8_t             nScrollPos;                 ///< Display offset within the buffer
 
     gslc_tsXKeyPadResult  sRedraw;        ///< Pending redraw state
+    int16_t               nFocusKeyInd;   ///< Indicate key in focus (GSLC_IND_NONE if none)
 
     // Config
     gslc_tsXKeyPadCfg*  pConfig;          ///< Ptr to config struct (may be derived variant)
@@ -351,10 +352,11 @@ enum {
   /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pXData:      Ptr to extended element data structure
   /// \param[in]  pKey:        Ptr to key being drawn
+  /// \param[in]  bGlow:       Indicate if key is in glow/focus state
   ///
   /// \return none
   ///
-  void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey);
+  void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey, bool bGlow);
 
   ///
   /// Create a KeyPad Element
@@ -528,21 +530,24 @@ enum {
   ///
   /// Draw a virtual textual Button Element
   ///
-  /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  rElem:       Rectangle coordinates defining element size
-  /// \param[in]  pStrBuf:     String to copy into element
-  /// \param[in]  nStrBufMax:  Maximum length of string buffer (pStrBuf). 
-  /// \param[in]  nFontId:     Font ID to use for text display
-  /// \param[in]  cColFrame:   Frame color for element
-  /// \param[in]  cColFill:    Fill color for element
-  /// \param[in]  cColTxt:     Text color for element
-  /// \param[in]  bRoundedEn:  Use Rounded Corners?
+  /// \param[in]  pGui:          Pointer to GUI
+  /// \param[in]  rElem:         Rectangle coordinates defining element size
+  /// \param[in]  pStrBuf:       String to copy into element
+  /// \param[in]  nStrBufMax:    Maximum length of string buffer (pStrBuf). 
+  /// \param[in]  nFontId:       Font ID to use for text display
+  /// \param[in]  cColFrame:     Frame color for element
+  /// \param[in]  cColFill:      Fill color for element
+  /// \param[in]  cColFillGlow:  Fill color for element when glowing/focused
+  /// \param[in]  cColTxt:       Text color for element
+  /// \param[in]  bRoundedEn:    Use Rounded Corners?
+  /// \param[in]  bGlow:         Indicate btn is in glow/focus state
   ///
   /// \return none
   ///
   void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
     char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId, gslc_tsColor cColFrame,
-    gslc_tsColor cColFill, gslc_tsColor cColTxt, bool bRoundedEn);
+    gslc_tsColor cColFill, gslc_tsColor colFillGlow, gslc_tsColor cColTxt,
+    bool bRoundedEn, bool bGlow);
 
 
   ///
