@@ -4314,7 +4314,7 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
 #if !(GSLC_FEATURE_INPUT)
   (void)pGui; // Unused
   (void)bNext; // Unused
-  return;
+  return GSLC_IND_NONE;
 #else
   GSLC_DEBUG_PRINT("DBG: FocusElemStep()\n",""); //xxx
   // Ensure we initialize the focused page
