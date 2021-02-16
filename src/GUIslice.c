@@ -4769,6 +4769,18 @@ bool gslc_SetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
   }
 }
 
+// Determine if an image has changed
+// - This could be useful to detect whether an image button
+//   needs to be redrawn.
+bool gslc_ImgRefEqual(gslc_tsImgRef* pImgRef1,gslc_tsImgRef* pImgRef2)
+{
+  bool bSame = true;
+  if (pImgRef1->pImgBuf != pImgRef2->pImgBuf) { bSame = false; }
+  if (strcmp(pImgRef1->pFname,pImgRef2->pFname)!=0) { bSame = false; }
+  if (pImgRef1->eImgFlags != pImgRef2->eImgFlags) { bSame = false; }
+  if (pImgRef1->pvImgRaw != pImgRef2->pvImgRaw) { bSame = false; }
+  return bSame;
+}
 
 void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef sImgRef,
   gslc_tsImgRef sImgRefSel)
@@ -4776,12 +4788,25 @@ void gslc_ElemSetImage(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsImgRef s
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
+  // Determine if a redraw will be needed
+  #if (1) // Disable check for now
+    // Always perform a redraw
+    bool bImagesEqual = false;
+  #else
+    // Detect to see if a redraw is needed
+    bool bImagesEqual = true;
+    bImagesEqual &= gslc_ImgRefEqual(&(pElem->sImgRefNorm),&sImgRef);
+    bImagesEqual &= gslc_ImgRefEqual(&(pElem->sImgRefGlow),&sImgRefSel);
+  #endif
+  
   // Update the normal and glowing images
   gslc_DrvSetElemImageNorm(pGui,pElem,sImgRef);
   gslc_DrvSetElemImageGlow(pGui,pElem,sImgRefSel);
 
-  // Mark as needing redraw
-  gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_FULL);
+  // Mark as needing redraw only if the image has changed
+  if (!bImagesEqual) {
+    gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_FULL);
+  }
 }
 
 bool gslc_SetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
