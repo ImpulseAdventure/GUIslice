@@ -647,6 +647,18 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY, cons
 void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,const unsigned char* pBitmap,bool bProgMem);
 
 ///
+/// Draw a color 24-bit depth bitmap from SD card
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  filename:    Filename on SD card (usually in form "/pic.bmp")
+/// \param[in]  x:           X coordinate to draw bitmap
+/// \param[in]  y:           Y coordinate to draw bitmap
+///
+/// \return none
+///
+void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, uint16_t y);
+
+///
 /// Copy the background image to destination screen
 ///
 /// \param[in]  pGui:        Pointer to GUI
