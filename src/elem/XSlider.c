@@ -260,11 +260,16 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (nPos < nPosMin) { nPos = nPosMin; }
   else if (nPos > nPosMax) { nPos = nPosMax; }
 
+  // We use an "inner" region for all drawing. The element's
+  // rect is only used for drawing a frame (eg. during focus)
+  gslc_tsRect rElemInner = pElem->rElem;
+  rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
+
   int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
-  nX0 = pElem->rElem.x;
-  nY0 = pElem->rElem.y;
-  nX1 = pElem->rElem.x + pElem->rElem.w - 1;
-  nY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nX0 = rElemInner.x;
+  nY0 = rElemInner.y;
+  nX1 = rElemInner.x + rElemInner.w - 1;
+  nY1 = rElemInner.y + rElemInner.h - 1;
   nXMid = (nX0+nX1)/2;
   nYMid = (nY0+nY1)/2;
 
@@ -291,7 +296,12 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   //         then redraw other portions. This would prevent the
   //         track / ticks from flickering needlessly. A full redraw would
   //         be required if it was first draw action.
-  gslc_DrawFillRect(pGui,pElem->rElem,(bGlow || bFocus)?pElem->colElemFillGlow:pElem->colElemFill);
+  gslc_DrawFillRect(pGui,rElemInner,bGlow?pElem->colElemFillGlow:pElem->colElemFill);
+
+  // Draw the frame if focused, redraw as background color if not
+  gslc_DrawFrameRect(pGui,pElem->rElem,bFocus?pElem->colElemFillGlow:pElem->colElemFill);
+
+
 
   // Draw any ticks
   // - Need at least one tick segment
@@ -390,6 +400,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   pElem     = gslc_GetElemFromRef(pGui,pElemRef);
   pSlider   = (gslc_tsXSlider*)(pElem->pXData);
 
+  gslc_tsRect rElemInner = pElem->rElem;
+  rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
+
   bool    bGlowingOld = gslc_ElemGetGlow(pGui,pElemRef);
   bool    bEditingOld = gslc_ElemGetEdit(pGui,pElemRef);
   int16_t nPosRng;
@@ -472,9 +485,9 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
       if (!pSlider->bVert) {
-        nPos = (int16_t)((int32_t)nRelX * (int32_t)nPosRng / (int32_t)pElem->rElem.w) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelX * (int32_t)nPosRng / (int32_t)rElemInner.w) + pSlider->nPosMin;
       } else {
-        nPos = (int16_t)((int32_t)nRelY * (int32_t)nPosRng / (int32_t)pElem->rElem.h) + pSlider->nPosMin;
+        nPos = (int16_t)((int32_t)nRelY * (int32_t)nPosRng / (int32_t)rElemInner.h) + pSlider->nPosMin;
       }
     }
     // Update the slider
