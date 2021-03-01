@@ -233,13 +233,15 @@ typedef enum {
 #define GSLC_COL_BLUE_LT3   (gslc_tsColor) { 96, 96,255}   ///< Blue (light3)
 #define GSLC_COL_BLUE_LT4   (gslc_tsColor) {128,128,255}   ///< Blue (light4)
 #define GSLC_COL_BLACK      (gslc_tsColor) {  0,  0,  0}   ///< Black
-#define GSLC_COL_GRAY_DK3   (gslc_tsColor) { 32, 32, 32}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK2   (gslc_tsColor) { 64, 64, 64}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK1   (gslc_tsColor) { 96, 96, 96}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK4   (gslc_tsColor) { 16, 16, 16}   ///< Gray (dark4)
+#define GSLC_COL_GRAY_DK3   (gslc_tsColor) { 32, 32, 32}   ///< Gray (dark3)
+#define GSLC_COL_GRAY_DK2   (gslc_tsColor) { 64, 64, 64}   ///< Gray (dark2)
+#define GSLC_COL_GRAY_DK1   (gslc_tsColor) { 96, 96, 96}   ///< Gray (dark1)
 #define GSLC_COL_GRAY       (gslc_tsColor) {128,128,128}   ///< Gray
 #define GSLC_COL_GRAY_LT1   (gslc_tsColor) {160,160,160}   ///< Gray (light1)
 #define GSLC_COL_GRAY_LT2   (gslc_tsColor) {192,192,192}   ///< Gray (light2)
 #define GSLC_COL_GRAY_LT3   (gslc_tsColor) {224,224,224}   ///< Gray (light3)
+#define GSLC_COL_GRAY_LT4   (gslc_tsColor) {240,240,240}   ///< Gray (light4)
 #define GSLC_COL_WHITE      (gslc_tsColor) {255,255,255}   ///< White
 
 #define GSLC_COL_YELLOW     (gslc_tsColor) {255,255,0}     ///< Yellow
