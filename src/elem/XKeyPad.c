@@ -143,6 +143,25 @@ int16_t gslc_XKeyPadLookupId(gslc_tsKey* pKeys, uint8_t nKeyId)
   return -1;
 }
 
+int16_t gslc_XKeyPadLookupSpecialId(gslc_tsLabelSpecial* pLabels, uint8_t nKeyId)
+{
+  if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadLookupSpecialId KeyId=%d\n",nKeyId);
+  int16_t nKeyInd = 0;
+  bool bDone = false;
+  while (!bDone) {
+    uint8_t nId = pLabels[nKeyInd].nId;
+    if (nId == KEYPAD_ID__END) {
+      bDone = true;
+    } else if (nId == nKeyId) {
+      return nKeyInd;
+    } else {
+      nKeyInd++;
+    }
+  }
+  // None found
+  return -1;
+}
+
 
 // Render the KeyPad layout
 // - cColFrame: frame on all buttons

@@ -47,15 +47,17 @@ enum {
 };
 */
 
-// Common text for the special buttons
-// - These should appear in the same order as the
-//   KEYPAD_LAYOUT array
-// - Only include the special buttons as well
-//   as a single entry for the KEYPAD_ID_TXT
-// - TODO: Remove dummy entry
-static const char* KEYPAD_SPECIAL_LABEL[] = {
-  "", // Leave dummy entry for KEYPAD_ID_TXT
-  "BS", " ", "ESC", "ENT", "?123", "<", ">"
+// Define the text strings for each special button
+// - And associate with each Key ID
+static gslc_tsLabelSpecial KEYPAD_SPECIAL_LABEL[] = {
+  { KEYPAD_ID_BACKSPACE,    "BS"},
+  { KEYPAD_ID_SPACE,        " "},
+  { KEYPAD_ID_ESC,          "ESC"},
+  { KEYPAD_ID_ENTER,        "ENT"},
+  { KEYPAD_ID_SCROLL_LEFT,  "<"},
+  { KEYPAD_ID_SCROLL_RIGHT, ">"},
+  // Terminate list
+  { KEYPAD_ID__END,""},
 };
 
 // Text for the basic buttons
@@ -105,7 +107,7 @@ static const char* KEYPAD_SPECIAL_SELECT[] = {
 // - { ID, ROW, COL, ROWSPAN, COLSPAN, TYPE }
 static gslc_tsKey KEYPAD_LAYOUT[] = {
   // Text field
-  { KEYPAD_ID_TXT,           0, 2, 1,12, E_XKEYPAD_TYPE_TXT }, 
+  { KEYPAD_ID_TXT,            0, 2, 1,12, E_XKEYPAD_TYPE_TXT }, 
 
   // Special & basic buttons
   { KEYPAD_ID_SCROLL_LEFT,    0, 0, 1, 2, E_XKEYPAD_TYPE_SPECIAL },   
@@ -160,7 +162,7 @@ static gslc_tsKey* KEYPAD_LAYOUTS[E_XKEYPAD_SET__MAX] = {
 #define XKEYPAD_COL_DEF_TXT GSLC_COL_WHITE
 #define XKEYPAD_COL_DEF_FRAME GSLC_COL_WHITE
 #define XKEYPAD_COL_DEF_FILL GSLC_COL_GRAY_DK1
-#define XKEYPAD_COL_DEF_GLOW GSLC_COL_GRAY_LT4
+#define XKEYPAD_COL_DEF_GLOW GSLC_COL_GRAY_LT3
 // - Color overrides for common keys
 #define XKEYPAD_COL_BASIC_FILL GSLC_COL_BLUE_DK1
 #define XKEYPAD_COL_BASIC_GLOW GSLC_COL_BLUE_LT4

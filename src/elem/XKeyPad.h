@@ -143,6 +143,12 @@ enum {
     uint8_t             nType;     ///< Key type
   } gslc_tsKey;
 
+  /// Key Label strings for special buttons
+  /// - Includes ID and string
+  typedef struct {
+    uint8_t             nId;      /// Unique key ID
+    const char*         pLabel;   /// Key label string (zero terminated)
+  } gslc_tsLabelSpecial;
 
   // Internal callback functions for KeyPad
   typedef void (*GSLC_CB_XKEYPAD_RESET)(void* pvKeyPadConfig);
@@ -236,6 +242,21 @@ enum {
   ///         -1 if the key ID was not found
   ///
   int16_t gslc_XKeyPadLookupId(gslc_tsKey* pKeys, uint8_t nKeyId);
+
+
+  ///
+  /// Find a key ID within a KeyPad special label array and return
+  /// it's index into the array.
+  /// - It is expected that the KeyPad label array is
+  ///   terminated with KEYPAD_ID__END
+  ///
+  /// \param[in]  pKeys:       Ptr to the Keypad special label array
+  /// \param[in]  nKeyId:      Key ID to look for
+  ///
+  /// \return the index into the array if the ID was found or
+  ///         -1 if the key ID was not found
+  ///
+  int16_t gslc_XKeyPadLookupSpecialId(gslc_tsLabelSpecial* pLabels, uint8_t nKeyId);
 
   ///
   /// Add a character to the KeyPad text field at the specified offset (nPos).

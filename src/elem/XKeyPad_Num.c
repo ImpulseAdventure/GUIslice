@@ -183,7 +183,8 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
       // Handle any dynamic keys first
 
       // Static content
-      gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax);
+      int16_t nIndSpecial = gslc_XKeyPadLookupSpecialId(KEYPAD_SPECIAL_LABEL, nId);
+      gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nIndSpecial].pLabel,nStrMax);
     } else {
       gslc_StrCopy(pStr,"",nStrMax);
     }
