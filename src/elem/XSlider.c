@@ -243,6 +243,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   bool            bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
   bool            bFocus    = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
+  bool            bEdit     = (pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) && gslc_ElemGetEdit(pGui,pElemRef);
   int16_t         nPos      = pSlider->nPos;
   int16_t         nPosMin   = pSlider->nPosMin;
   int16_t         nPosMax   = pSlider->nPosMax;
@@ -296,10 +297,12 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   //         then redraw other portions. This would prevent the
   //         track / ticks from flickering needlessly. A full redraw would
   //         be required if it was first draw action.
-  gslc_DrawFillRect(pGui,rElemInner,bGlow?pElem->colElemFillGlow:pElem->colElemFill);
+  // - TODO: Do we really want to use a glow color here? By default, the
+  //         fill and fill glow colors are both set to be the same.
+  gslc_DrawFillRect(pGui,rElemInner,(bGlow || bEdit)?pElem->colElemFillGlow:pElem->colElemFill);
 
   // Draw the frame if focused, redraw as background color if not
-  gslc_DrawFrameRect(pGui,pElem->rElem,bFocus?pElem->colElemFillGlow:pElem->colElemFill);
+  gslc_DrawFrameRect(pGui,pElem->rElem,bFocus?pElem->colElemFrameGlow:pElem->colElemFill);
 
 
 
@@ -325,7 +328,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (!bVert) {
     // Make the track highlight during glow
     gslc_DrawLine(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
-            (bGlow || bFocus)? pElem->colElemFrameGlow : pElem->colElemFrame);
+            (bGlow || bEdit)? pElem->colElemFrameGlow : pElem->colElemFrame);
     // Optionally draw a trim line
     if (bTrim) {
       gslc_DrawLine(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
@@ -334,7 +337,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   } else {
     // Make the track highlight during glow
     gslc_DrawLine(pGui,nXMid,nY0+nMargin,nXMid,nY1-nMargin,
-            (bGlow || bFocus)? pElem->colElemFrameGlow : pElem->colElemFrame);
+            (bGlow || bEdit)? pElem->colElemFrameGlow : pElem->colElemFrame);
     // Optionally draw a trim line
     if (bTrim) {
       gslc_DrawLine(pGui,nXMid+1,nY0+nMargin,nXMid+1,nY1-nMargin,colTrim);
@@ -357,8 +360,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   rThumb.h  = 2*nThumbSz;
 
   // Draw the thumb control
-  gslc_DrawFillRect(pGui,rThumb,(bGlow || bFocus)?pElem->colElemFillGlow:pElem->colElemFill);
-  gslc_DrawFrameRect(pGui,rThumb,(bGlow || bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
+  gslc_DrawFillRect(pGui,rThumb,(bGlow || bEdit)?pElem->colElemFillGlow:pElem->colElemFill);
+  gslc_DrawFrameRect(pGui,rThumb,(bGlow || bEdit)?pElem->colElemFrameGlow:pElem->colElemFrame);
   if (bTrim) {
     gslc_tsRect  rThumbTrim;
     rThumbTrim = gslc_ExpandRect(rThumb,-1,-1);
@@ -495,7 +498,8 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
   }
 
   // If the slider changed state, redraw
-  if (gslc_ElemGetGlow(pGui,pElemRef) != bGlowingOld) {
+  if ((gslc_ElemGetGlow(pGui,pElemRef) != bGlowingOld) ||
+      (gslc_ElemGetEdit(pGui,pElemRef) != bEditingOld)) {
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
   }
 
