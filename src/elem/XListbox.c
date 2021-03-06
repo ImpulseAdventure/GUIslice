@@ -567,8 +567,6 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   int8_t          bFocusLast   = pListbox->nFocusLast;
   int8_t          nItemCurSel  = pListbox->nItemCurSel;
 
-  GSLC_DEBUG_PRINT("DBG: XListbox: Draw() Glow=%d Focus=%d\n",bGlow,bFocus); //xxx
-
   gslc_tsRect rElemRect;
   if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
     rElemRect = gslc_ExpandRect(pElem->rElem, -1, -1);
@@ -786,7 +784,6 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
     break;
 
   case GSLC_TOUCH_FOCUS_SELECT:
-    GSLC_DEBUG_PRINT("XListbox: Touch() FOCUS_SELECT toggle edit to %d\n",(bEditingOld)?0:1); //xxx
     gslc_ElemSetEdit(pGui,pElemRef,!bEditingOld);
     break;
 

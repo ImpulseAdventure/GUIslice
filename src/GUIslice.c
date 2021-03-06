@@ -2855,15 +2855,6 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Generate relative coordinates
         nRelX = pTouchRec->nX - pElemTracked->rElem.x;
         nRelY = pTouchRec->nY - pElemTracked->rElem.y;
-        if ((eTouch & GSLC_TOUCH_SUBTYPE_MASK) == GSLC_TOUCH_DOWN_IN) {
-          GSLC_DEBUG_PRINT("DBG:     ElemEvent(): TOUCH_DOWN_IN\n",""); //xxx
-        } else if ((eTouch & GSLC_TOUCH_SUBTYPE_MASK) == GSLC_TOUCH_UP_IN) {
-          GSLC_DEBUG_PRINT("DBG:     ElemEvent(): TOUCH_UP_IN\n",""); //xxx
-        } else if ((eTouch & GSLC_TOUCH_SUBTYPE_MASK) == GSLC_TOUCH_UP_OUT) {
-          GSLC_DEBUG_PRINT("DBG:     ElemEvent(): TOUCH_UP_OUT\n",""); //xxx
-        } else {
-          GSLC_DEBUG_PRINT("DBG:     ElemEvent(): TOUCH_* other=%d\n",eTouch); //xxx
-        }
       }
 
       // Since we are going to use the callback within the element
@@ -3075,10 +3066,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   bFocusNow = bFocusEn & bFocused; // Element is currently focused
   gslc_tsColor colBg = GSLC_COL_BLACK;
 
-  if (pElem->nType == GSLC_TYPE_BTN) {
-    //GSLC_DEBUG_PRINT("DBG: ElemDraw(BTN) ID=%d Glow=%d Focus=%d\n",pElem->nId,bGlowNow,bFocusNow); //xxx
-  }
-
   // --------------------------------------------------------------------------
   // Background
   // --------------------------------------------------------------------------
@@ -3099,11 +3086,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
     if (bGlowEn && bGlowing) {
       colBg = pElem->colElemFillGlow;
-      GSLC_DEBUG_PRINT("DBG: DrawByRef(): nId=%d glow\n",pElem->nId); //xxx
     } else if (bFocusEn && bFocused) {
       // TODO: Decide if focus should use frame or fill
       colBg = pElem->colElemFillGlow;
-      GSLC_DEBUG_PRINT("DBG: DrawByRef(): nId=%d focus\n",pElem->nId); //xxx
     } else {
       colBg = pElem->colElemFill;
     }
@@ -3531,7 +3516,6 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  GSLC_DEBUG_PRINT("DBG: SetGlow(ID=%d,glow=%d)\n",pElemRef->pElem->nId,bGlowing); //xxx
   // Only change glow state if enabled
   if (gslc_ElemGetGlowEn(pGui, pElemRef)) {
     bool bGlowingOld = gslc_ElemGetGlow(pGui, pElemRef);
@@ -3566,7 +3550,6 @@ void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  //GSLC_DEBUG_PRINT("DBG: SetFocus(ID=%d,focus=%d)\n",pElemRef->pElem->nId,bFocused); //xxx
   // Only change focus state if enabled
   if (gslc_ElemGetFocusEn(pGui, pElemRef)) {
     bool bFocusedOld = gslc_ElemGetFocus(pGui, pElemRef);
@@ -3624,7 +3607,6 @@ void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  GSLC_DEBUG_PRINT("DBG: SetEdit(ID=%d,edit=%d)\n",pElemRef->pElem->nId,bEditing); //xxx
   // Only change glow state if enabled
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
@@ -3900,7 +3882,6 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // - We shouldn't really enter a "Touch Down" event
     //   with an element still marked as being tracked
     if (pTrackedRefOld != NULL) {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: old Tracking exist, about to clear old focus\n",""); //xxx
       gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
     }
 
@@ -3909,12 +3890,9 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
     if (pTrackedRefNew == NULL) {
       // Didn't find an element, so clear the tracking reference
-
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: new Tracking not exist\n",""); //xxx
       gslc_CollectSetElemTracked(pGui,pCollect,NULL);
     } else {
       // Found an element, so mark it as being the tracked element
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: new Tracking exist\n",""); //xxx
 
       // Set the new tracked element reference
       gslc_CollectSetElemTracked(pGui,pCollect,pTrackedRefNew);
@@ -3923,14 +3901,12 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
       }
 
       // Start focus on new element
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: about to set new focus\n",""); //xxx
       gslc_ElemSetFocus(pGui,pTrackedRefNew,true);
 
       // Notify element for optional custom handling
       // - We do this after we have determined which element should
       //   receive the touch tracking
       eTouch = GSLC_TOUCH_DOWN_IN;
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_ON: Send TOUCH_DOWN_IN (skip)\n",""); //xxx
       // No need to create a "TOUCH" event when we are just changing focus
       //gslc_ElemSendEventTouch(pGui,pTrackedRefNew,eTouch,nX,nY);
 
@@ -3942,27 +3918,20 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
 
     if (pTrackedRefOld != NULL) {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking exist\n",""); //xxx
 
       // Clear focus state
       if (pTrackedRefOld->pElem == NULL) {
-        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Track elem NULL\n",""); //xxx
         return;
       }
       gslc_ElemSetFocus(pGui,pTrackedRefOld,false);
 
       // Released not over tracked element
       eTouch = GSLC_TOUCH_UP_OUT;
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Send TOUCH_UP_OUT (skip)\n",""); //xxx
       // No need to create a "TOUCH" event when we are just changing focus
       //gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
-
-    } else {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: Tracking not exist\n",""); //xxx
     }
 
     // Clear the element tracking state
-    GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_OFF: About to reset tracked\n",""); //xxx
     gslc_CollectSetElemTracked(pGui,pCollect,NULL);
 
   } else if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
@@ -3971,26 +3940,20 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
 
     if (pTrackedRefOld != NULL) {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Tracking exist\n",""); //xxx
 
       // Notify original tracked element for optional custom handling
       // If the element is not editable, then mimic a touch event,
       // otherwise, pass on the focus select event
       if (!gslc_ElemGetEditEn(pGui,pTrackedRefOld)) {
         eTouch = GSLC_TOUCH_UP_IN;
-        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send TOUCH_UP_IN\n",""); //xxx
         // TODO: Do we really want to change the eTouch type here?
         //       - Perhaps this is the best way to reuse the existing touch handler in the element
         // Here we are mimicking a touch event within the element
         nX = 0; // Arbitrary
         nY = 0; // Arbitrary
-      } else {
-        GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: Send FOCUS_SELECT\n",""); //xxx
       }
       gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
 
-    } else {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: FOCUS_SELECT: No Tracking exist\n",""); //xxx
     }
 
   } else if ((eTouch == GSLC_TOUCH_SET_REL) || (eTouch == GSLC_TOUCH_SET_ABS)) {
@@ -3999,11 +3962,6 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
     // ---------------------------------
     nX = 0; // Unused
     nY = nInputVal; // Relative or Absolute value
-    if (eTouch == GSLC_TOUCH_SET_REL) {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: SET_REL: Send SET_REL\n",""); //xxx
-    } else if (eTouch == GSLC_TOUCH_SET_ABS) {
-      GSLC_DEBUG_PRINT("DBG: CollectInput: SET_ABS: Send SET_ABS\n",""); //xxx
-    }
     gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
   }
 #endif // GSLC_FEATURE_INPUT
@@ -4309,8 +4267,6 @@ void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext)
   gslc_tsPage* pPage = NULL;
   int16_t nFocusPageInd = pGui->nFocusPageInd;
 
-  GSLC_DEBUG_PRINT("DBG: FocusPageStep() PageInd=%d\n",nFocusPageInd); //xxx
-
   while (!bDone) {
 
     // Keep track of iterations to detect search exhaustion
@@ -4374,7 +4330,6 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
   (void)bNext; // Unused
   return GSLC_IND_NONE;
 #else
-  GSLC_DEBUG_PRINT("DBG: FocusElemStep()\n",""); //xxx
   // Ensure we initialize the focused page
   if (pGui->pFocusPage == NULL) {
     gslc_FocusPageStep(pGui,bNext);
@@ -4393,7 +4348,6 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
   bool bFound = false;
   bool bDone = false;
   while (!bDone) {
-    GSLC_DEBUG_PRINT("DBG: FocusElemStep() StartElemInd=%d ElemInd=%d\n",nStartElemInd,pGui->nFocusElemInd); //xxx
     if (bNext) {
       if (pGui->nFocusElemInd >= pGui->nFocusElemMax-1) {
         // At end of element list, so increment page (also reset element index)
@@ -4435,8 +4389,6 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
 
   } // bDone
 
-  GSLC_DEBUG_PRINT("DBG: FocusElemStep(): PageInd=%d ElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
-
   // FIXME: What should we return and what params should be updated?
   return pGui->nFocusElemInd;
 #endif // GSLC_FEATURE_INPUT
@@ -4467,8 +4419,6 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   gslc_teAction     eAction = GSLC_ACTION_NONE;
   int16_t           nActionVal;
 
-  GSLC_DEBUG_PRINT("\nDBG: TrackInput()\n",""); //xxx
-
   if (pGui->nFocusPageInd == GSLC_IND_NONE) {
     // If we haven't initialized our starting page, do it now
     // This assigns pFocusPage
@@ -4488,20 +4438,6 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
   bool bCanEdit = false;
 
   uint8_t nInputMode = pGui->nInputMode;
-  if (eAction == GSLC_ACTION_FOCUS_PREV) {
-    GSLC_DEBUG_PRINT("DBG: TrackInput() FOCUS_PREV\n",""); //xxx
-  } else if (eAction == GSLC_ACTION_FOCUS_NEXT) {
-    GSLC_DEBUG_PRINT("DBG: TrackInput() FOCUS_NEXT\n",""); //xxx
-  } else if (eAction == GSLC_ACTION_SELECT) {
-    GSLC_DEBUG_PRINT("DBG: TrackInput() SELECT\n",""); //xxx
-  } else if (eAction == GSLC_ACTION_SET_REL) {
-    GSLC_DEBUG_PRINT("DBG: TrackInput() SET_REL\n",""); //xxx
-  } else if (eAction == GSLC_ACTION_SET_ABS) {
-    GSLC_DEBUG_PRINT("DBG: TrackInput() SET_ABS\n",""); //xxx
-  }
-
-  GSLC_DEBUG_PRINT("DBG: TrackInput()  FocusPageInd=%d FocusElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
-
   bool bElemInEdit = false;
 
   switch(eAction) {
@@ -4511,14 +4447,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
       if (nInputMode == GSLC_INPUTMODE_EDIT) {
         // Edit mode
         if (eAction == GSLC_ACTION_FOCUS_PREV) {
-          GSLC_DEBUG_PRINT("DBG: TrackInput()   EditPrev\n",""); //xxx
           sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
           sEventTouch.nX = 0; // Unused
           sEventTouch.nY = -1;
           sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
           gslc_PageEvent(pGui,sEvent);
         } else if (eAction == GSLC_ACTION_FOCUS_NEXT) {
-          GSLC_DEBUG_PRINT("DBG: TrackInput()   EditNext\n",""); //xxx
           sEventTouch.eTouch = GSLC_TOUCH_SET_REL;
           sEventTouch.nX = 0; // Unused
           sEventTouch.nY = 1;
@@ -4533,7 +4467,6 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         sEventTouch.nX = GSLC_IND_NONE;
         sEventTouch.nY = 0; // Unused
 
-        GSLC_DEBUG_PRINT("DBG: TrackInput()   Nav FocusOff\n",""); //xxx
         sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
@@ -4549,8 +4482,6 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         sEventTouch.eTouch = GSLC_TOUCH_FOCUS_ON;
         sEventTouch.nX = pGui->nFocusElemInd;
         sEventTouch.nY = 0; // Unused
-
-        GSLC_DEBUG_PRINT("DBG: TrackInput()   Nav FocusOn PageInd=%d ElemInd=%d\n",pGui->nFocusPageInd,pGui->nFocusElemInd); //xxx
         sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
         gslc_PageEvent(pGui,sEvent);
 
@@ -4573,39 +4504,23 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           bCanEdit = true;
         }
 
-        // Only issue a touch "select" if:
-        // - The element is not editable
-        // FIXME: still need to issue SELECT to KeyPad
-        //xxx if (!bCanEdit) {
-
-          // Select currently focused element
-          sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
-          sEventTouch.nX = pGui->nFocusElemInd;
-          sEventTouch.nY = 0; // Unused
-          sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
-          gslc_PageEvent(pGui,sEvent);
-        //xxx }
+        // Select currently focused element
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_SELECT;
+        sEventTouch.nX = pGui->nFocusElemInd;
+        sEventTouch.nY = 0; // Unused
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
 
         // If element supports edit, toggle nav/edit mode
-        // FIXME: for XKeyPad, we need widget to tell us whether we switch modes
-        //        eg. press OK / ESC button.
-        //        Perhaps for all "edit" widgets, we pass in SELECT and the
-        //        return value indicates if we swap mode.
+        // - For advanced "editable" widgets (like XKeyPad), we let the widget itself
+        //   set the edit state (eg. if OK / ESC button pressed).
+        // - For most other widgets, we just pass in the SELECT.
         if (bCanEdit) {
           // Now that we sent a FOCUS_SELECT, determine if we have changed
           // the GUI navigate/edit mode by checking with the widget
           bElemInEdit = gslc_ElemGetEdit(pGui,pSelElemRef);
 
           pGui->nInputMode = (bElemInEdit)? GSLC_INPUTMODE_EDIT : GSLC_INPUTMODE_NAV;
-          /* //xxx
-          if (nInputMode == GSLC_INPUTMODE_NAV) {
-            // Switch from nav to edit
-            pGui->nInputMode = GSLC_INPUTMODE_EDIT;
-          } else {
-            // Switch from edit to nav
-            pGui->nInputMode = GSLC_INPUTMODE_NAV;
-          }
-          */
         }
 
       }
