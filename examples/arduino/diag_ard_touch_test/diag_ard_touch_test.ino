@@ -396,7 +396,7 @@ void setup()
     GSLC_DEBUG_PRINT("\n=== Touch Testing ===\n\n", "");
   #endif
 
-  #if defined(DRV_TOUCH_TYPE_RES)
+  #if defined(DRV_TOUCH_CALIB)
     // Reset to calibration defaults from configuration
     m_nTouchCalXMin = ADATOUCH_X_MIN;
     m_nTouchCalXMax = ADATOUCH_X_MAX;
@@ -407,7 +407,7 @@ void setup()
     #else
       m_bRemapYX = false;
     #endif
-    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%u XMax=%u YMin=%u YMax=%u RemapYX=%u\n",
+    GSLC_DEBUG_PRINT("CALIB: Config defaults: XMin=%d XMax=%d YMin=%d YMax=%d RemapYX=%u\n",
       ADATOUCH_X_MIN, ADATOUCH_X_MAX, ADATOUCH_Y_MIN, ADATOUCH_Y_MAX,m_bRemapYX);
 
     #if defined(DRV_DISP_ADAGFX_MCUFRIEND)
@@ -416,7 +416,7 @@ void setup()
       GSLC_DEBUG_PRINT("%s ", m_acTxt);
     #endif
 
-  #endif // DRV_TOUCH_TYPE_RES
+  #endif // DRV_TOUCH_CALIB
   GSLC_DEBUG_PRINT("\n", "");
 }
 

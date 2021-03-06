@@ -978,12 +978,12 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
   // Capture default calibration settings for resistive displays
-  #if defined(DRV_TOUCH_TYPE_RES)
+  #if defined(DRV_TOUCH_CALIB)
     pGui->nTouchCalXMin = ADATOUCH_X_MIN;
     pGui->nTouchCalXMax = ADATOUCH_X_MAX;
     pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
-  #endif // DRV_TOUCH_TYPE_RES
+  #endif // DRV_TOUCH_CALIB
 
   // Support touch controllers with swapped X & Y
   #if defined(ADATOUCH_REMAP_YX)
@@ -1157,7 +1157,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     nInputY = nRawY;
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_TYPE_RES)
+    #if defined(DRV_TOUCH_CALIB)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
@@ -1185,14 +1185,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif  // DRV_TOUCH_TYPE_RES
+    #endif  // DRV_TOUCH_CALIB
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
-    #if defined(DRV_TOUCH_TYPE_RES)
+    #if defined(DRV_TOUCH_CALIB)
       GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
         pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
-    #endif // DRV_TOUCH_TYPE_RES
+    #endif // DRV_TOUCH_CALIB
     #endif // DBG_TOUCH
 
     // Perform remapping due to current orientation

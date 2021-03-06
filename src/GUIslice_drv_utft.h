@@ -62,6 +62,30 @@ extern "C" {
 #elif defined(DRV_TOUCH_NONE)
 #endif // DRV_TOUCH_*
 
+// Determine if calibration required
+// - Enable for resistive displays
+// - User config can also enable for capacitive displays by adding:
+//   #define DRV_TOUCH_CALIB
+#if defined(DRV_TOUCH_TYPE_RES)
+  #define DRV_TOUCH_CALIB
+#endif
+
+#if defined(DRV_TOUCH_CALIB)
+  // Ensure calibration settings are present in the config file
+  #if !defined(ADATOUCH_X_MIN)
+    // We didn't locate the calibration settings, so provide some
+    // temporary defaults. This typically only occurs if user has
+    // decided to force calibration on a capacitive display by
+    // adding DRV_TOUCH_CALIB, but hasn't yet added the calibration
+    // settings (ADATOUCH_X/Y_MIN/MAX) from the calibration sketch yet.
+    #warning Calibration settings (ADATOUCH_X/Y_MIN/MAX) need to be added to config. Using defaults.
+    #define ADATOUCH_X_MIN 0
+    #define ADATOUCH_X_MAX 4000
+    #define ADATOUCH_Y_MIN 0
+    #define ADATOUCH_Y_MAX 4000
+    #define ADATOUCH_REMAP_YX 0
+  #endif // ADATOUCH_X_MIN
+#endif // DRV_TOUCH_CALIB
 
 // =======================================================================
 // API support definitions
