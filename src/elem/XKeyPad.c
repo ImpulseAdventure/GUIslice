@@ -734,6 +734,7 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   // If we are not in edit mode yet, then enter edit mode
   // If we are already in edit mode, then turn into key press event
   int16_t nForceId = -1;
+  #if (GSLC_FEATURE_INPUT)
   if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
     if (gslc_ElemGetEdit(pGui,pElemRef)) {
       eTouch = GSLC_TOUCH_UP_IN;
@@ -749,7 +750,7 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
       gslc_ElemSetEdit(pGui,pElemRef,true);
     }
   }
-
+  #endif // GSLC_FEATURE_INPUT
   
   // Handle the various button presses
   // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)

@@ -3555,6 +3555,12 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 
 void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  (void)bFocused; // Unused
+  return;
+#else
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetFocus";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -3570,30 +3576,49 @@ void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused)
       gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_INC);
     }
   }
+#endif // GSLC_FEATURE_INPUT
 }
 
 bool gslc_ElemGetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  return false;
+#else
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetFocus";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_FOCUSED);
+#endif // GSLC_FEATURE_INPUT
 }
 
 /// \todo Doc
 bool gslc_ElemGetEditEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  return false;
+#else
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return false;
 
   return pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN;
+#endif // GSLC_FEATURE_INPUT
 }
 
 
 void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  (void)bEditing; // Unused
+  return;
+#else
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemSetEdit";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
@@ -3605,16 +3630,23 @@ void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing)
   if (pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
     gslc_SetElemRefFlag(pGui, pElemRef, GSLC_ELEMREF_EDITING, (bEditing) ? GSLC_ELEMREF_EDITING : 0);
   }
+#endif // GSLC_FEATURE_INPUT
 }
 
 bool gslc_ElemGetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  return false;
+#else
   if (pElemRef == NULL) {
     static const char GSLC_PMEM FUNCSTR[] = "ElemGetEdit";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return false;
   }
   return gslc_GetElemRefFlag(pGui,pElemRef,GSLC_ELEMREF_EDITING);
+#endif // GSLC_FEATURE_INPUT
 }
 
 
@@ -3692,10 +3724,16 @@ bool gslc_ElemGetGlowEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 /// \todo Doc
 bool gslc_ElemGetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  return false;
+#else
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return false;
 
   return pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN;
+#endif // GSLC_FEATURE_INPUT
 }
 
 
@@ -4145,6 +4183,12 @@ bool gslc_CollectTouchCompound(void* pvGui, void* pvElemRef, gslc_teTouch eTouch
 
 bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemInd)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pCollect; // Unused
+  (void)nElemInd; // Unused
+  return false;
+#else
   // Get focus capability attribute
   bool bCanFocus = false;
   gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[nElemInd]);
@@ -4161,6 +4205,7 @@ bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemIn
     }
   }
   return bCanFocus;
+#endif // GSLC_FEATURE_INPUT
 }
 
 // Return element reference of currently-focused element or NULL for none
@@ -4169,6 +4214,10 @@ bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemIn
 // - pGui->nFocusElemInd
 gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  return NULL;
+#else
   gslc_tsPage* pFocusPage = pGui->pFocusPage;
   if (!pFocusPage) {
     return NULL;
@@ -4177,6 +4226,7 @@ gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
   gslc_tsCollect* pCollect = &(pFocusPage->sCollect);
   gslc_tsElemRef* pElemRef = &(pCollect->asElemRef[pGui->nFocusElemInd]);
   return pElemRef;
+#endif // GSLC_FEATURE_INPUT
 }
 
 // Update the focus to another element
@@ -4186,6 +4236,13 @@ gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui)
 // - Updates tracking element reference
 void gslc_FocusElemIndSet(gslc_tsGui* pGui,int16_t nPageInd,int16_t nElemInd,bool bFocus)
 {
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)nPageInd; // Unused
+  (void)nElemInd; // Unused
+  (void)bFocus; // Unused
+  return;
+#else
   gslc_tsElemRef* pElemRef = NULL;
   gslc_tsCollect* pCollect = NULL;
 
@@ -4229,6 +4286,7 @@ void gslc_FocusElemIndSet(gslc_tsGui* pGui,int16_t nPageInd,int16_t nElemInd,boo
     pGui->nFocusElemMax = 0;
     gslc_CollectSetElemTracked(pGui,pCollect,pElemRef);
   }
+#endif // GSLC_FEATURE_INPUT
 }
 
 
