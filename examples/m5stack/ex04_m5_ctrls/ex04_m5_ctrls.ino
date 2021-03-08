@@ -3,8 +3,8 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 23 (M5stack): Dynamic content with integrated button control
-//   - Same as Example 04, except adds GPIO pin input control
+// - Example 04 (M5stack): Dynamic content with integrated button control
+//   - Same as Example 04 (Arduino), except adds GPIO pin input control
 //     IMPORTANT: See notes under Button Control
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - NOTE: This is the simple version of the example without
