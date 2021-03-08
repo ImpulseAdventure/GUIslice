@@ -29,7 +29,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Platform-independent* GUI core currently supports:
   - Adafruit-GFX, TFT_eSPI, mcufriend, UTFT, LCDGFX, SDL1.2, SDL2.0
 - *Devices*:
-  - Raspberry Pi, Arduino, ATmega2560, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3 / T4, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
+  - Raspberry Pi, Arduino, ATmega2560, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3 / T4, WIO Terminal, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
 - *Typical displays*:
   - PiTFT, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", FeatherWing TFT, OLED 0.96", mcufriend, BuyDisplay / EastRising 4.3" 5" 7", Waveshare, 4D Cape
 - *Display drivers include*:
@@ -45,7 +45,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 ## Screenshots ##
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
+![control_demo2](https://user-images.githubusercontent.com/8510097/110281930-716f3b80-7f92-11eb-9bb3-755436d4bbb2.png)
 
 ## GUIslice Builder ##
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts

@@ -3,38 +3,26 @@
 
 // =============================================================================
 // GUIslice library (example user configuration) for:
-//   - CPU:     ESP8266 / ESP32
-//   - Display: TFT_eSPI (defined by TFT_eSPI config)
-//   - Touch:   None
-//   - Wiring:  Custom breakout
-//              - Pinout defined by TFT_eSPI's User_Setup.h
+//   - CPU:     WIO Terminal (Cortex-M4F / SAMD51)
+//   - Display: TFT_eSPI modified by WIO Terminal
+//   - Touch:   Built-in buttons
+//   - Wiring:  Integrated unit
 //
 //   - Example display:
-//     -
+//     - WIO Terminal
 //
-// TFT_eSPI Notes:
-//   - When using the TFT_eSPI library, there are additional
-//     library-specific configuration files that may need
-//     customization (including pin configuration), such as
-//     "User_Setup_Select.h" (typically located in the
-//     Arduino /libraries/TFT_eSPI folder). Please refer to
-//     Bodmer's TFT_eSPI library for more details:
-//     https://github.com/Bodmer/TFT_eSPI
-//
-//   - To avoid potential SPI conflicts, it is recommended
-//     that SUPPORT_TRANSACTIONS is defined in TFT_eSPI's "User Setup"
-//
-//   - For touch support by external drivers, the TFT_eSPI's integrated
-//     XPT2046 touch driver should be disabled. This can be done by
-//     ensuring that TFT_eSPI's User_Setup.h does not define TOUCH_CS
-//     (ie. it should be commented out).
+//   - IMPORTANT NOTE:
+//     - As the WIO Terminal library (Seeed_Arduino_LCD) includes a customized
+//       fork of TFT_eSPI, it is important that any existing TFT_eSPI
+//       library is moved outside of the Arduino libraries folder, otherwise
+//       the display will not work correctly.
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a breakout board, customization
-//   of the Pinout in SECTION 2 will be required to match your display.
+// - As this config file is designed for a shield, no additional
+//   wiring is required to support the GUI operation
 //
 // =============================================================================
 // - Calvin Hass
