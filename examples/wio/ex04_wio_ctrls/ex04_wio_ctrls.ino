@@ -32,6 +32,15 @@
 
 // Button Control
 // - Define the pin connections for the external buttons.
+// - On the WIO Terminal, there are 8 buttons that can be mapped:
+//   - WIO_KEY_A
+//   - WIO_KEY_B
+//   - WIO_KEY_C
+//   - WIO_SS_UP
+//   - WIO_SS_DOWN
+//   - WIO_SS_LEFT
+//   - WIO_SS_RIGHT
+//   - WIO_SS_PRESS
 #include "EasyButton.h"
 #define PIN_PREV  WIO_KEY_A
 #define PIN_SEL   WIO_KEY_B
