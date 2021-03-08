@@ -10,7 +10,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 
 ![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
 ![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
-![GUIslice Builder](https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png)
+![control_demo2](https://user-images.githubusercontent.com/8510097/110281930-716f3b80-7f92-11eb-9bb3-755436d4bbb2.png)
 
 - Extensive [Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki) guides available
 - [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
@@ -45,7 +45,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 ## Screenshots ##
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
 ![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-![control_demo2](https://user-images.githubusercontent.com/8510097/110281930-716f3b80-7f92-11eb-9bb3-755436d4bbb2.png)
+![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
 
 ## GUIslice Builder ##
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
