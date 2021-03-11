@@ -2188,6 +2188,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   // the touch handler may interfere with displays that share pins.
   #define FIX_4WIRE_PIN_STATE // Comment out to disable
 
+  // For ESP32 devices, a workaround is required for the
+  // Adafruit_TouchScreen since it makes an assumption that
+  // the ADC resolution is 10-bit. This workaround enables the
+  // Adafruit library to operate the same was as for AVR devices.
+  #if defined(ESP32)
+    #define FIX_4WIRE_ADC_10 // Comment out to disable
+  #endif
+
   // --------------------------------------------------------------------------
 
   // Disable certain workarounds for Adafruit_TouchScreen for certain devices
@@ -2323,6 +2331,16 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     m_touch.setTouchLimit(1);
     return true;
   #elif defined(DRV_TOUCH_ADA_SIMPLE)
+    #if defined(ESP32)
+      // ESP32 defaults to 12-bit resolution whereas Adafruit_Touchscreen
+      // hardcodes a 10-bit range. Workaround for now is to change the
+      // ADC resolution to 10-bit.
+      // References:
+      // - https://github.com/adafruit/Adafruit_TouchScreen/issues/15
+      #if defined(FIX_4WIRE_ADC_10)
+        analogReadResolution(10);
+      #endif // FIX_4WIRE_ADC_10
+    #endif
     return true;
   #elif defined(DRV_TOUCH_XPT2046_STM)
     m_touch.begin();
