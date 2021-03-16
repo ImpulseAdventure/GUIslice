@@ -3049,6 +3049,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Init for default drawing
   // --------------------------------------------------------------------------
 
+  bool      bFillEn,bFrameEn,bRoundEn;
   bool      bGlowEn,bGlowing,bGlowNow;
   bool      bFocusEn,bFocused,bFocusNow;
   int16_t   nElemX,nElemY;
@@ -3058,12 +3059,13 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   nElemY    = pElem->rElem.y;
   nElemW    = pElem->rElem.w;
   nElemH    = pElem->rElem.h;
+  bFillEn   = pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN;
+  bRoundEn  = pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN;
+  bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
-  bGlowing  = gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
-  bGlowNow  = bGlowEn & bGlowing; // Element is currently glowing
+  bGlowing  = bGlowEn & gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
-  bFocused  = gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
-  bFocusNow = bFocusEn & bFocused; // Element is currently focused
+  bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
   gslc_tsColor colBg = GSLC_COL_BLACK;
 
   // --------------------------------------------------------------------------
@@ -3076,23 +3078,22 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // If frame is enabled then contract the inner region slightly so that:
   //   a) we don't overdraw the frame (if enabled), avoiding flicker
   //   b) text placement will not overlap the frame
-  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
+  if (bFrameEn||bFocusEn) {
     // NOTE: If the region is already too small to shrink (eg. w=1 or h=1)
     // then a zero dimension box will be returned by ExpandRect() and not drawn
     rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
   }
 
   // - This also changes the fill color if selected and glow state is enabled
-  if (pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN) {
-    if (bGlowEn && bGlowing) {
-      colBg = pElem->colElemFillGlow;
-    } else if (bFocusEn && bFocused) {
-      // TODO: Decide if focus should use frame or fill
+  if (bFillEn) {
+    if (bGlowing) {
       colBg = pElem->colElemFillGlow;
     } else {
+      // Note that when we are focused we are highlighting the frame
+      // so we just fill with normal background here
       colBg = pElem->colElemFill;
     }
-    if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
+    if (bRoundEn) {
       gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
     } else {
       gslc_DrawFillRect(pGui, rElemInner, colBg);
@@ -3112,12 +3113,25 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // For debug purposes, draw a frame around every element
   gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   #else
-  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
-    // TODO: Handle focus state here for image buttons?
-    if (pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN) {
-      gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, pElem->colElemFrame);
+  if (bFrameEn||bFocusEn) {
+    // Default to background color
+    // - We will draw a frame with this if we lose focus
+    gslc_tsColor colSel = pElem->colElemFill;
+    if (bFocused) {
+      colSel = pElem->colElemFrameGlow;
     } else {
-      gslc_DrawFrameRect(pGui, pElem->rElem, pElem->colElemFrame);
+      if (bFrameEn) {
+        if (bGlowing) {
+          colSel = pElem->colElemFrameGlow;
+        } else {
+          colSel = pElem->colElemFrame;
+        }
+      }
+    }
+    if (bRoundEn) {
+      gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, colSel);
+    } else {
+      gslc_DrawFrameRect(pGui, pElem->rElem, colSel);
     }
   }
   #endif
@@ -3137,12 +3151,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   // Draw any images associated with element
   if (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE) {
-    if ((bGlowEn && bGlowing) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
-      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
-    } else if ((bFocusEn && bFocused) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
-      // TODO: Should we rely on frame instead of glow image?
+    if ((bGlowing) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
       bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
     } else {
+      // Note that when we are focused we are highlighting the frame
+      // so we just draw the normal image.
       bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefNorm);
     }
     if (!bOk) {
