@@ -91,6 +91,7 @@ gslc_tsElemRef* gslc_ElemXToggleImgbtnCreate(gslc_tsGui* pGui,int16_t nElemId,in
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
 
   // Define other extended data
   sElem.pXData            = (void*)(pXData);
@@ -273,6 +274,8 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
 
   // frame enabled?
   bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
+  bool bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN;
+  bool bFocus    = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef);
 
   /* Size rInner according to whether or not a frame is being used.
    * If a frame is used we assume the pElem->rElem Rectangle size is one pixel bigger
@@ -280,7 +283,7 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
    * We then use the rInner for drawing our images.
    */
   gslc_tsRect rInner;
-  if (bFrameEn) {
+  if (bFrameEn||bFocusEn) {
     rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
   } else {
     rInner = pElem->rElem;
@@ -298,8 +301,22 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
   } else {
     bOk = gslc_DrvDrawImage(pGui,rInner.x,rInner.y,pElem->sImgRefNorm);
   }
-  if (bFrameEn) {
-    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow)?pElem->colElemFrameGlow:pElem->colElemFrame);
+
+  // Draw an optional frame, also indicate focus
+  if (bFrameEn||bFocusEn) {
+    gslc_tsColor colSel = pElem->colElemFill; // Default to background color
+    if (bFocus) {
+      colSel = pElem->colElemFrameGlow;
+    } else {
+      if (bFrameEn) {
+        if (bGlow) {
+          colSel = pElem->colElemFrameGlow;
+        } else {
+          colSel = pElem->colElemFrame;
+        }
+      }
+    }
+    gslc_DrawFrameRect(pGui,pElem->rElem,colSel);
   }
   if (!bOk) {
     GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXToggleImgbtnDraw failed\n","");
