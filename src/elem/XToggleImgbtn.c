@@ -304,7 +304,9 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
 
   // Draw an optional frame, also indicate focus
   if (bFrameEn||bFocusEn) {
-    gslc_tsColor colSel = pElem->colElemFill; // Default to background color
+    // Default to background color
+    // - We will draw a frame with this if we lose focus
+    gslc_tsColor colSel = pElem->colElemFill;
     if (bFocus) {
       colSel = pElem->colElemFrameGlow;
     } else {
