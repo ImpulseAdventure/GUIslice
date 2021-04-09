@@ -3803,6 +3803,9 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 ///
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
 
+/// \todo Doc
+void gslc_SetGuiInputMode(gslc_tsGui* pGui,bool bEdit);
+
 /// \todo Doc. This API is experimental and subject to change
 bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal);
 

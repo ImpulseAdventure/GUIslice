@@ -3088,6 +3088,10 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   if (bFillEn) {
     if (bGlowing) {
       colBg = pElem->colElemFillGlow;
+    } else if (bFocused) {
+      //xxx For now, also use glow color during focus
+      // Otherwise the keypad buttons are hard to see as focused with frame coloring alone
+      colBg = pElem->colElemFillGlow;
     } else {
       // Note that when we are focused we are highlighting the frame
       // so we just fill with normal background here
@@ -4407,6 +4411,10 @@ int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext)
 #endif // GSLC_FEATURE_INPUT
 }
 
+void gslc_SetGuiInputMode(gslc_tsGui* pGui,bool bEdit)
+{
+  pGui->nInputMode = (bEdit)? GSLC_INPUTMODE_EDIT : GSLC_INPUTMODE_NAV;
+}
 
 // FIXME: pPage UNUSED with new PageStack implementation
 void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal)
@@ -4457,6 +4465,12 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
     case GSLC_ACTION_FOCUS_PREV:
     case GSLC_ACTION_FOCUS_NEXT:
 
+      if (eAction == GSLC_ACTION_FOCUS_PREV) {
+        GSLC_DEBUG_PRINT("TrackInput: FOCUS_PREV, InputMode=%d\n",nInputMode); //xxx
+      } else if (eAction == GSLC_ACTION_FOCUS_NEXT) {
+        GSLC_DEBUG_PRINT("TrackInput: FOCUS_NEXT, InputMode=%d\n",nInputMode); //xxx
+      }
+
       if (nInputMode == GSLC_INPUTMODE_EDIT) {
         // Edit mode
         if (eAction == GSLC_ACTION_FOCUS_PREV) {
@@ -4503,6 +4517,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
       break;
 
     case GSLC_ACTION_SELECT:
+      GSLC_DEBUG_PRINT("TrackInput: ACTION_SELECT, InputMode=%d, FocusInd=%d\n",nInputMode,pGui->nFocusElemInd); //xxx
 
       // Ensure an element is in focus!
       if (pGui->nFocusElemInd == GSLC_IND_NONE) {
@@ -4533,7 +4548,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
           // the GUI navigate/edit mode by checking with the widget
           bElemInEdit = gslc_ElemGetEdit(pGui,pSelElemRef);
 
-          pGui->nInputMode = (bElemInEdit)? GSLC_INPUTMODE_EDIT : GSLC_INPUTMODE_NAV;
+          gslc_SetGuiInputMode(pGui,bElemInEdit);
         }
 
       }
@@ -4542,6 +4557,7 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
 
     case GSLC_ACTION_SET_REL:
     case GSLC_ACTION_SET_ABS:
+      GSLC_DEBUG_PRINT("TrackInput: SET_REL, InputMode=%d, FocusInd=%d\n",nInputMode,pGui->nFocusElemInd); //xxx
 
       // Ensure an element is in focus!
       if (pGui->nFocusElemInd == GSLC_IND_NONE) {
