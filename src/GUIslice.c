@@ -3108,6 +3108,33 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     // to redraw the background layer(s)
   }
 
+
+  // --------------------------------------------------------------------------
+  // Handle special element types
+  // --------------------------------------------------------------------------
+  if (pElem->nType == GSLC_TYPE_LINE) {
+    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
+  }
+
+
+  // --------------------------------------------------------------------------
+  // Image overlays
+  // --------------------------------------------------------------------------
+
+  // Draw any images associated with element
+  if (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE) {
+    if ((bGlowing) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
+      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
+    } else {
+      // Note that when we are focused we are highlighting the frame
+      // so we just draw the normal image.
+      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefNorm);
+    }
+    if (!bOk) {
+      GSLC_DEBUG2_PRINT("ERROR: DrvDrawImage failed\n","");
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Frame
   // --------------------------------------------------------------------------
@@ -3139,33 +3166,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     }
   }
   #endif
-
-
-  // --------------------------------------------------------------------------
-  // Handle special element types
-  // --------------------------------------------------------------------------
-  if (pElem->nType == GSLC_TYPE_LINE) {
-    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
-  }
-
-
-  // --------------------------------------------------------------------------
-  // Image overlays
-  // --------------------------------------------------------------------------
-
-  // Draw any images associated with element
-  if (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE) {
-    if ((bGlowing) && (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE)) {
-      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefGlow);
-    } else {
-      // Note that when we are focused we are highlighting the frame
-      // so we just draw the normal image.
-      bOk = gslc_DrvDrawImage(pGui,nElemX,nElemY,pElem->sImgRefNorm);
-    }
-    if (!bOk) {
-      GSLC_DEBUG2_PRINT("ERROR: DrvDrawImage failed\n","");
-    }
-  }
 
   // --------------------------------------------------------------------------
   // Text overlays
