@@ -2093,6 +2093,15 @@ void gslc_SetPageBase(gslc_tsGui* pGui, int16_t nPageId)
 void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 {
   gslc_SetStackPage(pGui, GSLC_STACK_CUR, nPageId);
+
+  // If a focus is currently active, change the focus to the new page
+  #if (GSLC_FEATURE_INPUT)
+  if (pGui->nFocusPageInd != GSLC_IND_NONE) {
+    // Update the focus to the new page and find
+    // suitable default element to receive focus
+    gslc_FocusElemIndSet(pGui,GSLC_STACK_CUR,GSLC_IND_NONE,true);
+  }
+  #endif
 }
 
 void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId)
