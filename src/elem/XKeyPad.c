@@ -709,6 +709,8 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   return false;
   #else
 
+  GSLC_DEBUG_PRINT("XKeyPadTouch: eTouch=%d nX=%d nY=%d\n",eTouch,nX,nY); //xxx
+
   gslc_tsGui* pGui = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
@@ -736,6 +738,7 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   int16_t nForceId = -1;
   #if (GSLC_FEATURE_INPUT)
   if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
+    GSLC_DEBUG_PRINT("XTouch: TOUCH_FOCUS_SELECT\n",""); //xxx
     if (gslc_ElemGetEdit(pGui,pElemRef)) {
       eTouch = GSLC_TOUCH_UP_IN;
       // Fetch the key ID from the focused keypad index
@@ -756,12 +759,19 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
   // TODO: Also handle GSLC_TOUCH_DOWN_IN (for glow state)
   // TODO: Also handle GSLC_TOUCH_MOVE?
   if (eTouch == GSLC_TOUCH_SET_REL) {
+    GSLC_DEBUG_PRINT("XTouch: TOUCH_SET_REL\n",""); //xxx
     int16_t nPos = pKeyPad->nFocusKeyInd;
     gslc_XKeyPadSizeGet(pConfig->pLayout,&nMaxRows,&nMaxCols,&nIndFirst,&nIndLast);
-    if (nY > 0) {
-      nPos = (nPos+1 > nIndLast)? nIndFirst : nPos+1;
+    if (nPos == GSLC_IND_NONE) {
+      // No existing focus key has been assigned yet, so do it now
+      GSLC_DEBUG_PRINT("XKeyPadTouch: SET_REL but no focus, default to %d\n",nIndFirst); //xxx
+      nPos = nIndFirst;
     } else {
-      nPos = (nPos-1 < nIndFirst)? nIndLast : nPos-1;
+      if (nY > 0) {
+        nPos = (nPos+1 > nIndLast)? nIndFirst : nPos+1;
+      } else {
+        nPos = (nPos-1 < nIndFirst)? nIndLast : nPos-1;
+      }
     }
     GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() SET_REL (inc=%d first=%d last=%d old_pos=%d new_pos=%d)\n",
       nY,nIndFirst,nIndLast,pKeyPad->nFocusKeyInd,nPos); //xxx
@@ -773,6 +783,7 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
     sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_ALL; // FIXME: Change to single key
   } else if (eTouch == GSLC_TOUCH_UP_IN) {
 
+    GSLC_DEBUG_PRINT("XTouch: TOUCH_UP_IN\n",""); //xxx
     GSLC_CB_INPUT pfuncXInput = pKeyPad->pfuncCb;
     gslc_tsXKeyPadData sKeyPadData;
     int16_t nId;
@@ -784,6 +795,11 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
     // Determine if touch matches any fields on the keypad
     if (nForceId == -1) {
       nId = gslc_XKeyPadMapEvent(pGui, pKeyPad, nRelX, nRelY);
+      // In case we wish to use a combination of touch and external
+      // inputs to control the GUI, we will want to ensure that we
+      // show focus and enter edit mode whenever we touch the keypad.
+      gslc_ElemSetFocus(pGui,pElemRef,true);
+      gslc_ElemSetEdit(pGui,pElemRef,true);
     } else {
       // Key comes from input navigation instead of coordinates
       nId = nForceId;
@@ -802,6 +818,8 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
       // Leave edit mode
       GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() leave edit mode\n",""); //xxx
       gslc_ElemSetEdit(pGui,pElemRef,false);
+      // Turn off focus
+      gslc_ElemSetFocus(pGui,pElemRef,false);
    
       // Issue callback with Done status
       if (pfuncXInput != NULL) {
@@ -842,6 +860,8 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
       // Leave edit mode
       GSLC_DEBUG_PRINT("DBG: XKeyPadTouch() leave edit mode\n",""); //xxx
       gslc_ElemSetEdit(pGui,pElemRef,false);
+      // Turn off focus
+      gslc_ElemSetFocus(pGui,pElemRef,false);
       // Reset buffer and associated state
       gslc_ElemXKeyPadReset(pKeyPad);
       sResult.eRedrawState = sResult.eRedrawState | XKEYPAD_REDRAW_TXT;
@@ -1267,7 +1287,7 @@ void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
   pVirtualElem->colElemFill       = cColFill;
   pVirtualElem->colElemFillGlow   = cColFillGlow;
   pVirtualElem->colElemFrame      = cColFrame;
-  pVirtualElem->colElemFrameGlow  = cColFrame;
+  pVirtualElem->colElemFrameGlow  = cColFrame; // FIXME: Consider using different col
   pVirtualElem->colElemText       = cColText;
   pVirtualElem->colElemTextGlow   = cColText;
   pVirtualElem->nFeatures         = GSLC_ELEM_FEA_NONE;
