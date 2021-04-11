@@ -3059,8 +3059,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // --------------------------------------------------------------------------
 
   bool      bFillEn,bFrameEn,bRoundEn;
-  bool      bGlowEn,bGlowing,bGlowNow;
-  bool      bFocusEn,bFocused,bFocusNow;
+  bool      bGlowEn,bGlowing; //xxx ,bGlowNow;
+  bool      bFocusEn,bFocused; //xxx ,bFocusNow;
   int16_t   nElemX,nElemY;
   uint16_t  nElemW,nElemH;
 
@@ -3222,9 +3222,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Draw text string if defined
   if (pElem->pStrBuf) {
     gslc_tsColor  colTxt;
-    if (bGlowNow) {
+    if (bGlowing) {
       colTxt = pElem->colElemTextGlow;
-    } else if (bFocusNow) {
+    } else if (bFocused) {
       colTxt = pElem->colElemTextGlow;
     } else {
       colTxt = pElem->colElemText;
