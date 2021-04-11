@@ -2260,6 +2260,10 @@ void gslc_ElemSetTouchFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_T
 ///
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest);
 
+/// \todo Doc
+void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
+  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner);
+
 ///
 /// Get the glowing enable for an element
 ///

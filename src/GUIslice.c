@@ -2644,7 +2644,7 @@ gslc_tsElemRef* gslc_ElemCreateBtnTxt(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.colElemFill       = GSLC_COL_BLUE_DK4;
   sElem.colElemFillGlow   = GSLC_COL_BLUE_DK1;
   sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
-  sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
+  sElem.colElemFrameGlow  = GSLC_COL_YELLOW;
   sElem.colElemText       = GSLC_COL_WHITE;
   sElem.colElemTextGlow   = GSLC_COL_WHITE;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
@@ -3064,15 +3064,17 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   int16_t   nElemX,nElemY;
   uint16_t  nElemW,nElemH;
 
+/* //xxx
   nElemX    = pElem->rElem.x;
   nElemY    = pElem->rElem.y;
   nElemW    = pElem->rElem.w;
   nElemH    = pElem->rElem.h;
+  */
   bFillEn   = pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN;
   bRoundEn  = pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN;
   bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
-  bGlowing  = bGlowEn & gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
+  bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
   bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
   gslc_tsColor colBg = GSLC_COL_BLACK;
@@ -3081,6 +3083,30 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Background
   // --------------------------------------------------------------------------
 
+
+  gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
+  gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
+  gslc_tsColor colInner = GSLC_COL_BLACK;
+  gslc_tsColor colOuter = GSLC_COL_BLACK;
+
+  // Determine the regions and colors based on frame, focus and glow states
+  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner);
+
+  nElemX    = rElemInner.x;
+  nElemY    = rElemInner.y;
+  nElemW    = rElemInner.w;
+  nElemH    = rElemInner.h;
+
+  // Fill in the background
+  if (bFillEn) {
+    if (bRoundEn) {
+      gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colInner);
+    } else {
+      gslc_DrawFillRect(pGui, rElemInner, colInner);
+    }
+  }
+
+/*
   // Fill in the background
   gslc_tsRect rElemInner = pElem->rElem;
 
@@ -3116,13 +3142,15 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     // TODO: If unfilled, then we might need
     // to redraw the background layer(s)
   }
+  */
 
 
   // --------------------------------------------------------------------------
   // Handle special element types
   // --------------------------------------------------------------------------
   if (pElem->nType == GSLC_TYPE_LINE) {
-    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
+    //xxx gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
+    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,colInner);
   }
 
 
@@ -3151,8 +3179,18 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
+  //xxx gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
+  gslc_DrawFrameRect(pGui,rElemOuter,GSLC_COL_GRAY_DK1);
   #else
+
+  if (bFrameEn) {
+    if (bRoundEn) {
+      gslc_DrawFrameRoundRect(pGui, rElemOuter, pGui->nRoundRadius, colOuter);
+    } else {
+      gslc_DrawFrameRect(pGui, rElemOuter, colOuter);
+    }
+  }
+/* //xxx
   if (bFrameEn||bFocusEn) {
     // Default to background color
     // - We will draw a frame with this if we lose focus
@@ -3174,6 +3212,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
       gslc_DrawFrameRect(pGui, pElem->rElem, colSel);
     }
   }
+  */
   #endif
 
   // --------------------------------------------------------------------------
@@ -3195,6 +3234,12 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
     // Note that we use the "inner" region for text placement to
     // avoid overlapping any frame
+    if (bFillEn) {
+      colBg = colInner;
+    } else {
+      // To indicate transparent mode, we set text and background to same color
+      colBg = colTxt;
+    }
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
       pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
   }
@@ -3231,9 +3276,27 @@ void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
+  gslc_tsRect rRect = gslc_ElemGetRect(pGui,pElemRef);
+  bool bFrameEnOld = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
+
+  // Does the element contain an image?
+  // - If so, we may adjust the element dimensions to accommodate a frame
+  bool bHasImg = (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE);
+
+  // Update the frame enable
   if (bFrameEn) {
+    if (bHasImg && !bFrameEnOld) {
+      // We have added a frame to an image element, so we need to
+      // increase the dimensions by 1 pixel on all sides
+      gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,+1,+1));
+    }
     pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   } else {
+    if (bHasImg && bFrameEnOld) {
+      // We have removed a frame from an image element, so we need to
+      // decrease the dimensions by 1 pixel on all sides
+      gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,-1,-1));
+    }
     pElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
   }
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
@@ -3819,6 +3882,57 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   gslc_ElemSetRedraw(pGui,pElemRefDest,GSLC_REDRAW_FULL);
 }
 
+void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
+  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner)
+{
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  uint8_t nFeatures = pElem->nFeatures;
+  gslc_tsRect rElem = pElem->rElem;
+
+  bool bFrameEn  = nFeatures & GSLC_ELEM_FEA_FRAME_EN;
+  bool bGlowEn   = nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
+  bool bFocusEn  = nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
+  bool bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
+  bool bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
+
+  // Calculate the regions
+  if (bFrameEn) {
+    // If a frame is enabled, shrink the inner region
+    *pRectInner = gslc_ExpandRect(rElem,-1,-1);
+    *pRectOuter = rElem;
+  } else {
+    *pRectInner = rElem;
+  }
+
+  // Calculate the outer color
+  if (bFrameEn) {
+    if (bGlowing) {
+      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Glow\n",""); //xxx
+      *pColOuter = pElem->colElemFrameGlow;
+    } else if (bFocused) {
+      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Focus\n",""); //xxx
+      *pColOuter = pElem->colElemFrameGlow;
+    } else {
+      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Norm\n",""); //xxx
+      *pColOuter = pElem->colElemFrame;
+    }
+  }
+
+  // Calculate the inner color
+  if (bGlowing) {
+    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Glow\n",""); //xxx
+    *pColOuter = pElem->colElemFrameGlow;
+    *pColInner = pElem->colElemFillGlow;
+  } else if (bFocused) {
+    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Focus\n",""); //xxx
+    *pColInner = pElem->colElemFillGlow;
+  } else {
+    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Norm\n",""); //xxx
+    *pColInner = pElem->colElemFill;
+  }
+
+}
+
 /* UNUSED
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb)
 {
@@ -4183,6 +4297,9 @@ bool gslc_ElemCanFocus(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nElemIn
       exit(1); // FATAL
     } else {
       // Check the "accept focus" flag
+      // TODO: Consider whether we should also qualify with the
+      //       FRAME_EN flag. If the frame is not enabled, then
+      //       a focus might not be shown.
       if (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) {
         bCanFocus = true;
       }
