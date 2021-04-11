@@ -3060,9 +3060,13 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   bool      bFillEn,bFrameEn,bRoundEn;
   bool      bGlowEn,bGlowing; //xxx ,bGlowNow;
-  bool      bFocusEn,bFocused; //xxx ,bFocusNow;
+  //bool      bFocusEn,bFocused; //xxx ,bFocusNow;
   int16_t   nElemX,nElemY;
   uint16_t  nElemW,nElemH;
+
+  // --------------------------------------------------------------------------
+  // Calculate the style
+  // --------------------------------------------------------------------------
 
 /* //xxx
   nElemX    = pElem->rElem.x;
@@ -3075,27 +3079,31 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
   bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
   bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
-  bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
-  bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
-  gslc_tsColor colBg = GSLC_COL_BLACK;
+  //bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
+  //bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
 
-  // --------------------------------------------------------------------------
-  // Background
-  // --------------------------------------------------------------------------
-
+  //gslc_tsColor colBg = GSLC_COL_BLACK;
 
   gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
   gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
   gslc_tsColor colInner = GSLC_COL_BLACK;
   gslc_tsColor colOuter = GSLC_COL_BLACK;
+  gslc_tsColor colTxtFore = GSLC_COL_WHITE;
+  gslc_tsColor colTxtBack = GSLC_COL_BLACK;
 
   // Determine the regions and colors based on frame, focus and glow states
-  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner);
+  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner,&colTxtFore,&colTxtBack);
 
+  // Extract common fields
   nElemX    = rElemInner.x;
   nElemY    = rElemInner.y;
   nElemW    = rElemInner.w;
   nElemH    = rElemInner.h;
+
+  // --------------------------------------------------------------------------
+  // Background
+  // --------------------------------------------------------------------------
+
 
   // Fill in the background
   if (bFillEn) {
@@ -3221,6 +3229,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   // Draw text string if defined
   if (pElem->pStrBuf) {
+    /* //xxx
     gslc_tsColor  colTxt;
     if (bGlowing) {
       colTxt = pElem->colElemTextGlow;
@@ -3229,19 +3238,24 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     } else {
       colTxt = pElem->colElemText;
     }
+    */
     int8_t        nMarginX  = pElem->nTxtMarginX;
     int8_t        nMarginY  = pElem->nTxtMarginY;
 
     // Note that we use the "inner" region for text placement to
     // avoid overlapping any frame
+    /*
     if (bFillEn) {
       colBg = colInner;
     } else {
       // To indicate transparent mode, we set text and background to same color
       colBg = colTxt;
     }
+    */
+    //xxx gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
+      //xxx pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
-      pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
+      pElem->eTxtAlign, colTxtFore, colTxtBack, nMarginX, nMarginY);
   }
 
   // --------------------------------------------------------------------------
@@ -3883,12 +3897,14 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 }
 
 void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
-  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner)
+  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner,
+  gslc_tsColor* pColTxtFore, gslc_tsColor* pColTxtBack)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   uint8_t nFeatures = pElem->nFeatures;
   gslc_tsRect rElem = pElem->rElem;
 
+  bool bFillEn   = nFeatures & GSLC_ELEM_FEA_FILL_EN;
   bool bFrameEn  = nFeatures & GSLC_ELEM_FEA_FRAME_EN;
   bool bGlowEn   = nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
   bool bFocusEn  = nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
@@ -3929,6 +3945,23 @@ void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect*
   } else {
     //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Norm\n",""); //xxx
     *pColInner = pElem->colElemFill;
+  }
+
+  // Calculate text foreground color
+  if (bGlowing) {
+    *pColTxtFore = pElem->colElemTextGlow;
+  } else if (bFocused) {
+    *pColTxtFore = pElem->colElemTextGlow;
+  } else {
+    *pColTxtFore = pElem->colElemText;
+  }
+
+  // Calculate text background color
+  if (bFillEn) {
+    *pColTxtBack = *pColInner;
+  } else {
+    // To indicate transparent mode, we set text and background to same color
+    *pColTxtBack = *pColTxtFore;
   }
 
 }

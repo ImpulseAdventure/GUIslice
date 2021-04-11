@@ -2262,7 +2262,8 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
 
 /// \todo Doc
 void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
-  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner);
+  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner,
+  gslc_tsColor* pColTxtFore, gslc_tsColor* pColTxtBack);
 
 ///
 /// Get the glowing enable for an element
