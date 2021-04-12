@@ -110,8 +110,8 @@ gslc_tsElemRef* gslc_ElemXToggleImgbtnCreate(gslc_tsGui* pGui,int16_t nElemId,in
   sElem.pfuncXTouch       = &gslc_ElemXToggleImgbtnTouch;
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_GRAY;
-  sElem.colElemFrameGlow  = GSLC_COL_WHITE;
+  sElem.colElemFrame      = GSLC_COL_BLACK;
+  sElem.colElemFrameGlow  = GSLC_COL_YELLOW;
   
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
@@ -269,57 +269,37 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
 
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
-  // Glow enabled?
-  bool            bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
-
   // frame enabled?
   bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
-  bool bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN;
-  bool bFocus    = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef);
 
-  /* Size rInner according to whether or not a frame is being used.
-   * If a frame is used we assume the pElem->rElem Rectangle size is one pixel bigger
-   * then our image to avoid over writing the image when we draw the frame.
-   * We then use the rInner for drawing our images.
-   */
-  gslc_tsRect rInner;
-  if (bFrameEn||bFocusEn) {
-    rInner = gslc_ExpandRect(pElem->rElem,-1,-1);
-  } else {
-    rInner = pElem->rElem;
-  }
+  gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
+  gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
+  gslc_tsColor colInner = GSLC_COL_BLACK;
+  gslc_tsColor colOuter = GSLC_COL_BLACK;
+  gslc_tsColor colTxtFore = GSLC_COL_WHITE;
+  gslc_tsColor colTxtBack = GSLC_COL_BLACK;
+
+  // Determine the regions and colors based on frame, focus and glow states
+  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner,&colTxtFore,&colTxtBack);
 
   bool bOk = false;
   // Draw any images associated with element
   if (pToggleImgbtn->bOn) {
     // Glow image might be NULL
     if (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE) {
-      bOk = gslc_DrvDrawImage(pGui,rInner.x,rInner.y,pElem->sImgRefGlow);
+      bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefGlow);
     } else {
-      bOk = gslc_DrvDrawImage(pGui,rInner.x,rInner.y,pElem->sImgRefNorm);
+      bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefNorm);
     }
   } else {
-    bOk = gslc_DrvDrawImage(pGui,rInner.x,rInner.y,pElem->sImgRefNorm);
+    bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefNorm);
   }
 
   // Draw an optional frame, also indicate focus
-  if (bFrameEn||bFocusEn) {
-    // Default to background color
-    // - We will draw a frame with this if we lose focus
-    gslc_tsColor colSel = pElem->colElemFill;
-    if (bFocus) {
-      colSel = pElem->colElemFrameGlow;
-    } else {
-      if (bFrameEn) {
-        if (bGlow) {
-          colSel = pElem->colElemFrameGlow;
-        } else {
-          colSel = pElem->colElemFrame;
-        }
-      }
-    }
-    gslc_DrawFrameRect(pGui,pElem->rElem,colSel);
+  if (bFrameEn) {
+    gslc_DrawFrameRect(pGui, rElemOuter, colOuter);
   }
+
   if (!bOk) {
     GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXToggleImgbtnDraw failed\n","");
   }
