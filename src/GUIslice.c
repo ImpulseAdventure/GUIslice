@@ -2678,8 +2678,8 @@ gslc_tsElemRef* gslc_ElemCreateBtnImg(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPE_BTN,rElem,NULL,0,GSLC_FONT_NONE);
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_BLUE_DK2;
-  sElem.colElemFrameGlow  = GSLC_COL_BLUE_DK2;
+  sElem.colElemFrame      = GSLC_COL_BLACK;
+  sElem.colElemFrameGlow  = GSLC_COL_YELLOW;
   sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
