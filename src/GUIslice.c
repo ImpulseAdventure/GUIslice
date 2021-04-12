@@ -3061,8 +3061,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // --------------------------------------------------------------------------
 
   bool      bFillEn,bFrameEn,bRoundEn;
-  bool      bGlowEn,bGlowing; //xxx ,bGlowNow;
-  //bool      bFocusEn,bFocused; //xxx ,bFocusNow;
+  bool      bGlowEn,bGlowing;
   int16_t   nElemX,nElemY;
   uint16_t  nElemW,nElemH;
 
@@ -3070,12 +3069,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Calculate the style
   // --------------------------------------------------------------------------
 
-/* //xxx
-  nElemX    = pElem->rElem.x;
-  nElemY    = pElem->rElem.y;
-  nElemW    = pElem->rElem.w;
-  nElemH    = pElem->rElem.h;
-  */
   bFillEn   = pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN;
   bRoundEn  = pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN;
   bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
@@ -3083,8 +3076,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   //bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
   //bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
-
-  //gslc_tsColor colBg = GSLC_COL_BLACK;
 
   gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
   gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
@@ -3116,50 +3107,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     }
   }
 
-/*
-  // Fill in the background
-  gslc_tsRect rElemInner = pElem->rElem;
-
-  // If frame is enabled then contract the inner region slightly so that:
-  //   a) we don't overdraw the frame (if enabled), avoiding flicker
-  //   b) text placement will not overlap the frame
-  if (bFrameEn||bFocusEn) {
-    // NOTE: If the region is already too small to shrink (eg. w=1 or h=1)
-    // then a zero dimension box will be returned by ExpandRect() and not drawn
-    rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
-  }
-
-  // - This also changes the fill color if selected and glow state is enabled
-  if (bFillEn) {
-    if (bGlowing) {
-      colBg = pElem->colElemFillGlow;
-    } else if (bFocused) {
-      //xxx For now, also use glow color during focus
-      // Otherwise the keypad buttons are hard to see as focused with frame coloring alone
-      colBg = pElem->colElemFillGlow;
-    } else {
-      // Note that when we are focused we are highlighting the frame
-      // so we just fill with normal background here
-      colBg = pElem->colElemFill;
-    }
-    if (bRoundEn) {
-      gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colBg);
-    } else {
-      gslc_DrawFillRect(pGui, rElemInner, colBg);
-    }
-  } else {
-    colBg = pElem->colElemText;
-    // TODO: If unfilled, then we might need
-    // to redraw the background layer(s)
-  }
-  */
-
 
   // --------------------------------------------------------------------------
   // Handle special element types
   // --------------------------------------------------------------------------
   if (pElem->nType == GSLC_TYPE_LINE) {
-    //xxx gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,pElem->colElemFill);
     gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,colInner);
   }
 
@@ -3189,7 +3141,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  //xxx gslc_DrawFrameRect(pGui,pElem->rElem,GSLC_COL_GRAY_DK1);
   gslc_DrawFrameRect(pGui,rElemOuter,GSLC_COL_GRAY_DK1);
   #else
 
@@ -3200,29 +3151,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
       gslc_DrawFrameRect(pGui, rElemOuter, colOuter);
     }
   }
-/* //xxx
-  if (bFrameEn||bFocusEn) {
-    // Default to background color
-    // - We will draw a frame with this if we lose focus
-    gslc_tsColor colSel = pElem->colElemFill;
-    if (bFocused) {
-      colSel = pElem->colElemFrameGlow;
-    } else {
-      if (bFrameEn) {
-        if (bGlowing) {
-          colSel = pElem->colElemFrameGlow;
-        } else {
-          colSel = pElem->colElemFrame;
-        }
-      }
-    }
-    if (bRoundEn) {
-      gslc_DrawFrameRoundRect(pGui, pElem->rElem, pGui->nRoundRadius, colSel);
-    } else {
-      gslc_DrawFrameRect(pGui, pElem->rElem, colSel);
-    }
-  }
-  */
   #endif
 
   // --------------------------------------------------------------------------
@@ -3231,31 +3159,11 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
   // Draw text string if defined
   if (pElem->pStrBuf) {
-    /* //xxx
-    gslc_tsColor  colTxt;
-    if (bGlowing) {
-      colTxt = pElem->colElemTextGlow;
-    } else if (bFocused) {
-      colTxt = pElem->colElemTextGlow;
-    } else {
-      colTxt = pElem->colElemText;
-    }
-    */
     int8_t        nMarginX  = pElem->nTxtMarginX;
     int8_t        nMarginY  = pElem->nTxtMarginY;
 
     // Note that we use the "inner" region for text placement to
     // avoid overlapping any frame
-    /*
-    if (bFillEn) {
-      colBg = colInner;
-    } else {
-      // To indicate transparent mode, we set text and background to same color
-      colBg = colTxt;
-    }
-    */
-    //xxx gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
-      //xxx pElem->eTxtAlign, colTxt, colBg, nMarginX, nMarginY);
     gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
       pElem->eTxtAlign, colTxtFore, colTxtBack, nMarginX, nMarginY);
   }
