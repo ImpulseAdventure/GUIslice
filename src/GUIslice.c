@@ -3845,7 +3845,16 @@ void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect*
   if (bGlowing) {
     *pColInner = pElem->colElemFillGlow;
   } else if (bFocused) {
-    *pColInner = pElem->colElemFill;
+    //xxx *pColInner = pElem->colElemFill;
+    // Ideally, we would not change the fill state for focus
+    // mode and instead just rely on the frame color. This would
+    // enable us to depict the difference between glow and focus
+    // states. As now all elements (eg. XKeyPad) support this
+    // differentiation, and the glowing frame is not always clearly
+    // visible, I have reverted back to showing focus with the glowing fill.
+    // This is very visible but doesn't enable one to differentiate
+    // between the glow and focus states.
+    *pColInner = pElem->colElemFillGlow;
   } else {
     *pColInner = pElem->colElemFill;
   }
@@ -4022,6 +4031,7 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
       // If the element is not editable, then mimic a touch event,
       // otherwise, pass on the focus select event
       if (!gslc_ElemGetEditEn(pGui,pTrackedRefOld)) {
+        // Start the glow state
         gslc_ElemSetGlow(pGui,pTrackedRefOld,true);
         GSLC_DEBUG_PRINT("CollectInput: About to SendEvt DOWN_IN\n",""); //xxx
         eTouch = GSLC_TOUCH_DOWN_IN;
@@ -4054,6 +4064,9 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
         nY = 0; // Arbitrary
       }
       gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+
+      // End the glow state
+      gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
 
     }
 
