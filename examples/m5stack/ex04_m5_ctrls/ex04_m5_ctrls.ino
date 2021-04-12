@@ -185,11 +185,11 @@ void setup()
 
   // Create the GUI input mapping (pin event to GUI action)
   gslc_InitInputMap(&m_gui, m_asInputMap, MAX_INPUT_MAP);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_A,      GSLC_ACTION_FOCUS_PREV, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_B,      GSLC_ACTION_SELECT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_C,      GSLC_ACTION_FOCUS_NEXT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_A_LONG, GSLC_ACTION_SET_REL, -10);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_C_LONG, GSLC_ACTION_SET_REL, +10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_A,      GSLC_ACTION_FOCUS_PREV, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_B,      GSLC_ACTION_SELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_C,      GSLC_ACTION_FOCUS_NEXT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_A_LONG, GSLC_ACTION_SET_REL, -10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_C_LONG, GSLC_ACTION_SET_REL, +10);
 
   // Use default font
   if (!gslc_FontSet(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }

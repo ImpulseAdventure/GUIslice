@@ -938,23 +938,31 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   if (M5.BtnA.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_A_LONG;
-  }  else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+  } else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_B_LONG;
-  }  else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+  } else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_C_LONG;
-  } else if (M5.BtnA.wasReleased()) {
-#else
-  if (M5.BtnA.wasReleased()) {
+  } else
 #endif
+  if (M5.BtnA.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_A;
-  }  else if (M5.BtnB.wasReleased()) {
+  } else if (M5.BtnA.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+    *pnInputVal = GSLC_PIN_BTN_A;
+  } else if (M5.BtnB.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_B;
-  }  else if (M5.BtnC.wasReleased()) {
+  } else if (M5.BtnB.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+    *pnInputVal = GSLC_PIN_BTN_B;
+  } else if (M5.BtnC.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_C;
+  } else if (M5.BtnC.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
     *pnInputVal = GSLC_PIN_BTN_C;
   } else {
     return false; // No pin event detected

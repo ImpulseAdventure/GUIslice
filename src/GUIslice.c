@@ -677,10 +677,12 @@ void gslc_Update(gslc_tsGui* pGui)
           break;
 
         case GSLC_INPUT_PIN_ASSERT:
+          GSLC_DEBUG_PRINT("DBG: Update: PIN_ASSERT\n",""); //xxx
           gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
         case GSLC_INPUT_PIN_DEASSERT:
-          // TODO: gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
+          GSLC_DEBUG_PRINT("DBG: Update: PIN_DEASSERT\n",""); //xxx
+          gslc_TrackInput(pGui,NULL,eInputEvent,nInputVal);
           break;
 
         case GSLC_INPUT_TOUCH:

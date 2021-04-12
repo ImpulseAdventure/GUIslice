@@ -323,21 +323,22 @@ typedef enum {
   GSLC_TOUCH_SUBTYPE_MASK =                     (15<<0),    ///< Mask for subtype
 
   // Coordinate-based events
-  GSLC_TOUCH_DOWN         = GSLC_TOUCH_COORD  | ( 1<<0),    ///< Touch event (down)
-  GSLC_TOUCH_DOWN_IN      = GSLC_TOUCH_COORD  | ( 2<<0),    ///< Touch event (down inside tracked element)
-  GSLC_TOUCH_DOWN_OUT     = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
-  GSLC_TOUCH_UP           = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
-  GSLC_TOUCH_UP_IN        = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
-  GSLC_TOUCH_UP_OUT       = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up outside tracked element)
-  GSLC_TOUCH_MOVE         = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
-  GSLC_TOUCH_MOVE_IN      = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
-  GSLC_TOUCH_MOVE_OUT     = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)
+  GSLC_TOUCH_DOWN            = GSLC_TOUCH_COORD  | ( 1<<0),    ///< Touch event (down)
+  GSLC_TOUCH_DOWN_IN         = GSLC_TOUCH_COORD  | ( 2<<0),    ///< Touch event (down inside tracked element)
+  GSLC_TOUCH_DOWN_OUT        = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
+  GSLC_TOUCH_UP              = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
+  GSLC_TOUCH_UP_IN           = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
+  GSLC_TOUCH_UP_OUT          = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up outside tracked element)
+  GSLC_TOUCH_MOVE            = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
+  GSLC_TOUCH_MOVE_IN         = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
+  GSLC_TOUCH_MOVE_OUT        = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)
   // Index-based events
-  GSLC_TOUCH_FOCUS_ON     = GSLC_TOUCH_DIRECT | ( 1<<0),    ///< Direct event focus on element
-  GSLC_TOUCH_FOCUS_OFF    = GSLC_TOUCH_DIRECT | ( 2<<0),    ///< Direct event focus away from focused element
-  GSLC_TOUCH_FOCUS_SELECT = GSLC_TOUCH_DIRECT | ( 3<<0),    ///< Direct event select focus element
-  GSLC_TOUCH_SET_REL      = GSLC_TOUCH_DIRECT | ( 4<<0),    ///< Direct event set value (relative) on focus element
-  GSLC_TOUCH_SET_ABS      = GSLC_TOUCH_DIRECT | ( 5<<0),    ///< Direct event set value (absolute) on focus element
+  GSLC_TOUCH_FOCUS_ON        = GSLC_TOUCH_DIRECT | ( 1<<0),    ///< Direct event focus on element
+  GSLC_TOUCH_FOCUS_OFF       = GSLC_TOUCH_DIRECT | ( 2<<0),    ///< Direct event focus away from focused element
+  GSLC_TOUCH_FOCUS_PRESELECT = GSLC_TOUCH_DIRECT | ( 3<<0),    ///< Direct event select focus element (glow before select)
+  GSLC_TOUCH_FOCUS_SELECT    = GSLC_TOUCH_DIRECT | ( 4<<0),    ///< Direct event select focus element
+  GSLC_TOUCH_SET_REL         = GSLC_TOUCH_DIRECT | ( 5<<0),    ///< Direct event set value (relative) on focus element
+  GSLC_TOUCH_SET_ABS         = GSLC_TOUCH_DIRECT | ( 6<<0),    ///< Direct event set value (absolute) on focus element
 
 } gslc_teTouch;
 
