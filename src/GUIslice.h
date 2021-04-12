@@ -284,6 +284,7 @@ typedef enum {
   GSLC_ACTION_NONE,         ///< No action to perform
   GSLC_ACTION_FOCUS_PREV,   ///< Advance focus to the previous GUI element
   GSLC_ACTION_FOCUS_NEXT,   ///< Advance focus to the next GUI element
+  GSLC_ACTION_PRESELECT,    ///< Pre-Select the currently focused GUI element (glow)
   GSLC_ACTION_SELECT,       ///< Select the currently focused GUI element
   GSLC_ACTION_SET_REL,      ///< Adjust value (relative) of focused element  
   GSLC_ACTION_SET_ABS,      ///< Adjust value (absolute) of focused element

@@ -3833,27 +3833,20 @@ void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect*
   // Calculate the outer color
   if (bFrameEn) {
     if (bGlowing) {
-      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Glow\n",""); //xxx
       *pColOuter = pElem->colElemFrameGlow;
     } else if (bFocused) {
-      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Focus\n",""); //xxx
       *pColOuter = pElem->colElemFrameGlow;
     } else {
-      //xxx GSLC_DEBUG_PRINT("DBG: Style() Outer Frame+Norm\n",""); //xxx
       *pColOuter = pElem->colElemFrame;
     }
   }
 
   // Calculate the inner color
   if (bGlowing) {
-    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Glow\n",""); //xxx
-    *pColOuter = pElem->colElemFrameGlow;
     *pColInner = pElem->colElemFillGlow;
   } else if (bFocused) {
-    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Focus\n",""); //xxx
-    *pColInner = pElem->colElemFillGlow;
+    *pColInner = pElem->colElemFill;
   } else {
-    //xxx GSLC_DEBUG_PRINT("DBG: Style() Inner Norm\n",""); //xxx
     *pColInner = pElem->colElemFill;
   }
 
@@ -4016,6 +4009,31 @@ void gslc_CollectInput(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
 
     // Clear the element tracking state
     gslc_CollectSetElemTracked(pGui,pCollect,NULL);
+
+  } else if (eTouch == GSLC_TOUCH_FOCUS_PRESELECT) {
+    // ---------------------------------
+    // PRESELECT -> Glow before Select
+    // ---------------------------------
+    GSLC_DEBUG_PRINT("CollectInput: TOUCH_FOCUS_PRESELECT\n",""); //xxx
+
+    if (pTrackedRefOld != NULL) {
+
+      // Notify original tracked element for optional custom handling
+      // If the element is not editable, then mimic a touch event,
+      // otherwise, pass on the focus select event
+      if (!gslc_ElemGetEditEn(pGui,pTrackedRefOld)) {
+        gslc_ElemSetGlow(pGui,pTrackedRefOld,true);
+        GSLC_DEBUG_PRINT("CollectInput: About to SendEvt DOWN_IN\n",""); //xxx
+        eTouch = GSLC_TOUCH_DOWN_IN;
+        // TODO: Do we really want to change the eTouch type here?
+        //       - Perhaps this is the best way to reuse the existing touch handler in the element
+        // Here we are mimicking a touch event within the element
+        nX = 0; // Arbitrary
+        nY = 0; // Arbitrary
+      }
+      gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+
+    }
 
   } else if (eTouch == GSLC_TOUCH_FOCUS_SELECT) {
     // ---------------------------------
@@ -4582,6 +4600,34 @@ void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eI
         gslc_PageEvent(pGui,sEvent);
 
       } // nInputMode
+
+      break;
+
+    case GSLC_ACTION_PRESELECT:
+      // FIXME: Merge with GSLC_ACTION_SELECT
+      GSLC_DEBUG_PRINT("TrackInput: ACTION_PRESELECT, InputMode=%d, FocusInd=%d\n",nInputMode,pGui->nFocusElemInd); //xxx
+
+      // Ensure an element is in focus!
+      if (pGui->nFocusElemInd == GSLC_IND_NONE) {
+        break;
+      } else {
+
+        // Get the currently focused element
+        pSelElemRef = gslc_FocusElemGet(pGui);
+        pSelElem = gslc_GetElemFromRef(pGui,pSelElemRef);
+        bCanEdit = false;
+        if (pSelElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
+          bCanEdit = true;
+        }
+
+        // Select currently focused element
+        sEventTouch.eTouch = GSLC_TOUCH_FOCUS_PRESELECT;
+        sEventTouch.nX = pGui->nFocusElemInd;
+        sEventTouch.nY = 0; // Unused
+        sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,pvFocusPage,pvData);
+        gslc_PageEvent(pGui,sEvent);
+
+      }
 
       break;
 
