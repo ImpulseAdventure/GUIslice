@@ -268,36 +268,24 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
   }
 
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-
-  // frame enabled?
-  bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
-
-  gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
-  gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
-  gslc_tsColor colInner = GSLC_COL_BLACK;
-  gslc_tsColor colOuter = GSLC_COL_BLACK;
-  gslc_tsColor colTxtFore = GSLC_COL_WHITE;
-  gslc_tsColor colTxtBack = GSLC_COL_BLACK;
-
-  // Determine the regions and colors based on frame, focus and glow states
-  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner,&colTxtFore,&colTxtBack);
-
   bool bOk = false;
+
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
+
   // Draw any images associated with element
+  int16_t nInnerX = sState.rInner.x;
+  int16_t nInnerY = sState.rInner.y;
   if (pToggleImgbtn->bOn) {
     // Glow image might be NULL
     if (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE) {
-      bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefGlow);
+      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefGlow);
     } else {
-      bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefNorm);
+      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
     }
   } else {
-    bOk = gslc_DrvDrawImage(pGui,rElemInner.x,rElemInner.y,pElem->sImgRefNorm);
-  }
-
-  // Draw an optional frame, also indicate focus
-  if (bFrameEn) {
-    gslc_DrawFrameRect(pGui, rElemOuter, colOuter);
+    bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
   }
 
   if (!bOk) {

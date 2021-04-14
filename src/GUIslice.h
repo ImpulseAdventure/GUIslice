@@ -551,6 +551,24 @@ typedef struct gslc_tsColor {
   uint8_t b;      ///< RGB blue value
 } gslc_tsColor;
 
+/// State associated with an element's region
+/// - This struct is used for gslc_ElemCalcRectState()
+/// - Accounts for various rects including
+///   focus, frame and internal content
+/// - Also contains the various colors associated
+///   with each region.
+typedef struct gslc_tsRectState {
+  gslc_tsRect rFocus;
+  gslc_tsRect rFull;
+  gslc_tsRect rInner;
+  gslc_tsColor colFocus;
+  gslc_tsColor colFrm;
+  gslc_tsColor colInner;
+  gslc_tsColor colBack;
+  gslc_tsColor colTxtFore;
+  gslc_tsColor colTxtBack;
+} gslc_tsRectState;
+
 /// Event structure
 typedef struct gslc_tsEvent {
   gslc_teEventType  eType;    ///< Event type
@@ -2263,9 +2281,11 @@ void gslc_ElemSetTouchFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_T
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest);
 
 /// \todo Doc
-void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
-  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner,
-  gslc_tsColor* pColTxtFore, gslc_tsColor* pColTxtBack);
+void gslc_ResetRectState(gslc_tsRectState *pState);
+
+/// \todo Doc
+void gslc_ElemCalcRectState(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRectState* pState);
+
 
 ///
 /// Get the glowing enable for an element
@@ -2308,6 +2328,9 @@ bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// \return True if element supports focus
 ///
 bool gslc_ElemGetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+/// \todo Doc
+void gslc_ElemSetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocusEn);
 
 ///
 /// Update the focused indicator for an element

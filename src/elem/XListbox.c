@@ -561,26 +561,25 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 
   gslc_tsElem*      pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
+  bool            bFrameEn     = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
   bool            bGlow        = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
   int8_t          bGlowLast    = pListbox->nGlowLast;
   bool            bFocus       = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
   int8_t          bFocusLast   = pListbox->nFocusLast;
   int8_t          nItemCurSel  = pListbox->nItemCurSel;
 
-  gslc_tsRect rElemRect;
-  if (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN) {
-    rElemRect = gslc_ExpandRect(pElem->rElem, -1, -1);
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
 
+  if (bFrameEn) {
     bool bDrawFrame = false;
     if (eRedraw == GSLC_REDRAW_FULL) { bDrawFrame = true; }
     if (bGlowLast != bGlow) { bDrawFrame = true; }
     if (bFocusLast != bFocus) { bDrawFrame = true; }
     if (bDrawFrame) {
-      gslc_DrawFrameRect(pGui, pElem->rElem, (bGlow||bFocus)? pElem->colElemFrameGlow : pElem->colElemFrame);
+      gslc_DrawFrameRect(pGui, sState.rFull, sState.colFrm);
     }
-
-  } else {
-    rElemRect = pElem->rElem;
   }
 
   // Update last state
@@ -592,18 +591,17 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   //   will be overdrawn in colBg color
   if (eRedraw == GSLC_REDRAW_FULL) {
     if (pListbox->nItemGap > 0) {
-      gslc_DrawFillRect(pGui, rElemRect, pListbox->colGap);
+      gslc_DrawFillRect(pGui, sState.rInner, pListbox->colGap);
     }
   }
 
   // Determine if we need to recalculate the item sizing
   if (pListbox->bNeedRecalc) {
-    gslc_ElemXListboxRecalcSize(pListbox, rElemRect);
+    gslc_ElemXListboxRecalcSize(pListbox, sState.rInner);
   }
 
-  int16_t nX0, nY0;
-  nX0 = rElemRect.x;
-  nY0 = rElemRect.y;
+  int16_t nX0 = sState.rInner.x;
+  int16_t nY0 = sState.rInner.y;
 
   int8_t        nRows = pListbox->nRows;
   int8_t        nCols = pListbox->nCols;

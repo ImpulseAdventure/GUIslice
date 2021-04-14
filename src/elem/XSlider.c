@@ -255,20 +255,22 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   int16_t         nTickLen  = pSlider->nTickLen;
   gslc_tsColor    colTick   = pSlider->colTick;
 
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
+
   // Range check on nPos
   if (nPos < nPosMin) { nPos = nPosMin; }
   else if (nPos > nPosMax) { nPos = nPosMax; }
 
-  // We use an "inner" region for all drawing. The element's
-  // rect is only used for drawing a frame (eg. during focus)
-  gslc_tsRect rElemInner = pElem->rElem;
-  rElemInner = gslc_ExpandRect(rElemInner,-1,-1);
+  // We use an "inner" region for the drawing to allow
+  // for the inclusion of a frame. (not expected to be used)
 
   int16_t nX0,nY0,nX1,nY1,nXMid,nYMid;
-  nX0 = rElemInner.x;
-  nY0 = rElemInner.y;
-  nX1 = rElemInner.x + rElemInner.w - 1;
-  nY1 = rElemInner.y + rElemInner.h - 1;
+  nX0 = sState.rInner.x;
+  nY0 = sState.rInner.y;
+  nX1 = sState.rInner.x + sState.rInner.w - 1;
+  nY1 = sState.rInner.y + sState.rInner.h - 1;
   nXMid = (nX0+nX1)/2;
   nYMid = (nY0+nY1)/2;
 
@@ -295,14 +297,10 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   //         then redraw other portions. This would prevent the
   //         track / ticks from flickering needlessly. A full redraw would
   //         be required if it was first draw action.
-  // - TODO: Do we really want to use a glow color here? By default, the
-  //         fill and fill glow colors are both set to be the same.
-  gslc_DrawFillRect(pGui,rElemInner,(bGlow || bEdit)?pElem->colElemFillGlow:pElem->colElemFill);
 
-  // Draw the frame if focused, redraw as background color if not
-  gslc_DrawFrameRect(pGui,pElem->rElem,bFocus?pElem->colElemFrameGlow:pElem->colElemFill);
-
-
+  // Note that we are using colBack instead of colInner since we
+  // don't want to transition to a glow state
+  gslc_DrawFillRect(pGui,sState.rFull,sState.colBack);
 
   // Draw any ticks
   // - Need at least one tick segment
@@ -325,8 +323,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   // Draw the track
   if (!bVert) {
     // Make the track highlight during glow
-    gslc_DrawLine(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,
-            (bGlow || bEdit)? pElem->colElemFrameGlow : pElem->colElemFrame);
+    gslc_DrawLine(pGui,nX0+nMargin,nYMid,nX1-nMargin,nYMid,sState.colFrm);
     // Optionally draw a trim line
     if (bTrim) {
       gslc_DrawLine(pGui,nX0+nMargin,nYMid+1,nX1-nMargin,nYMid+1,colTrim);
@@ -334,8 +331,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   } else {
     // Make the track highlight during glow
-    gslc_DrawLine(pGui,nXMid,nY0+nMargin,nXMid,nY1-nMargin,
-            (bGlow || bEdit)? pElem->colElemFrameGlow : pElem->colElemFrame);
+    gslc_DrawLine(pGui,nXMid,nY0+nMargin,nXMid,nY1-nMargin,sState.colFrm);
     // Optionally draw a trim line
     if (bTrim) {
       gslc_DrawLine(pGui,nXMid+1,nY0+nMargin,nXMid+1,nY1-nMargin,colTrim);
@@ -358,8 +354,8 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   rThumb.h  = 2*nThumbSz;
 
   // Draw the thumb control
-  gslc_DrawFillRect(pGui,rThumb,(bGlow || bEdit)?pElem->colElemFillGlow:pElem->colElemFill);
-  gslc_DrawFrameRect(pGui,rThumb,(bGlow || bEdit)?pElem->colElemFrameGlow:pElem->colElemFrame);
+  gslc_DrawFillRect(pGui,rThumb,sState.colInner);
+  gslc_DrawFrameRect(pGui,rThumb,sState.colFrm);
   if (bTrim) {
     gslc_tsRect  rThumbTrim;
     rThumbTrim = gslc_ExpandRect(rThumb,-1,-1);

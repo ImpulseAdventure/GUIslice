@@ -3043,6 +3043,43 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   }
 
   // --------------------------------------------------------------------------
+  // Init for default drawing
+  // --------------------------------------------------------------------------
+
+  int16_t   nElemX,nElemY;
+  uint16_t  nElemW,nElemH;
+
+  // --------------------------------------------------------------------------
+  // Calculate the style
+  // --------------------------------------------------------------------------
+
+  bool bFillEn   = pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN;
+  bool bRoundEn  = pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN;
+  bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
+  bool bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
+  bool bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
+  bool bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
+  //bool bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
+
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
+
+  // Extract common fields
+  nElemX    = sState.rInner.x;
+  nElemY    = sState.rInner.y;
+  nElemW    = sState.rInner.w;
+  nElemH    = sState.rInner.h;
+
+  // --------------------------------------------------------------------------
+  // Focus
+  // --------------------------------------------------------------------------
+
+  if (bFocusEn) {
+    gslc_DrawFrameRect(pGui, sState.rFocus, sState.colFocus);
+  }
+
+  // --------------------------------------------------------------------------
   // Custom drawing
   // --------------------------------------------------------------------------
 
@@ -3056,42 +3093,6 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
     return true;
   }
 
-  // --------------------------------------------------------------------------
-  // Init for default drawing
-  // --------------------------------------------------------------------------
-
-  bool      bFillEn,bFrameEn,bRoundEn;
-  bool      bGlowEn,bGlowing;
-  int16_t   nElemX,nElemY;
-  uint16_t  nElemW,nElemH;
-
-  // --------------------------------------------------------------------------
-  // Calculate the style
-  // --------------------------------------------------------------------------
-
-  bFillEn   = pElem->nFeatures & GSLC_ELEM_FEA_FILL_EN;
-  bRoundEn  = pElem->nFeatures & GSLC_ELEM_FEA_ROUND_EN;
-  bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
-  bGlowEn   = pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN; // Does the element support glow state?
-  bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
-  //bFocusEn  = pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
-  //bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
-
-  gslc_tsRect rElemInner = (gslc_tsRect){0,0,0,0};
-  gslc_tsRect rElemOuter = (gslc_tsRect){0,0,0,0};
-  gslc_tsColor colInner = GSLC_COL_BLACK;
-  gslc_tsColor colOuter = GSLC_COL_BLACK;
-  gslc_tsColor colTxtFore = GSLC_COL_WHITE;
-  gslc_tsColor colTxtBack = GSLC_COL_BLACK;
-
-  // Determine the regions and colors based on frame, focus and glow states
-  gslc_ElemCalcStyle(pGui,pElemRef,&rElemOuter,&rElemInner,&colOuter,&colInner,&colTxtFore,&colTxtBack);
-
-  // Extract common fields
-  nElemX    = rElemInner.x;
-  nElemY    = rElemInner.y;
-  nElemW    = rElemInner.w;
-  nElemH    = rElemInner.h;
 
   // --------------------------------------------------------------------------
   // Background
@@ -3101,9 +3102,9 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Fill in the background
   if (bFillEn) {
     if (bRoundEn) {
-      gslc_DrawFillRoundRect(pGui, rElemInner, pGui->nRoundRadius, colInner);
+      gslc_DrawFillRoundRect(pGui, sState.rInner, pGui->nRoundRadius, sState.colInner);
     } else {
-      gslc_DrawFillRect(pGui, rElemInner, colInner);
+      gslc_DrawFillRect(pGui, sState.rInner, sState.colInner);
     }
   }
 
@@ -3112,7 +3113,7 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Handle special element types
   // --------------------------------------------------------------------------
   if (pElem->nType == GSLC_TYPE_LINE) {
-    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,colInner);
+    gslc_DrawLine(pGui,nElemX,nElemY,nElemX+nElemW-1,nElemY+nElemH-1,sState.colInner);
   }
 
 
@@ -3141,14 +3142,14 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
   // Frame the region
   #ifdef DBG_FRAME
   // For debug purposes, draw a frame around every element
-  gslc_DrawFrameRect(pGui,rElemOuter,GSLC_COL_GRAY_DK1);
+  gslc_DrawFrameRect(pGui,sState.rFull,GSLC_COL_GRAY_DK1);
   #else
 
   if (bFrameEn) {
     if (bRoundEn) {
-      gslc_DrawFrameRoundRect(pGui, rElemOuter, pGui->nRoundRadius, colOuter);
+      gslc_DrawFrameRoundRect(pGui, sState.rFull, pGui->nRoundRadius, sState.colFrm);
     } else {
-      gslc_DrawFrameRect(pGui, rElemOuter, colOuter);
+      gslc_DrawFrameRect(pGui, sState.rFull, sState.colFrm);
     }
   }
   #endif
@@ -3164,8 +3165,8 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 
     // Note that we use the "inner" region for text placement to
     // avoid overlapping any frame
-    gslc_DrawTxtBase(pGui, pElem->pStrBuf, rElemInner, pElem->pTxtFont, pElem->eTxtFlags,
-      pElem->eTxtAlign, colTxtFore, colTxtBack, nMarginX, nMarginY);
+    gslc_DrawTxtBase(pGui, pElem->pStrBuf, sState.rInner, pElem->pTxtFont, pElem->eTxtFlags,
+      pElem->eTxtAlign, sState.colTxtFore, sState.colTxtBack, nMarginX, nMarginY);
   }
 
   // --------------------------------------------------------------------------
@@ -3194,36 +3195,21 @@ void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
-
 void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
   gslc_tsRect rRect = gslc_ElemGetRect(pGui,pElemRef);
-  bool bFrameEnOld = (pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN);
-
-  // Does the element contain an image?
-  // - If so, we may adjust the element dimensions to accommodate a frame
-  bool bHasImg = (pElem->sImgRefNorm.eImgFlags != GSLC_IMGREF_NONE);
-
-  // Update the frame enable
   if (bFrameEn) {
-    if (bHasImg && !bFrameEnOld) {
-      // We have added a frame to an image element, so we need to
-      // increase the dimensions by 1 pixel on all sides
-      gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,+1,+1));
-    }
     pElem->nFeatures |= GSLC_ELEM_FEA_FRAME_EN;
   } else {
-    if (bHasImg && bFrameEnOld) {
-      // We have removed a frame from an image element, so we need to
-      // decrease the dimensions by 1 pixel on all sides
-      gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,-1,-1));
-    }
     pElem->nFeatures &= ~GSLC_ELEM_FEA_FRAME_EN;
   }
+
+  // Mark for redraw
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+
 }
 
 void gslc_ElemSetRoundEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bRoundEn)
@@ -3620,10 +3606,11 @@ void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing)
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
-  // Only change glow state if enabled
+  // Only change edit state if enabled
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
   if (pElem->nFeatures & GSLC_ELEM_FEA_EDIT_EN) {
     gslc_SetElemRefFlag(pGui, pElemRef, GSLC_ELEMREF_EDITING, (bEditing) ? GSLC_ELEMREF_EDITING : 0);
+    gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
 #endif // GSLC_FEATURE_INPUT
 }
@@ -3731,20 +3718,64 @@ bool gslc_ElemGetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 #endif // GSLC_FEATURE_INPUT
 }
 
+/// \todo Doc
+void gslc_ElemSetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocusEn)
+{
+#if !(GSLC_FEATURE_INPUT)
+  (void)pGui; // Unused
+  (void)pElemRef; // Unused
+  (void)bFocusEn; // Unused
+#else
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  if (!pElem) return false;
+
+  gslc_tsRect rRect = gslc_ElemGetRect(pGui,pElemRef);
+  bool bFocusEnOld = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN);
+
+  // Detect a change in enable
+  if (!bFocusEnOld && bFocusEn) {
+    // Enabling focus support, so increase size of element
+    GSLC_DEBUG_PRINT("DBG: SetFocusEn(%d) Expand\n",bFocusEn);
+    gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,+1,+1));
+  } else if (bFocusEnOld && !bFocusEn) {
+    // Disabling focus support , so decrease size of element
+    // This assumes that it was already increased earlier
+    // (eg. during creation).
+    GSLC_DEBUG_PRINT("DBG: SetFocusEn(%d) Shrink\n",bFocusEn);
+    gslc_ElemSetRect(pGui,pElemRef,gslc_ExpandRect(rRect,-1,-1));
+  }
+
+  // Update the attribute
+  if (bFocusEn) {
+    pElem->nFeatures |= GSLC_ELEM_FEA_FOCUS_EN;
+  } else {
+    pElem->nFeatures &= ~GSLC_ELEM_FEA_FOCUS_EN;
+  }
+
+  // Mark for redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+
+#endif // GSLC_FEATURE_INPUT
+}
+
+
 
 void gslc_ElemSetClickEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bClickEn)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   if (!pElem) return;
 
-  // For now, associate accepting click events as also accepting focus
   if (bClickEn) {
     pElem->nFeatures |= GSLC_ELEM_FEA_CLICK_EN;
-    pElem->nFeatures |= GSLC_ELEM_FEA_FOCUS_EN;
   } else {
     pElem->nFeatures &= ~GSLC_ELEM_FEA_CLICK_EN;
-    pElem->nFeatures &= ~GSLC_ELEM_FEA_FOCUS_EN;
   }
+
+  // For now, associate accepting click events as also accepting focus
+  // We call this API since it also takes care of resizing 
+  // element if necessary.
+  gslc_ElemSetFocusEn(pGui,pElemRef,bClickEn);
+
   // No need to call ElemSetRedraw() as we aren't changing a visual characteristic
 }
 
@@ -3779,7 +3810,7 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   pElemDest->colElemFrameGlow = pElemSrc->colElemFrameGlow;
 
   // eRedraw
-#ifdef GLSC_COMPOUND
+#if (GSLC_FEATURE_COMPOUND)
   pElemDest->pElemRefParent   = pElemSrc->pElemRefParent;
 #endif
 
@@ -3806,9 +3837,43 @@ void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsE
   gslc_ElemSetRedraw(pGui,pElemRefDest,GSLC_REDRAW_FULL);
 }
 
-void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect* pRectOuter,
-  gslc_tsRect* pRectInner, gslc_tsColor* pColOuter, gslc_tsColor* pColInner,
-  gslc_tsColor* pColTxtFore, gslc_tsColor* pColTxtBack)
+// If GUI navigation from external inputs is enabled and
+// the element accepts focus, then resize the element to
+// accommodate a focus rect.
+void gslc_ElemResizeForFocus(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
+{
+#if !(GSLC_FEATURE_INPUT)
+  return;
+#else
+  gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+  uint8_t nFeatures = pElem->nFeatures;
+  gslc_tsRect rElem = pElem->rElem;
+
+  bool bFocusEn = nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
+  if (bFocusEn) {
+    // Grow the element slightly
+    gslc_ElemSetRect(pGui, pElemRef, gslc_ExpandRect(rElem,+1,+1));
+  }
+#endif // GSLC_FEATURE_INPUT
+}
+
+void gslc_ResetRectState(gslc_tsRectState *pState)
+{
+  if (!pState) {
+    return;
+  }
+  pState->rFocus = (gslc_tsRect){0,0,0,0};
+  pState->rFull = (gslc_tsRect){0,0,0,0};
+  pState->rInner = (gslc_tsRect){0,0,0,0};
+  pState->colFocus = GSLC_COL_BLACK;
+  pState->colFrm = GSLC_COL_BLACK;
+  pState->colInner = GSLC_COL_BLACK;
+  pState->colBack = GSLC_COL_BLACK;
+  pState->colTxtFore = GSLC_COL_WHITE;
+  pState->colTxtBack = GSLC_COL_BLACK;
+};
+
+void gslc_ElemCalcRectState(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRectState* pState)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
   uint8_t nFeatures = pElem->nFeatures;
@@ -3820,63 +3885,63 @@ void gslc_ElemCalcStyle(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRect*
   bool bFocusEn  = nFeatures & GSLC_ELEM_FEA_FOCUS_EN; // Does the element support focus state?
   bool bGlowing  = bGlowEn && gslc_ElemGetGlow(pGui,pElemRef); // Element should be glowing (if enabled)
   bool bFocused  = bFocusEn && gslc_ElemGetFocus(pGui,pElemRef); // Element should be focused (if enabled)
+  bool bEditing  = gslc_ElemGetEdit(pGui,pElemRef);
+
+  // Initialize the return struct
+  gslc_ResetRectState(pState);
 
   // Calculate the regions
+  if (bFocusEn) {
+    // Focus enabled
+    // - If the focus was enabled, then the element's rect already
+    //   accounts for the focus frame (this expansion was done
+    //   in gslc_ElemResizeForFocus)
+    pState->rFocus = rElem;
+    // Now adjust for all following rect calcs
+    rElem = gslc_ExpandRect(rElem,-1,-1);
+  }
+
   if (bFrameEn) {
     // If a frame is enabled, shrink the inner region
-    *pRectInner = gslc_ExpandRect(rElem,-1,-1);
-    *pRectOuter = rElem;
+    pState->rFull = rElem;
+    pState->rInner = gslc_ExpandRect(rElem,-1,-1);
   } else {
-    *pRectInner = rElem;
+    pState->rFull = rElem; //xxx FIXME
+    pState->rInner = rElem;
   }
 
-  // Calculate the outer color
-  if (bFrameEn) {
-    if (bGlowing) {
-      *pColOuter = pElem->colElemFrameGlow;
-    } else if (bFocused) {
-      *pColOuter = pElem->colElemFrameGlow;
-    } else {
-      *pColOuter = pElem->colElemFrame;
-    }
-  }
-
-  // Calculate the inner color
-  if (bGlowing) {
-    *pColInner = pElem->colElemFillGlow;
+  // Calculate the focus rect color
+  if (bEditing) {
+    pState->colFocus = GSLC_COL_RED; // FIXME
   } else if (bFocused) {
-    //xxx *pColInner = pElem->colElemFill;
-    // Ideally, we would not change the fill state for focus
-    // mode and instead just rely on the frame color. This would
-    // enable us to depict the difference between glow and focus
-    // states. As now all elements (eg. XKeyPad) support this
-    // differentiation, and the glowing frame is not always clearly
-    // visible, I have reverted back to showing focus with the glowing fill.
-    // This is very visible but doesn't enable one to differentiate
-    // between the glow and focus states.
-    *pColInner = pElem->colElemFillGlow;
+    pState->colFocus = GSLC_COL_MAGENTA; // FIXME
   } else {
-    *pColInner = pElem->colElemFill;
+    pState->colFocus = GSLC_COL_BLACK; // FIXME
   }
 
-  // Calculate text foreground color
+  // Calculate the element colors
+  pState->colBack = pElem->colElemFill;
   if (bGlowing) {
-    *pColTxtFore = pElem->colElemTextGlow;
-  } else if (bFocused) {
-    *pColTxtFore = pElem->colElemTextGlow;
+    pState->colFrm = pElem->colElemFrameGlow;
+    pState->colInner = pElem->colElemFillGlow;
+    pState->colTxtFore = pElem->colElemTextGlow;
   } else {
-    *pColTxtFore = pElem->colElemText;
+    pState->colFrm = pElem->colElemFrame;
+    pState->colInner = pElem->colElemFill;
+    pState->colTxtFore = pElem->colElemText;
   }
 
   // Calculate text background color
   if (bFillEn) {
-    *pColTxtBack = *pColInner;
+    pState->colTxtBack = pState->colInner;
   } else {
     // To indicate transparent mode, we set text and background to same color
-    *pColTxtBack = *pColTxtFore;
+    pState->colTxtBack = pState->colTxtFore;
   }
 
 }
+
+
 
 /* UNUSED
 void gslc_ElemSetEventFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_EVENT funcCb)
@@ -5260,6 +5325,9 @@ gslc_tsElemRef* gslc_ElemAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* pElem
 
   gslc_tsCollect* pCollect = &pPage->sCollect;
   gslc_tsElemRef* pElemRefAdd = gslc_CollectElemAdd(pGui,pCollect,pElem,eFlags);
+
+  // In case this element accepts focus, we need to adjust the dimensions
+  gslc_ElemResizeForFocus(pGui,pElemRefAdd);
 
   // Fetch access to the element from the reference
   // - This also handles the case with elements in FLASH

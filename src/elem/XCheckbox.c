@@ -387,36 +387,39 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
   if (!pCheckbox) return false;
 
   gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
-  gslc_tsRect     rInner;
 
   bool bChecked  = pCheckbox->bChecked;
   gslc_teXCheckboxStyle   nStyle = pCheckbox->nStyle;
   bool bGlow     = (pElem->nFeatures & GSLC_ELEM_FEA_GLOW_EN) && gslc_ElemGetGlow(pGui,pElemRef);
   bool bFocus    = (pElem->nFeatures & GSLC_ELEM_FEA_FOCUS_EN) && gslc_ElemGetFocus(pGui,pElemRef);
 
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
+
   // Draw the background
-  gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
+  gslc_DrawFillRect(pGui,sState.rInner,sState.colInner);
 
   // Generic coordinate calcs
   int16_t nX0,nY0,nX1,nY1,nMidX,nMidY;
-  nX0 = pElem->rElem.x;
-  nY0 = pElem->rElem.y;
-  nX1 = pElem->rElem.x + pElem->rElem.w - 1;
-  nY1 = pElem->rElem.y + pElem->rElem.h - 1;
+  nX0 = sState.rInner.x;
+  nY0 = sState.rInner.y;
+  nX1 = sState.rInner.x + sState.rInner.w - 1;
+  nY1 = sState.rInner.y + sState.rInner.h - 1;
   nMidX = (nX0+nX1)/2;
   nMidY = (nY0+nY1)/2;
   if (nStyle == GSLCX_CHECKBOX_STYLE_BOX) {
     // Draw the center indicator if checked
-    rInner = gslc_ExpandRect(pElem->rElem,-5,-5);
+    gslc_tsRect rCenter = gslc_ExpandRect(sState.rInner,-5,-5);
     if (bChecked) {
       // If checked, fill in the inner region
-      gslc_DrawFillRect(pGui,rInner,pCheckbox->colCheck);
+      gslc_DrawFillRect(pGui,rCenter,pCheckbox->colCheck);
     } else {
       // Assume the background fill has already been done so
       // we don't need to do anything more in the unchecked case
     }
     // Draw a frame around the checkbox
-    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    gslc_DrawFrameRect(pGui,sState.rFull,sState.colFrm);
 
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_X) {
     // Draw an X through center if checked
@@ -425,15 +428,17 @@ bool gslc_ElemXCheckboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedra
       gslc_DrawLine(pGui,nX0,nY1,nX1,nY0,pCheckbox->colCheck);
     }
     // Draw a frame around the checkbox
-    gslc_DrawFrameRect(pGui,pElem->rElem,(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    gslc_DrawFrameRect(pGui,sState.rFull,sState.colFrm);
 
   } else if (nStyle == GSLCX_CHECKBOX_STYLE_ROUND) {
     // Draw inner circle if checked
     if (bChecked) {
       gslc_DrawFillCircle(pGui,nMidX,nMidY,5,pCheckbox->colCheck);
     }
-    // Draw a frame around the checkbox
-    gslc_DrawFrameCircle(pGui,nMidX,nMidY,(pElem->rElem.w/2),(bGlow||bFocus)?pElem->colElemFrameGlow:pElem->colElemFrame);
+    // Draw outer circle
+    // - Use 1 pixel margin to allow for circle rounding to
+    //   still stay within element rect
+    gslc_DrawFrameCircle(pGui,nMidX,nMidY,(sState.rFull.w/2)-1,sState.colFrm);
 
   }
 
