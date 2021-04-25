@@ -60,6 +60,7 @@ typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int16_t nPos);
 typedef struct {
   // Config
   bool            bVert;          ///< Orientation: true if vertical, else horizontal
+  bool            bSnapEn;        ///< Enable for touch snap behavior
   int16_t         nThumbSz;       ///< Size of the thumb control
   int16_t         nPosMin;        ///< Minimum position value of the slider
   int16_t         nPosMax;        ///< Maximum position value of the slider
@@ -113,6 +114,18 @@ gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
 void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
         int16_t nTickLen,gslc_tsColor colTick);
+
+///
+/// Enable touch to snap to the nearest tick mark
+/// - nTickDiv (in SetStyle) must be non-zero for snap to be active
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bSnapEn:     Enable snap function if true
+///
+/// \return none
+///
+void gslc_ElemXSliderSetSnapEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bSnapEn);
 
 
 ///
@@ -219,6 +232,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSlider sSlider##nElemId;                         \
   sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.bSnapEn = false;                               \
   sSlider##nElemId.nThumbSz = nThumbSz_;                          \
   sSlider##nElemId.nPosMin = nPosMin_;                            \
   sSlider##nElemId.nPosMax = nPosMax_;                            \
@@ -266,6 +280,7 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSlider sSlider##nElemId;                         \
   sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.bSnapEn = false;                               \
   sSlider##nElemId.nThumbSz = nThumbSz_;                          \
   sSlider##nElemId.nPosMin = nPosMin_;                            \
   sSlider##nElemId.nPosMax = nPosMax_;                            \

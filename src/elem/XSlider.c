@@ -155,6 +155,20 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
 
+void gslc_ElemXSliderSetSnapEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bSnapEn)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXSliderSetSnapEn";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsXSlider* pSlider = (gslc_tsXSlider*)(pElem->pXData);
+
+  pSlider->bSnapEn = bSnapEn;
+}
+
+
 int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
@@ -460,11 +474,24 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
       nRelX = (nRelX < 0)? 0 : nRelX;
       nRelY = (nRelY < 0)? 0 : nRelY;
 
+      // Only support touch snap functionality if enabled
+      // and tick divisions have been set.
+      bool bDoSnap = pSlider->bSnapEn && (pSlider->nTickDiv > 0);
+      int32_t nTickSz = 0;
+
       // Calc new position
       nPosRng = pSlider->nPosMax - pSlider->nPosMin;
       if (!pSlider->bVert) {
+        if (bDoSnap) {
+          nTickSz = (int32_t)pElem->rElem.w / (int32_t)pSlider->nTickDiv;
+          nRelX = nTickSz * (int32_t)( (nRelX + (nTickSz/2) ) / nTickSz ); 
+        }
         nPos = (int16_t)((int32_t)nRelX * (int32_t)nPosRng / (int32_t)pElem->rElem.w) + pSlider->nPosMin;
       } else {
+        if (bDoSnap) {
+          nTickSz = (int32_t)pElem->rElem.h / (int32_t)pSlider->nTickDiv;
+          nRelY = nTickSz * (int32_t)( (nRelY + (nTickSz/2) ) / nTickSz ); 
+        }
         nPos = (int16_t)((int32_t)nRelY * (int32_t)nPosRng / (int32_t)pElem->rElem.h) + pSlider->nPosMin;
       }
     }
