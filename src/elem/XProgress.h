@@ -130,6 +130,18 @@ void gslc_ElemXProgressSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bF
 
 
 ///
+/// Set the gauge color
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  colGauge:    Color for the gauge's fill
+///
+/// \return none
+///
+void gslc_ElemXProgressSetGaugeCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colGauge);
+
+
+///
 /// Draw a gauge element on the screen
 /// - Called from gslc_ElemDraw()
 ///

@@ -169,6 +169,26 @@ void gslc_ElemXProgressSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bF
 
 }
 
+// Update the gauge's color
+void gslc_ElemXProgressSetGaugeCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colGauge)
+{
+  if (pElemRef == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXProgressSetGaugeCol";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
+    return;
+  }
+
+  // Fetch the element's extended data structure
+  gslc_tsXProgress*  pGauge  = (gslc_tsXProgress*)gslc_GetXDataFromRef(pGui,pElemRef,GSLC_TYPEX_PROGRESS,__LINE__);
+
+  pGauge->colGauge = colGauge;
+
+  // Mark for redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+
+}
+
+
 
 // Redraw the gauge
 // - Note that this redraw is for the entire element rect region
