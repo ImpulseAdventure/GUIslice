@@ -128,6 +128,7 @@ extern "C" {
 
   // Touch bus & pinout
   #define XPT2046_CS     3
+  #define XPT2046_IRQ    255 // IRQ pin or 255 if no IRQ used
 
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

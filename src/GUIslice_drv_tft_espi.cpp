@@ -146,8 +146,13 @@ TFT_eSPI m_disp = TFT_eSPI();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046_PS)
   const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
-  // Use SPI, no IRQs
-  XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #if defined(XPT2046_IRQ)
+    // Use SPI, with IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS, XPT2046_IRQ); // Chip Select pin, IRQ pin
+  #else
+    // Use SPI, no IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #endif  
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
