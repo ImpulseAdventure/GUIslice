@@ -734,6 +734,8 @@ typedef struct {
     int16_t           nTouchCalXMax;   ///< Calibration X maximum reading
     int16_t           nTouchCalYMin;   ///< Calibration Y minimum reading
     int16_t           nTouchCalYMax;   ///< Calibration Y maximum reading
+    int16_t           nTouchCalPressMin;  ///< Calibration minimum pressure threshold
+    int16_t           nTouchCalPressMax;  ///< Calibration maximum pressure threshold
   #endif
 
   gslc_tsFont*        asFont;           ///< Collection of loaded fonts
@@ -2426,7 +2428,7 @@ bool gslc_GetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pnPre
 void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn);
 
 ///
-/// Configure touchscreen calibration values
+/// Configure touchscreen calibration remapping values
 /// - Only used if calibration remapping has been enabled
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -2438,6 +2440,18 @@ void gslc_SetTouchRemapEn(gslc_tsGui* pGui, bool bEn);
 /// \return none
 ///
 void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint16_t nYMin, uint16_t nYMax);
+
+///
+/// Configure touchscreen calibration pressure values
+/// - Only used if calibration remapping has been enabled
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPressMin:   Resistive touchscreen pressure min value
+/// \param[in]  nPressMax:   Resistive touchscreen pressure max value
+///
+/// \return none
+///
+void gslc_SetTouchPressCal(gslc_tsGui* pGui,uint16_t nPressMin, uint16_t nPressMax);
 
 ///
 /// Configure touchscreen XY swap

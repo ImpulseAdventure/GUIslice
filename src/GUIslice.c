@@ -4377,6 +4377,17 @@ void gslc_SetTouchRemapCal(gslc_tsGui* pGui,uint16_t nXMin, uint16_t nXMax, uint
   pGui->nTouchCalYMax = nYMax;
 }
 
+void gslc_SetTouchPressCal(gslc_tsGui* pGui,uint16_t nPressMin, uint16_t nPressMax)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "SetTouchPressCal";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->nTouchCalPressMin = nPressMin;
+  pGui->nTouchCalPressMax = nPressMax;
+}
+
 void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap)
 {
   if (pGui == NULL) {

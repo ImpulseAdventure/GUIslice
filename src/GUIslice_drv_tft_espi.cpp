@@ -1214,6 +1214,15 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
     pGui->nTouchCalXMax = ADATOUCH_X_MAX;
     pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
+    #if defined(ADATOUCH_PRESS_MIN)
+      pGui->nTouchCalPressMin = ADATOUCH_PRESS_MIN;
+      pGui->nTouchCalPressMax = ADATOUCH_PRESS_MAX;
+    #else
+      // For backward compatibility, if these config settings
+      // were not included in the config file, provide defaults.
+      pGui->nTouchCalPressMin = 200;
+      pGui->nTouchCalPressMax = 4000;
+    #endif
   #endif // DRV_TOUCH_CALIB
 
   // Support touch controllers with swapped X & Y
@@ -1284,14 +1293,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     uint8_t nSamples = 5;
     uint8_t nSamplesValid = 0;
     while (nSamples--) {
-      if (TFT_eSPI_validTouch(&nRawX, &nRawY, ADATOUCH_PRESS_MIN)) nSamplesValid++;
+      if (TFT_eSPI_validTouch(&nRawX, &nRawY, pGui->nTouchCalPressMin)) nSamplesValid++;
     }
     if (nSamplesValid < 1) {
       nRawPress = 0; // Invalidate the reading
     }
     else {
       // Force a value within range
-      nRawPress = ADATOUCH_PRESS_MIN + 1;
+      nRawPress = pGui->nTouchCalPressMin + 1;
     }
   #else
     // No additional touch filtering
@@ -1300,7 +1309,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     m_disp.getTouchRaw(&nRawX, &nRawY);
   #endif // DRV_TOUCH_TFT_ESPI_FILTER
 
-  if ((nRawPress > ADATOUCH_PRESS_MIN) && (nRawPress < ADATOUCH_PRESS_MAX)) {
+  if ((nRawPress > pGui->nTouchCalPressMin) && (nRawPress < pGui->nTouchCalPressMax)) {
 
     m_nLastRawX = nRawX;
     m_nLastRawY = nRawY;
@@ -1784,7 +1793,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // - small: If touch active and hard
   // - large: If touch active and soft
   // Note that the "pressure" (z) value is inverted in interpretation
-  if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+  if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
     nRawX = p.x;
     nRawY = p.y;
     nRawPress = p.z;
@@ -1837,7 +1846,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // once we are done with our polling.
       uint16_t nPressCur = m_touch.pressure();
 
-      if ((nPressCur > ADATOUCH_PRESS_MIN) && (nPressCur < ADATOUCH_PRESS_MAX)) {
+      if ((nPressCur > pGui->nTouchCalPressMin) && (nPressCur < pGui->nTouchCalPressMax)) {
         // The unfiltered result is that the display is still pressed
         // Therefore we are likely in case (b) and should return our
         // last saved result (with touch pressure still active)
@@ -1895,7 +1904,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+    if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
@@ -1925,7 +1934,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+    if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
       // PaulStoffregen/XPT2046 appears to use a different orientation
       // than other libraries. Therefore, we will remap it here
       // to match the default portrait orientation.
