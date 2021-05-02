@@ -178,7 +178,7 @@ bool gslc_ElemXRampDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRed
 
 #define gslc_ElemXRampCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
     nMin_,nMax_,nVal_,colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXRamp sGauge##nElemId;                           \
   sGauge##nElemId.nMin = nMin_;                                   \
@@ -219,7 +219,7 @@ bool gslc_ElemXRampDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRed
 
 #define gslc_ElemXRampCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
     nMin_,nMax_,nVal_,colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXRamp sGauge##nElemId;                           \
   sGauge##nElemId.nMin = nMin_;                                   \

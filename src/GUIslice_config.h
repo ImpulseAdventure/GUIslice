@@ -119,9 +119,11 @@ extern "C" {
   //#include "../configs/due-adagfx-ili9341-urtouch.h"
   //#include "../configs/due-adagfx-ra8875-urtouch.h"
 
-  // ESP8266, ESP32, M5stack, TTGO:
+  // ESP8266, ESP32, M5stack, WIO Terminal, TTGO:
   // ------------------------------------------------------
   //#include "../configs/esp-shld-m5stack.h"
+  //#include "../configs/esp-shld-wio-notouch.h"
+  //#include "../configs/esp-shld-wio-input.h"
   //#include "../configs/esp-shld-ttgo_btc_ticker.h"
   //#include "../configs/esp-tftespi-default-ft6206.h"
   //#include "../configs/esp-tftespi-default-notouch.h"

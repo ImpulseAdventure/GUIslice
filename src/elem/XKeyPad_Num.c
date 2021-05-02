@@ -162,7 +162,7 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
     pKeyPad,nId,pKeys,nInd);
 
   if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  ID=%d Ind=%d\n",nId,nInd);
-  if (nInd == -1) {
+  if (nInd == GSLC_IND_NONE) {
     GSLC_DEBUG2_PRINT("ERROR: LabelGet_Num\n","");
     // Should never get here
   } else {
@@ -183,7 +183,8 @@ void gslc_ElemXKeyPadLabelGet_Num(void* pvKeyPad,uint8_t nId,uint8_t nStrMax,cha
       // Handle any dynamic keys first
 
       // Static content
-      gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nInd],nStrMax);
+      int16_t nIndSpecial = gslc_XKeyPadLookupSpecialId(KEYPAD_SPECIAL_LABEL, nId);
+      gslc_StrCopy(pStr,KEYPAD_SPECIAL_LABEL[nIndSpecial].pLabel,nStrMax);
     } else {
       gslc_StrCopy(pStr,"",nStrMax);
     }
@@ -266,9 +267,6 @@ void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult*
   bool* pbValPositive = &(pConfigNum->bValPositive);
   bool* pbValDecimalPt = &(pConfigNum->bValDecimalPt);
 
-  psResult->eRedrawState = XKEYPAD_REDRAW_NONE; // Default to no redraw needed
-  psResult->nRedrawKeyId = -1;
-
   if (pKeys[nInd].nType == E_XKEYPAD_TYPE_UNUSED) {
     // Ignore
   } else if (pKeys[nInd].nType == E_XKEYPAD_TYPE_BASIC) {
@@ -282,7 +280,7 @@ void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult*
       // Ignore the input
     } else {
       bRet = gslc_XKeyPadTxtAddStr(pKeyPad,acStr,pKeyPad->nCursorPos);
-      if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+      if (bRet) gslc_XKeyPadPendRedrawAddTxt(psResult);
     }
     return;
 
@@ -305,8 +303,7 @@ void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult*
           GSLC_DEBUG2_PRINT("ASSERT: delete decimal in wrong state\n","");
         }
         // The decimal point key may change state, so request redraw
-        psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_KEY;
-        psResult->nRedrawKeyId = KEYPAD_IDV_DECIMAL;
+        gslc_XKeyPadPendRedrawAddKey(psResult,KEYPAD_IDV_DECIMAL);
 
       } else if (pKeyPad->acBuffer[nCursorPos-1] == KEYPAD_LABEL_NEGATIVE[0]) {
         if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: back across neg\n","");
@@ -323,14 +320,14 @@ void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult*
       if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("BtnEvt_Num: about to DelCh @ %d\n",nCursorPos);
       bRet = gslc_XKeyPadTxtDelCh(pKeyPad,pKeyPad->nCursorPos);
 
-      if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+      if (bRet) gslc_XKeyPadPendRedrawAddTxt(psResult);
       return;
 
     } else if (nId == KEYPAD_IDV_MINUS) {
       if (*pbSignEn) {
         bool bPositive = *pbValPositive ? false : true; // Toggle sign
         gslc_XKeyPadValSetSign_Num(pKeyPad,bPositive);
-        psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+        gslc_XKeyPadPendRedrawAddTxt(psResult);
         return;
       }
       return;
@@ -342,14 +339,13 @@ void gslc_ElemXKeyPadBtnEvt_Num(void* pvKeyPad,uint8_t nId,gslc_tsXKeyPadResult*
           // Note that the decimal point will be added at the current
           // cursor position, which could be in the middle of an integer.
           bRet = gslc_XKeyPadTxtAddStr(pKeyPad,KEYPAD_LABEL_DECIMAL_PT,pKeyPad->nCursorPos);
-          if (bRet) psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_TXT;
+          if (bRet) gslc_XKeyPadPendRedrawAddTxt(psResult);
 
           *pbValDecimalPt = true;
 
           // As the decimal point button may be dimmed (to reflect it being disabled),
           // we request a key redraw here.
-          psResult->eRedrawState = psResult->eRedrawState | XKEYPAD_REDRAW_KEY;
-          psResult->nRedrawKeyId = KEYPAD_IDV_DECIMAL;
+          gslc_XKeyPadPendRedrawAddKey(psResult,KEYPAD_IDV_DECIMAL);
 
           return;
         } else {

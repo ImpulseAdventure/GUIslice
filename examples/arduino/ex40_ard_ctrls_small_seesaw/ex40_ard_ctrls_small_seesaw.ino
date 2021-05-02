@@ -3,7 +3,7 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 41 (Arduino): Small controls (low resolution display)
+// - Example 40 (Arduino): Small controls (low resolution display)
 //     with physical pushbutton input (eg. Adafruit Seesaw joystick)
 //   - Demonstrates basic elements on a small display (eg. 128x128)
 //     suitable for displays such as ST7735
@@ -57,7 +57,7 @@ gslc_tsXCheckbox                m_asXCheck[1];
 gslc_tsXProgress                m_sXGauge[2];
 gslc_tsXSlider                  m_sXSlider[1];
 
-#define MAX_INPUT_MAP       5
+#define MAX_INPUT_MAP       6
 gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 
 #define MAX_STR                 100
@@ -202,11 +202,12 @@ void setup()
   // Create the GUI input mapping (pin event to GUI action)
   // - The following is based on buttons that exist in the Adafruit Seesaw joystick shield
   gslc_InitInputMap(&m_gui, m_asInputMap, MAX_INPUT_MAP);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_UP,     GSLC_ACTION_FOCUS_PREV, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_SEL,    GSLC_ACTION_SELECT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_DOWN,   GSLC_ACTION_FOCUS_NEXT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_LEFT,   GSLC_ACTION_SET_REL, -10);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_RIGHT,  GSLC_ACTION_SET_REL, +10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_LEFT,  GSLC_ACTION_FOCUS_PREV, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_SEL,   GSLC_ACTION_PRESELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_SEL,   GSLC_ACTION_SELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_RIGHT, GSLC_ACTION_FOCUS_NEXT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_UP,    GSLC_ACTION_SET_REL, -10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_DOWN,  GSLC_ACTION_SET_REL, +10);
 
 
   // ------------------------------------------------

@@ -93,7 +93,8 @@ static const int RBIT_CTRL    = 128;  // Redraw the entire control
 /// - Includes any pending redraw state
 typedef struct {
   int16_t eRedrawState;         ///< XKeyPad pending redraw state
-  int16_t nRedrawKeyId;         ///< XKeyPad specific key to redraw (-1 for none)
+  int16_t nRedrawKeyId1;        ///< XKeyPad specific key (#1) to redraw (-1 for none)
+  int16_t nRedrawKeyId2;        ///< XKeyPad specific key (#2) to redraw (-1 for none)
 } gslc_tsXKeyPadResult;
 
 
@@ -129,6 +130,12 @@ enum {
   E_XKEYPAD_TYPE_END,         // Terminator indicator (end of key list)
 };
 
+typedef enum {
+  E_XKEYPAD_ATTRIB_FOCUS,
+  E_XKEYPAD_ATTRIB_GLOW,
+} gslc_tsXKeyPadAttrib;
+
+
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
@@ -143,6 +150,12 @@ enum {
     uint8_t             nType;     ///< Key type
   } gslc_tsKey;
 
+  /// Key Label strings for special buttons
+  /// - Includes ID and string
+  typedef struct {
+    uint8_t             nId;      /// Unique key ID
+    const char*         pLabel;   /// Key label string (zero terminated)
+  } gslc_tsLabelSpecial;
 
   // Internal callback functions for KeyPad
   typedef void (*GSLC_CB_XKEYPAD_RESET)(void* pvKeyPadConfig);
@@ -202,6 +215,8 @@ enum {
     uint8_t             nScrollPos;                 ///< Display offset within the buffer
 
     gslc_tsXKeyPadResult  sRedraw;        ///< Pending redraw state
+    int16_t               nFocusKeyInd;   ///< Indicate key in focus (GSLC_IND_NONE if none)
+    int16_t               nGlowKeyInd;    ///< Indicate key in glow (GSLC_IND_NONE if none)
 
     // Config
     gslc_tsXKeyPadCfg*  pConfig;          ///< Ptr to config struct (may be derived variant)
@@ -235,6 +250,21 @@ enum {
   ///         -1 if the key ID was not found
   ///
   int16_t gslc_XKeyPadLookupId(gslc_tsKey* pKeys, uint8_t nKeyId);
+
+
+  ///
+  /// Find a key ID within a KeyPad special label array and return
+  /// it's index into the array.
+  /// - It is expected that the KeyPad label array is
+  ///   terminated with KEYPAD_ID__END
+  ///
+  /// \param[in]  pLabels:     Ptr to the Keypad special label array
+  /// \param[in]  nKeyId:      Key ID to look for
+  ///
+  /// \return the index into the array if the ID was found or
+  ///         -1 if the key ID was not found
+  ///
+  int16_t gslc_XKeyPadLookupSpecialId(gslc_tsLabelSpecial* pLabels, uint8_t nKeyId);
 
   ///
   /// Add a character to the KeyPad text field at the specified offset (nPos).
@@ -335,15 +365,18 @@ enum {
   /// Calculate the overall dimensions of the KeyPad control encompassing
   /// the text field and key buttons. The dimension is calculated in
   /// units of the configured key size (width and height), and accounts
-  /// for any column spans.
+  /// for any column spans. It also returns the index of the first and
+  /// last keys on the keypad.
   ///
   /// \param[in]  pLayout:     Ptr to the KeyPad layout
   /// \param[out] pnRows:      Ptr for the number of rows
   /// \param[out] pnCols:      Ptr for the number of columns
+  /// \param[out] pnIndFirst:  Ptr for the index of first key
+  /// \param[out] pnIndLast:   Ptr for the index of last key
   ///
   /// \return none
   ///
-  void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols);
+  void gslc_XKeyPadSizeGet(gslc_tsKey* pLayout, uint8_t* pnRows, uint8_t* pnCols, int8_t* pnIndFirst, int8_t* pnIndLast);
 
   ///
   /// Draw a key to the screen
@@ -351,10 +384,12 @@ enum {
   /// \param[in]  pGui:        Pointer to GUI
   /// \param[in]  pXData:      Ptr to extended element data structure
   /// \param[in]  pKey:        Ptr to key being drawn
+  /// \param[in]  bGlow:       Indicate if key is in glow state
+  /// \param[in]  bFocus:      Indicate if key is in focus state
   ///
   /// \return none
   ///
-  void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey);
+  void gslc_XKeyPadDrawKey(gslc_tsGui* pGui, gslc_tsXKeyPad* pXData, gslc_tsKey* pKey, bool bGlow, bool bFocus);
 
   ///
   /// Create a KeyPad Element
@@ -435,6 +470,24 @@ enum {
   /// \return Target Element ID or GSLC_ID_NONE if unspecified
   ///
   int16_t gslc_ElemXKeyPadDataTargetIdGet(gslc_tsGui* pGui, void* pvData);
+
+  /// \todo Doc
+  void gslc_XKeyPadPendRedrawReset(gslc_tsXKeyPadResult* pResult);
+
+  /// \todo Doc
+  void gslc_XKeyPadPendRedrawAddKey(gslc_tsXKeyPadResult* pResult,int16_t nId);
+
+  /// \todo Doc
+  void gslc_XKeyPadPendRedrawAddTxt(gslc_tsXKeyPadResult* pResult);
+
+  /// \todo Doc
+  void gslc_XKeyPadTrackSet(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nInd,gslc_tsXKeyPadAttrib eAttrib);
+
+  /// \todo Doc
+  void gslc_XKeyPadFocusSetDefault(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+  /// \todo Doc
+  void gslc_XKeyPadRedrawUpdate(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
   ///
   /// Draw a KeyPad element on the screen
@@ -528,21 +581,25 @@ enum {
   ///
   /// Draw a virtual textual Button Element
   ///
-  /// \param[in]  pGui:        Pointer to GUI
-  /// \param[in]  rElem:       Rectangle coordinates defining element size
-  /// \param[in]  pStrBuf:     String to copy into element
-  /// \param[in]  nStrBufMax:  Maximum length of string buffer (pStrBuf). 
-  /// \param[in]  nFontId:     Font ID to use for text display
-  /// \param[in]  cColFrame:   Frame color for element
-  /// \param[in]  cColFill:    Fill color for element
-  /// \param[in]  cColTxt:     Text color for element
-  /// \param[in]  bRoundedEn:  Use Rounded Corners?
+  /// \param[in]  pGui:          Pointer to GUI
+  /// \param[in]  rElem:         Rectangle coordinates defining element size
+  /// \param[in]  pStrBuf:       String to copy into element
+  /// \param[in]  nStrBufMax:    Maximum length of string buffer (pStrBuf). 
+  /// \param[in]  nFontId:       Font ID to use for text display
+  /// \param[in]  cColFrame:     Frame color for element
+  /// \param[in]  cColFill:      Fill color for element
+  /// \param[in]  cColFillGlow:  Fill color for element when glowing/focused
+  /// \param[in]  cColTxt:       Text color for element
+  /// \param[in]  bRoundedEn:    Use Rounded Corners?
+  /// \param[in]  bGlow:         Indicate btn is in glow state
+  /// \param[in]  bFocus:        Indicate btn is in focus state
   ///
   /// \return none
   ///
   void gslc_XKeyPadDrawVirtualBtn(gslc_tsGui* pGui, gslc_tsRect rElem,
     char* pStrBuf,uint8_t nStrBufMax,int16_t nFontId, gslc_tsColor cColFrame,
-    gslc_tsColor cColFill, gslc_tsColor cColTxt, bool bRoundedEn);
+    gslc_tsColor cColFill, gslc_tsColor cColFillGlow, gslc_tsColor cColTxt,
+    bool bRoundedEn, bool bGlow, bool bFocus);
 
 
   ///

@@ -1,18 +1,28 @@
-#ifndef _GUISLICE_CONFIG_LINUX_H_
-#define _GUISLICE_CONFIG_LINUX_H_
+#ifndef _GUISLICE_CONFIG_ARD_H_
+#define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
 // GUIslice library (example user configuration) for:
-//   - CPU:     LINUX Virtual Machine (VM)
-//   - Display: Built-in via SDL1.2
-//   - Touch:   Mouse via SDL1.2
-//   - Wiring:  None
+//   - CPU:     WIO Terminal (Cortex-M4F / SAMD51)
+//   - Display: TFT_eSPI modified by WIO Terminal
+//   - Touch:   None
+//   - Wiring:  Integrated unit
+//
+//   - Example display:
+//     - WIO Terminal
+//
+//   - IMPORTANT NOTE:
+//     - As the WIO Terminal library (Seeed_Arduino_LCD) includes a customized
+//       version of TFT_eSPI, it is important that any existing TFT_eSPI
+//       library is moved outside of the Arduino libraries folder, otherwise
+//       the display will not work correctly.
 //
 // DIRECTIONS:
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - None
+// - As this config file is designed for a shield, no additional
+//   wiring is required to support the GUI operation
 //
 // =============================================================================
 // - Calvin Hass
@@ -42,7 +52,7 @@
 // THE SOFTWARE.
 //
 // =============================================================================
-// \file GUIslice_config_linux.h
+// \file GUIslice_config_ard.h
 
 // =============================================================================
 // User Configuration
@@ -64,13 +74,20 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_SDL1             // LINUX SDL 1.2
-  #define DRV_TOUCH_SDL             // SDL touch driver
-  #define DRV_TOUCH_IN_DISP         // SDL provides touch handling
+  #define DRV_DISP_TFT_ESPI         // bodmer/TFT_eSPI
+  #define DRV_TOUCH_NONE            // No touch enabled
+
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
+
+  // For TFT_eSPI, the display wiring is defined by TFT_eSPI's User_Setup.h
+
+  // SD Card
+  //#define ADAGFX_PIN_SDCS    2 // ESP8266 + Adafruit FeatherWing 2.4"
+  #define ADAGFX_PIN_SDCS     14 // ESP32   + Adafruit FeatherWing 2.4"
+  //#define ADAGFX_PIN_SDCS    5 // Others  + Adafruit FeatherWing 2.4"
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -78,15 +95,8 @@ extern "C" {
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // NOTE: The GSLC_ROTATE feature is not yet supported in SDL mode
-  //       however, the following settings are provided for future use.
   #define GSLC_ROTATE     1
 
-  // -----------------------------------------------------------------------------
-  // SECTION 4: Touch Handling
-  // - Documentation for configuring touch support can be found at:
-  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
-  // -----------------------------------------------------------------------------
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -118,18 +128,21 @@ extern "C" {
   // - For memory constrained devices such as Arduino, it is best to
   //   set the following features to 0 (to disable) unless they are
   //   required.
-  #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
+  #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
-  #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
-  #define GSLC_FEATURE_FOCUS_ON_TOUCH 0   // If FEATURE_INPUT: set focus whenever touch elems
+  #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable
   // - Note that the inclusion of the SD library consumes considerable
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
-  // - NOTE: Mode not supported in LINUX
   #define GSLC_SD_EN    0
+
+  // Enable support for SPIFFS File System access
+  // - Set to 1 to enable, 0 to disable
+  // - Note that this requires the inclusion of TFT_eFEX library
+  #define GSLC_SPIFFS_EN               0 
 
 
   // =============================================================================
@@ -151,29 +164,24 @@ extern "C" {
   // Misc
   // -----------------------------------------------------------------------------
 
+  // Define buffer size for loading images from SD
+  // - A larger buffer will be faster but at the cost of RAM
+  #define GSLC_SD_BUFFPIXEL   50
+
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  //#define GSLC_CLIP_EN 1
+  #define GSLC_CLIP_EN 1
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
   #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
-  #define GSLC_USE_FLOAT        1   // 1=Use floating pt library, 0=Fixed-point lookup tables
+  #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
-  #define GSLC_DEV_FB           "/dev/fb0" // LINUX framebuffer
-  #define GSLC_DEV_TOUCH        ""
-  #define GSLC_DEV_VID_DRV      "x11"
-
-  // Enable SDL startup workaround? (1 to enable, 0 to disable)
-  #define DRV_SDL_FIX_START     0
-
-  // Show SDL mouse (1 to show, 0 to hide)
-  #define DRV_SDL_MOUSE_SHOW    1
-
+  #define GSLC_DEV_TOUCH ""
   #define GSLC_USE_PROGMEM      0
 
-  #define GSLC_LOCAL_STR        1   // 1=Use local strings (in element array), 0=External
+  #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements
 
   // -----------------------------------------------------------------------------
@@ -192,4 +200,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // _GUISLICE_CONFIG_LINUX_H_
+#endif // _GUISLICE_CONFIG_ARD_H_

@@ -63,6 +63,10 @@ extern "C" {
   #define GSLC_PMEM
 #endif
 
+// Provide default for FOCUS_ON_TOUCH
+#if !defined(GSLC_FEATURE_FOCUS_ON_TOUCH)
+  #define GSLC_FEATURE_FOCUS_ON_TOUCH 1
+#endif
 
 
 // -----------------------------------------------------------------------
@@ -175,14 +179,16 @@ typedef enum {
 } gslc_teTypeCore;
 
 /// Element features type
-#define GSLC_ELEM_FEA_VALID     0x80      ///< Element record is valid
-#define GSLC_ELEM_FEA_EDIT_EN   0x20      ///< Element supports edit
-#define GSLC_ELEM_FEA_ROUND_EN  0x10      ///< Element is drawn with a rounded profile
-#define GSLC_ELEM_FEA_CLICK_EN  0x08      ///< Element accepts touch presses
-#define GSLC_ELEM_FEA_GLOW_EN   0x04      ///< Element supports glowing state
-#define GSLC_ELEM_FEA_FRAME_EN  0x02      ///< Element is drawn with a frame
-#define GSLC_ELEM_FEA_FILL_EN   0x01      ///< Element is drawn with a fill
-#define GSLC_ELEM_FEA_NONE      0x00      ///< Element default (no features set))
+#define GSLC_ELEM_FEA_NOSHRINK  0x0100      ///< Element can't be shrunk (eg. contains image)
+#define GSLC_ELEM_FEA_VALID     0x0080      ///< Element record is valid
+#define GSLC_ELEM_FEA_FOCUS_EN  0x0040      ///< Element can accept focus
+#define GSLC_ELEM_FEA_EDIT_EN   0x0020      ///< Element supports edit
+#define GSLC_ELEM_FEA_ROUND_EN  0x0010      ///< Element is drawn with a rounded profile
+#define GSLC_ELEM_FEA_CLICK_EN  0x0008      ///< Element accepts touch presses
+#define GSLC_ELEM_FEA_GLOW_EN   0x0004      ///< Element supports glowing state
+#define GSLC_ELEM_FEA_FRAME_EN  0x0002      ///< Element is drawn with a frame
+#define GSLC_ELEM_FEA_FILL_EN   0x0001      ///< Element is drawn with a fill
+#define GSLC_ELEM_FEA_NONE      0x0000      ///< Element default (no features set))
 
 
 /// Element text alignment
@@ -232,13 +238,15 @@ typedef enum {
 #define GSLC_COL_BLUE_LT3   (gslc_tsColor) { 96, 96,255}   ///< Blue (light3)
 #define GSLC_COL_BLUE_LT4   (gslc_tsColor) {128,128,255}   ///< Blue (light4)
 #define GSLC_COL_BLACK      (gslc_tsColor) {  0,  0,  0}   ///< Black
-#define GSLC_COL_GRAY_DK3   (gslc_tsColor) { 32, 32, 32}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK2   (gslc_tsColor) { 64, 64, 64}   ///< Gray (dark)
-#define GSLC_COL_GRAY_DK1   (gslc_tsColor) { 96, 96, 96}   ///< Gray (dark)
+#define GSLC_COL_GRAY_DK4   (gslc_tsColor) { 16, 16, 16}   ///< Gray (dark4)
+#define GSLC_COL_GRAY_DK3   (gslc_tsColor) { 32, 32, 32}   ///< Gray (dark3)
+#define GSLC_COL_GRAY_DK2   (gslc_tsColor) { 64, 64, 64}   ///< Gray (dark2)
+#define GSLC_COL_GRAY_DK1   (gslc_tsColor) { 96, 96, 96}   ///< Gray (dark1)
 #define GSLC_COL_GRAY       (gslc_tsColor) {128,128,128}   ///< Gray
 #define GSLC_COL_GRAY_LT1   (gslc_tsColor) {160,160,160}   ///< Gray (light1)
 #define GSLC_COL_GRAY_LT2   (gslc_tsColor) {192,192,192}   ///< Gray (light2)
 #define GSLC_COL_GRAY_LT3   (gslc_tsColor) {224,224,224}   ///< Gray (light3)
+#define GSLC_COL_GRAY_LT4   (gslc_tsColor) {240,240,240}   ///< Gray (light4)
 #define GSLC_COL_WHITE      (gslc_tsColor) {255,255,255}   ///< White
 
 #define GSLC_COL_YELLOW     (gslc_tsColor) {255,255,0}     ///< Yellow
@@ -266,6 +274,13 @@ typedef enum {
   GSLC_INPUT_PIN_DEASSERT,  ///< GPIO pin input deasserted (eg. set to 0 / Low)
 } gslc_teInputRawEvent;
 
+/// External input mode. Dictates how directional controls
+/// affect the interaction with the GUI elements.
+typedef enum {
+  GSLC_INPUTMODE_NAV,       ///< External input is in navigation mode
+  GSLC_INPUTMODE_EDIT,      ///< External input is in element edit mode
+} gslc_teInputMode;
+
 
 /// GUI Action Requested
 /// These actions are usually the result of an InputMap lookup
@@ -274,6 +289,7 @@ typedef enum {
   GSLC_ACTION_NONE,         ///< No action to perform
   GSLC_ACTION_FOCUS_PREV,   ///< Advance focus to the previous GUI element
   GSLC_ACTION_FOCUS_NEXT,   ///< Advance focus to the next GUI element
+  GSLC_ACTION_PRESELECT,    ///< Pre-Select the currently focused GUI element (glow)
   GSLC_ACTION_SELECT,       ///< Select the currently focused GUI element
   GSLC_ACTION_SET_REL,      ///< Adjust value (relative) of focused element  
   GSLC_ACTION_SET_ABS,      ///< Adjust value (absolute) of focused element
@@ -313,21 +329,22 @@ typedef enum {
   GSLC_TOUCH_SUBTYPE_MASK =                     (15<<0),    ///< Mask for subtype
 
   // Coordinate-based events
-  GSLC_TOUCH_DOWN         = GSLC_TOUCH_COORD  | ( 1<<0),    ///< Touch event (down)
-  GSLC_TOUCH_DOWN_IN      = GSLC_TOUCH_COORD  | ( 2<<0),    ///< Touch event (down inside tracked element)
-  GSLC_TOUCH_DOWN_OUT     = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
-  GSLC_TOUCH_UP           = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
-  GSLC_TOUCH_UP_IN        = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
-  GSLC_TOUCH_UP_OUT       = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up outside tracked element)
-  GSLC_TOUCH_MOVE         = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
-  GSLC_TOUCH_MOVE_IN      = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
-  GSLC_TOUCH_MOVE_OUT     = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)
+  GSLC_TOUCH_DOWN            = GSLC_TOUCH_COORD  | ( 1<<0),    ///< Touch event (down)
+  GSLC_TOUCH_DOWN_IN         = GSLC_TOUCH_COORD  | ( 2<<0),    ///< Touch event (down inside tracked element)
+  GSLC_TOUCH_DOWN_OUT        = GSLC_TOUCH_COORD  | ( 3<<0),    ///< Touch event (down outside tracked element)
+  GSLC_TOUCH_UP              = GSLC_TOUCH_COORD  | ( 4<<0),    ///< Touch event (up)
+  GSLC_TOUCH_UP_IN           = GSLC_TOUCH_COORD  | ( 5<<0),    ///< Touch event (up inside tracked element)
+  GSLC_TOUCH_UP_OUT          = GSLC_TOUCH_COORD  | ( 6<<0),    ///< Touch event (up outside tracked element)
+  GSLC_TOUCH_MOVE            = GSLC_TOUCH_COORD  | ( 7<<0),    ///< Touch event (move)
+  GSLC_TOUCH_MOVE_IN         = GSLC_TOUCH_COORD  | ( 8<<0),    ///< Touch event (move inside tracked element)
+  GSLC_TOUCH_MOVE_OUT        = GSLC_TOUCH_COORD  | ( 9<<0),    ///< Touch event (move outside tracked element)
   // Index-based events
-  GSLC_TOUCH_FOCUS_ON     = GSLC_TOUCH_DIRECT | ( 1<<0),    ///< Direct event focus on element
-  GSLC_TOUCH_FOCUS_OFF    = GSLC_TOUCH_DIRECT | ( 2<<0),    ///< Direct event focus away from focused element
-  GSLC_TOUCH_FOCUS_SELECT = GSLC_TOUCH_DIRECT | ( 3<<0),    ///< Direct event select focus element
-  GSLC_TOUCH_SET_REL      = GSLC_TOUCH_DIRECT | ( 4<<0),    ///< Direct event set value (relative) on focus element
-  GSLC_TOUCH_SET_ABS      = GSLC_TOUCH_DIRECT | ( 5<<0),    ///< Direct event set value (absolute) on focus element
+  GSLC_TOUCH_FOCUS_ON        = GSLC_TOUCH_DIRECT | ( 1<<0),    ///< Direct event focus on element
+  GSLC_TOUCH_FOCUS_OFF       = GSLC_TOUCH_DIRECT | ( 2<<0),    ///< Direct event focus away from focused element
+  GSLC_TOUCH_FOCUS_PRESELECT = GSLC_TOUCH_DIRECT | ( 3<<0),    ///< Direct event select focus element (glow before select)
+  GSLC_TOUCH_FOCUS_SELECT    = GSLC_TOUCH_DIRECT | ( 4<<0),    ///< Direct event select focus element
+  GSLC_TOUCH_SET_REL         = GSLC_TOUCH_DIRECT | ( 5<<0),    ///< Direct event set value (relative) on focus element
+  GSLC_TOUCH_SET_ABS         = GSLC_TOUCH_DIRECT | ( 6<<0),    ///< Direct event set value (absolute) on focus element
 
 } gslc_teTouch;
 
@@ -370,7 +387,8 @@ typedef enum {
 typedef enum {
   GSLC_REDRAW_NONE,         ///< No redraw requested
   GSLC_REDRAW_FULL,         ///< Full redraw of element requested
-  GSLC_REDRAW_INC           ///< Incremental redraw of element requested
+  GSLC_REDRAW_INC,          ///< Incremental redraw of element requested
+  GSLC_REDRAW_FOCUS         ///< Only focus redraw requested
 } gslc_teRedrawType;
 
 
@@ -418,13 +436,16 @@ typedef enum {
   GSLC_ELEMREF_REDRAW_NONE = (0<<4),  ///< No redraw requested
   GSLC_ELEMREF_REDRAW_FULL = (1<<4),  ///< Full redraw of element requested
   GSLC_ELEMREF_REDRAW_INC  = (2<<4),  ///< Incremental redraw of element requested
+  GSLC_ELEMREF_REDRAW_FOCUS= (3<<4),  ///< Focus-only redraw of element requested
 
+  GSLC_ELEMREF_EDITING     = (1<<2),  ///< Element is in edit state (1=edit, 0=navigate)
+  GSLC_ELEMREF_FOCUSED     = (1<<3),  ///< Element state is focused
   GSLC_ELEMREF_GLOWING     = (1<<6),  ///< Element state is glowing
   GSLC_ELEMREF_VISIBLE     = (1<<7),  ///< Element is currently shown (ie. visible)
 
   // Mask values for bitfield comparisons
-  GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags
-  GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags
+  GSLC_ELEMREF_SRC            = (3<<0),   ///< Mask for Source flags [bits 1,0]
+  GSLC_ELEMREF_REDRAW_MASK    = (3<<4),   ///< Mask for Redraw flags [bits 5,4]
 
 } gslc_teElemRefFlags;
 
@@ -537,6 +558,24 @@ typedef struct gslc_tsColor {
   uint8_t b;      ///< RGB blue value
 } gslc_tsColor;
 
+/// State associated with an element's region
+/// - This struct is used for gslc_ElemCalcRectState()
+/// - Accounts for various rects including
+///   focus, frame and internal content
+/// - Also contains the various colors associated
+///   with each region.
+typedef struct gslc_tsRectState {
+  gslc_tsRect rFocus;
+  gslc_tsRect rFull;
+  gslc_tsRect rInner;
+  gslc_tsColor colFocus;
+  gslc_tsColor colFrm;
+  gslc_tsColor colInner;
+  gslc_tsColor colBack;
+  gslc_tsColor colTxtFore;
+  gslc_tsColor colTxtBack;
+} gslc_tsRectState;
+
 /// Event structure
 typedef struct gslc_tsEvent {
   gslc_teEventType  eType;    ///< Event type
@@ -593,7 +632,7 @@ typedef struct {
 typedef struct gslc_tsElem {
 
   int16_t             nId;              ///< Element ID specified by user
-  uint8_t             nFeatures;        ///< Element feature vector (appearance/behavior))
+  uint16_t            nFeatures;        ///< Element feature vector (appearance/behavior))
 
   int16_t             nType;            ///< Element type enumeration
   gslc_tsRect         rElem;            ///< Rect region containing element
@@ -663,11 +702,11 @@ typedef struct {
   uint16_t              nElemRefMax;      ///< Maximum number of element references to allocate
   uint16_t              nElemRefCnt;      ///< Number of element references allocated
 
+  //uint8_t             nPageInd;         ///< Page index in page stack
+
   // Touch tracking
   gslc_tsElemRef*       pElemRefTracked;  ///< Element reference currently being touch-tracked (NULL for none)
-
-  // Input focus
-  int16_t               nElemIndFocused;  ///< Element index currently in focus (eg. by keyboard/pin control), GSLC_IND_NONE for none
+  int16_t               nElemIndTracked;  ///< Element index currently being touch-tracked (GSLC_IND_NONE for none)
 
   // Callback functions
   //GSLC_CB_EVENT         pfuncXEvent;      ///< UNUSED: Callback func ptr for events
@@ -763,6 +802,7 @@ typedef struct {
 
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
+  bool                bRedrawNeeded;    ///< Does anything on page require redraw?
   bool                bRedrawPartialEn; ///< Driver supports partial page redraw.
                                         ///< If true, only changed elements are redrawn
                                         ///< during next page redraw command.
@@ -804,6 +844,22 @@ typedef struct {
   uint8_t             nInputMapMax;     ///< Maximum number of input maps
   uint8_t             nInputMapCnt;     ///< Current number of input maps
   uint8_t             nInputMode;       ///< Input mode: 0=navigate, 1=edit
+
+  #if (GSLC_FEATURE_INPUT)
+  // Input navigation / focus state
+  int16_t             nFocusPageInd;    ///< Index of page in stack currently in focus
+  gslc_tsPage*        pFocusPage;       ///< Page ptr currently in focus
+  gslc_tsElemRef*     pFocusElemRef;    ///< Reference to element in focus
+  int16_t             nFocusElemInd;    ///< Index of element in page currently in focus
+  int16_t             nFocusElemMax;    ///< Max number of elements in page in focus
+  gslc_tsColor        colFocusNone;     ///< Focus frame color when not in focus (typically background color)
+  gslc_tsColor        colFocus;         ///< Focus frame color when in focus
+  gslc_tsColor        colFocusEdit;     ///< Focus frame color when in focus and edit mode
+
+  // Saved focus state (for popups)
+  int16_t             nFocusSavedPageInd; ///< Focus page index saved prior to popup/overlay
+  int16_t             nFocusSavedElemInd; ///< Focus element index saved prior to popup/overlay
+  #endif // GSLC_FEATURE_INPUT
 
 } gslc_tsGui;
 
@@ -2243,6 +2299,63 @@ void gslc_ElemSetTouchFunc(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, GSLC_CB_T
 void gslc_ElemSetStyleFrom(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefSrc,gslc_tsElemRef* pElemRefDest);
 
 ///
+/// Reset the element region state struct
+///
+/// \param[out] pState:        Pointer to the element region structure
+///
+/// \return none
+///
+void gslc_ResetRectState(gslc_tsRectState *pState);
+
+///
+/// Calculate the element region state struct
+/// - Establishes the size of the frame and inner regions
+/// - Determines the color of various parts of the element
+///   (focus rect, frame, text, fll, etc.)
+/// - The region state is calculated based upon the
+///   element's attributes, including the frame enable,
+///   ability to support focus, whether the contents can
+///   be shrunk to accommodate a frame, and the current
+///   state of focus/edit/etc.
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Pointer to Element reference
+/// \param[out] pState:        Pointer to element region state
+///
+/// \return none
+///
+void gslc_ElemCalcRectState(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, gslc_tsRectState* pState);
+
+///
+/// Calculate the change in dimensions of an element to account for
+/// any change in focus and/or frame attributes. It also takes
+/// into account the "NoShrink" attribute which indicates that
+/// an element's contents can't be reduced in size (eg. because
+/// they contain a fixed-sized image).
+/// - This routine is usually called whenever an element is created
+///   and also whenever size-impacting features are adjusted
+///   (eg. ElemSetFrameEn).
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Pointer to Element reference
+///
+/// \return The increase (or decrease) in size of the element
+///
+int8_t gslc_ElemCalcResizeForFocus(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
+
+///
+/// Increase or decrease the size of an element's region
+/// - Update the redraw status as needed
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Pointer to Element reference
+/// \param[in]  nDelta:        The increase of element size (negative for decrease)
+///
+/// \return none
+///
+void gslc_ElemGrowRect(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int8_t nDelta);
+
+///
 /// Get the glowing enable for an element
 ///
 /// \param[in]  pGui:        Pointer to GUI
@@ -2273,6 +2386,69 @@ void gslc_ElemSetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bGlowing);
 /// \return True if element is glowing
 ///
 bool gslc_ElemGetGlow(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Get the focus enable for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element supports focus
+///
+bool gslc_ElemGetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Set the focus enable for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bFocusEn:    Enable focus if 1, 0 if not supported
+///
+/// \return none
+///
+void gslc_ElemSetFocusEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocusEn);
+
+///
+/// Update the focused indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bFocused:    True if element is focused
+///
+/// \return none
+///
+void gslc_ElemSetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFocused);
+
+///
+/// Get the focused indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element is focused
+///
+bool gslc_ElemGetFocus(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Update the editing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bEditing:    True if element is being edited
+///
+/// \return none
+///
+void gslc_ElemSetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bEditing);
+
+///
+/// Get the editing indicator for an element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return True if element is being edited
+///
+bool gslc_ElemGetEdit(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Update the visibility status for an element
@@ -2473,15 +2649,99 @@ void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap);
 // ------------------------------------------------------------------------
 
 
-/// \todo Doc. This API is experimental and subject to change
+///
+/// Specify the callback function that is used to collect
+/// the state of any external inputs (eg. buttons,
+/// pins, encoders, etc.)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pfunc:       Pointer to the callback function
+///
+/// \return none
+///
 void gslc_SetPinPollFunc(gslc_tsGui* pGui, GSLC_CB_PIN_POLL pfunc);
 
-/// \todo Doc. This API is experimental and subject to change
+///
+/// Specify the mapping between external pin inputs (fetched
+/// by the SetPinPollFunc() callback and the GUI actions.
+/// - This is used to enable external controls to navigate
+///   and manipulate the GUI.
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  asInputMap:   Pointer to the input mapping table
+/// \param[in]  nInputMapMax: Total number of entries in mapping table
+///
+/// \return none
+///
 void gslc_InitInputMap(gslc_tsGui* pGui,gslc_tsInputMap* asInputMap,uint8_t nInputMapMax);
 
-/// \todo Doc. This API is experimental and subject to change
+///
+/// Add an entry into the external input mapping table
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  eInputEvent:  The event to detect
+/// \param[in]  nInputVal:    The value associated with the detected event
+/// \param[in]  eAction:      The action to take in the GUI
+/// \param[in]  nActionVal:   An optional parameter to associate with the GUI action
+///
+/// \return none
+///
 void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction eAction,int16_t nActionVal);
 
+///
+/// Find the currently focused element
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return Element reference of focused widget, or NULL if none
+///
+gslc_tsElemRef* gslc_FocusElemGet(gslc_tsGui* pGui);
+
+///
+/// Advance the focus to the next page in the page stack
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bNext:       Advance to next page if true, previous if false
+///
+/// \return none
+///
+void gslc_FocusPageStep(gslc_tsGui* pGui,bool bNext);
+
+///
+/// Advance the focus to the next element in the focused page
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bNext:       Advance to next element if true, previous if false
+///
+/// \return none
+///
+int16_t gslc_FocusElemStep(gslc_tsGui* pGui,bool bNext);
+
+///
+/// Change the focus to the indexed element on the specified page
+/// - First clear any existing focus before setting a new focus
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  nPageInd:    The index of the page containing the element
+/// \param[in]  nElemInd:    The index of the element containing the element
+/// \param[in]  bFocus:      If true, enables the focus on the specified
+///                          element after clearing the focus on the old
+///                          element. If false, no focus is enabled after
+///                          clearing any existing focus.
+///
+/// \return none
+///
+void gslc_FocusElemIndSet(gslc_tsGui* pGui,int16_t nPageInd,int16_t nElemInd,bool bFocus);
+
+///
+/// Change the focus to the currently-tracked element
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pCollect:    The active element collection to examine
+///
+/// \return none
+///
+void gslc_FocusSetToTrackedElem(gslc_tsGui* pGui,gslc_tsCollect* pCollect);
 
 // ------------------------------------------------------------------------
 /// @}
@@ -2715,7 +2975,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 #define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
@@ -2747,7 +3007,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
@@ -2778,7 +3038,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
@@ -2811,7 +3071,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
@@ -2842,7 +3102,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
@@ -2873,7 +3133,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] PROGMEM = strTxt;              \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_GLOW_EN |              \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
@@ -2905,7 +3165,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_PROG | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateBtnTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_GLOW_EN |              \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
@@ -2942,7 +3202,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 #define gslc_ElemCreateTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
   static const char str##nElemId[] = strTxt;                      \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
@@ -2974,7 +3234,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 
 #define gslc_ElemCreateTxt_P_R(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colFrame,colFill,nAlignTxt,bFrameEn,bFillEn) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
@@ -3005,7 +3265,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateTxt_P_R_ext(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,strLength,pFont,colTxt,colTxtGlow,colFrame,colFill,nAlignTxt,nMarginX,nMarginY,bFrameEn,bFillEn,bClickEn,bGlowEn,pfuncXEvent,pfuncXDraw,pfuncXTouch,pfuncXTick) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0) | (bClickEn?GSLC_ELEM_FEA_CLICK_EN:0) | (bGlowEn?GSLC_ELEM_FEA_GLOW_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
@@ -3037,7 +3297,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 
 #define gslc_ElemCreateBox_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFrame,colFill,bFrameEn,bFillEn,pfuncXDraw,pfuncXTick) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
@@ -3068,7 +3328,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
     (gslc_teElemRefFlags)(GSLC_ELEMREF_SRC_CONST | GSLC_ELEMREF_VISIBLE | GSLC_ELEMREF_REDRAW_FULL));
 
 #define gslc_ElemCreateLine_P(pGui,nElemId,nPage,nX0,nY0,nX1,nY1,colFill) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID;  \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
@@ -3099,7 +3359,7 @@ void gslc_InputMapAdd(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t 
 
 #define gslc_ElemCreateBtnTxt_P(pGui,nElemId,nPage,nX,nY,nW,nH,strTxt,pFont,colTxt,colFrame,colFill,colFrameGlow,colFillGlow,nAlignTxt,bFrameEn,bFillEn,callFunc,extraData) \
   static const char str##nElemId[] = strTxt;                      \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_GLOW_EN |              \
     (bFrameEn?GSLC_ELEM_FEA_FRAME_EN:0) | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static const gslc_tsElem sElem##nElemId = {                     \
@@ -3344,6 +3604,21 @@ void gslc_DrawTxtBase(gslc_tsGui* pGui, char* pStrBuf, gslc_tsRect rTxt, gslc_ts
 ///
 void gslc_SetRoundRadius(gslc_tsGui* pGui, uint8_t nRadius);
 
+///
+/// Set the global focus color choices
+/// - These colors will be used when depicting focus frames
+///   around elements
+///
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  colFocusNone: The color to use when the element is not in focus.
+///                           This is typically set to match the background color.
+/// \param[in]  colFocus:     The color to use when the element is in focus.
+/// \param[in]  colFocusEdit: The color to use when the element is in edit mode.
+///
+/// \return none
+///
+void gslc_SetFocusCol(gslc_tsGui* pGui,gslc_tsColor colFocusNone,gslc_tsColor colFocus,gslc_tsColor colFocusEdit);
+
 // ------------------------------------------------------------------------
 /// @}
 /// \defgroup _IntPage_ Internal: Page Functions
@@ -3441,10 +3716,6 @@ gslc_tsPage* gslc_PageFindById(gslc_tsGui* pGui,int16_t nPageId);
 ///
 /// \internal
 void gslc_PageRedrawCalc(gslc_tsGui* pGui);
-
-
-/// \todo Doc. This API is experimental and subject to change
-int16_t gslc_PageFocusStep(gslc_tsGui* pGui,gslc_tsPage* pPage,bool bNext);
 
 
 ///
@@ -3572,11 +3843,12 @@ gslc_tsElemRef* gslc_CollectFindElemById(gslc_tsGui* pGui,gslc_tsCollect* pColle
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  nX:           Absolute X coordinate to use for search
 /// \param[in]  nY:           Absolute Y coordinate to use for search
+/// \param[out] pnElemInd:    Pointer to element index found
 ///
 /// \return Pointer to the element reference in the collection that was found
 ///         or NULL if no matches found
 ///
-gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY);
+gslc_tsElemRef* gslc_CollectFindElemFromCoord(gslc_tsGui* pGui,gslc_tsCollect* pCollect,int16_t nX, int16_t nY, int16_t* pnElemInd);
 
 
 /// Allocate the next available Element ID in a collection
@@ -3606,36 +3878,11 @@ gslc_tsElemRef* gslc_CollectGetElemRefTracked(gslc_tsGui* pGui,gslc_tsCollect* p
 /// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  pCollect:     Pointer to the collection
 /// \param[in]  pElemRef:     Ptr to element reference to mark as being tracked
+/// \param[in]  nElemInd:     Element index to mark as being tracked
 ///
 /// \return none
 ///
-void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef);
-
-
-
-/// Get the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-///
-/// \return Element index or GSLC_IND_NONE for none
-///
-int16_t gslc_CollectGetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect);
-
-
-/// Set the element index within a collection that is currently in focus
-///
-/// \param[in]  pGui:         Pointer to GUI
-/// \param[in]  pCollect:     Pointer to the collection
-/// \param[in]  nElemInd:     Element index to set in focus, GSLC_IND_NONE for none
-///
-/// \return none
-///
-void gslc_CollectSetFocus(gslc_tsGui* pGui, gslc_tsCollect* pCollect, int16_t nElemInd);
-
-
-/// \todo Doc. This API is experimental and subject to change
-bool gslc_CollectFindFocusStep(gslc_tsGui* pGui,gslc_tsCollect* pCollect,bool bNext,bool* pbWrapped,int16_t* pnElemInd);
+void gslc_CollectSetElemTracked(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsElemRef* pElemRef,int16_t nElemInd);
 
 
 /// Assign the parent element reference to all elements within a collection
@@ -3749,15 +3996,27 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
 /// on the state.
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pPage:       Pointer to current page
-/// \param[in]  eInputEvent  Indication of event type
-/// \param[in]  nInputVal    Additional data for event type
+/// \param[in]  eInputEvent: Indication of event type
+/// \param[in]  nInputVal:   Additional data for event type
 ///
 /// \return none
 ///
-void gslc_TrackInput(gslc_tsGui* pGui,gslc_tsPage* pPage,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
+void gslc_TrackInput(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal);
 
 /// \todo Doc. This API is experimental and subject to change
+///
+/// Convert an external input event into a GUI action
+/// - Use the InputMap table to determine the action to
+///   take as a result of the external input event.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  eInputEvent: Indication of event type
+/// \param[in]  nInputVal:   Additional data for event type
+/// \param[out] peAction:    The GUI action to take
+/// \param[out] pnActionVal: Additional parameter for the GUI action
+///
+/// \return true if a matching event was found, false if none
+///
 bool gslc_InputMapLookup(gslc_tsGui* pGui,gslc_teInputRawEvent eInputEvent,int16_t nInputVal,gslc_teAction* peAction,int16_t* pnActionVal);
 
 #endif // !DRV_TOUCH_NONE

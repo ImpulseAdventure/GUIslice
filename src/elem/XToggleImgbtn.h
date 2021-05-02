@@ -1,13 +1,13 @@
-#ifndef _GUISLICE_EX_XTOGGLEBTN_H_
-#define _GUISLICE_EX_XTOGGLEBTN_H_
+#ifndef _GUISLICE_EX_XTOGGLEIMGBTN_H_
+#define _GUISLICE_EX_XTOGGLEIMGBTN_H_
 
 #include "GUIslice.h"
 
 
 // =======================================================================
-// GUIslice library extension: Toggle button control
+// GUIslice library extension: Toggle button with images control
 // - Paul Conti
-// - Toggle button with Android and iOS like styles
+// - Toggle button using images with Android and iOS like styles
 // - Based on Calvin Hass' Checkbox control
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
@@ -15,7 +15,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2020 Calvin Hass and Paul Conti
+// Copyright 2016-2021 Calvin Hass and Paul Conti
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,96 +36,89 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XTogglebtn.h
+/// \file XToggleImgbtn.h
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 // ============================================================================
-// Extended Element: Togglebtn
-// - Togglebtn 
+// Extended Element: ToggleImgbtn
+// - ToggleImgbtn 
 //   Acts much like a checkbox but with styles that are similar to iOS and 
 //   Android slider buttons.
 // ============================================================================
 
 // Define unique identifier for extended element type
 // - Select any number above GSLC_TYPE_BASE_EXTEND
-#define  GSLC_TYPEX_TOGGLEBTN GSLC_TYPE_BASE_EXTEND + 40
+#define  GSLC_TYPEX_TOGGLEIMGBTN GSLC_TYPE_BASE_EXTEND + 41
 
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
 
-/// Extended data for Togglebtn element
+/// Extended data for ToggleImgbtn element
 typedef struct {
   bool                        bOn;          ///< Indicates if button is ON or OFF
   int16_t                     nMyPageId;    ///< We need to track our page in case of grouping elements 
                                             ///< on a non current layer, like base layer
-  gslc_tsColor                colThumb;     ///< Color of thumb
-  gslc_tsColor                colOnState;   ///< Color of button in ON state
-  gslc_tsColor                colOffState;  ///< Color of button in OFF state
-  bool                        bCircular;    ///< Style of the toggle button circular or rectangular
   GSLC_CB_TOUCH               pfunctUser;   ///< User's Callback event to say element has changed
-} gslc_tsXTogglebtn;
+} gslc_tsXToggleImgbtn;
 
 
 ///
-/// Create a Togglebtn button Element
+/// Create a ToggleImgbtn button Element
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining togglebtn size
-/// \param[in]  colThumb:    Color of thumb
-/// \param[in]  colOnState:  Color to indicate on position
-/// \param[in]  colOffState: Color to indicate off position
-/// \param[in]  bCircular:   Style of the toggle button circular or rectangular
-/// \param[in]  bChecked:    Default state
+/// \param[in]  sImgRef:     Image reference to load (unselected state)
+/// \param[in]  sImgRefSel:  Image reference to load (selected state)
+/// \param[in]  bOn:         Default state, On or Off
 /// \param[in]  cbTouch:     Callback for touch events
 ///
 /// \return Pointer to Element reference or NULL if failure
 ///
-gslc_tsElemRef* gslc_ElemXTogglebtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-  gslc_tsXTogglebtn* pXData,gslc_tsRect rElem,
-  gslc_tsColor colThumb,gslc_tsColor colOnState,gslc_tsColor colOffState,
-  bool bCircular,bool bChecked,GSLC_CB_TOUCH cbTouch);
+gslc_tsElemRef* gslc_ElemXToggleImgbtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXToggleImgbtn* pXData,gslc_tsRect rElem,gslc_tsImgRef sImgRef,gslc_tsImgRef sImgRefSel,
+  bool bOn,GSLC_CB_TOUCH cbTouch);
 
 
 ///
-/// Get a Togglebtn element's current state
+/// Get a ToggleImgbtn element's current state
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return Current state
 ///
-bool gslc_ElemXTogglebtnGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+bool gslc_ElemXToggleImgbtnGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
-/// Set a Togglebtn element's current state
+/// Set a ToggleImgbtn element's current state
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  bOn:    New state
+/// \param[in]  bOn:         New state
 ///
 /// \return none
 ///
-void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn);
+void gslc_ElemXToggleImgbtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn);
 
 ///
-/// Toggle a Togglebtn element's current state
+/// Toggle a ToggleImgbtn element's current state
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  pElemRef:    Pointer to Element reference
 ///
 /// \return none
 ///
-void gslc_ElemXTogglebtnToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+void gslc_ElemXToggleImgbtnToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
-/// Draw a Togglebtn element on the screen
+/// Draw a ToggleImgbtn element on the screen
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
@@ -134,10 +127,10 @@ void gslc_ElemXTogglebtnToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXTogglebtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
+bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 ///
-/// Handle touch events to Togglebtn element
+/// Handle touch events to ToggleImgbtn element
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
@@ -148,7 +141,7 @@ bool gslc_ElemXTogglebtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 ///
 /// \return true if success, false otherwise
 ///
-bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+bool gslc_ElemXToggleImgbtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 ///
 /// Find the togglebtn within a group that has been selected
@@ -158,7 +151,7 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 ///
 /// \return Element Ptr or NULL if none selected
 ///
-gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupId);
+gslc_tsElemRef* gslc_ElemXToggleImgbtnFindSelected(gslc_tsGui* pGui,int16_t nGroupId);
 
 // ============================================================================
 // ------------------------------------------------------------------------
@@ -169,9 +162,9 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 //
 
 
-/// \def gslc_ElemXTogglebtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nGroup,bRadio_,nStyle_,colCheck_,bChecked_)
+/// \def gslc_ElemXToggleImgbtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,sImgRef_,sImgRefSel_,bOn_,cbTouch)
 ///
-/// Create a Togglebtn button Element
+/// Create a ToggleImgbtn button Element
 ///
 /// \param[in]  pGui:         Pointer to GUI
 /// \param[in]  nElemId:      Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
@@ -180,11 +173,9 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 /// \param[in]  nY:           Y coordinate of element
 /// \param[in]  nW:           Width of element
 /// \param[in]  nH:           Height of element
-/// \param[in]  colThumb_:    Color of thumb
-/// \param[in]  colOnState_:  Color to indicate on position
-/// \param[in]  colOffState_: Color to indicate off position
-/// \param[in]  bCircular_:   Style of the toggle button circular or rectangular
-/// \param[in]  bChecked_:    Default state
+/// \param[in]  sImgRef_:     Image reference to load (unselected state)
+/// \param[in]  sImgRefSel_:  Image reference to load (selected state)
+/// \param[in]  bOn_:         Default state, On or Off
 /// \param[in]  cbTouch:      Callback for touch events
 ///
 /// \return none
@@ -192,26 +183,22 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 
 #if (GSLC_USE_PROGMEM)
 
-#define gslc_ElemXTogglebtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colThumb_,colOnState_,colOffState_,bCircular_,bChecked_,cbTouch) \
+#define gslc_ElemXToggleImgbtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,sImgRef_,sImgRefSel_,bOn_,cbTouch) \
   static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
-  static gslc_tsXTogglebtn sTogglebtn##nElemId;                   \
-  sTogglebtn##nElemId.bOn = bChecked_;                            \
-  sTogglebtn##nElemId.nMyPageId = nPage;                          \
-  sTogglebtn##nElemId.colThumb = colThumb_;                       \
-  sTogglebtn##nElemId.colOnState = colOnState_;                   \
-  sTogglebtn##nElemId.colOffState = colOffState_;                 \
-  sTogglebtn##nElemId.bCircular = bCircular_;                     \
-  sTogglebtn##nElemId.pfunctUser = cbTouch;                       \
+  static gslc_tsXToggleImgbtn sToggleImgbtn##nElemId;                   \
+  sToggleImgbtn##nElemId.bOn = bOn_;                            \
+  sToggleImgbtn##nElemId.nMyPageId = nPage;                          \
+  sToggleImgbtn##nElemId.pfunctUser = cbTouch;                       \
   static const gslc_tsElem sElem##nElemId PROGMEM = {             \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
-      GSLC_TYPEX_TOGGLEBTN,                                       \
+      GSLC_TYPEX_TOGGLEIMGBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
       0,                                                          \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      sImgRef_,           \
+      sImgRefSel_,           \
       NULL,                                                       \
       NULL,                                                       \
       0,                                                          \
@@ -222,10 +209,10 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
       0,                                                          \
       0,                                                          \
       NULL,                                                       \
-      (void*)(&sTogglebtn##nElemId),                              \
+      (void*)(&sToggleImgbtn##nElemId),                              \
       NULL,                                                       \
-      &gslc_ElemXTogglebtnDraw,                                   \
-      &gslc_ElemXTogglebtnTouch,                                  \
+      &gslc_ElemXToggleImgbtnDraw,                                   \
+      &gslc_ElemXToggleImgbtnTouch,                                  \
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
@@ -234,26 +221,22 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 
 #else
 
-#define gslc_ElemXTogglebtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colThumb_,colOnState_,colOffState_,bCircular_,bChecked_,cbTouch) \
+#define gslc_ElemXToggleImgbtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,sImgRef_,sImgRefSel_,bOn_,cbTouch) \
   static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
-  static gslc_tsXTogglebtn sTogglebtn##nElemId;                   \
-  sTogglebtn##nElemId.bOn = bChecked_;                            \
-  sTogglebtn##nElemId.nMyPageId = nPage;                          \
-  sTogglebtn##nElemId.colThumb = colThumb_;                       \
-  sTogglebtn##nElemId.colOnState = colOnState_;                   \
-  sTogglebtn##nElemId.colOffState = colOffState_;                 \
-  sTogglebtn##nElemId.bCircular = bCircular_;                     \
-  sTogglebtn##nElemId.pfunctUser = cbTouch;                       \
+  static gslc_tsXToggleImgbtn sToggleImgbtn##nElemId;                   \
+  sToggleImgbtn##nElemId.bOn = bOn_;                            \
+  sToggleImgbtn##nElemId.nMyPageId = nPage;                          \
+  sToggleImgbtn##nElemId.pfunctUser = cbTouch;                       \
   static const gslc_tsElem sElem##nElemId = {                     \
       nElemId,                                                    \
       nFeatures##nElemId,                                         \
-      GSLC_TYPEX_TOGGLEBTN,                                       \
+      GSLC_TYPEX_TOGGLEIMGBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
       0,                                                          \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
-      (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
+      sImgRef_,           \
+      sImgRefSel_,           \
       NULL,                                                       \
       NULL,                                                       \
       0,                                                          \
@@ -264,10 +247,10 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
       0,                                                          \
       0,                                                          \
       NULL,                                                       \
-      (void*)(&sTogglebtn##nElemId),                              \
+      (void*)(&sToggleImgbtn##nElemId),                              \
       NULL,                                                       \
-      &gslc_ElemXTogglebtnDraw,                                   \
-      &gslc_ElemXTogglebtnTouch,                                  \
+      &gslc_ElemXToggleImgbtnDraw,                                   \
+      &gslc_ElemXToggleImgbtnTouch,                                  \
       NULL,                                                       \
   };                                                              \
   gslc_ElemAdd(pGui,nPage,(gslc_tsElem*)&sElem##nElemId,          \
@@ -279,4 +262,4 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // _GUISLICE_EX_XTOGGLEBTN_H_
+#endif // _GUISLICE_EX_XTOGGLEIMGBTN_H_

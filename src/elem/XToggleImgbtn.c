@@ -30,7 +30,7 @@
 // THE SOFTWARE.
 //
 // =======================================================================
-/// \file XTogglebtn.c
+/// \file XToggleImgbtn.c
 
 
 
@@ -38,8 +38,7 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-//#include "elem/XTogglebtn.h"
-#include "XTogglebtn.h"
+#include "elem/XToggleImgbtn.h"
 
 #include <stdio.h>
 
@@ -69,51 +68,51 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // ----------------------------------------------------------------------------
 
 // ============================================================================
-// Extended Element: Togglebtn
-// - Togglebtn 
+// Extended Element: ToggleImgbtn
+// - ToggleImgbtn 
 //   Acts much like a checkbox but with styles that are similar to iOS and 
 //   Android slider buttons.
 // ============================================================================
 
 // Create a togglebtn element and add it to the GUI element list
-gslc_tsElemRef* gslc_ElemXTogglebtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-  gslc_tsXTogglebtn* pXData,gslc_tsRect rElem,
-  gslc_tsColor colThumb,gslc_tsColor colOnState,gslc_tsColor colOffState,
-  bool bCircular,bool bChecked,GSLC_CB_TOUCH cbTouch)
+gslc_tsElemRef* gslc_ElemXToggleImgbtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
+  gslc_tsXToggleImgbtn* pXData,gslc_tsRect rElem, gslc_tsImgRef sImgRef,gslc_tsImgRef sImgRefSel,
+  bool bOn,GSLC_CB_TOUCH cbTouch)
 {
   if ((pGui == NULL) || (pXData == NULL)) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXTogglebtnCreate";
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXToggleImgbtnCreate";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
   gslc_tsElem     sElem;
   gslc_tsElemRef* pElemRef = NULL;
-  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_TOGGLEBTN,rElem,NULL,0,GSLC_FONT_NONE);
-  sElem.nFeatures        |= GSLC_ELEM_FEA_FRAME_EN;
+  sElem = gslc_ElemCreate(pGui,nElemId,nPage,GSLC_TYPEX_TOGGLEIMGBTN,rElem,NULL,0,GSLC_FONT_NONE);
+  sElem.nFeatures        &= ~GSLC_ELEM_FEA_FRAME_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FILL_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_CLICK_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_GLOW_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
+  sElem.nFeatures        |= GSLC_ELEM_FEA_NOSHRINK; // Can't shrink due to image
 
   // Define other extended data
   sElem.pXData            = (void*)(pXData);
-  pXData->bOn             = bChecked;    // save on/off status
+  pXData->bOn             = bOn;    // save on/off status
   pXData->pfunctUser      = cbTouch;     // save user's callback in our extra data
   pXData->nMyPageId       = nPage;       // save our page id for group by access later, if needed.
-  pXData->colThumb        = colThumb;    // save thumb color
-  pXData->colOnState      = colOnState;  // save on color
-  pXData->colOffState     = colOffState; // save off color
-  pXData->bCircular       = bCircular;   // save button style
   
+  // Update the normal and glowing images
+  gslc_DrvSetElemImageNorm(pGui,&sElem,sImgRef);
+  gslc_DrvSetElemImageGlow(pGui,&sElem,sImgRefSel);
+
   // Specify the custom drawing callback
-  sElem.pfuncXDraw        = &gslc_ElemXTogglebtnDraw;
+  sElem.pfuncXDraw        = &gslc_ElemXToggleImgbtnDraw;
   
   // Specify the custom touch handler
-  sElem.pfuncXTouch       = &gslc_ElemXTogglebtnTouch;
+  sElem.pfuncXTouch       = &gslc_ElemXToggleImgbtnTouch;
   sElem.colElemFill       = GSLC_COL_BLACK;
   sElem.colElemFillGlow   = GSLC_COL_BLACK;
-  sElem.colElemFrame      = GSLC_COL_GRAY;
-  sElem.colElemFrameGlow  = GSLC_COL_WHITE;
+  sElem.colElemFrame      = GSLC_COL_BLACK;
+  sElem.colElemFrameGlow  = GSLC_COL_YELLOW;
   
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
@@ -130,25 +129,25 @@ gslc_tsElemRef* gslc_ElemXTogglebtnCreate(gslc_tsGui* pGui,int16_t nElemId,int16
   return NULL;
 }
 
-bool gslc_ElemXTogglebtnGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+bool gslc_ElemXToggleImgbtnGetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
-  gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
-  if (!pTogglebtn) return false;
+  gslc_tsXToggleImgbtn* pToggleImgbtn = (gslc_tsXToggleImgbtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEIMGBTN, __LINE__);
+  if (!pToggleImgbtn) return false;
 
-  return pTogglebtn->bOn;
+  return pToggleImgbtn->bOn;
 }
 
-// Helper routine for gslc_ElemXTogglebtnSetState()
+// Helper routine for gslc_ElemXToggleImgbtnSetState()
 // - Updates the togglebtn control's state but does
 //   not touch any other controls in the group
-void gslc_ElemXTogglebtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn)
+void gslc_ElemXToggleImgbtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn)
 {
-  gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
-  if (!pTogglebtn) return;
+  gslc_tsXToggleImgbtn* pToggleImgbtn = (gslc_tsXToggleImgbtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEIMGBTN, __LINE__);
+  if (!pToggleImgbtn) return;
 
   // Update our data element
-  bool  bStateOld = pTogglebtn->bOn;
-  pTogglebtn->bOn = bOn;
+  bool  bStateOld = pToggleImgbtn->bOn;
+  pToggleImgbtn->bOn = bOn;
 
   // Element needs redraw
   if (bOn != bStateOld) {
@@ -160,10 +159,10 @@ void gslc_ElemXTogglebtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,b
 
 // Update the togglebtn control's state. If it's part of a group
 // then also update the state of all other buttons in the group.
-void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn)
+void gslc_ElemXToggleImgbtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bOn)
 {
-  gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
-  if (!pTogglebtn) return;
+  gslc_tsXToggleImgbtn* pToggleImgbtn = (gslc_tsXToggleImgbtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEIMGBTN, __LINE__);
+  if (!pToggleImgbtn) return;
 
   gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
 
@@ -176,7 +175,7 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
     // selected, then skip further update events.
     // NOTE: This check is not very efficient, but it avoids
     // the creation of extra events.
-    gslc_tsElemRef* pTmpRef = gslc_ElemXTogglebtnFindSelected(pGui, nGroup);
+    gslc_tsElemRef* pTmpRef = gslc_ElemXToggleImgbtnFindSelected(pGui, nGroup);
     if (pTmpRef == pElemRef) {
       // Same element, so skip
       return;
@@ -197,10 +196,10 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
      * p conti.
      */
     // Find our page layer
-    gslc_tsPage* pPage = gslc_PageFindById(pGui, pTogglebtn->nMyPageId);
+    gslc_tsPage* pPage = gslc_PageFindById(pGui, pToggleImgbtn->nMyPageId);
     if (pPage == NULL) {
-      GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTogglebtnSetState() can't find page (ID=%d)\n", 
-         pTogglebtn->nMyPageId);
+      GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXToggleImgbtnSetState() can't find page (ID=%d)\n", 
+         pToggleImgbtn->nMyPageId);
       return;
     }
 
@@ -228,111 +227,27 @@ void gslc_ElemXTogglebtnSetState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool 
 
       // Deselect all other elements
       gslc_ElemSetGlow(pGui,pCurElemRef,false);  // trurn off glow state
-      gslc_ElemXTogglebtnSetStateHelp(pGui,pCurElemRef,false);
+      gslc_ElemXToggleImgbtnSetStateHelp(pGui,pCurElemRef,false);
 
     } // nInd
 
   } // bOn
 
   // Set the state of the current element
-  gslc_ElemXTogglebtnSetStateHelp(pGui,pElemRef,bOn);
+  gslc_ElemXToggleImgbtnSetStateHelp(pGui,pElemRef,bOn);
 }
 
 // Toggle the togglebtn control's state
-void gslc_ElemXTogglebtnToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
+void gslc_ElemXToggleImgbtnToggleState(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef)
 {
   if (pElemRef == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXTogglebtnToggleState";
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXToggleImgbtnToggleState";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return;
   }
   // Toggle the data element value
-  bool bStateNew = (gslc_ElemXTogglebtnGetState(pGui,pElemRef))? false : true;
-  gslc_ElemXTogglebtnSetState(pGui,pElemRef,bStateNew);
-}
-
-void gslc_ElemXTogglebtnDrawCircularHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsXTogglebtn* pTogglebtn) 
-{
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-
-  // frame enabled?
-  bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
-
-  // Determine the regions and colors based on element state
-  gslc_tsRectState sState;
-  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
-
-  // work out our circle positions
-  uint16_t nRadius  = sState.rInner.h / 2;
-  int16_t  nLeftX   = sState.rInner.x + nRadius;
-  int16_t  nLeftY   = sState.rInner.y + nRadius;
-  int16_t  nRightX  = sState.rInner.x + sState.rFull.w - nRadius -1;
-  int16_t  nRightY  = sState.rInner.y + nRadius;
-    
-  if (pTogglebtn->bOn) {
-    // draw our main body
-    gslc_DrawFillRoundRect(pGui,sState.rInner,nRadius,pTogglebtn->colOnState);
-    // place thumb on right-hand side
-    gslc_DrawFillCircle(pGui,nRightX-1,nRightY,nRadius-1,pTogglebtn->colThumb);
-    if (bFrameEn) {
-      // NOTE: On HX8357 and ILI9341 with TFT_eSPI if we do rounded rect frame we get 
-      // something that looks like two reversed parenthesis )button( around button 
-      gslc_DrawFrameCircle(pGui,nRightX,nRightY,nRadius-1,sState.colFrm);
-      //gslc_DrawFrameRoundRect(pGui,pElem->rElem,pElem->rElem.h,pElem->colElemFrame);
-      gslc_DrawFrameRoundRect(pGui,sState.rInner,nRadius,sState.colFrm);
-    }
-  } else {
-    // draw our main body
-    gslc_DrawFillRoundRect(pGui,sState.rInner,nRadius,pTogglebtn->colOffState);
-    // place thumb on left-hand side
-    gslc_DrawFillCircle(pGui,nLeftX,nLeftY,nRadius-1,pTogglebtn->colThumb);
-    if (bFrameEn) {
-      gslc_DrawFrameCircle(pGui,nLeftX,nLeftY,nRadius-1,sState.colFrm);
-      gslc_DrawFrameRoundRect(pGui,sState.rInner,nRadius,sState.colFrm);
-    }
-  }
-}
-
-void gslc_ElemXTogglebtnDrawRectangularHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsXTogglebtn* pTogglebtn) 
-{
-  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  // frame enabled?
-  bool bFrameEn  = pElem->nFeatures & GSLC_ELEM_FEA_FRAME_EN;
-
-  // Determine the regions and colors based on element state
-  gslc_tsRectState sState;
-  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
-
-  // Draw a frame around the checkbox
-  gslc_DrawFrameRect(pGui,sState.rFull,sState.colFrm);
-
-  // Work out the sizes of the inner rectangles 
-  gslc_tsRect rSquare = {
-    sState.rFull.x,
-    sState.rFull.y,
-    sState.rFull.h, // force a square
-    sState.rFull.h
-  };
-
-  if (pTogglebtn->bOn) {
-    gslc_DrawFillRect(pGui,sState.rInner,pTogglebtn->colOnState);
-    // place thumb on left-hand side
-    gslc_DrawFillRect(pGui,rSquare,pTogglebtn->colThumb);
-    if (bFrameEn) {
-      gslc_DrawFrameRect(pGui,sState.rFull,sState.colFrm);
-      gslc_DrawFrameRect(pGui,rSquare,sState.colFrm);
-    }
-  } else {
-    gslc_DrawFillRect(pGui,sState.rInner,pTogglebtn->colOffState);
-    // place thumb on right-hand side
-    rSquare.x = sState.rInner.x + sState.rInner.w - sState.rInner.h - 1;
-    gslc_DrawFillRect(pGui,rSquare,pTogglebtn->colThumb);
-    if (bFrameEn) {
-      gslc_DrawFrameRect(pGui,sState.rFull,sState.colFrm);
-      gslc_DrawFrameRect(pGui,rSquare,sState.colFrm);
-    }
-  }
-
+  bool bStateNew = (gslc_ElemXToggleImgbtnGetState(pGui,pElemRef))? false : true;
+  gslc_ElemXToggleImgbtnSetState(pGui,pElemRef,bStateNew);
 }
 
 // Redraw the togglebtn
@@ -340,28 +255,47 @@ void gslc_ElemXTogglebtnDrawRectangularHelp(gslc_tsGui* pGui,gslc_tsElemRef* pEl
 // - The Draw function parameters use void pointers to allow for
 //   simpler callback function definition & scalability.
 
-bool gslc_ElemXTogglebtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
+bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
   (void)eRedraw; // Unused
   // Typecast the parameters to match the GUI and element types
   gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
 
-  gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
-  if (!pTogglebtn) {
-    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXTogglebtnDraw(%s) pXData is NULL\n","");
+  gslc_tsXToggleImgbtn* pToggleImgbtn = (gslc_tsXToggleImgbtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEIMGBTN, __LINE__);
+  if (!pToggleImgbtn) {
+    GSLC_DEBUG_PRINT("ERROR: gslc_ElemXToggleImgbtnDraw(%s) pXData is NULL\n","");
     return false;
   }
 
-  //gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
-  //gslc_DrawFillRect(pGui,pElem->rElem,pElem->colElemFill);
- 
-  if (pTogglebtn->bCircular) {
-    gslc_ElemXTogglebtnDrawCircularHelp(pGui, pElemRef, pTogglebtn);
+  gslc_tsElem* pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  bool bOk = false;
+
+  // Determine the regions and colors based on element state
+  gslc_tsRectState sState;
+  gslc_ElemCalcRectState(pGui,pElemRef,&sState);
+
+  // TODO:
+  // - Could add support for drawing a frame (size=sState.rFull)
+
+  // Draw any images associated with element
+  int16_t nInnerX = sState.rInner.x;
+  int16_t nInnerY = sState.rInner.y;
+  if (pToggleImgbtn->bOn) {
+    // Glow image might be NULL
+    if (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE) {
+      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefGlow);
+    } else {
+      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
+    }
   } else {
-    gslc_ElemXTogglebtnDrawRectangularHelp(pGui, pElemRef, pTogglebtn);
+    bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
   }
-  
+
+  if (!bOk) {
+    GSLC_DEBUG2_PRINT("ERROR: gslc_ElemXToggleImgbtnDraw failed\n","");
+  }
+
   // Clear the redraw flag
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_NONE);
 
@@ -379,7 +313,7 @@ bool gslc_ElemXTogglebtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedr
 //   dynamically, as well as updating the togglebtn state if the
 //   user releases over it (ie. a click event).
 //
-bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
+bool gslc_ElemXToggleImgbtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY)
 {
 #if defined(DRV_TOUCH_NONE)
   return false;
@@ -389,17 +323,17 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
   gslc_tsGui*       pGui  = (gslc_tsGui*)(pvGui);
   gslc_tsElemRef*   pElemRef = (gslc_tsElemRef*)(pvElemRef);
 
-  gslc_tsXTogglebtn* pTogglebtn = (gslc_tsXTogglebtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEBTN, __LINE__);
-  if (!pTogglebtn) return false;
+  gslc_tsXToggleImgbtn* pToggleImgbtn = (gslc_tsXToggleImgbtn*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_TOGGLEIMGBTN, __LINE__);
+  if (!pToggleImgbtn) return false;
 
-  bool  bStateOld = pTogglebtn->bOn;
+  bool  bStateOld = pToggleImgbtn->bOn;
   
   switch(eTouch) {
 
     case GSLC_TOUCH_UP_IN:
       // Now that we released on element, update the state
-      // Togglebtn button action: toggle
-      gslc_ElemXTogglebtnToggleState(pGui,pElemRef);
+      // ToggleImgbtn button action: toggle
+      gslc_ElemXToggleImgbtnToggleState(pGui,pElemRef);
       break;
     default:
       return false;
@@ -407,9 +341,9 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
   }
 
   // If the togglebtn changed state, redraw and notify user
-  if (pTogglebtn->bOn != bStateOld) {
+  if (pToggleImgbtn->bOn != bStateOld) {
     // Now send the callback notification
-    (*pTogglebtn->pfunctUser)((void*)(pGui), (void*)(pElemRef), eTouch, nRelX, nRelY);
+    (*pToggleImgbtn->pfunctUser)((void*)(pGui), (void*)(pElemRef), eTouch, nRelX, nRelY);
     // Incremental redraw
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
   }
@@ -419,7 +353,7 @@ bool gslc_ElemXTogglebtnTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,in
 }
 
 // Determine which togglebtn in the group is selected "on"
-gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupId)
+gslc_tsElemRef* gslc_ElemXToggleImgbtnFindSelected(gslc_tsGui* pGui,int16_t nGroupId)
 {
   uint16_t            nCurInd;
   gslc_tsElemRef*     pCurElemRef = NULL;
@@ -437,7 +371,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
   }
   
   if (pGui == NULL) {
-    static const char GSLC_PMEM FUNCSTR[] = "ElemXTogglebtnFindChecked";
+    static const char GSLC_PMEM FUNCSTR[] = "ElemXToggleImgbtnFindChecked";
     GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL,FUNCSTR);
     return NULL;
   }
@@ -449,12 +383,12 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
     pCurElem      = gslc_GetElemFromRef(pGui,pCurElemRef);
     nCurType      = pCurElem->nType;
     // Only want to proceed if it is a togglebtn
-    if (nCurType != GSLC_TYPEX_TOGGLEBTN) {
+    if (nCurType != GSLC_TYPEX_TOGGLEIMGBTN) {
       continue;
     }
 
     nCurGroup     = pCurElem->nGroup;
-    bCurSelected   = gslc_ElemXTogglebtnGetState(pGui,pCurElemRef);
+    bCurSelected   = gslc_ElemXToggleImgbtnGetState(pGui,pCurElemRef);
 
     // If this is in a different group, ignore it
     if (nCurGroup != nGroupId) {
