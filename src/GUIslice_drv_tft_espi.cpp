@@ -1590,15 +1590,6 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     pGui->nTouchCalXMax = ADATOUCH_X_MAX;
     pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
-    #if defined(ADATOUCH_PRESS_MIN)
-      pGui->nTouchCalPressMin = ADATOUCH_PRESS_MIN;
-      pGui->nTouchCalPressMax = ADATOUCH_PRESS_MAX;
-    #else
-      // For backward compatibility, if these config settings
-      // were not included in the config file, provide defaults.
-      pGui->nTouchCalPressMin = 200;
-      pGui->nTouchCalPressMax = 4000;
-    #endif
   #endif // DRV_TOUCH_CALIB
 
   // Support touch controllers with swapped X & Y
