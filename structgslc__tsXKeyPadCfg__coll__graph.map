@@ -1,0 +1,5 @@
+<map id="gslc_tsXKeyPadCfg" name="gslc_tsXKeyPadCfg">
+<area shape="rect" id="node2" href="$structgslc__tsKey.html" title="Key information. Defines everything we need to know about a particular key. " alt="" coords="5,5,93,32"/>
+<area shape="rect" id="node3" href="$structgslc__tsXKeyPadResult.html" title="Return status for XKeyPad. " alt="" coords="117,5,275,32"/>
+<area shape="rect" id="node4" href="$structgslc__tsColor.html" title="Color structure. Defines RGB triplet. " alt="" coords="299,5,397,32"/>
+</map>

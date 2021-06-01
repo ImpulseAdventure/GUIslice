@@ -1,0 +1,22 @@
+<map id="src/GUIslice_drv.h" name="src/GUIslice_drv.h">
+<area shape="rect" id="node2" href="$XCheckbox_8c.html" title="src/elem/XCheckbox.c" alt="" coords="5,80,167,107"/>
+<area shape="rect" id="node3" href="$XGauge_8c.html" title="src/elem/XGauge.c" alt="" coords="191,80,333,107"/>
+<area shape="rect" id="node4" href="$XGlowball_8c.html" title="src/elem/XGlowball.c" alt="" coords="358,80,510,107"/>
+<area shape="rect" id="node5" href="$XGraph_8c.html" title="src/elem/XGraph.c" alt="" coords="534,80,673,107"/>
+<area shape="rect" id="node6" href="$XKeyPad_8c.html" title="src/elem/XKeyPad.c" alt="" coords="697,80,843,107"/>
+<area shape="rect" id="node7" href="$XKeyPad__Alpha_8c.html" title="src/elem/XKeyPad_Alpha.c" alt="" coords="867,80,1055,107"/>
+<area shape="rect" id="node8" href="$XKeyPad__Num_8c.html" title="src/elem/XKeyPad_Num.c" alt="" coords="1079,80,1261,107"/>
+<area shape="rect" id="node9" href="$XListbox_8c.html" title="src/elem/XListbox.c" alt="" coords="1285,80,1431,107"/>
+<area shape="rect" id="node10" href="$XProgress_8c.html" title="src/elem/XProgress.c" alt="" coords="1455,80,1611,107"/>
+<area shape="rect" id="node11" href="$XRadial_8c.html" title="src/elem/XRadial.c" alt="" coords="1635,80,1774,107"/>
+<area shape="rect" id="node12" href="$XRamp_8c.html" title="src/elem/XRamp.c" alt="" coords="1799,80,1936,107"/>
+<area shape="rect" id="node13" href="$XRingGauge_8c.html" title="src/elem/XRingGauge.c" alt="" coords="1960,80,2129,107"/>
+<area shape="rect" id="node14" href="$XSeekbar_8c.html" title="src/elem/XSeekbar.c" alt="" coords="2154,80,2306,107"/>
+<area shape="rect" id="node15" href="$XSelNum_8c.html" title="src/elem/XSelNum.c" alt="" coords="2331,80,2481,107"/>
+<area shape="rect" id="node16" href="$XSlider_8c.html" title="src/elem/XSlider.c" alt="" coords="2505,80,2640,107"/>
+<area shape="rect" id="node17" href="$XSpinner_8c.html" title="src/elem/XSpinner.c" alt="" coords="2664,80,2812,107"/>
+<area shape="rect" id="node18" href="$XTemplate_8c.html" title="src/elem/XTemplate.c" alt="" coords="2836,80,2995,107"/>
+<area shape="rect" id="node19" href="$XTextbox_8c.html" title="src/elem/XTextbox.c" alt="" coords="3019,80,3167,107"/>
+<area shape="rect" id="node20" href="$XTogglebtn_8c.html" title="src/elem/XTogglebtn.c" alt="" coords="3191,80,3352,107"/>
+<area shape="rect" id="node21" href="$GUIslice_8c.html" title="src/GUIslice.c" alt="" coords="3377,80,3483,107"/>
+</map>

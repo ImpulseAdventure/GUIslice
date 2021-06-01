@@ -1,0 +1,9 @@
+<map id="gslc_tsXKeyPadData" name="gslc_tsXKeyPadData">
+<area shape="rect" id="node2" href="$structgslc__tsElemRef.html" title="Element reference structure. " alt="" coords="123,5,241,32"/>
+<area shape="rect" id="node3" href="$structgslc__tsElem.html" title="Element Struct. " alt="" coords="459,168,558,195"/>
+<area shape="rect" id="node4" href="$structgslc__tsEvent.html" title="Event structure. " alt="" coords="335,5,437,32"/>
+<area shape="rect" id="node5" href="$structgslc__tsRect.html" title="Rectangular region. Defines X,Y corner coordinates plus dimensions. " alt="" coords="462,5,555,32"/>
+<area shape="rect" id="node6" href="$structgslc__tsFont.html" title="Font reference structure. " alt="" coords="580,5,675,32"/>
+<area shape="rect" id="node7" href="$structgslc__tsImgRef.html" title="Image reference structure. " alt="" coords="699,5,809,32"/>
+<area shape="rect" id="node8" href="$structgslc__tsColor.html" title="Color structure. Defines RGB triplet. " alt="" coords="833,5,931,32"/>
+</map>

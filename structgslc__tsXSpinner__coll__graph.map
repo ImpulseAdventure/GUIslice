@@ -1,0 +1,10 @@
+<map id="gslc_tsXSpinner" name="gslc_tsXSpinner">
+<area shape="rect" id="node2" href="$structgslc__tsElemRef.html" title="Element reference structure. " alt="" coords="8,5,125,32"/>
+<area shape="rect" id="node3" href="$structgslc__tsElem.html" title="Element Struct. " alt="" coords="252,169,350,196"/>
+<area shape="rect" id="node9" href="$structgslc__tsCollect.html" title="Element collection struct. " alt="" coords="49,275,158,301"/>
+<area shape="rect" id="node4" href="$structgslc__tsEvent.html" title="Event structure. " alt="" coords="242,5,344,32"/>
+<area shape="rect" id="node5" href="$structgslc__tsRect.html" title="Rectangular region. Defines X,Y corner coordinates plus dimensions. " alt="" coords="369,5,462,32"/>
+<area shape="rect" id="node6" href="$structgslc__tsFont.html" title="Font reference structure. " alt="" coords="487,5,582,32"/>
+<area shape="rect" id="node7" href="$structgslc__tsImgRef.html" title="Image reference structure. " alt="" coords="606,5,716,32"/>
+<area shape="rect" id="node8" href="$structgslc__tsColor.html" title="Color structure. Defines RGB triplet. " alt="" coords="740,5,838,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="gslc_tsDriver" name="gslc_tsDriver">
+<area shape="rect" id="node2" href="$structgslc__tsRect.html" title="Rectangular region. Defines X,Y corner coordinates plus dimensions. " alt="" coords="5,5,99,32"/>
+<area shape="rect" id="node3" href="$structgslc__tsColor.html" title="Color structure. Defines RGB triplet. " alt="" coords="123,5,221,32"/>
+</map>

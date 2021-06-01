@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['sbasecfg',['sBaseCfg',['../structgslc__tsXKeyPadCfg__Alpha.html#a3cdde906966782af82e60290985a988a',1,'gslc_tsXKeyPadCfg_Alpha::sBaseCfg()'],['../structgslc__tsXKeyPadCfg__Num.html#aebed743616a436279f44ed83b03793c3',1,'gslc_tsXKeyPadCfg_Num::sBaseCfg()']]],
+  ['scale',['scale',['../classTouchHandler.html#a82a2415c7a78e0730c2cedcce14d3db0',1,'TouchHandler']]],
+  ['scollect',['sCollect',['../structgslc__tsXSelNum.html#a1ab8598b29cf4bdf0bf8946f80b4df4a',1,'gslc_tsXSelNum::sCollect()'],['../structgslc__tsXSpinner.html#ae1bf4a6e7e07f272435d4375f4949563',1,'gslc_tsXSpinner::sCollect()'],['../group____Int__.html#gaca64813f8e22697a5d00208e3cb07638',1,'gslc_tsPage::sCollect()']]],
+  ['selemreftmp',['sElemRefTmp',['../group____Int__.html#gabc77c370f4a6d6777d47ca46ad8bc2f1',1,'gslc_tsGui']]],
+  ['selemtmp',['sElemTmp',['../group____Int__.html#gaa98e8b498f3822e2ce51960735bc112c',1,'gslc_tsGui']]],
+  ['selemtmpprog',['sElemTmpProg',['../group____Int__.html#ga95db3176631d94437e8c2c2f3de68033',1,'gslc_tsGui']]],
+  ['selnum_5fid_5fbtn_5fdec',['SELNUM_ID_BTN_DEC',['../XSelNum_8c.html#a2db24114b6a41cc71b39e135033fed6d',1,'XSelNum.c']]],
+  ['selnum_5fid_5fbtn_5finc',['SELNUM_ID_BTN_INC',['../XSelNum_8c.html#a9c075b8c3f44fabc7f861a6a9d6ea507',1,'XSelNum.c']]],
+  ['selnum_5fid_5ftxt',['SELNUM_ID_TXT',['../XSelNum_8c.html#ad7f36736d6ed32f6cdc5ba23035f7632',1,'XSelNum.c']]],
+  ['selnum_5fstr_5flen',['SELNUM_STR_LEN',['../XSelNum_8h.html#a3d06786bfb45e99f082fe6fa1ddf48e4',1,'XSelNum.h']]],
+  ['setcalibration',['setCalibration',['../classTouchHandler.html#af9564feef5037d0029efa5c21399c946',1,'TouchHandler']]],
+  ['setsize',['setSize',['../classTouchHandler.html#a3e83a22104b0acef3826bf0076ee5182',1,'TouchHandler']]],
+  ['setswapflip',['setSwapFlip',['../classTouchHandler.html#aaa3598027a1c5a82e63266261c879fb7',1,'TouchHandler']]],
+  ['simgrefbkgnd',['sImgRefBkgnd',['../group____Int__.html#ga91ac1b7aa601bb217ae3a67340b82325',1,'gslc_tsGui']]],
+  ['simgrefglow',['sImgRefGlow',['../group____Int__.html#ga4af40c2818d9193250909b9338d520de',1,'gslc_tsElem']]],
+  ['simgrefnorm',['sImgRefNorm',['../group____Int__.html#ga08ff952772a376a851ef362ce9b5320f',1,'gslc_tsElem']]],
+  ['spi',['spi',['../classTouchHandler__XPT2046.html#a3da192b5fd2b760c2ece1d7d4eaa4519',1,'TouchHandler_XPT2046']]],
+  ['spinner_5fid_5fbtn_5fdec',['SPINNER_ID_BTN_DEC',['../XSpinner_8c.html#a4ada8e9ee7d501872a2a4a6ddbaa52e0',1,'XSpinner.c']]],
+  ['spinner_5fid_5fbtn_5finc',['SPINNER_ID_BTN_INC',['../XSpinner_8c.html#addcc416e14b3ad2348b8226ff118fecd',1,'XSpinner.c']]],
+  ['spinner_5fid_5ftxt',['SPINNER_ID_TXT',['../XSpinner_8c.html#ab6dcd52b955bd6460654aea5485b177a',1,'XSpinner.c']]],
+  ['sredraw',['sRedraw',['../structgslc__tsXKeyPad.html#ad95e7a72896fbf3abd330ca8ff519b24',1,'gslc_tsXKeyPad']]],
+  ['stranscol',['sTransCol',['../group____Int__.html#ga8acf9a60ca9420bd00d095546cca93ea',1,'gslc_tsGui']]]
+];
