@@ -254,7 +254,7 @@ bool InitGUI()
   //   accommodate GUI metadata
   static uint8_t m_pXListboxBuf[COUNTRY_CNT*(COUNTRY_LEN + XLISTBOX_BUF_OH_R)];
   pElemRef = gslc_ElemXListboxCreate(&m_gui, E_LISTBOX, E_PG_MAIN, &m_sListbox,
-    (gslc_tsRect) { rList.x + 2, rList.y + 4, rList.w - 23, rList.h - 7 }, E_FONT_LISTBOX,
+    (gslc_tsRect) { rList.x + 2, rList.y + 4, rList.w - 26, rList.h - 7 }, E_FONT_LISTBOX,
     m_pXListboxBuf, sizeof(m_pXListboxBuf), 0);
   gslc_ElemXListboxItemsSetSize(&m_gui, pElemRef, XLISTBOX_SIZE_AUTO, XLISTBOX_SIZE_AUTO);
   gslc_ElemXListboxSetSize(&m_gui, pElemRef, 5, 1); // 5 rows, 1 column
@@ -268,7 +268,7 @@ bool InitGUI()
 
   // Create vertical scrollbar for textbox
   pElemRef = gslc_ElemXSliderCreate(&m_gui, E_SCROLL, E_PG_MAIN, &m_sXSlider[0],
-    (gslc_tsRect) { rList.x + (int16_t)rList.w - 21, rList.y + 4, 20, rList.h - 8 }, 0, COUNTRY_CNT - 1, 0, 5, true);
+    (gslc_tsRect) { rList.x + (int16_t)rList.w - 22, rList.y + 4, 20, rList.h - 8 }, 0, COUNTRY_CNT - 1, 0, 5, true);
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_LT1, GSLC_COL_BLACK, GSLC_COL_BLACK);
   gslc_ElemXSliderSetStyle(&m_gui, pElemRef, true, GSLC_COL_BLUE_DK1, 0, 0, GSLC_COL_BLACK);
   gslc_ElemXSliderSetPosFunc(&m_gui, pElemRef, &CbSlidePos);
