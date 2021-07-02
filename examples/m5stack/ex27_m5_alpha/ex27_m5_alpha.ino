@@ -26,37 +26,6 @@
 
 #include "elem/XKeyPad_Alpha.h"
 
-/*
-// ------------------------------------------------
-// Load specific fonts
-// ------------------------------------------------
-
-// To demonstrate additional fonts, uncomment the following line:
-//#define USE_EXTRA_FONTS
-
-// Different display drivers provide different fonts, so a few examples
-// have been provided and selected here. Font files are usually
-// located within the display library folder or fonts subfolder.
-#ifdef USE_EXTRA_FONTS
-  #if defined(DRV_DISP_TFT_ESPI) // TFT_eSPI
-    #include <TFT_eSPI.h>
-    #define FONT_NAME1 &FreeSansBold12pt7b
-  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) // Teensy
-    #include <font_Arial.h>
-    #define FONT_NAME1 &Arial_12
-    #define SET_FONT_MODE1 // Enable Teensy extra fonts
-  #else // Arduino, etc.
-    #include <Adafruit_GFX.h>
-    #include "Fonts/FreeSansBold12pt7b.h"
-    #define FONT_NAME1 &FreeSansBold12pt7b
-  #endif
-#else
-  // Use the default font
-  #define FONT_NAME1 NULL
-#endif
-// ------------------------------------------------
-*/
-
 
 // Ensure config settings are correct for the sketch
 #if !defined(DRV_DISP_M5STACK) || !defined(DRV_TOUCH_M5STACK) || !(GSLC_FEATURE_INPUT)
