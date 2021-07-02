@@ -237,10 +237,10 @@ bool InitOverlays()
 
 
   static char mstr2[8] = "Slider:";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,160,60,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,162,60,20},
     mstr2,sizeof(mstr2),E_FONT_TXT);
   static char mstr3[6] = "???";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,160,40,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,162,40,20},
     mstr3,sizeof(mstr3),E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
   m_pElemSliderTxt = pElemRef; // Save for quick access
