@@ -27,13 +27,17 @@
 // Include any extended elements
 #include "elem/XTogglebtn.h"
 
+//#define EXTRA_FONTS
+
 // ------------------------------------------------
 // Headers and Defines for fonts
 // Note that font files are located within the Adafruit-GFX library folder:
 // ------------------------------------------------
+#if defined(EXTRA_FONTS)
 #include <Adafruit_GFX.h>
 // Note that these files are located within the Adafruit-GFX library folder:
 #include "Fonts/FreeSans9pt7b.h"
+#endif
 
 
 // ------------------------------------------------
@@ -163,6 +167,7 @@ bool InitGUI()
     (gslc_tsRect){230,100,60,30},
     GSLC_COL_GRAY_LT2,GSLC_COL_GREEN_DK3,GSLC_COL_RED_DK1,true, // circular
     false,&CbBtnCommon);
+  gslc_ElemSetGlowCol(&m_gui,pElemRef,GSLC_COL_RED_LT1,GSLC_COL_BLACK,GSLC_COL_WHITE);
   m_pElemShowApp = pElemRef;
   
   // Create E_LBL_PLAY text label
@@ -176,6 +181,7 @@ bool InitGUI()
     (gslc_tsRect){230,150,60,30},
     GSLC_COL_GRAY_LT2,GSLC_COL_GREEN_DK3,GSLC_COL_RED_DK1,false, // rectangular
     false,&CbBtnCommon);
+  gslc_ElemSetGlowCol(&m_gui,pElemRef,GSLC_COL_RED_LT1,GSLC_COL_BLACK,GSLC_COL_WHITE);
   m_pElemPlayApp = pElemRef;
   
   // Create E_LBL_APP text label
@@ -203,11 +209,19 @@ void setup()
   // ------------------------------------------------
   // Load Fonts
   // ------------------------------------------------
+  #if defined(EXTRA_FONTS)
     if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,&FreeSans9pt7b,1)) { return; }
+  #else
+    if (!gslc_FontSet(&m_gui,E_FONT_SANS9,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  #endif
 
   // ------------------------------------------------
   // Create graphic elements
   // ------------------------------------------------
+  
+  // Update the default focus colors due to white background
+  gslc_SetFocusCol(&m_gui,GSLC_COL_WHITE,GSLC_COL_MAGENTA,GSLC_COL_RED);
+
   InitGUI();
 
 }

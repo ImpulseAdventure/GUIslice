@@ -206,7 +206,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
 #if (GSLC_USE_PROGMEM)
 
 #define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFill,bFillEn,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static gslc_tsXCheckbox sCheckbox##nElemId;                     \
   sCheckbox##nElemId.bRadio = bRadio_;                            \
@@ -245,7 +245,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
 #else
 
 #define gslc_ElemXCheckboxCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colFill,bFillEn,nGroup,bRadio_,nStyle_,colCheck_,bChecked_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | (bFillEn?GSLC_ELEM_FEA_FILL_EN:0); \
   static gslc_tsXCheckbox sCheckbox##nElemId;                     \
   sCheckbox##nElemId.bRadio = bRadio_;                            \

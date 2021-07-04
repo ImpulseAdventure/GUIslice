@@ -2912,17 +2912,32 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     if ((nButtonsLast & TFTSHIELD_BUTTON_UP) && !(nButtonsCur & TFTSHIELD_BUTTON_UP)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_UP;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_UP) && (nButtonsCur & TFTSHIELD_BUTTON_UP)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_UP;
     } else if ((nButtonsLast & TFTSHIELD_BUTTON_DOWN) && !(nButtonsCur & TFTSHIELD_BUTTON_DOWN)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_DOWN;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_DOWN) && (nButtonsCur & TFTSHIELD_BUTTON_DOWN)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
       *pnInputVal = GSLC_PIN_BTN_DOWN;
     } else if ((nButtonsLast & TFTSHIELD_BUTTON_LEFT) && !(nButtonsCur & TFTSHIELD_BUTTON_LEFT)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_LEFT;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_LEFT) && (nButtonsCur & TFTSHIELD_BUTTON_LEFT)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_LEFT;
     } else if ((nButtonsLast & TFTSHIELD_BUTTON_RIGHT) && !(nButtonsCur & TFTSHIELD_BUTTON_RIGHT)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
       *pnInputVal = GSLC_PIN_BTN_RIGHT;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_RIGHT) && (nButtonsCur & TFTSHIELD_BUTTON_RIGHT)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_RIGHT;
     } else if ((nButtonsLast & TFTSHIELD_BUTTON_IN) && !(nButtonsCur & TFTSHIELD_BUTTON_IN)) {
       *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_SEL;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_IN) && (nButtonsCur & TFTSHIELD_BUTTON_IN)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
       *pnInputVal = GSLC_PIN_BTN_SEL;
     }
     // Save button state so that transitions can be detected

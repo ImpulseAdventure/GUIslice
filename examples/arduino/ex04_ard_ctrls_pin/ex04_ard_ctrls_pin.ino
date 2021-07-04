@@ -3,15 +3,19 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 23 (M5stack): Dynamic content with integrated button control
-//   - Same as Example 04, except adds GPIO pin input control
-//     IMPORTANT: See notes under Button Control
+// - Example 04 (Arduino): Dynamic content
 //   - Demonstrates push buttons, checkboxes and slider controls
+//   - Shows callback notifications for checkboxes and radio buttons
+
 //   - NOTE: This is the simple version of the example without
 //     optimizing for memory consumption. Therefore, it may not
 //     run on Arduino devices with limited memory. A "minimal"
 //     version is located in the "arduino_min" folder which includes
 //     FLASH memory optimization for reduced memory devices.
+//
+// MODS from ex04_ard_ctrls:
+// - Add GPIO pin input controls (see notes under Button control)
+// - Removed EXTRA FONTS
 //
 // ARDUINO NOTES:
 // - GUIslice_config.h must be edited to match the pinout connections
@@ -23,12 +27,31 @@
 
 // Include any extended elements
 #include "elem/XCheckbox.h"
-#include "elem/XProgress.h"
 #include "elem/XSlider.h"
+#include "elem/XProgress.h"
+
+
+// Button Control
+// - Define the pin connections for the external buttons.
+// - NOTE: The defaults provided assume an ATmega 2560, and will need to be
+//         changed according to your board / wiring.
+// - NOTE: The EasyButton constructor defaults to pull-up enabled with inverted
+//         polarity, meaning that the switches will connect the pin to ground
+//         when closed, and pull-up (via ATmega internal pullup resistors) when
+//         open. If your device does not have internal pullup resistors, then
+//         you must provide them externally.
+//           EasyButton(uint8_t pin, uint32_t dbTime = 35, bool puEnable = true, bool invert = true);
+#include "EasyButton.h"
+#define PIN_PREV  26
+#define PIN_SEL   24
+#define PIN_NEXT  22
+EasyButton btn_prev(PIN_PREV, 35, true, true);
+EasyButton btn_sel( PIN_SEL,  35, true, true);
+EasyButton btn_next(PIN_NEXT, 35, true, true);
 
 // Ensure config settings are correct for the sketch
-#if !defined(DRV_DISP_M5STACK) || !defined(DRV_TOUCH_M5STACK) || !(GSLC_FEATURE_INPUT)
-  #warning "This sketch requires config: #define DRV_TOUCH_M5TACK, #define DRV_TOUCH_M5STACK, #define GSLC_FEATURE_INPUT 1"
+#if !(GSLC_FEATURE_INPUT)
+  #warning "This sketch requires config: #define GSLC_FEATURE_INPUT 1"
 #endif
 
 // Defines for resources
@@ -60,11 +83,11 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXProgress            m_sXGauge,m_sXGauge1;
+gslc_tsXProgress            m_sXProgress,m_sXProgress1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
-#define MAX_INPUT_MAP       5
+#define MAX_INPUT_MAP       4
 gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 
 #define MAX_STR             15
@@ -80,14 +103,82 @@ gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui, void *pvElem, gslc_teTouch eTouch, int16_t nX, int16_t nY)
+// - Detect a button press
+// - In this particular example, we are looking for the Quit button press
+//   which is used to terminate the program.
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
-	if (eTouch == GSLC_TOUCH_UP_IN) {
-		m_bQuit = true;
-	}
-	return true;
+  (void)pvGui; // Unused
+  (void)pvElemRef; // Unused
+  (void)nX; // Unused
+  (void)nY; // Unused
+  //gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  //gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+
+  if (eTouch == GSLC_TOUCH_UP_IN) {
+    m_bQuit = true;
+    GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
+  }
+  return true;
 }
 
+// Checkbox / radio callbacks
+// - Creating a callback function is optional, but doing so enables you to
+//   detect changes in the state of the elements.
+bool CbCheckbox(void* pvGui, void* pvElemRef, int16_t nSelId, bool bChecked)
+{
+  gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem     = gslc_GetElemFromRef(pGui,pElemRef);
+  if (pElemRef == NULL) {
+    return false;
+  }
+
+  // Determine which element issued the callback
+  switch (pElem->nId) {
+    case E_ELEM_CHECK1:
+      GSLC_DEBUG_PRINT("Callback: Check[ID=%d] state=%u\n", pElem->nId,bChecked);
+      break;
+    case E_ELEM_RADIO1:
+    case E_ELEM_RADIO2:
+      // For the radio buttons, determine which ID is currently selected (nSelId)
+      // - Note that this may not always be the same as the element that
+      //   issued the callback (pElem->nId)
+      // - A return value of GSLC_ID_NONE indicates that no radio buttons
+      //   in the group are currently selected
+      if (nSelId == GSLC_ID_NONE) {
+        GSLC_DEBUG_PRINT("Callback: Radio[ID=NONE] selected\n", "");
+      } else {
+        GSLC_DEBUG_PRINT("Callback: Radio[ID=%d] selected\n", nSelId);
+      }
+      break;
+    default:
+      break;
+  } // switch
+  return true;
+}
+
+// Pin Input polling callback function
+bool CbPinPoll(void* pvGui, int16_t* pnPinInd, int16_t* pnPinVal)
+{
+  // Sample all pin inputs
+  btn_prev.read();
+  btn_sel.read();
+  btn_next.read();
+
+  // Determine if any pin edge events occur
+  // - If multiple pin events occur, they will be handled in consecutive CbPinPoll() calls
+  if      (btn_prev.wasPressed())  { *pnPinInd = PIN_PREV; *pnPinVal = 1; }
+  else if (btn_prev.wasReleased()) { *pnPinInd = PIN_PREV; *pnPinVal = 0; }
+  else if (btn_sel.wasPressed())   { *pnPinInd = PIN_SEL;  *pnPinVal = 1; }
+  else if (btn_sel.wasReleased())  { *pnPinInd = PIN_SEL;  *pnPinVal = 0; }
+  else if (btn_next.wasPressed())  { *pnPinInd = PIN_NEXT; *pnPinVal = 1; }
+  else if (btn_next.wasReleased()) { *pnPinInd = PIN_NEXT; *pnPinVal = 0; }
+  else return false; // No pin event detected
+
+  // If we reach here, then an pin event was detected
+  return true;
+}
 
 // Create page elements
 bool InitOverlays()
@@ -104,9 +195,11 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  // Create Quit button with text label
+  // Create Quit button with modifiable text label
+  static char mstr_quit[8] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){160,80,80,40},(char*)"Quit",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){160,80,80,40},mstr_quit,sizeof(mstr_quit),E_FONT_BTN,&CbBtnQuit);
+  gslc_ElemSetRoundEn(&m_gui,pElemRef,true);
 
   // Create counter
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
@@ -120,13 +213,13 @@ bool InitOverlays()
   // Create progress bar (horizontal)
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     (char*)"Progress:",0,E_FONT_TXT);
-  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXProgress,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   m_pElemProgress = pElemRef; // Save for quick access
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXProgress1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemProgress1 = pElemRef; // Save for quick access
@@ -137,6 +230,7 @@ bool InitOverlays()
     (char*)"Check1:",0,E_FONT_TXT);
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck[0],
     (gslc_tsRect){80,100,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create radio 1
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,135,20,20},
@@ -144,6 +238,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO1,E_PG_MAIN,&m_asXCheck[1],
     (gslc_tsRect){80,135,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create radio 2
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,160,20,20},
@@ -151,6 +246,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_RADIO2,E_PG_MAIN,&m_asXCheck[2],
     (gslc_tsRect){80,160,20,20},true,GSLCX_CHECKBOX_STYLE_ROUND,GSLC_COL_ORANGE,false);
   gslc_ElemSetGroup(&m_gui,pElemRef,E_GROUP1);
+  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
 
   // Create slider
   pElemRef = gslc_ElemXSliderCreate(&m_gui,E_ELEM_SLIDER,E_PG_MAIN,&m_sXSlider,
@@ -161,10 +257,10 @@ bool InitOverlays()
 
 
   static char mstr2[8] = "Slider:";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,160,60,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,162,60,20},
     mstr2,sizeof(mstr2),E_FONT_TXT);
   static char mstr3[6] = "???";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,160,40,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,162,40,20},
     mstr3,sizeof(mstr3),E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
   m_pElemSliderTxt = pElemRef; // Save for quick access
@@ -183,16 +279,22 @@ void setup()
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
+  // Set the pin poll callback function
+  gslc_SetPinPollFunc(&m_gui, CbPinPoll);
+
   // Create the GUI input mapping (pin event to GUI action)
   gslc_InitInputMap(&m_gui, m_asInputMap, MAX_INPUT_MAP);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_A,      GSLC_ACTION_FOCUS_PREV, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_B,      GSLC_ACTION_SELECT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_C,      GSLC_ACTION_FOCUS_NEXT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_A_LONG, GSLC_ACTION_SET_REL, -10);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, GSLC_PIN_BTN_C_LONG, GSLC_ACTION_SET_REL, +10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_PREV,     GSLC_ACTION_FOCUS_PREV, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   PIN_SEL,      GSLC_ACTION_PRESELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_SEL,      GSLC_ACTION_SELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_NEXT,     GSLC_ACTION_FOCUS_NEXT, 0);  
+
+  pinMode(PIN_PREV,INPUT_PULLUP);
+  pinMode(PIN_SEL,INPUT_PULLUP);
+  pinMode(PIN_NEXT,INPUT_PULLUP);
 
   // Use default font
-  if (!gslc_FontSet(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
   if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create graphic elements
@@ -234,11 +336,25 @@ void loop()
   // Slow down updates
   delay(10);
 
-  // In a real program, we would detect the button press and take an action.
-  // For this Arduino demo, we will pretend to exit by emulating it with an
-  // infinite loop. Note that interrupts are not disabled so that any debug
-  // messages via Serial have an opportunity to be transmitted.
+  // In an Arduino sketch, one doesn't normally "Quit" the program.
+  // For demonstration purposes, we are going to demonstrate
+  // changing the Quit button appearance and then stopping the program
+  // in an infinite loop.
   if (m_bQuit) {
+    // Fetch a reference to the Quit button
+    // - This demonstrates how to get an element from its ID (enumeration)
+    // - In most cases, it is easier to save an element reference variable
+    //   when we call ElemCreate*() on any element that we want to modify later.
+    gslc_tsElemRef* pElemRef = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_ELEM_BTN_QUIT);
+
+    // Change the button text
+    gslc_ElemSetTxtStr(&m_gui, pElemRef, (char*)"STOP");
+    // Change the button color
+    gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_RED_LT4, GSLC_COL_RED, GSLC_COL_RED_LT2);
+
+    // Let's stop the program here by calling a final update, Quit and
+    // then stall in an infinite loop.
+    gslc_Update(&m_gui);
     gslc_Quit(&m_gui);
     while (1) { }
   }

@@ -182,11 +182,11 @@ bool InitOverlays()
   gslc_ElemXSliderSetStyle(&m_gui,m_pElemSlider,true,(gslc_tsColor){0,0,128},10,5,(gslc_tsColor){64,64,64});
 
 
-  gslc_ElemCreateTxt_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,160,160,60,20,"Slider:",&m_asFont[E_FONT_TXT],
+  gslc_ElemCreateTxt_P(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,160,162,60,20,"Slider:",&m_asFont[E_FONT_TXT],
           GSLC_COL_YELLOW,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
 
   static char mstr8[6] = "???"; // Provide space for counter value
-  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,220,160,40,20,mstr8,6,&m_asFont[E_FONT_TXT],
+  gslc_ElemCreateTxt_P_R(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,220,162,40,20,mstr8,6,&m_asFont[E_FONT_TXT],
           GSLC_COL_ORANGE,GSLC_COL_BLACK,GSLC_COL_BLACK,GSLC_ALIGN_MID_LEFT,false,true);
   m_pElemSliderTxt = gslc_PageFindElemById(&m_gui,E_PG_MAIN,E_ELEM_TXT_SLIDER); // Save for quick access
 

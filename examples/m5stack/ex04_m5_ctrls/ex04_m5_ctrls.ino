@@ -3,8 +3,8 @@
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 21 (Arduino): Dynamic content with GPIO control
-//   - Same as Example 04, except adds GPIO pin input control
+// - Example 04 (M5stack): Dynamic content with integrated button control
+//   - Same as Example 04 (Arduino), except adds GPIO pin input control
 //     IMPORTANT: See notes under Button Control
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - NOTE: This is the simple version of the example without
@@ -26,29 +26,9 @@
 #include "elem/XProgress.h"
 #include "elem/XSlider.h"
 
-#include <Adafruit_GFX.h>
-
-// Button Control
-// - Define the pin connections for the external buttons.
-// - NOTE: The defaults provided assume an ATmega 2560, and will need to be
-//         changed according to your board / wiring.
-// - NOTE: The EasyButton constructor defaults to pull-up enabled with inverted
-//         polarity, meaning that the switches will connect the pin to ground
-//         when closed, and pull-up (via ATmega internal pullup resistors) when
-//         open. If your device does not have internal pullup resistors, then
-//         you must provide them externally.
-//           EasyButton(uint8_t pin, uint32_t dbTime = 35, bool puEnable = true, bool invert = true);
-#include "EasyButton.h"
-#define PIN_PREV  38
-#define PIN_SEL   40
-#define PIN_NEXT  42
-EasyButton btn_prev(PIN_PREV, 35, true, true);
-EasyButton btn_sel( PIN_SEL,  35, true, true);
-EasyButton btn_next(PIN_NEXT, 35, true, true);
-
 // Ensure config settings are correct for the sketch
-#if !defined(DRV_TOUCH_INPUT) || !(GSLC_FEATURE_INPUT)
-  #warning "This sketch requires config: #define DRV_TOUCH_INPUT, #define GSLC_FEATURE_INPUT 1"
+#if !defined(DRV_DISP_M5STACK) || !defined(DRV_TOUCH_M5STACK) || !(GSLC_FEATURE_INPUT)
+  #warning "This sketch requires config: #define DRV_TOUCH_M5TACK, #define DRV_TOUCH_M5STACK, #define GSLC_FEATURE_INPUT 1"
 #endif
 
 // Defines for resources
@@ -84,7 +64,7 @@ gslc_tsXProgress            m_sXGauge,m_sXGauge1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
-#define MAX_INPUT_MAP       3
+#define MAX_INPUT_MAP       5
 gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 
 #define MAX_STR             15
@@ -100,32 +80,14 @@ gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui, void *pvElem, gslc_teTouch eTouch, int16_t nX, int16_t nY)
 {
-  if (eTouch == GSLC_TOUCH_UP_IN) {
-    m_bQuit = true;
-  }
-  return true;
+	if (eTouch == GSLC_TOUCH_UP_IN) {
+		m_bQuit = true;
+	}
+	return true;
 }
 
-// Pin Input polling callback function
-bool CbPinPoll(void* pvGui, int16_t* pnPinInd, int16_t* pnPinVal)
-{
-  // Sample all pin inputs
-  btn_prev.read();
-  btn_sel.read();
-  btn_next.read();
-
-  // Determine if any pin edge events occur
-  // - If multiple pin events occur, they will be handled in consecutive CbPinPoll() calls
-  if      (btn_prev.wasPressed()) { *pnPinInd = PIN_PREV; *pnPinVal = 1; }
-  else if (btn_sel.wasPressed())  { *pnPinInd = PIN_SEL;  *pnPinVal = 1; }
-  else if (btn_next.wasPressed()) { *pnPinInd = PIN_NEXT; *pnPinVal = 1; }
-  else return false; // No pin event detected
-
-  // If we reach here, then an pin event was detected
-  return true;
-}
 
 // Create page elements
 bool InitOverlays()
@@ -199,10 +161,10 @@ bool InitOverlays()
 
 
   static char mstr2[8] = "Slider:";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,160,60,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){160,162,60,20},
     mstr2,sizeof(mstr2),E_FONT_TXT);
   static char mstr3[6] = "???";
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,160,40,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){220,162,40,20},
     mstr3,sizeof(mstr3),E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_ORANGE);
   m_pElemSliderTxt = pElemRef; // Save for quick access
@@ -221,22 +183,16 @@ void setup()
   // Initialize
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 
-  // Initialize pins controls. Note that this calls pinMode()
-  btn_prev.begin();
-  btn_sel.begin();
-  btn_next.begin();
-
-  // Set the pin poll callback function
-  gslc_SetPinPollFunc(&m_gui, CbPinPoll);
-
   // Create the GUI input mapping (pin event to GUI action)
-  gslc_InitInputMap(&m_gui,m_asInputMap,MAX_INPUT_MAP);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, PIN_PREV, GSLC_ACTION_FOCUS_PREV, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, PIN_SEL,  GSLC_ACTION_SELECT, 0);
-  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT, PIN_NEXT, GSLC_ACTION_FOCUS_NEXT, 0);
+  gslc_InitInputMap(&m_gui, m_asInputMap, MAX_INPUT_MAP);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_A,      GSLC_ACTION_FOCUS_PREV, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_B,      GSLC_ACTION_SELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, GSLC_PIN_BTN_C,      GSLC_ACTION_FOCUS_NEXT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_A_LONG, GSLC_ACTION_SET_REL, -10);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   GSLC_PIN_BTN_C_LONG, GSLC_ACTION_SET_REL, +10);
 
   // Use default font
-  if (!gslc_FontSet(&m_gui,E_FONT_BTN,GSLC_FONTREF_PTR,NULL,1)) { return; }
+  if (!gslc_FontSet(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
   if (!gslc_FontSet(&m_gui,E_FONT_TXT,GSLC_FONTREF_PTR,NULL,1)) { return; }
 
   // Create graphic elements

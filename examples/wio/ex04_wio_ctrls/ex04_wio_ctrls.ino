@@ -1,9 +1,12 @@
 //
+
+// Added button control (eg. WIO Terminal)
+
 // GUIslice Library Examples
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
-// - Example 04 (Arduino): Dynamic content
+// - Example 04 (WIO Terminal): Dynamic content
 //   - Demonstrates push buttons, checkboxes and slider controls
 //   - Shows callback notifications for checkboxes and radio buttons
 //   - Provide example of additional Adafruit-GFX fonts
@@ -26,6 +29,25 @@
 #include "elem/XCheckbox.h"
 #include "elem/XSlider.h"
 #include "elem/XProgress.h"
+
+// Button Control
+// - Define the pin connections for the external buttons.
+// - On the WIO Terminal, there are 8 buttons that can be mapped:
+//   - WIO_KEY_A
+//   - WIO_KEY_B
+//   - WIO_KEY_C
+//   - WIO_SS_UP
+//   - WIO_SS_DOWN
+//   - WIO_SS_LEFT
+//   - WIO_SS_RIGHT
+//   - WIO_SS_PRESS
+#include "EasyButton.h"
+#define PIN_PREV  WIO_KEY_A
+#define PIN_SEL   WIO_KEY_B
+#define PIN_NEXT  WIO_KEY_C
+EasyButton btn_prev(PIN_PREV, 35, true, true);
+EasyButton btn_sel( PIN_SEL,  35, true, true);
+EasyButton btn_next(PIN_NEXT, 35, true, true);
 
 // ------------------------------------------------
 // Load specific fonts
@@ -90,6 +112,8 @@ gslc_tsXProgress            m_sXProgress,m_sXProgress1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
+#define MAX_INPUT_MAP       4
+gslc_tsInputMap             m_asInputMap[MAX_INPUT_MAP];
 
 #define MAX_STR             15
 
@@ -102,6 +126,29 @@ gslc_tsXSlider              m_sXSlider;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
+
+// Pin Input polling callback function
+bool CbPinPoll(void* pvGui, int16_t* pnPinInd, int16_t* pnPinVal)
+{
+  // Sample all pin inputs
+  btn_prev.read();
+  btn_sel.read();
+  btn_next.read();
+
+  // Determine if any pin edge events occur
+  // - If multiple pin events occur, they will be handled in consecutive CbPinPoll() calls
+  if      (btn_prev.wasPressed())  { *pnPinInd = PIN_PREV; *pnPinVal = 1; }
+  else if (btn_prev.wasReleased()) { *pnPinInd = PIN_PREV; *pnPinVal = 0; }
+  else if (btn_sel.wasPressed())   { *pnPinInd = PIN_SEL;  *pnPinVal = 1; }
+  else if (btn_sel.wasReleased())  { *pnPinInd = PIN_SEL;  *pnPinVal = 0; }
+  else if (btn_next.wasPressed())  { *pnPinInd = PIN_NEXT; *pnPinVal = 1; }
+  else if (btn_next.wasReleased()) { *pnPinInd = PIN_NEXT; *pnPinVal = 0; }
+  else return false; // No pin event detected
+
+  // If we reach here, then an pin event was detected
+  return true;
+}
+
 
 // Button callbacks
 // - Detect a button press
@@ -267,6 +314,20 @@ void setup()
     gslc_FontSetMode(&m_gui, E_FONT_BTN, GSLC_FONTREF_MODE_1);
   #endif
 
+  // Initialize pins controls. Note that this calls pinMode()
+  btn_prev.begin();
+  btn_sel.begin();
+  btn_next.begin();
+
+  // Set the pin poll callback function
+  gslc_SetPinPollFunc(&m_gui, CbPinPoll);
+  
+  // Create the GUI input mapping (pin event to GUI action)
+  gslc_InitInputMap(&m_gui, m_asInputMap, MAX_INPUT_MAP);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_PREV,     GSLC_ACTION_FOCUS_PREV, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_ASSERT,   PIN_SEL,      GSLC_ACTION_PRESELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_SEL,      GSLC_ACTION_SELECT, 0);
+  gslc_InputMapAdd(&m_gui, GSLC_INPUT_PIN_DEASSERT, PIN_NEXT,     GSLC_ACTION_FOCUS_NEXT, 0);  
 
   // Create graphic elements
   InitOverlays();

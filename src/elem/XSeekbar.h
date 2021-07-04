@@ -236,7 +236,7 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 #define gslc_ElemXSeekbarCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nPosMin_,nPosMax_, \
     nPos_,nProgressW_,nRemainW_,nThumbSz_,colProgress_,colRemain_,colThumb_,bVert_, \
     colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSeekbar sSeekbar##nElemId;                         \
   sSeekbar##nElemId.bVert = bVert_;                                \
@@ -284,7 +284,7 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 #define gslc_ElemXSeekbarCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nPosMin_,nPosMax_, \
     nPos_,nProgressW_,nRemainW_,nThumbSz_,colProgress_,colRemain_,colThumb_,bVert_, \
     colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSeekbar sSeekbar##nElemId;                         \
   sSeekbar##nElemId.bVert = bVert_;                                \

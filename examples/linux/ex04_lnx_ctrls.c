@@ -214,7 +214,7 @@ bool InitOverlays()
   gslc_ElemXSliderSetStyle(&m_gui,pElemRef,true,(gslc_tsColor){0,0,128},10,
           5,(gslc_tsColor){64,64,64});
   m_pElemSlider = pElemRef; // Save for quick access
-  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,160,80,20},
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TXT_SLIDER,E_PG_MAIN,(gslc_tsRect){160,162,80,20},
     "Slider: ???",0,E_FONT_TXT);
   m_pElemSliderTxt = pElemRef; // Save for quick access
 

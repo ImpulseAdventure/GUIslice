@@ -29,7 +29,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Platform-independent* GUI core currently supports:
   - Adafruit-GFX, TFT_eSPI, mcufriend, UTFT, LCDGFX, SDL1.2, SDL2.0
 - *Devices*:
-  - Raspberry Pi, Arduino, ATmega2560, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3 / T4, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
+  - Raspberry Pi, Arduino, ATmega2560, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3 / T4, WIO Terminal, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
 - *Typical displays*:
   - PiTFT, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", FeatherWing TFT, OLED 0.96", mcufriend, BuyDisplay / EastRising 4.3" 5" 7", Waveshare, 4D Cape
 - *Display drivers include*:
@@ -40,7 +40,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
   - GUIslice has been tested for use in the *Arduino IDE* and *Platform IO* environments, in addition to LINUX make
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
 - Dynamic display rotation
-- GPIO / pin / keyboard / Adafruit Seesaw control for non-touchscreen devices
+- GPIO / pin / keyboard / Adafruit Seesaw navigation for non-touchscreen devices
 
 ## Screenshots ##
 ![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
