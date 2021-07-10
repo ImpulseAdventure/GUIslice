@@ -810,6 +810,11 @@ typedef struct {
                                         ///< element has been updated prior to next
                                         ///< page redraw command.
 
+  // Pending events
+  bool                bEventPending;    ///< Is there an event pending?
+  gslc_tsEventTouch   sEventTouchPend;  ///< A touch event that has been deferred (if bEventPending=true)
+  gslc_tsEvent        sEventPend;       ///< An event that has been deferred (if bEventPending=true)
+
   // Primary surface definitions
   gslc_tsImgRef       sImgRefBkgnd;     ///< Image reference for background
 
