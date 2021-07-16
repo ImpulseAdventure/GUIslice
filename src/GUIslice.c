@@ -180,6 +180,10 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 
   gslc_InvalidateRgnReset(pGui);
 
+   // Clear the event-pending struct
+  pGui->bEventPending = false;
+  pGui->sEventPend.eType = GSLC_EVT_NONE; 
+
   // Default global element characteristics
   pGui->nRoundRadius = 4;
 
@@ -603,6 +607,14 @@ void gslc_Update(gslc_tsGui* pGui)
   if (pGui->eInitStatTouch == GSLC_INITSTAT_FAIL) {
     gslc_DrvDrawTxt(pGui,5,5,NULL,(char*)"ERROR: InitTouch",
       GSLC_TXT_DEFAULT, GSLC_COL_RED, GSLC_COL_BLACK);
+  }
+
+  // --------------------------------------------------------------
+  // Handle any pending events
+  // --------------------------------------------------------------
+  if (pGui->bEventPending) {
+    gslc_ElemEvent((void*)pGui,pGui->sEventPend);
+    pGui->bEventPending = false;
   }
 
   // ---------------------------------------------
@@ -5608,6 +5620,8 @@ bool gslc_GuiRotate(gslc_tsGui* pGui, uint8_t nRotation)
 }
 
 // Trigger a touch event on an element
+// - These events are put into the deferred state to be caught on the next update loop
+// - If there is already a deferred event waiting, then it is issued immediately.
 bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
         gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
@@ -5619,12 +5633,20 @@ bool gslc_ElemSendEventTouch(gslc_tsGui* pGui,gslc_tsElemRef* pElemRefTracked,
     return false; //FIXME: Need to add this check!
   }
 
-  gslc_tsEventTouch sEventTouch;
-  sEventTouch.eTouch        = eTouch;
-  sEventTouch.nX            = nX;
-  sEventTouch.nY            = nY;
-  gslc_tsEvent sEvent = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pElemRefTracked,&sEventTouch);
-  gslc_ElemEvent((void*)pGui,sEvent);
+  // Check to see if the deferred event queue is available
+  if (pGui->bEventPending) {
+    // If the pending slot already has an event, then
+    // service it now and then save the new event into
+    // the pending slot.
+    gslc_ElemEvent((void*)pGui,pGui->sEventPend);
+  }
+  // Now we can save the new event into the pending slot
+  pGui->sEventTouchPend.eTouch = eTouch;
+  pGui->sEventTouchPend.nX = nX;
+  pGui->sEventTouchPend.nY = nY;
+  pGui->sEventPend = gslc_EventCreate(pGui,GSLC_EVT_TOUCH,0,(void*)pElemRefTracked,&(pGui->sEventTouchPend));
+  pGui->bEventPending = true;
+
   return true;
 #endif // !DRV_TOUCH_NONE
 }
