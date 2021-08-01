@@ -426,7 +426,7 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
         if (pFont->pvFont != pDriver->pvFontLast) {
           m_disp.loadFont((const char*)pFont->pvFont);
-          pDriver->pvFontLast = pFont->pvFont;
+          pDriver->pvFontLast = (void*)pFont->pvFont;
         }
       } else {
         m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
@@ -486,7 +486,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
         if (pFont->pvFont != pDriver->pvFontLast) {
           m_disp.loadFont((const char*)pFont->pvFont);
-          pDriver->pvFontLast = pFont->pvFont;
+          pDriver->pvFontLast = (void*)pFont->pvFont;
         }
         m_disp.setTextColor(nColRaw,nColBgRaw);
       } else {
