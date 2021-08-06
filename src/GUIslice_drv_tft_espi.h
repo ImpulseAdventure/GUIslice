@@ -145,6 +145,8 @@ typedef struct {
 
   gslc_tsRect   rClipRect;      ///< Clipping rectangle
 
+  const void*   pvFontLast;     ///< Last loadFont() reference
+
 } gslc_tsDriver;
 
 

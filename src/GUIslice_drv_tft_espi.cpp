@@ -195,6 +195,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
 
     pDriver->nColBkgnd = GSLC_COL_BLACK;
 
+    pDriver->pvFontLast = NULL;
+
     // These displays can accept partial redraw as they retain the last
     // image in the controller graphics RAM
     pGui->bRedrawPartialEn = true;
@@ -405,6 +407,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
         gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
+  gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   uint16_t nTxtScale = pFont->nSize;
@@ -421,7 +424,10 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
   } else {
     #ifdef SMOOTH_FONT
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-        m_disp.loadFont((const char*)pFont->pvFont);
+        if (pFont->pvFont != pDriver->pvFontLast) {
+          m_disp.loadFont((const char*)pFont->pvFont);
+          pDriver->pvFontLast = pFont->pvFont;
+        }
       } else {
         m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
       }
@@ -453,12 +459,6 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 
   m_disp.drawString(pStr,nTxtX,nTxtY);
 
-  #ifdef SMOOTH_FONT
-    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-      m_disp.unloadFont();
-    }
-  #endif
-
   // For now, always return true
   return true;
 }
@@ -478,12 +478,16 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 // should be used instead.
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
+  gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   #ifdef SMOOTH_FONT
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-        m_disp.loadFont((const char*)pFont->pvFont);
+        if (pFont->pvFont != pDriver->pvFontLast) {
+          m_disp.loadFont((const char*)pFont->pvFont);
+          pDriver->pvFontLast = pFont->pvFont;
+        }
         m_disp.setTextColor(nColRaw,nColBgRaw);
       } else {
         m_disp.setTextColor(nColRaw);
@@ -511,11 +515,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
     m_disp.println();
   }
-  #ifdef SMOOTH_FONT
-    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-      m_disp.unloadFont();
-    }
-  #endif
 
   return true;
 }
