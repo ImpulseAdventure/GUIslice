@@ -2203,10 +2203,26 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
 
   // --------------------------------------------------------------------------
 
-  // Disable certain workarounds for Adafruit_TouchScreen for certain devices
-  // that don't support the pin save/restore code.
-  #if defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__) || defined(GSLC_DEV_TEENSY)
+  // The Adafruit_TouchScreen library has a "feature" where it
+  // leaves pins in a bad state. Setting FIX_4WIRE_PIN_STATE
+  // activates some workarounds to mitigate this. Unfortunately,
+  // not all devices support the ability to save the pin state,
+  // so we disable the workaround here.
+
+  // The following is a list of devices for which we will completely
+  // disable any workaroud.
+  #if defined(GSLC_DEV_TEENSY)
     #undef FIX_4WIRE_PIN_STATE
+  #endif
+
+  // The following is a list of devices for which we will only
+  // apply a partial workaround. In the partial workaround,
+  // some typically-good output values are forced on certain
+  // ports, but no attempt is made at saving / restoring.
+  // These devices are generally those that don't support the
+  // pin save/restore code of the full workaround.
+  #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_ARCH_STM32) || defined(__STM32F1__)
+    #define FIX_4WIRE_PIN_STATE_NOPINMODE
   #endif
 
   #if defined(FIX_4WIRE_PIN_STATE)
@@ -2231,7 +2247,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   /// Return the current pinMode() for a pin
   int gslc_TDrvGetPinMode(uint8_t nPin)
   {
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT)
+    #if defined(FIX_4WIRE_PIN_STATE_NOPINMODE)
     // Not supported
     return -1;
 
@@ -2252,13 +2268,13 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     volatile  uint8_t *nOut = portOutputRegister(nPort);
     return ((*nOut & nBit) ? INPUT_PULLUP : INPUT);
 
-    #endif
+    #endif // FIX_4WIRE_PIN_STATE_NOPINMODE
   }
 
   /// Fetch the current pin mode and level
   inline void gslc_TDrvSavePinState(int nPin, gslc_tsPinState &sPinState)
   {
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT)
+    #if defined(FIX_4WIRE_PIN_STATE_NOPINMODE)
       // Not supported
       return;
     #else
@@ -2266,13 +2282,13 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     sPinState.nMode = gslc_TDrvGetPinMode(nPin);
     sPinState.bIsHigh = digitalRead(nPin);
 
-    #endif
+    #endif // FIX_4WIRE_PIN_STATE_NOPINMODE
   }
 
   /// Restore the pin mode and level
   inline void gslc_TDrvRestorePinState(int nPin,gslc_tsPinState sPinState)
   {
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT)
+    #if defined(FIX_4WIRE_PIN_STATE_NOPINMODE)
       // Not supported
       return;
     #else
@@ -2280,7 +2296,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
     pinMode(nPin,sPinState.nMode);
     if (sPinState.nMode == OUTPUT) digitalWrite(nPin,sPinState.bIsHigh);
 
-    #endif
+    #endif // FIX_4WIRE_PIN_STATE_NOPINMODE
   }
 
   #endif // FIX_4WIRE_PIN_STATE
@@ -2546,14 +2562,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     // As Adafruit_TouchScreen polling will alter the pin state and some
     // of these pins may be shared with the display, we need to save and
     // then later restore the pin state.
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT)
-      // For Arduino Due & Nano 33, we don't attempt to record state
+    #if defined(FIX_4WIRE_PIN_STATE_NOPINMODE)
+      // For certain devices, we don't attempt to record state
     #else
     gslc_TDrvSavePinState(ADATOUCH_PIN_XP, sPinStateXP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_XM, sPinStateXM);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YP, sPinStateYP);
     gslc_TDrvSavePinState(ADATOUCH_PIN_YM, sPinStateYM);
-    #endif
+    #endif // FIX_4WIRE_PIN_STATE_NOPINMODE
   #endif // FIX_4WIRE_PIN_STATE
   
   // Perform the polling of touch coordinate & pressure
@@ -2654,8 +2670,8 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   #if defined(FIX_4WIRE_PIN_STATE)
     // Now that we have completed our polling into Adafruit_TouchScreen,
     // we need to restore the original pin state.
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_SAMD_NANO_33_IOT)
-      // For Arduino Due & Nano 33 IOT, we simply force output state
+    #if defined(FIX_4WIRE_PIN_STATE_NOPINMODE)
+      // For certain devices, we simply force output state
       pinMode(ADATOUCH_PIN_XM,OUTPUT);
       pinMode(ADATOUCH_PIN_YP,OUTPUT);
       pinMode(ADATOUCH_PIN_YM,OUTPUT);
@@ -2664,7 +2680,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       gslc_TDrvRestorePinState(ADATOUCH_PIN_XM, sPinStateXM);
       gslc_TDrvRestorePinState(ADATOUCH_PIN_YP, sPinStateYP);
       gslc_TDrvRestorePinState(ADATOUCH_PIN_YM, sPinStateYM);
-    #endif
+    #endif // FIX_4WIRE_PIN_STATE_NOPINMODE
   #endif // FIX_4WIRE_PIN_STATE
 
 
