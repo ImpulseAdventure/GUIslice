@@ -80,6 +80,7 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_18_joy.h"
   //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
+  //#include "../configs/ard-shld-eastrising_35_ili9488_cap.h"
   //#include "../configs/ard-shld-eastrising_50_ra8875_res.h"
   //#include "../configs/ard-shld-eastrising_50_ra8875_sumo_res.h"
   //#include "../configs/ard-shld-eastrising_50_ssd1963_res.h"  
