@@ -938,11 +938,16 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
 
   } else if (eTouch == GSLC_TOUCH_UP_OUT) {
 
+    // Release the glow state
+    gslc_XKeyPadTrackSet(pGui,pElemRef,GSLC_IND_NONE,E_XKEYPAD_ATTRIB_GLOW);
+
     #if (GSLC_FEATURE_INPUT)
     // Clear any tracking state
     gslc_XKeyPadTrackSet(pGui,pElemRef,GSLC_IND_NONE,E_XKEYPAD_ATTRIB_GLOW);
     gslc_XKeyPadTrackSet(pGui,pElemRef,GSLC_IND_NONE,E_XKEYPAD_ATTRIB_FOCUS);
     #endif // GSLC_FEATURE_INPUT
+
+    if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTouch: UP_OUT\n", "");
 
   } else if (eTouch == GSLC_TOUCH_UP_IN) {
     // This case is entered by both:
@@ -981,12 +986,15 @@ bool gslc_XKeyPadTouch(void* pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_
 
 
     if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("XKeyPadTouch: ID=%d\n", nId);
-    if (nId == GSLC_ID_NONE) return false;
 
     GSLC_CB_XKEYPAD_BTN_EVT  pfuncBtnEvt = pConfig->pfuncBtnEvt;
 
     
     switch (nId) {
+
+    case GSLC_ID_NONE:
+      // No key
+      break;
 
     case KEYPAD_ID_ENTER:
       if (DEBUG_XKEYPAD) GSLC_DEBUG_PRINT("  Key=ENT Done Str=[%s]\n", pKeyPad->acBuffer);
