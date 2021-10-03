@@ -4,12 +4,12 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.16.0
+// - Version 0.17.0
 // =======================================================================
 //
 // The MIT License
 //
-// Copyright 2016-2020 Calvin Hass
+// Copyright 2016-2021 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

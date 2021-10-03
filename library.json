@@ -1,6 +1,6 @@
 {
   "name": "GUIslice",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "keywords": "arduino, GUI, tft, embedded, ILI9341, ESP32, ESP8266, teensy, NodeMCU, UTFT, SDL, STM32, M5Stack, feather, adafruit-gfx, raspberry pi, linux, mcufriend, platformio",
   "description": "GUIslice embedded touchscreen GUI library in C for Arduino & Raspberry Pi. Drag & drop GUI supports Adafruit-GFX, TFT_eSPI and UTFT graphics drivers on Arduino / AVR, ESP8266 / NodeMCU, ESP32, Teensy, Feather M0, nRF52, STM32",
   "repository":
