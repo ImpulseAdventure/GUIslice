@@ -618,7 +618,6 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   nItemBaseY = nY0 + pListbox->nMarginH;
   char * acStr = (char *)"";
 
-
   // Loop through the items in the list
   int16_t nItemTop = pListbox->nItemTop;
   int16_t nItemCnt = pListbox->nItemCnt;
@@ -641,7 +640,8 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     }
 
     // Fetch the list item
-    if (NULL == (acStr  = gslc_ElemXListboxGetItemAddr(pListbox, nItemInd))) {
+    acStr  = gslc_ElemXListboxGetItemAddr(pListbox, nItemInd);
+    if (NULL == acStr) {
       // TODO: Erorr handling
       break;
     }
