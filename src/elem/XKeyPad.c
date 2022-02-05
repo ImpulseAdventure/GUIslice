@@ -321,6 +321,15 @@ gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_
   rElem.w = (nButtonSzW * pConfig->nMaxCols) + (2 * pConfig->nFrameMargin);
   rElem.h = (nButtonSzH * pConfig->nMaxRows) + (2 * pConfig->nFrameMargin);
 
+  // Things tend to drop off on very small screens
+  // Move it as far left/up as it goes. And ignore
+  // the issue if it is still too large.
+  //
+  if (rElem.x + rElem.w > pGui->DispW)
+     rElem.x =  pGui->DispW -  rElem.w;
+  if (rElem.y + rElem.h > pGui->DispH)
+     rElem.y =  pGui->DispH -  rElem.h;
+
   gslc_tsElem sElem;
   gslc_tsElemRef* pElemRef = NULL;
 
