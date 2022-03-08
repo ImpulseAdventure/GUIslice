@@ -92,6 +92,8 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   pXData->nMargin         = 5;
 
   pXData->nBufMax         = nBufMax;
+  pXData->nBufCnt         = 0;
+  pXData->nPlotIndStart   = 0;
 
   pXData->colGraph        = colGraph;
   pXData->eStyle          = GSLCX_GRAPH_STYLE_DOT;
@@ -100,6 +102,17 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   // - The range in value can be overridden by the user
   pXData->nWndHeight = rElem.h - (2*pXData->nMargin);
   pXData->nWndWidth  = rElem.w - (2*pXData->nMargin);
+
+  // Default scale is
+  // - Each data point (buffer row) gets 1 pixel in X direction
+  // - Data value is directly mapped to height in Y direction
+  pXData->nPlotValMin   = 0;
+  pXData->nPlotValMax   = pXData->nWndHeight;
+  pXData->nPlotIndMax   = pXData->nWndWidth;
+
+
+  // Clear the buffer
+  memset(pBuf,0,nBufMax*sizeof(int16_t));
 
 
   // Determine if scrollbar should be enabled
@@ -125,7 +138,6 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   sElem.colElemFrameGlow  = GSLC_COL_WHITE;
   if (nPage != GSLC_PAGE_NONE) {
     pElemRef = gslc_ElemAdd(pGui,nPage,&sElem,GSLC_ELEMREF_DEFAULT);
-    gslc_ElemXGraphReset(pGui, pElemRef);
     return pElemRef;
 #if (GSLC_FEATURE_COMPOUND)
   } else {
@@ -133,7 +145,6 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
     pGui->sElemTmp = sElem;
     pGui->sElemRefTmp.pElem = &(pGui->sElemTmp);
     pGui->sElemRefTmp.eElemFlags = GSLC_ELEMREF_DEFAULT | GSLC_ELEMREF_REDRAW_FULL;
-    gslc_ElemXGraphReset(pGui, &(pGui->sElemRefTmp);
     return &(pGui->sElemRefTmp);
 #endif
   }
@@ -226,21 +237,6 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
   // Set the redraw flag
   // - Only need incremental redraw
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
-}
-
-void gslc_ElemXGraphReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef) {
-
-  pXData->nBufCnt         = 0;
-  pXData->nPlotIndStart   = 0;
-
-  // Default scale is
-  // - Each data point (buffer row) gets 1 pixel in X direction
-  // - Data value is directly mapped to height in Y direction
-  pXData->nPlotValMin   = 0;
-  pXData->nPlotValMax   = pXData->nWndHeight;
-  pXData->nPlotIndMax   = pXData->nWndWidth;
-
-  memset(pBuf,0,nBufMax*sizeof(int16_t));
 }
 
 
