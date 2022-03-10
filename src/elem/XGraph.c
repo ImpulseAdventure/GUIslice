@@ -322,8 +322,8 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (pBox->bScrollEn) {
     pBox->nPlotIndStart -= (nScrollMax - pBox->nScrollPos);
   }
-  pBox->nPlotIndStart  = pBox->nPlotIndStart % pBox->nBufMax;
-
+  pBox->nPlotIndStart = pBox->nBufMax ? (pBox->nPlotIndStart % pBox->nBufMax) : 0;
+  
   uint16_t nPlotInd = 0;
   uint16_t nIndMax = 0;
   nIndMax = (pBox->nBufMax < pBox->nPlotIndMax)? pBox->nBufMax : pBox->nPlotIndMax;
