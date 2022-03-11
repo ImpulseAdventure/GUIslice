@@ -68,6 +68,14 @@ extern "C" {
   #define GSLC_FEATURE_FOCUS_ON_TOUCH 1
 #endif
 
+// Ensure that touch/input drivers have not been disabled if FEATURE_INPUT has been requested
+// - Either use DRV_TOUCH_INPUT if no touch-screen is used (but external pins are being used)
+// - Or select a DRV_TOUCH_* driver specific to the touch-screen device
+#if defined(DRV_TOUCH_NONE) && (GSLC_FEATURE_INPUT)
+  #error "CONFIG: DRV_TOUCH_NONE is not compatible with FEATURE_INPUT. Consider selecting DRV_TOUCH_INPUT in GUIslice config"
+#endif
+
+
 
 // -----------------------------------------------------------------------
 // Globals
