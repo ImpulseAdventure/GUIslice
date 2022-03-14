@@ -73,7 +73,7 @@ extern "C" {
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_ILI9341_T3 // PaulStoffregen/ILI9341_t3 (NOTE: Requires latest from GitHub)
 	                                // - See https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
-  #define DRV_TOUCH_NONE
+  #define DRV_TOUCH_INPUT
 
 
   // -----------------------------------------------------------------------------
