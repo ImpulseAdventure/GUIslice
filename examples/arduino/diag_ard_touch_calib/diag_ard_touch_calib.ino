@@ -770,6 +770,19 @@ void ReportCalibResult()
 
   GSLC_DEBUG_PRINT("  #define ADATOUCH_REMAP_YX %u\n", m_bRemapYX);
 
+  #if !defined(DRV_TOUCH_CALIB)
+    // By default, this display may not require calibration (eg. capacitive touch),
+    // but since the calibration sketch is being run, force the calibration
+    // settings by enabling DRV_TOUCH_CALIB.
+    //
+    // Many capacitive displays do not require any calibration at all,
+    // however some may have flipped X/Y axes. In this case, running the calibration
+    // sketch can enable one to ensure the orientation is correct.
+    // When adding the calibration settings to such configurations, one will
+    // also need to enable DRV_TOUCH_CALIB to indicate that the
+    // calibration settings are to be expected.
+    GSLC_DEBUG_PRINT("  #define DRV_TOUCH_CALIB\n", "");
+  #endif // DRV_TOUCH_CALIB
 
   // Check for unexpected rotation behavior
   switch (m_eRotSpecial) {
