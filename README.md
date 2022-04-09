@@ -1,24 +1,24 @@
 # GUIslice library #
-[![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
-[![GitHub Issues](https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg)](https://github.com/ImpulseAdventure/GUIslice/issues)
-![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Badge Build]][Travis]
+[![Badge Issues]][Issues]
+[![Badge Contributions]][#]
+[![Badge License]][License]
 
 *A lightweight GUI framework for embedded displays*
 
 Design your GUI with a **drag & drop builder**, then apply the same code to a wide range of displays, libraries and controllers with the **cross-platform framework**. Open source **MIT license** grants free commercial usage.
 
-![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
-![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
-![GUIslice Builder](https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png)
+![Example 1]
+![Example 5]
+![Preview]
 
-- Extensive [Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki) guides available
-- [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
-- Active development: see [latest updates & work in progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
-- [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
-- [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
+- Extensive [Documentation] guides available
+- [GUIslice API documentation (online)][API] & [(PDF)][PDF]
+- Active development: see [latest updates & work in progress][Latest]
+- [Release history][Releases]
+- [Website (www.impulseadventure.com)][Website]
 - **Support email**: guislice@gmail.com
-- GUIslice by Calvin Hass and [GitHub contributors](https://github.com/ImpulseAdventure/GUIslice/graphs/contributors), Builder by Paul Conti
+- GUIslice by Calvin Hass and [GitHub contributors][Contributors], Builder by Paul Conti
 
 ## Features ##
 - Pure C library, no dynamic memory allocation
@@ -43,13 +43,49 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - GPIO / pin / keyboard / Adafruit Seesaw navigation for non-touchscreen devices
 
 ## Screenshots ##
-![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
-![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
+![Example 3]
+![Example 4]
+![Example 2]
 
 ## GUIslice Builder ##
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
-- Please refer to [GUIslice Builder wiki](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder) for documentation
+- Please refer to [GUIslice Builder wiki][Builder] for documentation
 
 ## Disclaimer ##
 The Software is not designed for use in devices or situations where there may be physical injury if the Software has errors.
+
+
+<!----------------------------------{ Badges }--------------------------------->
+
+[Badge Contributions]: https://img.shields.io/badge/contributions-welcome-orange.svg
+[Badge License]:       https://img.shields.io/badge/license-MIT-blue.svg
+[Badge Issues]:        https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg
+[Badge Build]:         https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master
+
+
+<!---------------------------------{ General }--------------------------------->
+
+[License]: LICENSE
+
+[Documentation]: https://github.com/ImpulseAdventure/GUIslice/wiki
+[Contributors]:  https://github.com/ImpulseAdventure/GUIslice/graphs/contributors
+[Builder]:       https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder
+[Release]:       https://github.com/ImpulseAdventure/GUIslice/releases
+[Latest]:        https://github.com/ImpulseAdventure/GUIslice/issues/85
+[Issues]:        https://github.com/ImpulseAdventure/GUIslice/issues
+[PDF]:           https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf
+
+[Website]: https://www.impulseadventure.com/elec/guislice-gui.html
+[Travis]:  https://travis-ci.org/ImpulseAdventure/GUIslice
+[API]:     https://impulseadventure.github.io/GUIslice/modules.html
+
+
+<!-------------------------------{ Screenshots }------------------------------->
+
+[Example 5]: https://www.impulseadventure.com/elec/images/guislice-ctrl2.png
+[Example 4]: https://www.impulseadventure.com/elec/images/guislice-ex08.png
+[Example 3]: https://www.impulseadventure.com/elec/images/guislice-ex06.png
+[Example 1]: https://www.impulseadventure.com/elec/images/sdl_menu1.png
+[Example 2]: https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png
+
+[Preview]: https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png
