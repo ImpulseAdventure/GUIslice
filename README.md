@@ -25,7 +25,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - **Support email**: guislice@gmail.com
 - GUIslice by Calvin Hass and [GitHub contributors][Contributors], Builder by Paul Conti
 
-## Features ##
+## Features
 - Pure C library, no dynamic memory allocation
 - *Widgets*:
   - text, images, buttons, checkboxes, radio buttons, sliders, custom keypads, listbox,
@@ -47,16 +47,22 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - Dynamic display rotation
 - GPIO / pin / keyboard / Adafruit Seesaw navigation for non-touchscreen devices
 
-## Screenshots ##
+
+<div align = center>
+
+## Screenshots
+
 ![Example 3]
 ![Example 4]
 ![Example 2]
 
-## GUIslice Builder ##
+</div>
+
+## GUIslice Builder
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
 - Please refer to [GUIslice Builder wiki][Builder] for documentation
 
-## Disclaimer ##
+## Disclaimer
 The Software is not designed for use in devices or situations where there may be physical injury if the Software has errors.
 
 
