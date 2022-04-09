@@ -13,9 +13,13 @@ GUIslice 
 
 Design your GUI with a **drag & drop builder**, then apply the same code to a wide range of displays, libraries and controllers with the **cross-platform framework**. Open source **MIT license** grants free commercial usage.
 
+<div align = center>
+
 ![Example 1]
 ![Example 5]
 ![Preview]
+
+</div>
 
 - Extensive [Documentation] guides available
 - [GUIslice API documentation (online)][API] & [(PDF)][PDF]
