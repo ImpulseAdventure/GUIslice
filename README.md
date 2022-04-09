@@ -1,10 +1,15 @@
-# GUIslice library #
-[![Badge Build]][Travis]
-[![Badge Issues]][Issues]
-[![Badge Contributions]][#]
-[![Badge License]][License]
 
-*A lightweight GUI framework for embedded displays*
+<h1>
+
+GUIslice 
+[![Badge Contributions]](#) 
+[![Badge License]][License] 
+[![Badge Issues]][Issues] 
+[![Badge Build]][Travis]
+
+</h1>
+
+*A lightweight framework for embedded displays*
 
 Design your GUI with a **drag & drop builder**, then apply the same code to a wide range of displays, libraries and controllers with the **cross-platform framework**. Open source **MIT license** grants free commercial usage.
 
