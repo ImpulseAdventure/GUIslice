@@ -11,7 +11,11 @@ GUIslice 
 
 *A lightweight framework for embedded displays*
 
+<br>
+
 Design your GUI with a **drag & drop builder**, then apply the same code to a wide range of displays, libraries and controllers with the **cross-platform framework**. Open source **MIT license** grants free commercial usage.
+
+<br>
 
 <div align = center>
 
@@ -21,6 +25,8 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 
 </div>
 
+<br>
+
 - Extensive [Documentation] guides available
 - [GUIslice API documentation (online)][API] & [(PDF)][PDF]
 - Active development: see [latest updates & work in progress][Latest]
@@ -28,6 +34,12 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - [Website (www.impulseadventure.com)][Website]
 - **Support email**: guislice@gmail.com
 - GUIslice by Calvin Hass and [GitHub contributors][Contributors], Builder by Paul Conti
+
+<br>
+
+---
+
+<br>
 
 ## Features
 - Pure C library, no dynamic memory allocation
@@ -51,6 +63,11 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - Dynamic display rotation
 - GPIO / pin / keyboard / Adafruit Seesaw navigation for non-touchscreen devices
 
+<br>
+
+---
+
+<br>
 
 <div align = center>
 
@@ -62,12 +79,26 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 
 </div>
 
+<br>
+
+---
+
+<br>
+
 ## GUIslice Builder
 - Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
 - Please refer to [GUIslice Builder wiki][Builder] for documentation
 
+<br>
+
+---
+
+<br>
+
 ## Disclaimer
 The Software is not designed for use in devices or situations where there may be physical injury if the Software has errors.
+
+<br>
 
 
 <!----------------------------------{ Badges }--------------------------------->
