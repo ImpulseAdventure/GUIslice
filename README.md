@@ -152,6 +152,8 @@ Open source **MIT license** grants free commercial usage.
 <kbd>  ILI9341_t3  </kbd>  
 <kbd>  ILI9341_due  </kbd>
 
+<br>
+
 ### Touchscreen Controls
 
 <kbd>  4-wire  </kbd>  
