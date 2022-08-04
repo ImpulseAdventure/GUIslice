@@ -35,19 +35,21 @@
 //
 // =======================================================================
 /// \file XSpinner.h
+///
+/// Author: Paul Conti
+/// Date:   2022-04-06
+/// Modified to use Virtual Elements instead of Compound
+///
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-
-
-#if (GSLC_FEATURE_COMPOUND)
 // ============================================================================
-// Extended Element: Spinner (Number Selector)
-// - Demonstration of a compound element consisting of
-//   a counter text field along with an increment and
-//   decrement button.
+// Extended Element: Spinner
+// - Spinner element - a simple up/down counter
+// - This is a element containing two virtual buttons and
+//   a text area to represent the current value
 // ============================================================================
 
 // Define unique identifier for extended element type
@@ -76,11 +78,15 @@ typedef struct {
   int16_t             nCounter;       ///< Current value
   GSLC_CB_INPUT       pfuncXInput;    ///< Callback func ptr for input ready
   gslc_tsElemRef*     pElemRef;       ///< Save our ElemRef for the callback
+  int16_t             nFontId;        ///< Configured font for Spinner
 
-  // Internal sub-element members
-  gslc_tsCollect      sCollect;                      ///< Collection management for sub-elements
-  gslc_tsElemRef      asElemRef[XSPINNER_COMP_CNT];   ///< Storage for sub-element references
-  gslc_tsElem         asElem[XSPINNER_COMP_CNT];      ///< Storage for sub-elements
+
+	// store offset coordinate of virtual element so that we can
+  // specify relative positioning during the sub-element creation (drawing) 
+	// and touch operations.
+	gslc_tsRect         rSubElemTxt;     ///< Our virtual Text Field
+	gslc_tsRect         rSubElemBtnInc;  ///< Our virtual Increment Text Button
+	gslc_tsRect         rSubElemBtnDec;  ///< Our virtual Decrement Text Button
 
   // Provide storage for any dynamic text elements
   // Simple example here uses fixed-length character array
@@ -192,8 +198,6 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
 /// \return true if success, false otherwise
 ///
 bool gslc_ElemXSpinnerTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
-
-#endif // GLSC_COMPOUND
 
 // ============================================================================
 
