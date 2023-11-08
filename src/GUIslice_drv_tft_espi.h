@@ -60,6 +60,13 @@ extern "C" {
 #elif defined(DRV_TOUCH_ADA_FT6206)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_CAP         // Capacitive
+
+/*to work with last driver CTS820_MUTUAL*/
+#elif defined (DRV_TOUCH_CTS820_MUTUAL)  
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_CAP //Capacitive display no need to calibrate
+/**/
+
 #elif defined(DRV_TOUCH_ADA_SIMPLE)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive
