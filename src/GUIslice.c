@@ -157,6 +157,7 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
       pGui->nTouchCalYMin = 100;
       pGui->nTouchCalYMax = 1000;
       pGui->bTouchRemapYX = false;
+      pGui->bEnTouch = true;
     #endif // !DRV_TOUCH_NONE
 
   #endif
@@ -689,8 +690,9 @@ void gslc_Update(gslc_tsGui* pGui)
 
     // --------------------------------------------------------------
     // If event found, handle it
+    // Skip if reaction to touch is disabled
     // --------------------------------------------------------------
-    if (bEvent) {
+    if (bEvent && pGui->bEnTouch) {
       // Track and handle the input events
       // - Handle the events on the current page
       switch (eInputEvent) {
@@ -5139,7 +5141,24 @@ void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap)
   }
   pGui->bTouchRemapYX = bSwap;
 }
-
+void gslc_EnTouch(gslc_tsGui* pGui, bool en)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "EnTouch";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return;
+  }
+  pGui->bEnTouch = en;
+}
+bool gslc_GetEnTouch(gslc_tsGui* pGui)
+{
+  if (pGui == NULL) {
+    static const char GSLC_PMEM FUNCSTR[] = "GetEnTouch";
+    GSLC_DEBUG2_PRINT_CONST(ERRSTR_NULL, FUNCSTR);
+    return false;
+  }
+  return pGui->bEnTouch;
+}
 
 #endif // !DRV_TOUCH_NONE
 
