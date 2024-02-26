@@ -1791,7 +1791,6 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   nCol.r  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   nCol.g  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   nCol.b  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
-  bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t nByte = 0;
