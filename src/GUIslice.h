@@ -807,7 +807,7 @@ typedef struct {
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
   bool                bTouchRemapEn;    ///< Enable touch remapping?
   bool                bTouchRemapYX;    ///< Enable touch controller swapping of X & Y
-  bool                bEnTouch;         ///< Enable reaction to touch events
+  bool                bTouchEn;         ///< Enable reaction to touch events
 
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
@@ -2659,11 +2659,11 @@ void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap);
 /// insensitive (GUI ignores touch events)
 ///
 /// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  en:          Enable GUI reaction to touch events
+/// \param[in]  bEn:         Enable GUI reaction to touch events
 ///
 /// \return none
 ///
-void gslc_EnTouch(gslc_tsGui *pGui, bool en);
+void gslc_SetTouchEn(gslc_tsGui *pGui, bool bEn);
 
 ///
 /// Get whether the GUI will react to touch events or not
@@ -2672,7 +2672,7 @@ void gslc_EnTouch(gslc_tsGui *pGui, bool en);
 ///
 /// \return whether the GUI is sensitive for touch events
 ///
-bool gslc_GetEnTouch(gslc_tsGui *pGui);
+bool gslc_GetTouchEn(gslc_tsGui *pGui);
 
 #endif // !DRV_TOUCH_NONE
 
