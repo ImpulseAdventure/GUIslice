@@ -2954,6 +2954,25 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     } else if (!(nButtonsLast & TFTSHIELD_BUTTON_IN) && (nButtonsCur & TFTSHIELD_BUTTON_IN)) {
       *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
       *pnInputVal = GSLC_PIN_BTN_SEL;
+// adds support for buttons A, B, C on Adafruit 1.8" TFT Shield with MicroSD Card	    
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_1) && !(nButtonsCur & TFTSHIELD_BUTTON_1)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_A;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_1) && (nButtonsCur & TFTSHIELD_BUTTON_1)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_A;
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_2) && !(nButtonsCur & TFTSHIELD_BUTTON_2)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_B;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_2) && (nButtonsCur & TFTSHIELD_BUTTON_2)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_B;
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_3) && !(nButtonsCur & TFTSHIELD_BUTTON_3)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_C;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_3) && (nButtonsCur & TFTSHIELD_BUTTON_3)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_C;
     }
     // Save button state so that transitions can be detected
     // during the next pass.
