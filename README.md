@@ -1,55 +1,241 @@
-# GUIslice library #
-[![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
-[![GitHub Issues](https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg)](https://github.com/ImpulseAdventure/GUIslice/issues)
-![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-*A lightweight GUI framework for embedded displays*
+<br>
 
-Design your GUI with a **drag & drop builder**, then apply the same code to a wide range of displays, libraries and controllers with the **cross-platform framework**. Open source **MIT license** grants free commercial usage.
+<div align = center>
 
-![Example 1](http://www.impulseadventure.com/elec/images/sdl_menu1.png)
-![Example 5](http://www.impulseadventure.com/elec/images/guislice-ctrl2.png)
-![GUIslice Builder](https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png)
+[![Badge Contributions]][#]   
+[![Badge License]][License]   
+[![Badge Issues]][Issues]   
+[![Badge Build]][Travis]
 
-- Extensive [Documentation](https://github.com/ImpulseAdventure/GUIslice/wiki) guides available
-- [GUIslice API documentation (online)](https://impulseadventure.github.io/GUIslice/modules.html) & [(PDF)](https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf)
-- Active development: see [latest updates & work in progress](https://github.com/ImpulseAdventure/GUIslice/issues/85)
-- [Release history](https://github.com/ImpulseAdventure/GUIslice/releases)
-- [Website (www.impulseadventure.com)](https://www.impulseadventure.com/elec/guislice-gui.html)
+<br>
+
+# GUIslice
+
+*A lightweight framework for embedded displays*
+
+<br>
+<br>
+
+Design your GUI with a **drag & drop builder**, then apply <br>
+the same code to a wide range of displays, libraries and <br>
+controllers with the **cross-platform framework**.
+
+Open source **MIT license** grants free commercial usage.
+
+<br>
+<br>
+
+![Example 1]
+![Example 5]
+![Preview]
+
+</div>
+
+<br>
+<br>
+
+- Extensive [Documentation] guides available
+- [GUIslice API documentation (online)][API] & [(PDF)][PDF]
+- Active development: see [latest updates & work in progress][Latest]
+- [Release history][Releases]
+- [Website (www.impulseadventure.com)][Website]
 - **Support email**: guislice@gmail.com
-- GUIslice by Calvin Hass and [GitHub contributors](https://github.com/ImpulseAdventure/GUIslice/graphs/contributors), Builder by Paul Conti
+- GUIslice by Calvin Hass and [GitHub contributors][Contributors], Builder by Paul Conti
 
-## Features ##
-- Pure C library, no dynamic memory allocation
-- *Widgets*:
-  - text, images, buttons, checkboxes, radio buttons, sliders, custom keypads, listbox,
-  radial controls, scrolling textbox / terminal, graphs, etc. plus extensions and multiple pages.
-- Cross-platform **GUIslice Builder** application to generate layouts
-- *Platform-independent* GUI core currently supports:
-  - Adafruit-GFX, TFT_eSPI, mcufriend, UTFT, LCDGFX, SDL1.2, SDL2.0
-- *Devices*:
-  - Raspberry Pi, Arduino, ATmega2560, ESP8266 / NodeMCU, ESP32, M5stack, Teensy 3 / T4, WIO Terminal, Feather M0 (Cortex-M0), nRF52 (Cortex-M4F), LINUX, Beaglebone Black, STM32, Due, etc.
-- *Typical displays*:
-  - PiTFT, Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44", FeatherWing TFT, OLED 0.96", mcufriend, BuyDisplay / EastRising 4.3" 5" 7", Waveshare, 4D Cape
-- *Display drivers include*:
-  - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, RA8876, ILI9225, ILI9341_t3, ILI9341_due
-- *Touchscreen control including*:
-  - STMPE610, FT6206, FT5206, XPT2046, 4-wire, tslib, URTouch, Adafruit Seesaw
-- *IDE Support*:
-  - GUIslice has been tested for use in the *Arduino IDE* and *Platform IO* environments, in addition to LINUX make
-- Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
-- Dynamic display rotation
-- GPIO / pin / keyboard / Adafruit Seesaw navigation for non-touchscreen devices
+<br>
+<br>
 
-## Screenshots ##
-![Example 3](http://www.impulseadventure.com/elec/images/guislice-ex06.png)
-![Example 4](http://www.impulseadventure.com/elec/images/guislice-ex08.png)
-![snap07_c](https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png)
+## Features
 
-## GUIslice Builder ##
-- Includes cross-platform (Windows, LINUX and Mac) desktop application to generate GUIslice layouts
-- Please refer to [GUIslice Builder wiki](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder) for documentation
+-   Pure C library, no dynamic memory allocation
 
-## Disclaimer ##
-The Software is not designed for use in devices or situations where there may be physical injury if the Software has errors.
+-   Cross-platform **GUIslice Builder** <br>
+    application to generate layouts
+    
+-   IDE Support
+
+    GUIslice has been tested for use in the *Arduino IDE* <br>
+    and *Platform IO* environments, in addition to LINUX make
+
+-   Foreign characters / UTF-8 encoding (in SDL mode), <br>
+    anti-aliased fonts (in TFT_eSPI mode)
+
+-   Dynamic display rotation
+
+-   GPIO / pin / keyboard / Adafruit Seesaw <br>
+    navigation for non-touchscreen devices
+
+<br>
+
+### Widgets
+
+<kbd>  Scrolling Textbox / Terminal  </kbd>  
+<kbd>  Radial Controls  </kbd>  
+<kbd>  Custom Keypads  </kbd>  
+
+<kbd>  Multiple Pages  </kbd>  
+<kbd>  Extensions  </kbd>  
+<kbd>  Checkboxes  </kbd>  
+<kbd>  Listbox  </kbd>  
+<kbd>  Text  </kbd>  
+
+<kbd>  Buttons  </kbd>  
+<kbd>  Images  </kbd>  
+<kbd>  Radio Buttons  </kbd>  
+<kbd>  Graphs  </kbd>  
+
+<br>
+
+### Platform-independent GUI Cores
+
+<kbd>  Adafruit-GFX  </kbd>  
+<kbd>  TFT_eSPI  </kbd>  
+<kbd>  mcufriend  </kbd>
+
+<kbd>  LCDGFX  </kbd>  
+<kbd>  UTFT  </kbd>  
+<kbd>  SDL1.2  </kbd>  
+<kbd>  SDL2.0  </kbd>  
+
+<br>
+
+### Devices
+
+<kbd>  ESP8266 / NodeMCU  </kbd>     
+<kbd>  Raspberry Pi  </kbd>     
+<kbd>  ATmega2560  </kbd>   
+<kbd>  M5stack  </kbd>   
+
+<kbd>  Feather M0 (Cortex-M0)  </kbd>  
+<kbd>  Beaglebone Black  </kbd>  
+<kbd>  ESP32  </kbd>  
+<kbd>  LINUX  </kbd>  
+
+<kbd>  nRF52 (Cortex-M4F)  </kbd>  
+<kbd>  Teensy 3 / T4  </kbd>  
+<kbd>  WIO Terminal  </kbd>  
+<kbd>  STM32  </kbd>  
+
+<kbd>  Arduino  </kbd>  
+<kbd>  Due  </kbd>
+    
+<br>
+
+### Typical Displays
+
+<kbd>  PiTFT  </kbd>  
+<kbd>  Adafruit TFT 3.5" / 2.8" / 2.4" / 2.2" / 1.44"  </kbd>
+
+<kbd>  Waveshare  </kbd>  
+<kbd>  4D Cape  </kbd>  
+<kbd>  FeatherWing TFT  </kbd>  
+<kbd>  OLED 0.96"  </kbd>
+
+<kbd>  mcufriend  </kbd>  
+<kbd>  BuyDisplay / EastRising 4.3" 5" 7"  </kbd>  
+
+<br>
+
+### Display Drivers
+    
+<kbd>  ILI9341  </kbd>  
+<kbd>  ST7735  </kbd>  
+<kbd>  SSD1306  </kbd>  
+<kbd>  HX8347D  </kbd>  
+<kbd>  HX8357  </kbd>  
+<kbd>  PCD8544  </kbd>
+
+<kbd>  RA8875  </kbd>  
+<kbd>  RA8876  </kbd>  
+<kbd>  ILI9225  </kbd>  
+<kbd>  ILI9341_t3  </kbd>  
+<kbd>  ILI9341_due  </kbd>
+
+<br>
+
+### Touchscreen Controls
+
+<kbd>  4-wire  </kbd>  
+<kbd>  tslib  </kbd>  
+<kbd>  URTouch  </kbd>  
+<kbd>  Adafruit Seesaw  </kbd>
+
+<kbd>  STMPE610  </kbd>  
+<kbd>  FT6206  </kbd>  
+<kbd>  FT5206  </kbd>  
+<kbd>  XPT2046  </kbd>
+
+<br>
+<br>
+
+<div align = center>
+
+## Screenshots
+
+<br>
+
+![Example 3]
+![Example 4]
+![Example 2]
+
+</div>
+
+<br>
+<br>
+
+## GUIslice Builder
+
+-   Includes cross-platform (Windows, LINUX and Mac) <br>
+    desktop application to generate GUIslice layouts
+
+-   Please refer to [GUIslice Builder wiki][Builder] for documentation
+
+<br>
+<br>
+
+## Disclaimer
+
+The Software is not designed for use in devices or situations <br>
+where there may be physical injury if the Software has errors.
+
+<br>
+
+
+
+
+<!---------------------------------{ General }--------------------------------->
+
+[Documentation]: https://github.com/ImpulseAdventure/GUIslice/wiki
+[Contributors]:  https://github.com/ImpulseAdventure/GUIslice/graphs/contributors
+[Releases]:       https://github.com/ImpulseAdventure/GUIslice/releases
+[Builder]:       https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder
+[Latest]:        https://github.com/ImpulseAdventure/GUIslice/issues/85
+[Issues]:        https://github.com/ImpulseAdventure/GUIslice/issues
+[PDF]:           https://github.com/ImpulseAdventure/GUIslice/raw/master/docs/GUIslice_ref.pdf
+
+[Website]: https://www.impulseadventure.com/elec/guislice-gui.html
+[Travis]:  https://travis-ci.org/ImpulseAdventure/GUIslice
+[API]:     https://impulseadventure.github.io/GUIslice/modules.html
+
+[License]: LICENSE
+[#]: #
+
+<!-------------------------------{ Screenshots }------------------------------->
+
+[Example 5]: https://www.impulseadventure.com/elec/images/guislice-ctrl2.png
+[Example 4]: https://www.impulseadventure.com/elec/images/guislice-ex08.png
+[Example 3]: https://www.impulseadventure.com/elec/images/guislice-ex06.png
+[Example 1]: https://www.impulseadventure.com/elec/images/sdl_menu1.png
+[Example 2]: https://user-images.githubusercontent.com/8510097/48299251-733a9a00-e47f-11e8-87ac-e35be6ba41d1.png
+
+[Preview]: https://user-images.githubusercontent.com/8510097/90728338-9a8be100-e279-11ea-969e-cbd8bb0ac6c6.png
+
+
+<!----------------------------------{ Badges }--------------------------------->
+
+[Badge Contributions]: https://img.shields.io/badge/Contributions-Welcome-067a35.svg?style=for-the-badge&labelColor=0ABF53
+[Badge License]: https://img.shields.io/badge/License-MIT-ac8b11.svg?style=for-the-badge&labelColor=yellow
+[Badge Issues]: https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg?style=for-the-badge&labelColor=1B72BE&color=13538b
+[Badge Build]: https://img.shields.io/travis/ImpulseAdventure/GUIslice?style=for-the-badge&labelColor=EF2D5E&color=b11d42
+
