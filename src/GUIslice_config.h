@@ -119,6 +119,8 @@ extern "C" {
   //#include "../configs/due-adagfx-ili9341-ft6206.h"
   //#include "../configs/due-adagfx-ili9341-urtouch.h"
   //#include "../configs/due-adagfx-ra8875-urtouch.h"
+  //#include "../configs/ard-ardgfx-ili9341-ft6206.h"
+  //#include "../configs/ard-ardgfx-canvas-mono-notouch.h"
 
   // ESP8266, ESP32, M5stack, WIO Terminal, TTGO:
   // ------------------------------------------------------
