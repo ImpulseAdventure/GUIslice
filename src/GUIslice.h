@@ -131,10 +131,14 @@ extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
     // Internal usage
     GSLC_PAGE_NONE          = -2999,  ///< No Page ID has been assigned
   } gslc_tePageId;
+  typedef enum {
+    GSLC_PAGE_FLAG_NONE           = 0x00,
+    GSLC_PAGE_FLAG_HIDE_BASE_PAGE = 0x01,
+  } gslc_tePageFlag;
 
   /// Define page stack
   typedef enum {
-    GSLC_STACK_BASE = 0,               ///< Base page
+    GSLC_STACK_BASE = 0,               ///< Base page (e.g. status bar)
     GSLC_STACK_CUR,                    ///< Current page
     GSLC_STACK_OVERLAY,                ///< Overlay page (eg. popups)
 
@@ -739,6 +743,8 @@ typedef struct {
 
   // Bounding region
   gslc_tsRect         rBounds;              ///< Bounding rect for page elements
+
+  gslc_tePageFlag     flags;                ///< Page flags
 
 } gslc_tsPage;
 
@@ -1777,6 +1783,28 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId);
 /// \return none
 ///
 void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId);
+
+///
+/// Set a flag on a page. Already set flags will not be unset/overwritten.
+///
+/// @param[in]  pGui:        Pointer to GUI
+/// @param[in]  nPageId:     Page ID to change
+/// @param[in]  flag:        The flag(s) to set
+///
+/// \return none
+///
+void gslc_SetPageFlag(gslc_tsGui *pGui, int16_t nPageId, gslc_tePageFlag flag);
+
+///
+/// Unset a flag on a page.
+///
+/// @param[in]  pGui:        Pointer to GUI
+/// @param[in]  nPageId:     Page ID to change
+/// @param[in]  flag:        The flag(s) to unset
+///
+/// \return none
+///
+void gslc_UnsetPageFlag(gslc_tsGui *pGui, int16_t nPageId, gslc_tePageFlag flag);
 
 
 ///

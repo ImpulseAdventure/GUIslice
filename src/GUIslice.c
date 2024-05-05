@@ -2029,6 +2029,9 @@ void gslc_PageAdd(gslc_tsGui* pGui,int16_t nPageId,gslc_tsElem* psElem,uint16_t 
   // Initialize the page elements bounds to empty
   pPage->rBounds = (gslc_tsRect) { 0, 0, 0, 0 };
 
+  // default flags of any page are none
+  pPage->flags = GSLC_PAGE_FLAG_NONE;
+
   // Increment the page count
   pGui->nPageCnt++;
 
@@ -2055,14 +2058,17 @@ int gslc_GetPageCur(gslc_tsGui* pGui)
   return pStackPage->nPageId;
 }
 
+
 void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
 {
+  // identify old page
   int16_t nPageSaved = GSLC_PAGE_NONE;
   gslc_tsPage* pPageSaved = pGui->apPageStack[nStackPos];
   if (pPageSaved != NULL) {
     nPageSaved = pPageSaved->nPageId;
   }
 
+  // identify new page
   gslc_tsPage* pPage = NULL;
   if (nPageId == GSLC_PAGE_NONE) {
     // Disable the page
@@ -2107,6 +2113,23 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
       gslc_InvalidateRgnPage(pGui, pPage);
     }
   }
+
+  // If we switch from a page that hides the base page to one that allows the base page
+  // then the base page needs to be redrawn.
+  gslc_tsPage *pPageBase = pGui->apPageStack[GSLC_STACK_BASE];
+  if(nStackPos==GSLC_STACK_CUR && pPageBase != NULL) {
+    bool need_to_redraw_base_page = false;
+    if(pPageSaved==NULL) // switching from no page to anything => base page has not been drawn over
+      need_to_redraw_base_page = false;
+    else {
+      if(pPage!=NULL) // switching from some page to some page
+        need_to_redraw_base_page = (pPageSaved->flags & GSLC_PAGE_FLAG_HIDE_BASE_PAGE)!=0 && !(pPage->flags & GSLC_PAGE_FLAG_HIDE_BASE_PAGE);
+      else // switching from some page to no page
+        need_to_redraw_base_page = (pPageSaved->flags & GSLC_PAGE_FLAG_HIDE_BASE_PAGE)!=0;
+    }
+    if(need_to_redraw_base_page)
+      gslc_InvalidateRgnPage(pGui, pPageBase);
+  }
 }
 
 
@@ -2143,6 +2166,43 @@ void gslc_SetPageCur(gslc_tsGui* pGui,int16_t nPageId)
 void gslc_SetPageOverlay(gslc_tsGui* pGui,int16_t nPageId)
 {
   gslc_SetStackPage(pGui, GSLC_STACK_OVERLAY, nPageId);
+}
+
+void gslc_SetPageFlag(gslc_tsGui *pGui, int16_t nPageId, gslc_tePageFlag flag)
+{
+  // determine page
+  gslc_tsPage *pPage = gslc_PageFindById(pGui, nPageId);
+  if (pPage == NULL) {
+    GSLC_DEBUG2_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
+  }
+  // set flags
+  gslc_tePageFlag old_flags = pPage->flags;
+  pPage->flags = old_flags | flag;
+  // redraw
+  if(pPage->flags != old_flags && gslc_GetPageCur(pGui) == nPageId) {
+    GSLC_DEBUG2_PRINT("redrawing page (ID=%d) because flags changed\n",nPageId);
+    gslc_PageRedrawSet(pGui, true);
+  }
+  else
+    GSLC_DEBUG2_PRINT("*not* redrawing page (ID=%d) because flags have not changed\n",nPageId);
+}
+void gslc_UnsetPageFlag(gslc_tsGui *pGui, int16_t nPageId, gslc_tePageFlag flag)
+{
+  // determine page
+  gslc_tsPage *pPage = gslc_PageFindById(pGui, nPageId);
+  if (pPage == NULL) {
+    GSLC_DEBUG2_PRINT("ERROR: PageFindElemById() can't find page (ID=%d)\n",nPageId);
+  }
+  // set flags
+  gslc_tePageFlag old_flags = pPage->flags;
+  pPage->flags = old_flags & ~flag;
+  // redraw
+  if(pPage->flags != old_flags && gslc_GetPageCur(pGui) == nPageId) {
+    GSLC_DEBUG2_PRINT("redrawing page (ID=%d) because flags changed\n",nPageId);
+    gslc_PageRedrawSet(pGui, true);
+  }
+  else
+    GSLC_DEBUG2_PRINT("*not* redrawing page (ID=%d) because flags have not changed\n",nPageId);
 }
 
 void gslc_PopupShow(gslc_tsGui* pGui, int16_t nPageId, bool bModal)
@@ -2369,7 +2429,9 @@ void gslc_PageRedrawGo(gslc_tsGui* pGui)
 
   // Issue page redraw events to all pages in stack
   // - Start from bottom page in stack first
-  for (int nStackPage = 0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
+  gslc_tsPage *pCurPage = pGui->apPageStack[GSLC_STACK_CUR];
+  bool hide_base_page = pCurPage!=NULL && (pCurPage->flags & GSLC_PAGE_FLAG_HIDE_BASE_PAGE)!=0;
+  for (int nStackPage = hide_base_page?1:0; nStackPage < GSLC_STACK__MAX; nStackPage++) {
     gslc_tsPage* pStackPage = pGui->apPageStack[nStackPage];
     if (!pStackPage) {
       continue;
