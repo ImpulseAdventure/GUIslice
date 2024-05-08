@@ -208,7 +208,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
       nFeatures##nElemId,                                         \
       GSLC_TYPEX_TOGGLEBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      0,                                                          \
+      -6999,                                                      \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
@@ -250,7 +250,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
       nFeatures##nElemId,                                         \
       GSLC_TYPEX_TOGGLEBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      0,                                                          \
+      -6999,                                                      \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
       (gslc_tsImgRef){NULL,NULL,GSLC_IMGREF_NONE,NULL},           \
