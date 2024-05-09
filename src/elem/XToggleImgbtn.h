@@ -195,7 +195,7 @@ gslc_tsElemRef* gslc_ElemXToggleImgbtnFindSelected(gslc_tsGui* pGui,int16_t nGro
       nFeatures##nElemId,                                         \
       GSLC_TYPEX_TOGGLEIMGBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      0,                                                          \
+      -6999,                                                      \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
       sImgRef_,           \
       sImgRefSel_,           \
@@ -233,7 +233,7 @@ gslc_tsElemRef* gslc_ElemXToggleImgbtnFindSelected(gslc_tsGui* pGui,int16_t nGro
       nFeatures##nElemId,                                         \
       GSLC_TYPEX_TOGGLEIMGBTN,                                       \
       (gslc_tsRect){nX,nY,nW,nH},                                 \
-      0,                                                          \
+      -6999,                                                      \
       GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_WHITE,GSLC_COL_BLACK, \
       sImgRef_,           \
       sImgRefSel_,           \

@@ -94,6 +94,9 @@ gslc_tsElemRef* gslc_ElemXToggleImgbtnCreate(gslc_tsGui* pGui,int16_t nElemId,in
   sElem.nFeatures        |= GSLC_ELEM_FEA_FOCUS_EN;
   sElem.nFeatures        |= GSLC_ELEM_FEA_NOSHRINK; // Can't shrink due to image
 
+  // Default group assignment. Can override later with ElemSetGroup()
+  sElem.nGroup            = GSLC_GROUP_ID_NONE;
+
   // Define other extended data
   sElem.pXData            = (void*)(pXData);
   pXData->bOn             = bOn;    // save on/off status
