@@ -130,6 +130,7 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-notouch.h"
   //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
+  //#include "../configs/esp-tftespi-default-tsc2007.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 

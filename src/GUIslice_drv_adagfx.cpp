@@ -221,6 +221,11 @@
   #include <SPI.h>
   #include <Wire.h>
   #include "Adafruit_STMPE610.h"
+#elif defined(DRV_TOUCH_ADA_TSC2007)
+  // https://github.com/adafruit/Adafruit_TSC2007
+  #include <SPI.h>
+  #include <Wire.h>
+  #include "Adafruit_TSC2007.h"
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // https://github.com/adafruit/Adafruit_FT6206_Library
   #include <Wire.h>
@@ -492,6 +497,10 @@ extern "C" {
   #endif
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_TSC2007)
+  const char* m_acDrvTouch = "TSC2007()";
+  Adafruit_TSC2007 m_touch = Adafruit_TSC2007();
+  #define DRV_TOUCH_INSTANCE
 #elif defined(DRV_TOUCH_ADA_FT6206)
   const char* m_acDrvTouch = "FT6206(I2C)";
   // Always use I2C
@@ -1791,7 +1800,6 @@ void gslc_DrvDrawMonoFromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,
   nCol.r  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   nCol.g  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
   nCol.b  =   (bProgMem)? pgm_read_byte(bmap_base++) : *(bmap_base++);
-  bmap_base++;
 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t nByte = 0;
@@ -2349,6 +2357,18 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
+  #elif defined(DRV_TOUCH_ADA_TSC2007)
+    #if (ADATOUCH_I2C_HW)
+    if (!m_touch.begin(ADATOUCH_I2C_ADDR, &Wire)) {
+    #else
+    if (!m_touch.begin()) {
+    #endif
+      GSLC_DEBUG2_PRINT("ERROR: TDrvInitTouch() failed to init TSC2007\n",0);
+      return false;
+    } else {
+      return true;
+    }
+    
   #elif defined(DRV_TOUCH_ADA_FT6206)
     if (!m_touch.begin(ADATOUCH_SENSITIVITY)) {
       GSLC_DEBUG2_PRINT("ERROR: TDrvInitTouch() failed to init FT6206\n",0);
@@ -2482,7 +2502,31 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   }
 
   // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_TSC2007)
+  TS_Point ptTouch = m_touch.getPoint();
+
+  if (((ptTouch.x == 0) && (ptTouch.y == 0)) || (ptTouch.z < 10)) {
+    // no pressure, no touch
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+    }
+  } else {
+    m_nLastRawX = ptTouch.x;
+    m_nLastRawY = ptTouch.y;
+    m_nLastRawPress = ptTouch.z; 
+    m_bLastTouched = true;
+    bValid = true;
+  }
+
+  // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_ADA_FT6206)
+  uint16_t  z2,nRawX,nRawY,nRawPress;
 
   if (m_touch.touched()) {
     TS_Point ptTouch = m_touch.getPoint();
@@ -2955,6 +2999,25 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     } else if (!(nButtonsLast & TFTSHIELD_BUTTON_IN) && (nButtonsCur & TFTSHIELD_BUTTON_IN)) {
       *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
       *pnInputVal = GSLC_PIN_BTN_SEL;
+// adds support for buttons A, B, C on Adafruit 1.8" TFT Shield with MicroSD Card	    
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_1) && !(nButtonsCur & TFTSHIELD_BUTTON_1)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_A;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_1) && (nButtonsCur & TFTSHIELD_BUTTON_1)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_A;
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_2) && !(nButtonsCur & TFTSHIELD_BUTTON_2)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_B;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_2) && (nButtonsCur & TFTSHIELD_BUTTON_2)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_B;
+    } else if ((nButtonsLast & TFTSHIELD_BUTTON_3) && !(nButtonsCur & TFTSHIELD_BUTTON_3)) {
+      *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+      *pnInputVal = GSLC_PIN_BTN_C;
+    } else if (!(nButtonsLast & TFTSHIELD_BUTTON_3) && (nButtonsCur & TFTSHIELD_BUTTON_3)) {
+      *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+      *pnInputVal = GSLC_PIN_BTN_C;
     }
     // Save button state so that transitions can be detected
     // during the next pass.
