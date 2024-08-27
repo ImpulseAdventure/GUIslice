@@ -68,6 +68,14 @@ extern "C" {
   #define GSLC_FEATURE_FOCUS_ON_TOUCH 1
 #endif
 
+// Ensure that touch/input drivers have not been disabled if FEATURE_INPUT has been requested
+// - Either use DRV_TOUCH_INPUT if no touch-screen is used (but external pins are being used)
+// - Or select a DRV_TOUCH_* driver specific to the touch-screen device
+#if defined(DRV_TOUCH_NONE) && (GSLC_FEATURE_INPUT)
+  #error "CONFIG: DRV_TOUCH_NONE is not compatible with FEATURE_INPUT. Consider selecting DRV_TOUCH_INPUT in GUIslice config"
+#endif
+
+
 
 // -----------------------------------------------------------------------
 // Globals
@@ -799,6 +807,7 @@ typedef struct {
   uint16_t            nTouchLastPress;  ///< Last touch event pressure (0=none))
   bool                bTouchRemapEn;    ///< Enable touch remapping?
   bool                bTouchRemapYX;    ///< Enable touch controller swapping of X & Y
+  bool                bTouchEn;         ///< Enable reaction to touch events
 
 
   void*               pvDriver;         ///< Driver-specific members (gslc_tsDriver*)
@@ -2643,6 +2652,27 @@ void gslc_SetTouchPressCal(gslc_tsGui* pGui,uint16_t nPressMin, uint16_t nPressM
 /// \return none
 ///
 void gslc_SetTouchRemapYX(gslc_tsGui* pGui, bool bSwap);
+
+
+///
+/// Make touchscreen sensitive (GUI reacts to touch events) or
+/// insensitive (GUI ignores touch events)
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  bEn:         Enable GUI reaction to touch events
+///
+/// \return none
+///
+void gslc_SetTouchEn(gslc_tsGui *pGui, bool bEn);
+
+///
+/// Get whether the GUI will react to touch events or not
+///
+/// \param[in]  pGui:        Pointer to GUI
+///
+/// \return whether the GUI is sensitive for touch events
+///
+bool gslc_GetTouchEn(gslc_tsGui *pGui);
 
 #endif // !DRV_TOUCH_NONE
 

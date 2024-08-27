@@ -155,6 +155,14 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 ///
 void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal);
 
+/// Reset the graphs values.
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return none
+///
+void gslc_ElemXGraphReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 
 ///
 /// Set the graph scroll position (nScrollPos) as a fraction of

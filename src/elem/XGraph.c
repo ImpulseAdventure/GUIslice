@@ -239,6 +239,31 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
+void gslc_ElemXGraphReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef) {
+
+
+  gslc_tsXGraph*  pBox;
+  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  pBox = (gslc_tsXGraph*)(pElem->pXData);
+
+  pBox->nBufCnt  = 0;
+  pBox->nPlotIndStart   = 0;
+
+  // Default scale is
+  // - Each data point (buffer row) gets 1 pixel in X direction
+  // - Data value is directly mapped to height in Y direction
+  pBox->nPlotValMin   = 0;
+  pBox->nPlotValMax   = pBox->nWndHeight;
+  pBox->nPlotIndMax   = pBox->nWndWidth;
+
+  memset(pBox->pBuf,0,pBox->nBufMax*sizeof(int16_t));
+
+  // Set the redraw flag
+  // - As we are clearing the buffer, force a full redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+
+}
+
 
 bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
@@ -297,8 +322,8 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (pBox->bScrollEn) {
     pBox->nPlotIndStart -= (nScrollMax - pBox->nScrollPos);
   }
-  pBox->nPlotIndStart  = pBox->nPlotIndStart % pBox->nBufMax;
-
+  pBox->nPlotIndStart = pBox->nBufMax ? (pBox->nPlotIndStart % pBox->nBufMax) : 0;
+  
   uint16_t nPlotInd = 0;
   uint16_t nIndMax = 0;
   nIndMax = (pBox->nBufMax < pBox->nPlotIndMax)? pBox->nBufMax : pBox->nPlotIndMax;
