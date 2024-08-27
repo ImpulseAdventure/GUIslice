@@ -5,7 +5,7 @@
 // GUIslice library (example user configuration) for:
 //   - CPU:     Multiple
 //   - Display: HX8357
-//   - Touch:   STMPE610 (Resistive)
+//   - V2 Touch:   TSC2007 (Resistive)
 //   - Wiring:  Shield
 //
 //   - Example display:
@@ -75,7 +75,8 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_HX8357    // Adafruit HX8357
-  #define DRV_TOUCH_ADA_STMPE610    // Adafruit STMPE610 touch driver
+
+  #define DRV_TOUCH_ADA_TSC2007     // Adafruit TSC2007 V2 touch driver
 
 
   // -----------------------------------------------------------------------------
@@ -144,12 +145,12 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Select touch device wiring method by setting one of the following to 1, others to 0
-  #define ADATOUCH_I2C_HW 0  // Touch controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
-  #define ADATOUCH_SPI_HW 1  // Touch controller via hardware SPI (uses ADATOUCH_PIN_CS)
+  #define ADATOUCH_I2C_HW 1  // Touch V2 controller via hardware I2C (uses ADATOUCH_I2C_ADDR)
+  #define ADATOUCH_SPI_HW 0  // Touch V1 controller via hardware SPI (uses ADATOUCH_PIN_CS)
   #define ADATOUCH_SPI_SW 0  // Touch controller via software SPI [not yet supported]
 
   // Touch bus & pinout
-  #define ADATOUCH_I2C_ADDR   0x41  // Touch device I2C address (for ADATOUCH_I2C_HW=1)
+  #define ADATOUCH_I2C_ADDR   0x48  // Touch V2 device I2C address (for ADATOUCH_I2C_HW=1)
 
   // - Decode based on platform
 #ifdef ESP8266
@@ -171,10 +172,10 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Calibration settings from diag_ard_touch_calib:
-  #define ADATOUCH_X_MIN    3824
-  #define ADATOUCH_X_MAX    235
-  #define ADATOUCH_Y_MIN    191
-  #define ADATOUCH_Y_MAX    3725
+  #define ADATOUCH_X_MIN    232
+  #define ADATOUCH_X_MAX    3820
+  #define ADATOUCH_Y_MIN    129
+  #define ADATOUCH_Y_MAX    3847
   #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
