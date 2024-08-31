@@ -35,7 +35,7 @@ Design your GUI with a **drag & drop builder**, then apply the same code to a wi
 - *Display drivers include*:
   - ILI9341, ST7735, SSD1306, HX8347D, HX8357, PCD8544, RA8875, RA8876, ILI9225, ILI9341_t3, ILI9341_due
 - *Touchscreen control including*:
-  - STMPE610, FT6206, FT5206, XPT2046, 4-wire, tslib, URTouch, Adafruit Seesaw
+  - STMPE610, FT6206, FT5206, XPT2046, TSC2007, 4-wire, tslib, URTouch, Adafruit Seesaw
 - *IDE Support*:
   - GUIslice has been tested for use in the *Arduino IDE* and *Platform IO* environments, in addition to LINUX make
 - Foreign characters / UTF-8 encoding (in SDL mode), anti-aliased fonts (in TFT_eSPI mode)
