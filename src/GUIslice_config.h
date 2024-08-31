@@ -130,6 +130,7 @@ extern "C" {
   //#include "../configs/esp-tftespi-default-notouch.h"
   //#include "../configs/esp-tftespi-default-simple.h"
   //#include "../configs/esp-tftespi-default-stmpe610.h"
+  //#include "../configs/esp-tftespi-default-tsc2007.h"
   //#include "../configs/esp-tftespi-default-xpt2046.h"
   //#include "../configs/esp-tftespi-default-xpt2046_int.h"
 
@@ -150,6 +151,7 @@ extern "C" {
   // ------------------------------------------------------
   //#include "../configs/mult-shld-adafruit_24_feather_touch.h"
   //#include "../configs/mult-shld-adafruit_35_feather_touch.h"
+  //#include "../configs/mult-shld-adafruit_35_feather_tsc2007.h"
 
   // Raspberry Pi / LINUX:
   // ------------------------------------------------------

@@ -221,6 +221,11 @@
   #include <SPI.h>
   #include <Wire.h>
   #include "Adafruit_STMPE610.h"
+#elif defined(DRV_TOUCH_ADA_TSC2007)
+  // https://github.com/adafruit/Adafruit_TSC2007
+  #include <SPI.h>
+  #include <Wire.h>
+  #include "Adafruit_TSC2007.h"
 #elif defined(DRV_TOUCH_ADA_FT6206)
   // https://github.com/adafruit/Adafruit_FT6206_Library
   #include <Wire.h>
@@ -492,6 +497,10 @@ extern "C" {
   #endif
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_ADA_TSC2007)
+  const char* m_acDrvTouch = "TSC2007()";
+  Adafruit_TSC2007 m_touch = Adafruit_TSC2007();
+  #define DRV_TOUCH_INSTANCE
 #elif defined(DRV_TOUCH_ADA_FT6206)
   const char* m_acDrvTouch = "FT6206(I2C)";
   // Always use I2C
@@ -2348,6 +2357,18 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     } else {
       return true;
     }
+  #elif defined(DRV_TOUCH_ADA_TSC2007)
+    #if (ADATOUCH_I2C_HW)
+    if (!m_touch.begin(ADATOUCH_I2C_ADDR, &Wire)) {
+    #else
+    if (!m_touch.begin()) {
+    #endif
+      GSLC_DEBUG2_PRINT("ERROR: TDrvInitTouch() failed to init TSC2007\n",0);
+      return false;
+    } else {
+      return true;
+    }
+    
   #elif defined(DRV_TOUCH_ADA_FT6206)
     if (!m_touch.begin(ADATOUCH_SENSITIVITY)) {
       GSLC_DEBUG2_PRINT("ERROR: TDrvInitTouch() failed to init FT6206\n",0);
@@ -2481,7 +2502,31 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   }
 
   // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_ADA_TSC2007)
+  TS_Point ptTouch = m_touch.getPoint();
+
+  if (((ptTouch.x == 0) && (ptTouch.y == 0)) || (ptTouch.z < 10)) {
+    // no pressure, no touch
+    if (!m_bLastTouched) {
+      // Wasn't touched before; do nothing
+    } else {
+      // Touch release
+      // Indicate old coordinate but with pressure=0
+      m_nLastRawPress = 0;
+      m_bLastTouched = false;
+      bValid = true;
+    }
+  } else {
+    m_nLastRawX = ptTouch.x;
+    m_nLastRawY = ptTouch.y;
+    m_nLastRawPress = ptTouch.z; 
+    m_bLastTouched = true;
+    bValid = true;
+  }
+
+  // ----------------------------------------------------------------
   #elif defined(DRV_TOUCH_ADA_FT6206)
+  uint16_t  z2,nRawX,nRawY,nRawPress;
 
   if (m_touch.touched()) {
     TS_Point ptTouch = m_touch.getPoint();
