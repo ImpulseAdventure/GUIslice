@@ -81,6 +81,9 @@ extern "C" {
 #elif defined(DRV_TOUCH_XPT2046_PS)
   #define DRV_TOUCH_TYPE_EXTERNAL
   #define DRV_TOUCH_TYPE_RES         // Resistive
+#elif defined(DRV_TOUCH_XPT2046_PS_SPI1)
+  #define DRV_TOUCH_TYPE_EXTERNAL
+  #define DRV_TOUCH_TYPE_RES         // Resistive
 #elif defined(DRV_TOUCH_URTOUCH)
   #define DRV_TOUCH_TYPE_EXTERNAL
   // Don't set DRV_TOUCH_TYPE_RES since URTouch provides its own calibration

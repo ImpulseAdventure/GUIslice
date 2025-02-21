@@ -51,7 +51,7 @@
 
   // Almost all GFX-compatible libraries depend on Adafruit-GFX
   // There are a couple exceptions that do not require it
-  #if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
+  #if defined(DRV_DISP_ADAGFX_ILI9341_T3N) || defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV) || defined(DRV_DISP_ADAGFX_ILI9225_DUE)
     // No need to import Adafruit_GFX
   #else
     #include <Adafruit_GFX.h>
@@ -73,6 +73,10 @@
   #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
     // https://github.com/PaulStoffregen/ILI9341_t3
     #include <ILI9341_t3.h>
+    #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_T3N)
+    // https://github.com/KurtE/ILI9341_t3n/
+    #include <ILI9341_t3n.h>
     #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
     #include <ILI9488.h>
@@ -244,6 +248,9 @@
 #elif defined(DRV_TOUCH_XPT2046_PS)
   // https://github.com/PaulStoffregen/XPT2046_Touchscreen
   #include <XPT2046_Touchscreen.h>
+#elif defined(DRV_TOUCH_XPT2046_PS_SPI1)
+  // use 2nd spi: SPI1  https://github.com/PaulStoffregen/XPT2046_Touchscreen
+  #include <XPT2046_Touchscreen.h>
 #elif defined(DRV_TOUCH_URTOUCH)
   #if defined(DRV_TOUCH_URTOUCH_OLD)
     #include <UTouch.h> // Select old version of URTouch
@@ -293,7 +300,9 @@ extern "C" {
     const char* m_acDrvDisp = "ADA_ILI9341_T3(SPI-HW-Alt)";
     ILI9341_t3 m_disp = ILI9341_t3 (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
   #endif
-
+#elif defined(DRV_DISP_ADAGFX_ILI9341_T3N)
+    const char* m_acDrvDisp = "ADA_ILI9341_T3N(SPI-HW-Alt)";
+    ILI9341_t3n m_disp = ILI9341_t3n (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST, ADAGFX_PIN_MOSI, ADAGFX_PIN_CLK, ADAGFX_PIN_MISO);
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_STM)
   #if (ADAGFX_SPI_HW) // Use hardware SPI or software SPI (with custom pins)
@@ -543,6 +552,17 @@ extern "C" {
   #endif  
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
+#elif defined(DRV_TOUCH_XPT2046_PS_SPI1)
+  const char* m_acDrvTouch = "DRV_TOUCH_XPT2046_PS_SPI1(SPI-HW)";
+  #if defined(XPT2046_IRQ)
+    // Use SPI, with IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS, XPT2046_IRQ); // Chip Select pin, IRQ pin
+  #else
+    // Use SPI, no IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #endif  
+  #define DRV_TOUCH_INSTANCE
+// ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_URTOUCH)
   #if defined(DRV_TOUCH_URTOUCH_OLD)
     const char* m_acDrvTouch = "URTOUCH_OLD";
@@ -662,8 +682,11 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
 
-    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3N)
       m_disp.begin();
+      m_disp.setTextWrap(false);
+      m_disp.disableScroll();
+
 
     #elif defined(DRV_DISP_ADAGFX_ILI9488_JB)
       m_disp.begin();
@@ -992,7 +1015,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
         int16_t* pnTxtX,int16_t* pnTxtY,uint16_t* pnTxtSzW,uint16_t* pnTxtSzH)
 {
 
-#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3N)
   (void)pGui; // Unused
   uint16_t  nTxtScale = 0;
 
@@ -1029,8 +1052,8 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
   m_disp.setTextSize(nTxtScale);
 
   // Fetch the font sizing
-  *pnTxtSzW = m_disp.measureTextWidth(pStr,0);  // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
-  *pnTxtSzH = m_disp.measureTextHeight(pStr,0); // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  *pnTxtSzW = m_disp.measureTextWidth((const uint8_t*)pStr,0);  // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
+  *pnTxtSzH = m_disp.measureTextHeight((const uint8_t*)pStr,0); // NOTE: If compile error, see note https://github.com/ImpulseAdventure/GUIslice/wiki/Install-ILI9341_t3-for-Teensy
 
   // Debug: report font sizing
   // GSLC_DEBUG2_PRINT("DBG:GetTxtSize: [%s] w=%d h=%d scale=%d\n",
@@ -1210,7 +1233,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   char      ch;
 
   // Initialize the font and positioning
-#if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+#if defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3N)
   (void)pGui; // Unused
   uint16_t  nTxtScale = pFont->nSize;
   const ILI9341_t3_font_t* pT3Font = NULL;
@@ -1406,7 +1429,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
       chStr[1] = 0;
       m_disp.printFixed(m_nTxtX, m_nTxtY, chStr, STYLE_NORMAL);
       // Advance the text cursor
-	    m_nTxtX += m_disp.getFont().getTextSize(chStr, NULL);
+      m_nTxtX += m_disp.getFont().getTextSize(chStr, NULL);
 
     #else
       // Call Adafruit-GFX for rendering
@@ -1440,7 +1463,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
         m_disp.cursorToXY(nTxtX,nTxtY);
 
       #elif defined(DRV_DISP_LCDGFX)
-	    m_nTxtY += m_disp.getFont().getHeader().height;
+        m_nTxtY += m_disp.getFont().getHeader().height;
 
       #else
         int16_t   nCurPosY = 0;
@@ -1460,6 +1483,8 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
 
   // Restore the font
 #if defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  // TODO
+#elif defined(DRV_DISP_ADAGFX_ILI9341_T3N)
   // TODO
 #elif defined(DRV_DISP_ADAGFX_ILI9225_DUE)
   // Restore the font
@@ -1635,7 +1660,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
     NanoRect r;
     r.setRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
     m_disp.setColor(nColRaw);
-	  m_disp.drawRect(r);
+	m_disp.drawRect(r);
   #elif defined(DRV_DISP_ADAGFX_RA8876) || defined(DRV_DISP_ADAGFX_RA8876_GV)
     m_disp.drawRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1,nColRaw);
   #else
@@ -2407,6 +2432,10 @@ bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
     // during the DrvGetTouch() function.
     //m_touch.setRotation(0);
     return true;
+  #elif defined(DRV_TOUCH_XPT2046_PS_SPI1)
+    m_touch.begin(SPI1);
+    //m_touch.setRotation(0);
+    return true;
   #elif defined(DRV_TOUCH_ADA_RA8875)
     m_disp.touchEnable(true);
     return true;
@@ -2776,6 +2805,51 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // to match the default portrait orientation.
       nRawX = 4095-p.y;
       nRawY = p.x;
+
+      nRawPress = p.z;
+      m_nLastRawX = nRawX;
+      m_nLastRawY = nRawY;
+      m_nLastRawPress = nRawPress;
+      m_bLastTouched = true;
+      bValid = true;
+    }
+    else {
+      if (!m_bLastTouched) {
+        // Wasn't touched before; do nothing
+      }
+      else {
+        // Touch release
+        // Indicate old coordinate but with pressure=0
+        m_nLastRawPress = 0;
+        m_bLastTouched = false;
+        bValid = true;
+      }
+    }
+  // ----------------------------------------------------------------
+  #elif defined(DRV_TOUCH_XPT2046_PS_SPI1)
+    //using Paul Stoffregen/XPT2046, but:
+    // individually adapted orientation
+    uint16_t  nRawX,nRawY; //XPT2046 returns values up to 4095
+    uint16_t  nRawPress;   //XPT2046 returns values up to 4095
+
+    TS_Point p = m_touch.getPoint();
+
+    if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
+      #ifdef DRV_TOUCH_SWAP_XY
+         uint16_t tmp = p.x;
+         p.x = p.y;
+         p.y = tmp;
+      #endif
+      #ifdef DRV_TOUCH_OTHER_X_ORIENTATION
+        nRawX = 4095-p.x;
+      #else
+        nRawX = p.x;
+      #endif
+      #ifdef DRV_TOUCH_OTHER_Y_ORIENTATION
+        nRawY = 4095-p.y;
+      #else
+        nRawY = p.y;
+      #endif
 
       nRawPress = p.z;
       m_nLastRawX = nRawX;
@@ -3186,7 +3260,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
       pGui->nDispW = ILI9225_TFTHEIGHT;
       pGui->nDispH = ILI9225_TFTWIDTH;
     }
-  #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3)
+  #elif defined(DRV_DISP_ADAGFX_ILI9341) || defined(DRV_DISP_ADAGFX_ILI9341_STM) || defined(DRV_DISP_ADAGFX_ILI9341_T3) || defined(DRV_DISP_ADAGFX_ILI9341_T3N)
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);
