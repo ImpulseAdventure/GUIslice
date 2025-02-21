@@ -97,6 +97,7 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   // determine size of our text box
   // first calculate number of digits required
   char acTxtNum[XSPINNER_STR_LEN];
+  (void)acTxtNum; // suppress unused warning
   int16_t nTxtBoxW = rElem.w - 2 * (nButtonSz);
   // Determine the maximum width of a digit, we will use button size for height.
   // now we can work out our rectangle  
@@ -121,10 +122,10 @@ gslc_tsElemRef* gslc_ElemXSpinnerCreate(gslc_tsGui* pGui, int16_t nElemId, int16
   pXData->nMax = nMax;
   pXData->nIncr = nIncr;
   pXData->pfuncXInput = cbInput;
-	pXData->nFontId = nFontId;
+  pXData->nFontId = nFontId;
 
   sElem.pXData = (void*)(pXData);
-	
+
   // Specify the custom drawing callback
   sElem.pfuncXDraw = &gslc_ElemXSpinnerDraw;
   // Specify the custom touch tracking callback
@@ -399,7 +400,7 @@ int16_t gslc_XSpinnerMapEvent(gslc_tsGui* pGui, gslc_tsXSpinner* pConfig, int16_
     //GSLC_DEBUG_PRINT("match: ID=SPINNER_ID_BTN_DEC\n", "");
     return SPINNER_ID_BTN_DEC;
   }
-	
+
   // text field touched
   return -1;
 }
@@ -433,7 +434,7 @@ bool gslc_ElemXSpinnerTouch(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
   int16_t nAbsY = nRelY + rElem.y;
   bool  bChanged = false;
   int nCounter  = pSpinner->nCounter;
-	
+
   // Begin the core touch functionality
   // by Handling the various button presses
   GSLC_CB_INPUT pfuncXInput = NULL;
@@ -484,7 +485,7 @@ bool gslc_ElemXSpinnerTouch(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
       // End glow
       gslc_ElemSetGlow(pGui,pElemRef,false);
       break;
-			
+
     default:
       return false;
   }
