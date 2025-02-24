@@ -285,14 +285,9 @@ bool gslc_ElemXToggleImgbtnDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eR
   int16_t nInnerX = sState.rInner.x;
   int16_t nInnerY = sState.rInner.y;
   if (pToggleImgbtn->bOn) {
-    // Glow image might be NULL
-    if (pElem->sImgRefGlow.eImgFlags != GSLC_IMGREF_NONE) {
-      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefGlow);
-    } else {
-      bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
-    }
-  } else {
     bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefNorm);
+  } else {
+    bOk = gslc_DrvDrawImage(pGui,nInnerX,nInnerY,pElem->sImgRefGlow);
   }
 
   if (!bOk) {
