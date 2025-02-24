@@ -70,6 +70,7 @@ extern "C" {
   // Add your own configs here:
   // ---------------------------------------------------------------------------------------
   //#include "../configs/my-config.h"
+  #include "../configs/teensy-adagfx-ili9341_t3n-xpt2046-spi1.h"   // use with SPI1 on T4.1
 
   // ---------------------------------------------------------------------------------------
   // Example configs included in library /configs:
@@ -139,6 +140,7 @@ extern "C" {
   //#include "../configs/teensy-adagfx-ili9341-xpt2046.h"
   //#include "../configs/teensy-adagfx-ili9341-xpt2046-audio.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-spi1.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-notouch-audio.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-audio.h"
 
