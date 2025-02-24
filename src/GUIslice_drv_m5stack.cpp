@@ -92,6 +92,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     // - It also configures the serial interface for 115200 baud
     m5.begin();
   
+	#if (GSLC_FS_EN)
+    if(!SPIFFS.begin(true)){
+    Serial.println("SPIFFS Mount Failed");
+    }
+	#endif
+
     // Now that we have initialized the display, we can assign
     // the rotation parameters and clipping region
     gslc_DrvRotate(pGui,GSLC_ROTATE);
@@ -841,6 +847,26 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     #else
       // SD card access not enabled
       GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
+      return false;
+    #endif
+
+  }
+  else if ((sImgRef.eImgFlags & GSLC_IMGREF_SRC) == GSLC_IMGREF_SRC_FS) {
+    // Load image from FS media
+    #if (GSLC_FS_EN)
+      if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_PNG) {
+        // 24-bit Bitmap
+        m_disp.drawPngFile(SPIFFS,sImgRef.pFname,nDstX,nDstY);
+        return true;
+      } else if((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24){
+        m_disp.drawBmpFile(SPIFFS,sImgRef.pFname,nDstX,nDstY);
+      }  else {
+        // Unsupported format
+        return false;
+      }
+    #else
+      // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_FS_EN not enabled\n","");
       return false;
     #endif
 

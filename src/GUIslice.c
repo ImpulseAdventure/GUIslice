@@ -983,6 +983,17 @@ gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt)
   return sImgRef;
 }
 
+
+gslc_tsImgRef gslc_GetImageFromFS(const char* pFname,gslc_teImgRefFlags eFmt)
+{
+  gslc_tsImgRef sImgRef;
+  sImgRef.eImgFlags = GSLC_IMGREF_SRC_FS | (GSLC_IMGREF_FMT & eFmt);
+  sImgRef.pFname    = pFname;
+  sImgRef.pImgBuf   = NULL;
+  sImgRef.pvImgRaw  = NULL;
+  return sImgRef;
+}
+
 gslc_tsImgRef gslc_GetImageFromSD(const char* pFname,gslc_teImgRefFlags eFmt)
 {
   gslc_tsImgRef sImgRef;
