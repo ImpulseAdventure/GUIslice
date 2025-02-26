@@ -221,11 +221,12 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
       #if (!defined(ADAGFX_PIN_SDCS))
         #error "ERROR: ADAGFX_PIN_SDCS must be defined in config for SD support"
       #endif
-      if (!SD.begin(ADAGFX_PIN_SDCS)) {
+      if (!SD.begin(ADAGFX_PIN_SDCS, m_disp.getSPIinstance()))
+      {
         GSLC_DEBUG_PRINT("ERROR: DrvInit() SD init failed\n", 0);
         return false;
       }
-    #endif
+#endif
 
     #if (GSLC_SPIFFS_EN)
       // Initialize SPIFFS file system
