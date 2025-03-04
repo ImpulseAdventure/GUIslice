@@ -149,6 +149,8 @@ extern "C" {
   //   RAM and flash memory which could be problematic for Arduino models
   //   with limited resources.
   #define GSLC_SD_EN    0
+  #define GSLC_FS_EN    1
+
 
 
   // =============================================================================
@@ -176,7 +178,7 @@ extern "C" {
 
   // Enable support for graphics clipping (DrvSetClipRect)
   // - Note that this will impact performance of drawing graphics primitives
-  #define GSLC_CLIP_EN 1
+  #define GSLC_CLIP_EN 0
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
