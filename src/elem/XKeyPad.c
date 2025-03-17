@@ -321,6 +321,15 @@ gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_
   rElem.w = (nButtonSzW * pConfig->nMaxCols) + (2 * pConfig->nFrameMargin);
   rElem.h = (nButtonSzH * pConfig->nMaxRows) + (2 * pConfig->nFrameMargin);
 
+  // Things tend to drop off on very small screens
+  // Move it as far left/up as it goes. And ignore
+  // the issue if it is still too large.
+  //
+  if (rElem.x + rElem.w > pGui->nDispW)
+     rElem.x =  pGui->nDispW -  rElem.w;
+  if (rElem.y + rElem.h > pGui->nDispH)
+     rElem.y =  pGui->nDispH -  rElem.h;
+
   gslc_tsElem sElem;
   gslc_tsElemRef* pElemRef = NULL;
 
@@ -349,8 +358,8 @@ gslc_tsElemRef* gslc_XKeyPadCreateBase(gslc_tsGui* pGui, int16_t nElemId, int16_
 
   // Determine offset coordinate of compound element so that we can
   // specify relative positioning during the sub-element Create() operations.
-  int16_t nOffsetX = nX0 + pConfig->nFrameMargin;
-  int16_t nOffsetY = nY0 + pConfig->nFrameMargin;
+  int16_t nOffsetX = rElem.x + pConfig->nFrameMargin;
+  int16_t nOffsetY = rElem.y + pConfig->nFrameMargin;
 
   // Reset buffer and associated state
   gslc_ElemXKeyPadReset(pXData);
