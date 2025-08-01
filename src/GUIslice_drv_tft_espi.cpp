@@ -438,6 +438,9 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
           m_disp.loadFont((const char*)pFont->pvFont);
           pDriver->pvFontLast = pFont->pvFont;
         }
+      } else if ((pFont->eFontRefType  == GSLC_FONTREF_PTR) &&
+                  (pFont->eFontRefMode == GSLC_FONTREF_MODE_1)){
+          m_disp.loadFont((const uint8_t *)pFont->pvFont);
       } else {
         m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
       }
