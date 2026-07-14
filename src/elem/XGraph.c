@@ -312,6 +312,17 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   // Initialize color state
   colGraph  = pBox->colGraph;
 
+  // Precompute the plot value range used to scale each data value into
+  // the visible pixel height [0,nWndHeight]. In the default case
+  // (nPlotValMin=0, nPlotValMax=nWndHeight, ie. before any call to
+  // gslc_ElemXGraphSetRange()) this reduces to the legacy 1:1 value->pixel
+  // mapping.
+  int32_t nPlotRange = (int32_t)pBox->nPlotValMax - (int32_t)pBox->nPlotValMin;
+  if (nPlotRange <= 0) {
+    GSLC_DEBUG2_PRINT("ERROR: ElemXGraphDraw() Zero/negative graph range [%d,%d]\n",
+      pBox->nPlotValMin, pBox->nPlotValMax);
+  }
+
   // Calculate the current window position based on
   // the current buffer write pointer and scroll
   // position
@@ -353,8 +364,6 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
     //   points and the X coordinate
     nCurX = nPlotInd;
 
-    // TODO: Scale data value
-
     // TODO: Consider supporting various color mapping modes
     //colGraph = gslc_ColorBlend2(GSLC_COL_BLACK,GSLC_COL_WHITE,500,nDataVal*500/200);
 
@@ -362,8 +371,16 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
     nPixX       = pElem->rElem.x + pBox->nMargin + nCurX;
     nPixYBase   = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1;
 
-    // Calculate Y value
-    nPixYOffset = (nDataVal >= 0)? nDataVal : 0;
+    // Scale the (already clipped) data value from the configured plot
+    // range into the visible pixel height (see nPlotRange calc above)
+    if (nPlotRange > 0) {
+      // NOTE: cast operands to int32_t before subtracting so this is safe
+      // on platforms (eg. AVR) where int is only 16 bits wide
+      nPixYOffset = (uint16_t)((((int32_t)nDataVal - (int32_t)pBox->nPlotValMin) * (int32_t)pBox->nWndHeight) / nPlotRange);
+    } else {
+      // Misconfigured range (nPlotValMax <= nPlotValMin): avoid divide-by-zero
+      nPixYOffset = 0;
+    }
     // Clip plot Y value
     if (nPixYOffset > pBox->nWndHeight) { nPixYOffset = pBox->nWndHeight; }
 
