@@ -469,12 +469,16 @@ typedef enum {
   GSLC_IMGREF_SRC_SD      = (2<<0),   ///< Image is stored on SD card
   GSLC_IMGREF_SRC_RAM     = (3<<0),   ///< Image is stored in RAM
   GSLC_IMGREF_SRC_PROG    = (4<<0),   ///< Image is stored in program memory (PROGMEM)
+  GSLC_IMGREF_SRC_FS    = (5<<0),   ///< Image is stored in Filesystem (ESP32 SPIFFS)
+
   // Define image types
 
   GSLC_IMGREF_FMT_BMP24   = (1<<4),   ///< Image format is BMP (24-bit)
   GSLC_IMGREF_FMT_BMP16   = (2<<4),   ///< Image format is BMP (16-bit RGB565)
   GSLC_IMGREF_FMT_RAW1    = (3<<4),   ///< Image format is raw monochrome (1-bit)
   GSLC_IMGREF_FMT_JPG     = (4<<4),   ///< Image format is JPG (ESP32/ESP8366)
+  GSLC_IMGREF_FMT_PNG     = (5<<4),   ///< Image format is PNG (ESP32/ESP8366)
+
 
   // Mask values for bitfield comparisons
   GSLC_IMGREF_SRC         = (7<<0),   ///< Mask for Source flags
@@ -1231,6 +1235,17 @@ bool gslc_ClipRect(gslc_tsRect* pClipRect,gslc_tsRect* pRect);
 /// \return Loaded image reference
 ///
 gslc_tsImgRef gslc_GetImageFromFile(const char* pFname,gslc_teImgRefFlags eFmt);
+
+
+///
+/// Create an image from FS
+///
+/// \param[in]   pFname       Pointer to filename string of image 
+/// \param[in]   eFmt         Image format
+///
+/// \return Loaded image reference
+///
+gslc_tsImgRef gslc_GetImageFromFS(const char* pFname,gslc_teImgRefFlags eFmt);
 
 
 ///
