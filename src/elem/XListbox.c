@@ -65,10 +65,6 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 
 // ----------------------------------------------------------------------------
 
-// TODO: Combine with GUIslice MAX_STR
-// Defines the maximum length of a listbox item
-#define XLISTBOX_MAX_STR        20
-
 // ============================================================================
 // Extended Element: Listbox
 // - A Listbox control
@@ -620,8 +616,7 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   // Determine top-left coordinate of list matrix
   nItemBaseX = nX0 + pListbox->nMarginW;
   nItemBaseY = nY0 + pListbox->nMarginH;
-  char acStr[XLISTBOX_MAX_STR+1] = "";
-
+  char * acStr = (char *)"";
 
   // Loop through the items in the list
   int16_t nItemTop = pListbox->nItemTop;
@@ -645,8 +640,8 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     }
 
     // Fetch the list item
-    bool bOk = gslc_ElemXListboxGetItem(pGui, pElemRef, nItemInd, acStr, XLISTBOX_MAX_STR);
-    if (!bOk) {
+    acStr  = gslc_ElemXListboxGetItemAddr(pListbox, nItemInd);
+    if (NULL == acStr) {
       // TODO: Erorr handling
       break;
     }
